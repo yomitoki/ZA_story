@@ -8307,7 +8307,7 @@ class ZA_story(ZA_story_Base):
         # スクリプト継承
         if self.testcode==1:
             self.Test()
-        elif ZA_infimode==1:
+        elif ZA_story.ZA_infimode==1:
             self.ZA_battle_infi_main()
         else:
             self.ZA_story_main()
