@@ -527,6 +527,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.battle_no_escape_count_max =30
         self.battlemarker_skipcount_threshold=3
         self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
+        
+        self.battle_zone_loop_num = 3
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
@@ -4871,7 +4873,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
                     self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
                     self.sleepcount=0
-                    if self.battlecount> 2:
+                    if self.battlecount> (self.battle_zone_loop_num - 1):
                         return "BENCH_START"
                     else:
                         self.battle_step_return=0
@@ -4986,10 +4988,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(0,(self.battlecount + 1)):
                         self.etc_sendCommand("Lbutton_up")
                         
-                    for i in range(0,3):
-                        if not self.battlecount> 2:
+                    for i in range(0,self.battle_zone_loop_num):
+                        if not self.battlecount > (self.battle_zone_loop_num - 1):
                             self.targetzone=self.zone_check()
-                        if self.battlecount> 2:
+                        if self.battlecount > (self.battle_zone_loop_num - 1):
                             break
                         elif (self.testcode==0 and(not self.ZONELIST[self.targetzone][2]) or (self.testcode==2 and (not (self.targetzone == self.testtarget)))):
                             print(str(self.targetzone) + ": " + self.ZONELIST[self.targetzone][1])
@@ -5010,7 +5012,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
                             self.sleepcount=0
 
-                            if self.battlecount> 2:
+                            if self.battlecount> (self.battle_zone_loop_num - 1):
                                 return "BATTLE_START"
                             else:
                                 self.battle_step_return=0
@@ -5024,7 +5026,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             if self.image_check("MOVE_COMMENT"): 
                                 self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
                                 self.sleepcount=0
-                                if self.battlecount> 2:
+                                if self.battlecount> (self.battle_zone_loop_num - 1):
                                     return "BATTLE_START"
                                 else:
                                     self.battle_step_return=0
@@ -5040,7 +5042,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
                     self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
                     self.sleepcount=0
-                    if self.battlecount> 2:
+                    if self.battlecount> (self.battle_zone_loop_num - 1):
                         return "BATTLE_START"
                     else:
                         self.battle_step_return=0
@@ -5554,7 +5556,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("==================================")
                 self.notargetcount=0
                 
-                if self.battlecount>2:
+                if self.battlecount>(self.battle_zone_loop_num - 1):
                     self.battle_step=0
                     self.MOVE_SEE("END")
                     self.ZL_ACTION("END")
