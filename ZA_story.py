@@ -358,20 +358,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_TOWER_82": self._2_story_tower_82,
             "2_STORY_TOWER_83": self._2_story_tower_83,
             "2_STORY_TOWER_84": self._2_story_tower_84,
-            "2_STORY_TOWER_85": self._2_story_tower_85,
-            "2_STORY_TOWER_86": self._2_story_tower_86,
-            "2_STORY_TOWER_87": self._2_story_tower_87,
-            "2_STORY_TOWER_88": self._2_story_tower_88,
-            "2_STORY_TOWER_89": self._2_story_tower_89,
-            "2_STORY_TOWER_90": self._2_story_tower_90,
-            "2_STORY_TOWER_91": self._2_story_tower_91,
-            "2_STORY_TOWER_92": self._2_story_tower_92,
-            "2_STORY_TOWER_93": self._2_story_tower_93,
+
+            "2_STORY_Y_LANK_BATTLE_ZONE": self._2_story_y_lank_battle_zone,
             
+            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_TOWER_81"
+        self._2_story_current_state_init= "2_STORY_TOWER_84"
         #self._2_story_current_state_init="" 
         
     ######################################################
@@ -529,6 +523,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
         
         self.battle_zone_loop_num = 3
+        self.no_Cplus=1
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
@@ -757,7 +752,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZL_ACTION(lockonflg=lockonflg)
                 if self.ZL_state == 1:
                     self.press(Button.A, wait=0.0)
-                    if self.image_check("C+"):
+                    if (self.no_Cplus==0 and self.image_check("C+")):
                         self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
                         return movestep
                 
@@ -810,7 +805,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return
         if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
             self.wait(0.1)
-        if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("C+"):
+        if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.no_Cplus==0 and self.image_check("C+"):
             self.notargetcount=0
             return
         if action != "END":
@@ -1172,7 +1167,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     # MAIN FUNCTION
     ######################################################  
     def za_infi_main_start(self):
-        self.load_zones()      
+        self.load_zones()
+        self.no_Cplus=0      
         if self.fastread:
             self.load_sleeps()
         self.fastread = False
@@ -4021,38 +4017,28 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "2_STORY_TOWER_84"
         return "2_STORY_TOWER_83"
     
-    def _2_story_tower_84(self): 
-        return "2_STORY_TOWER_84"
+    def _2_story_tower_84(self):
+        ret = self.Common_change_time_set(check_timing="NIGHT")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "2_STORY_Y_LANK_BATTLE_ZONE"
+        else:
+            return "2_STORY_TOWER_84"
+        
     
-    def _2_story_tower_85(self): 
-        return "2_STORY_TOWER_85"
+    def _2_story_y_lank_battle_zone(self):
+        self.battle_zone_loop_num = 1
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "2_STORY_Y_LANK_MOVE1"
+        else: 
+            return "2_STORY_Y_LANK_BATTLE_ZONE"
     
-    def _2_story_tower_86(self): 
-        return "2_STORY_TOWER_86"
+    def _2_story_y_lank_move1(self): 
+        return "2_STORY_Y_LANK_MOVE1"
     
-    def _2_story_tower_87(self): 
-        return "2_STORY_TOWER_87"
-    
-    def _2_story_tower_88(self): 
-        return "2_STORY_TOWER_88"
-    
-    def _2_story_tower_89(self): 
-        return "2_STORY_TOWER_89"
-    
-    def _2_story_tower_90(self): 
-        return "2_STORY_TOWER_90"
-    
-    def _2_story_tower_91(self): 
-        return "2_STORY_TOWER_91"
-    
-    def _2_story_tower_92(self): 
-        return "2_STORY_TOWER_92"
-    
-    def _2_story_tower_93(self): 
-        return "2_STORY_TOWER_93"
-    
-    def _2_story_tower_94(self): 
-        return "2_STORY_TOWER_94"
+
 
     ######################################################
     # Commonfunction
@@ -4511,7 +4497,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         return "COMMON_CHANGE_TIME"
                     else:
                         return "COMMON_START"
-        
+
         self.wait(0.1)#self.wait(self.SLEEPLIST[6][2])
         #抜けミス用カウント
         self.timecount+=1
@@ -4524,7 +4510,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.Common_current_state == "COMMON_CHANGE_TIME":  
             self.Common_current_state = self.Common_change_time()
         else:
-            ret = self.Common_goto(2,1,0)
+            ret = self.Common_goto(2,0,1)
             
             if ret == "START":
                 self.Common_current_state = "COMMON_CHANGE_TIME"
@@ -5455,7 +5441,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZL_state == 1:
                 for i in range(5):
                     # 技使用を判定させるため
-                    if self.image_check("C+"):
+                    if self.no_Cplus==0 and self.image_check("C+"):
                         self.notarget_movecount=0
                         self.press(Button.A, wait=0.0)
                         self.press(Button.B, wait=0.0)
@@ -5479,7 +5465,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.MOVE_SEE("END")
                         self.ZL_ACTION("END")
                         return "QUASAR_START"
-                if self.image_check("C+"):
+                if self.no_Cplus==0 and self.image_check("C+"):
                     self.press(Button.A, wait=0.0)
                     self.press(Button.B, wait=0.0)
                     self.notargetcount=0
@@ -5498,7 +5484,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.MOVE_SEE("END")
                     self.ZL_ACTION("END")
                     return "QUASAR_START"
-                if self.image_check("C+"):
+                if self.no_Cplus==0 and self.image_check("C+"):
                     self.press(Button.X, wait=0.0)
                     self.notargetcount=0
                 
@@ -5507,10 +5493,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
                     self.MOVE_SEE()
                     #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
-                elif Seecheckflg>5 and self.image_check("C+") or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and self.image_check("C+"))):
+                elif Seecheckflg>5 and (self.no_Cplus==0 and self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and (self.no_Cplus==0 and self.image_check("C+")))):
                     self.MOVE_SEE("END")
                     Seecheckflg2=2
-                elif Seecheckflg>5 and (not self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and (not self.image_check("C+"))):
+                elif Seecheckflg>5 and ((self.no_Cplus==0 and (not self.image_check("C+")))) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and ((self.no_Cplus==0 and (not self.image_check("C+"))))):
                     self.MOVE_SEE()
 
             elif self.battle_current_state=="BATTLE_MOVE" and (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK")):
@@ -5518,10 +5504,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
                     self.MOVE_SEE()
                     #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
-                elif Seecheckflg>5 and self.image_check("C+") or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and self.image_check("C+"))):
+                elif Seecheckflg>5 and (self.no_Cplus==0 and self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and (self.no_Cplus==0 and self.image_check("C+")))):
                     self.MOVE_SEE("END")
                     Seecheckflg2=2
-                elif Seecheckflg>5 and (not self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and (not self.image_check("C+"))):
+                elif Seecheckflg>5 and ((self.no_Cplus==0 and (not self.image_check("C+")))) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and ((self.no_Cplus==0 and (not self.image_check("C+"))))):
                     self.MOVE_SEE()
                     
             elif self.battle_current_state=="BATTLE_MOVE" and (not (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK"))): 
@@ -5622,7 +5608,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                    
                     
                 if self.battle_step==1:
-                    if ((not self.image_check("ESCAPE")) and (not self.image_check("C+")) and (self.image_check("BATTLE_BALL_CHECK"))and self.battle_current_state=="BATTLE_MOVE"):
+                    if ((not self.image_check("ESCAPE")) and (self.no_Cplus==0 and (not self.image_check("C+"))) and (self.image_check("BATTLE_BALL_CHECK"))and self.battle_current_state=="BATTLE_MOVE"):
 
                         self.battlecheck=1
                         print("check4")
@@ -5750,7 +5736,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.DebugLog(6,"while elif ESCAPE step1 SELECT",end,endbk)
                         for i in range(0,3):
                             self.etc_sendCommand("Lbutton_up")
-                    elif self.image_check("C+"):
+                    elif (self.no_Cplus==0 and self.image_check("C+")):
                         self.notargetcount=0
                         self.MOVE_SEE("END")
                     else:
@@ -5930,7 +5916,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("R_push"):
                 self.press(Button.RCLICK,0.05,0.1) 
 
-            if self.image_check("C+"):
+            if (self.no_Cplus==0 and self.image_check("C+")):
                 self.MOVE_SEE("END")
                 self.press(Button.A, wait=0.0)
                 self.press(Button.B, wait=0.0)
@@ -5970,7 +5956,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(0,3):
                        #print("target_loop")
 
-                        if self.image_check("C+"):
+                        if (self.no_Cplus==0 and self.image_check("C+")):
                             self.notargetcount=0
                             self.press(Button.A, wait=0.0)
                             self.press(Button.B, wait=0.0)
@@ -6004,7 +5990,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.quasar_target_start_mid_count+=1
                         else:
                             self.target_start_mid_count+=1
-                        if self.image_check("C+"):
+                        if (self.no_Cplus==0 and self.image_check("C+")):
                             self.notargetcount=0
                             self.press(Button.A, wait=0.0)
                             self.press(Button.B, wait=0.0)
@@ -6052,7 +6038,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(0,3):
                        #print("target_loop")
 
-                        if self.image_check("C+"):
+                        if (self.no_Cplus==0 and self.image_check("C+")):
                             self.notargetcount=0
                             self.press(Button.A, wait=0.0)
                             self.press(Button.B, wait=0.0)
@@ -6086,7 +6072,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.quasar_battle_display_start_count+=1
                     time.sleep(0.2)
                     for i in range(0,3):
-                        if self.image_check("C+"):
+                        if (self.no_Cplus==0 and self.image_check("C+")):
                             self.notargetcount=0
                             self.press(Button.A, wait=0.0)
                             self.press(Button.B, wait=0.0)
@@ -8295,7 +8281,7 @@ class ZA_story(ZA_story_Base):
     version_minor = 0
     version_patch = 0
     
-    ZA_infimode=1
+    ZA_infimode=0
     
     if ZA_infimode==1:
         ZA_infi_custom_name = "_ZA_infi_custom_name"
