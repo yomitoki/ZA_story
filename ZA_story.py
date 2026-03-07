@@ -8293,7 +8293,7 @@ class ZA_story(ZA_story_Base):
     version_minor = 0
     version_patch = 0
     
-    ZA_infimode==1
+    ZA_infimode=1
     
     if ZA_infimode==1:
         ZA_infi_custom_name = "_ZA_infi_custom_name"
