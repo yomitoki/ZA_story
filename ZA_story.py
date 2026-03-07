@@ -410,8 +410,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base
     ######################################################
-        self.ZA_infimode=1
-    
         self.sleepcount=0
         self.battlecount=0
         self.battle_step=0
@@ -8294,7 +8292,10 @@ class ZA_story(ZA_story_Base):
     version_major = 0
     version_minor = 0
     version_patch = 0
-    if self.ZA_infimode==1:
+    
+    ZA_infimode==1
+    
+    if ZA_infimode==1:
         ZA_infi_custom_name = "_ZA_infi_custom_name"
     else:
         ZA_infi_custom_name = ""
@@ -8306,7 +8307,7 @@ class ZA_story(ZA_story_Base):
         # スクリプト継承
         if self.testcode==1:
             self.Test()
-        elif self.ZA_infimode==1:
+        elif ZA_infimode==1:
             self.ZA_battle_infi_main()
         else:
             self.ZA_story_main()
