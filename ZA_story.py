@@ -1,0 +1,8312 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from Commands.Keys import Button, Direction, Hat, Stick
+from Commands.PythonCommandBase import ImageProcPythonCommand
+import enum
+import time
+import requests
+import sys
+import win32gui,win32con
+import json
+import os
+#from Keys import Touchscreen
+#from SerialController.Commands.Keys import Touchscreen # pywin32
+######################################################
+#
+# ZA_story
+# ベースとなる機能ライブラリクラス
+# これを継承し、組み合わせて実際のコマンドを作る
+#
+######################################################
+class ZA_story_Base(ImageProcPythonCommand):    
+    def __init__(self, cam):
+        super().__init__(cam)
+        self.isDebug = True
+        self.showNoMatchTemplate = True
+        self.showTemplateMatchVal = False
+        self.commandWaitTime = 0.02
+        self.frameWaitTime = 1.0/30.0
+        self.testcode=0
+        self.show_value_bool = False
+        
+        self.chapter_major=0
+        self.chapter_minor=0
+        
+        self.check_picture=0
+        self.TESTADDCODE=0
+        self.ZL_state = 0
+
+        # ポケモン選択間隔 ,マップ選択間隔 ,ZL間隔 ,バトルゾーン判断開始までの猶予期間 ,RIGHT_Stick間隔
+        #self.sleetimes = [0.25,0.2,0.01,0.4,0,13]
+
+        self.STATE_MAIN_FUNCTION = {
+            "MAIN_STATE_INIT": self.main_state_init,
+            "MAIN_0_START": self.main_0_start,
+            "MAIN_1_Z_LANK": self.main_1_z_lank,
+            "MAIN_2_Y_LANK": self.main_2_y_lank,
+        }
+        self.main_current_state="MAIN_STATE_INIT"
+        #
+        self.main_current_state_init="MAIN_1_Z_LANK" 
+        self.main_current_state_init="MAIN_2_Y_LANK" 
+        #self.main_current_state_init="" 
+        self.STATE_1_STORY_FUNCTION = {
+            "1_STORY_START_CHECK": self._1_story_start_check,
+            "1_STORY_TRAIN_OUT": self._1_story_train_out,
+            
+            ## BKUP_START_POINT
+            "1_STORY_STATION_OUT": self._1_story_staition_out,
+            
+            "1_STORY_STATION_FRONT": self._1_story_staition_front,
+            "1_STORY_STATION_LEAVE_MOVE": self._1_story_staition_leave_move,
+            "1_STORY_BAG_CHASE_END": self._1_story_bag_chase_end,
+            "1_STORY_FARST_POKEMON_SELECT": self._1_story_farst_pokemon_select,
+            "1_STORY_FARST_BATTLE": self._1_story_farst_battle,
+            "1_STORY_FARST_BATTLE_END": self._1_story_farst_battle_end,
+            "1_STORY_FARST_BATTLE_ZONE_MOVE1": self._1_story_farst_battle_zone_move1,
+            "1_STORY_SECOND_BATTLE_START": self._1_story_second_battle_start,
+            "1_STORY_SECOND_BATTLE": self._1_story_second_battle,
+            "1_STORY_SECOND_BATTLE_END": self._1_story_second_battle_end,
+            
+            "1_STORY_FARST_BATTLE_ZONE_MOVE2": self._1_story_farst_battle_zone_move2,
+            
+            "1_STORY_FARST_MOVIE_END": self._1_story_farst_movie_end,
+            "1_STORY_FARST_BATTLE_ZONE_MOVE3": self._1_story_farst_battle_zone_move3,
+            "1_STORY_FARST_BATTLE_ZONE_OUT": self._1_story_farst_battle_zone_out,
+            "1_STORY_FARST_BATTLE_ZONE_MOVE4": self._1_story_farst_battle_zone_move4,
+            
+            "1_STORY_HOTEL_Z_ARRIVAL": self._1_story_hote_z_arrival,
+            "1_STORY_HOTEL_Z_MOVE1": self._1_story_hote_z_move1,
+            "1_STORY_HOTEL_Z_MOVE2": self._1_story_hote_z_move2,
+            "1_STORY_HOTEL_Z_FAST_IN": self._1_story_hote_z_fast_in,
+            "1_STORY_HOTEL_Z_MOVE3": self._1_story_hote_z_move3,
+            "1_STORY_AZ_CHAT": self._1_story_az_chat,
+            "1_STORY_HOTEL_Z_MOVE4": self._1_story_hote_z_move4,
+            
+            "1_STORY_FAST_ELEVATOR": self._1_story_fast_elevator,
+            "1_STORY_HOTEL_Z_MOVE5": self._1_story_hote_z_move5,
+            "1_STORY_HOTEL_Z_MOVE6": self._1_story_hote_z_move6,
+            "1_STORY_HOTEL_Z_MOVE7": self._1_story_hote_z_move7,
+            "1_STORY_HOTEL_Z_MOVE8": self._1_story_hote_z_move8,
+            "1_STORY_HOTEL_Z_MOVE9": self._1_story_hote_z_move9,
+            "1_STORY_HOTEL_Z_MOVE10": self._1_story_hote_z_move10,
+            "1_STORY_HOTEL_Z_MOVE11": self._1_story_hote_z_move11,
+            "1_STORY_HOTEL_Z_MOVE12": self._1_story_hote_z_move12,
+            "1_STORY_HOTEL_Z_MOVE13": self._1_story_hote_z_move13,
+            "1_STORY_HOTEL_Z_MOVE14": self._1_story_hote_z_move14,
+            "1_STORY_HOTEL_Z_MOVE15": self._1_story_hote_z_move15,
+            
+            "1_STORY_THIRD_BATTLE": self._1_story_third_battle,
+            "1_STORY_THIRD_BATTLE_END": self._1_story_third_battle_end,
+            
+            "1_STORY_OUT_HOTEL_Z_1": self._1_story_out_hotel_z_1,
+            "1_STORY_OUT_HOTEL_Z_2": self._1_story_out_hotel_z_2,
+            "1_STORY_OUT_HOTEL_Z_3": self._1_story_out_hotel_z_3,
+            "1_STORY_OUT_HOTEL_Z_4": self._1_story_out_hotel_z_4,
+            "1_STORY_OUT_HOTEL_Z_5": self._1_story_out_hotel_z_5,
+            "1_STORY_OUT_HOTEL_Z_6": self._1_story_out_hotel_z_6,
+            "1_STORY_OUT_HOTEL_Z_7": self._1_story_out_hotel_z_7,
+            "1_STORY_OUT_HOTEL_Z_8": self._1_story_out_hotel_z_8,
+            "1_STORY_OUT_HOTEL_Z_9": self._1_story_out_hotel_z_9,
+            
+            "1_STORY_WANINOKO_SKILL_CHANGE1": self._1_story_waninoko_skill_change1,
+            "1_STORY_WANINOKO_SKILL_CHANGE2": self._1_story_waninoko_skill_change2,
+            
+            "1_STORY_OUT_HOTEL_Z_10": self._1_story_out_hotel_z_10,
+            "1_STORY_OUT_HOTEL_Z_11": self._1_story_out_hotel_z_11,
+            "1_STORY_OUT_HOTEL_Z_12": self._1_story_out_hotel_z_12,
+            "1_STORY_OUT_HOTEL_Z_13": self._1_story_out_hotel_z_13,
+            "1_STORY_OUT_HOTEL_Z_14": self._1_story_out_hotel_z_14,
+            "1_STORY_OUT_HOTEL_Z_15": self._1_story_out_hotel_z_15,
+            "1_STORY_OUT_HOTEL_Z_16": self._1_story_out_hotel_z_16,    
+            "1_STORY_OUT_HOTEL_Z_17": self._1_story_out_hotel_z_17,
+            "1_STORY_OUT_HOTEL_Z_18": self._1_story_out_hotel_z_18,
+            
+            "1_STORY_OUT_HOTEL_Z_18_1": self._1_story_out_hotel_z_18_1,
+            "1_STORY_OUT_HOTEL_Z_18_2": self._1_story_out_hotel_z_18_2,
+            
+            "1_STORY_OUT_HOTEL_Z_19": self._1_story_out_hotel_z_19,
+            "1_STORY_OUT_HOTEL_Z_19_1": self._1_story_out_hotel_z_19_1,
+            
+            "1_STORY_OUT_HOTEL_Z_20": self._1_story_out_hotel_z_20,
+            "1_STORY_OUT_HOTEL_Z_20_1": self._1_story_out_hotel_z_20_1,
+            "1_STORY_OUT_HOTEL_Z_21": self._1_story_out_hotel_z_21,
+            "1_STORY_OUT_HOTEL_Z_22": self._1_story_out_hotel_z_22,
+            "1_STORY_OUT_HOTEL_Z_23": self._1_story_out_hotel_z_23,
+            "1_STORY_OUT_HOTEL_Z_24": self._1_story_out_hotel_z_24,
+            "1_STORY_OUT_HOTEL_Z_25": self._1_story_out_hotel_z_25,
+            "1_STORY_OUT_HOTEL_Z_26": self._1_story_out_hotel_z_26,
+            "1_STORY_OUT_HOTEL_Z_27": self._1_story_out_hotel_z_27,
+            "1_STORY_OUT_HOTEL_Z_28": self._1_story_out_hotel_z_28,
+            "1_STORY_OUT_HOTEL_Z_29": self._1_story_out_hotel_z_29,
+            "1_STORY_OUT_HOTEL_Z_30": self._1_story_out_hotel_z_30,
+            "1_STORY_OUT_HOTEL_Z_31": self._1_story_out_hotel_z_31,
+            "1_STORY_OUT_HOTEL_Z_32": self._1_story_out_hotel_z_32,
+            "1_STORY_OUT_HOTEL_Z_33": self._1_story_out_hotel_z_33,
+            "1_STORY_OUT_HOTEL_Z_34": self._1_story_out_hotel_z_34,
+            "1_STORY_OUT_HOTEL_Z_35": self._1_story_out_hotel_z_35,
+            
+            "1_STORY_OUT_HOTEL_Z_35": self._1_story_out_hotel_z_35,
+            "1_STORY_OUT_HOTEL_Z_36": self._1_story_out_hotel_z_36,
+            "1_STORY_OUT_HOTEL_Z_37": self._1_story_out_hotel_z_37,
+            "1_STORY_OUT_HOTEL_Z_38": self._1_story_out_hotel_z_38,
+            
+            "1_STORY_WANINOKO_SKILL_CHANGE3": self._1_story_waninoko_skill_change3,
+            "1_STORY_WANINOKO_SKILL_CHANGE4": self._1_story_waninoko_skill_change4,
+            "1_STORY_WANINOKO_SKILL_CHANGE5": self._1_story_waninoko_skill_change5,
+            "1_STORY_WANINOKO_SKILL_CHANGE6": self._1_story_waninoko_skill_change6,
+            "1_STORY_WANINOKO_SKILL_CHANGE7": self._1_story_waninoko_skill_change7,
+            "1_STORY_WANINOKO_SKILL_CHANGE8": self._1_story_waninoko_skill_change8,
+            "1_STORY_WANINOKO_SKILL_CHANGE9": self._1_story_waninoko_skill_change9,
+            
+            "1_STORY_OUT_HOTEL_Z_39_0": self._1_story_out_hotel_z_39_0,
+            "1_STORY_OUT_HOTEL_Z_39": self._1_story_out_hotel_z_39,
+            "1_STORY_OUT_HOTEL_Z_39_1": self._1_story_out_hotel_z_39_1,
+            
+            "1_STORY_OUT_HOTEL_Z_40": self._1_story_out_hotel_z_40,
+            "1_STORY_OUT_HOTEL_Z_40_1": self._1_story_out_hotel_z_40_1,
+            
+            "1_STORY_OUT_HOTEL_Z_41": self._1_story_out_hotel_z_41,
+            "1_STORY_OUT_HOTEL_Z_42": self._1_story_out_hotel_z_42,
+            "1_STORY_OUT_HOTEL_Z_43": self._1_story_out_hotel_z_43,
+            "1_STORY_OUT_HOTEL_Z_44": self._1_story_out_hotel_z_44,
+            "1_STORY_OUT_HOTEL_Z_45": self._1_story_out_hotel_z_45,
+            "1_STORY_OUT_HOTEL_Z_46": self._1_story_out_hotel_z_46,
+            "1_STORY_OUT_HOTEL_Z_47": self._1_story_out_hotel_z_47,
+            "1_STORY_OUT_HOTEL_Z_48": self._1_story_out_hotel_z_48,
+            "1_STORY_OUT_HOTEL_Z_49": self._1_story_out_hotel_z_49,
+            "1_STORY_OUT_HOTEL_Z_50": self._1_story_out_hotel_z_50,
+            "1_STORY_OUT_HOTEL_Z_51": self._1_story_out_hotel_z_51,
+            "1_STORY_OUT_HOTEL_Z_52": self._1_story_out_hotel_z_52,
+            "1_STORY_OUT_HOTEL_Z_53": self._1_story_out_hotel_z_53,
+            "1_STORY_OUT_HOTEL_Z_54": self._1_story_out_hotel_z_54,
+            "1_STORY_OUT_HOTEL_Z_55": self._1_story_out_hotel_z_55,
+            "1_STORY_OUT_HOTEL_Z_56": self._1_story_out_hotel_z_56,
+            "1_STORY_OUT_HOTEL_Z_57": self._1_story_out_hotel_z_57,
+            "1_STORY_OUT_HOTEL_Z_58": self._1_story_out_hotel_z_58,
+            "1_STORY_OUT_HOTEL_Z_59": self._1_story_out_hotel_z_59,
+            "1_STORY_OUT_HOTEL_Z_60": self._1_story_out_hotel_z_60,
+            "1_STORY_OUT_HOTEL_Z_60_1": self._1_story_out_hotel_z_60_1,
+            "1_STORY_OUT_HOTEL_Z_60_2": self._1_story_out_hotel_z_60_2,
+            
+            "1_STORY_OUT_HOTEL_Z_61": self._1_story_out_hotel_z_61,
+            "1_STORY_OUT_HOTEL_Z_62": self._1_story_out_hotel_z_62,
+            "1_STORY_OUT_HOTEL_Z_63": self._1_story_out_hotel_z_63,
+            "1_STORY_OUT_HOTEL_Z_64": self._1_story_out_hotel_z_64,
+            "1_STORY_OUT_HOTEL_Z_65": self._1_story_out_hotel_z_65,
+            "1_STORY_OUT_HOTEL_Z_66": self._1_story_out_hotel_z_66,
+            "1_STORY_OUT_HOTEL_Z_67": self._1_story_out_hotel_z_67,
+            "1_STORY_OUT_HOTEL_Z_68": self._1_story_out_hotel_z_68,
+            "1_STORY_OUT_HOTEL_Z_69": self._1_story_out_hotel_z_69,
+            "1_STORY_OUT_HOTEL_Z_70": self._1_story_out_hotel_z_70,
+            "1_STORY_OUT_HOTEL_Z_71": self._1_story_out_hotel_z_71,
+            "1_STORY_OUT_HOTEL_Z_72": self._1_story_out_hotel_z_72,
+            "1_STORY_OUT_HOTEL_Z_73": self._1_story_out_hotel_z_73,
+            "1_STORY_OUT_HOTEL_Z_74": self._1_story_out_hotel_z_74,
+            "1_STORY_OUT_HOTEL_Z_75": self._1_story_out_hotel_z_75,
+            "1_STORY_OUT_HOTEL_Z_76": self._1_story_out_hotel_z_76,
+            "1_STORY_OUT_HOTEL_Z_77": self._1_story_out_hotel_z_77,
+            "1_STORY_OUT_HOTEL_Z_78": self._1_story_out_hotel_z_78,
+            "1_STORY_OUT_HOTEL_Z_79": self._1_story_out_hotel_z_79,
+            "1_STORY_OUT_HOTEL_Z_80": self._1_story_out_hotel_z_80,
+            "1_STORY_OUT_HOTEL_Z_81": self._1_story_out_hotel_z_81,
+            "1_STORY_OUT_HOTEL_Z_82": self._1_story_out_hotel_z_82,
+            "1_STORY_OUT_HOTEL_Z_83": self._1_story_out_hotel_z_83,
+            "1_STORY_OUT_HOTEL_Z_84": self._1_story_out_hotel_z_84,
+            "1_STORY_OUT_HOTEL_Z_85": self._1_story_out_hotel_z_85,
+            "1_STORY_END": self._1_story_end,
+        }
+        self._1_story_current_state="1_STORY_START_CHECK" 
+        self._1_story_current_state_init="2_STORY_TOWER_15_0"
+        #self._1_story_current_state_init="" 
+        self._1_story_2nd_get_comment=0
+        
+        self._1_story_out_hotel_z_20_not_eyecheck_count=0
+        
+        self.STATE_2_STORY_FUNCTION = {
+            "2_STORY_START_CHECK": self._2_story_start_check,
+            "2_STORY_TOWER_1": self._2_story_tower_1,
+            "2_STORY_TOWER_2": self._2_story_tower_2,
+            "2_STORY_TOWER_3": self._2_story_tower_3,
+            "2_STORY_TOWER_4": self._2_story_tower_4,
+            "2_STORY_TOWER_5": self._2_story_tower_5,
+            "2_STORY_TOWER_6": self._2_story_tower_6,
+            "2_STORY_TOWER_7": self._2_story_tower_7,
+            "2_STORY_TOWER_8": self._2_story_tower_8,
+            "2_STORY_TOWER_9": self._2_story_tower_9,
+            "2_STORY_TOWER_10": self._2_story_tower_10,
+            "2_STORY_TOWER_11": self._2_story_tower_11,
+            "2_STORY_TOWER_12": self._2_story_tower_12,
+            "2_STORY_TOWER_13": self._2_story_tower_13,
+            "2_STORY_TOWER_14": self._2_story_tower_14,
+            "2_STORY_TOWER_15_0": self._2_story_tower_15_0,
+            "2_STORY_TOWER_15": self._2_story_tower_15,
+            "2_STORY_TOWER_16": self._2_story_tower_16,
+            "2_STORY_TOWER_17": self._2_story_tower_17,
+            "2_STORY_TOWER_18": self._2_story_tower_18,
+            "2_STORY_TOWER_19": self._2_story_tower_19,
+            "2_STORY_TOWER_20": self._2_story_tower_20,
+            "2_STORY_TOWER_21": self._2_story_tower_21,
+            "2_STORY_TOWER_22": self._2_story_tower_22,
+            "2_STORY_TOWER_23": self._2_story_tower_23,
+            "2_STORY_TOWER_24": self._2_story_tower_24,
+            "2_STORY_TOWER_25": self._2_story_tower_25,
+            "2_STORY_TOWER_26": self._2_story_tower_26,
+            "2_STORY_TOWER_27": self._2_story_tower_27,
+            "2_STORY_TOWER_28": self._2_story_tower_28,
+            "2_STORY_TOWER_29": self._2_story_tower_29,
+            "2_STORY_TOWER_30": self._2_story_tower_30,
+            "2_STORY_TOWER_31": self._2_story_tower_31,
+            "2_STORY_TOWER_32": self._2_story_tower_32,
+            "2_STORY_TOWER_33": self._2_story_tower_33,
+            "2_STORY_TOWER_34": self._2_story_tower_34,
+            "2_STORY_TOWER_35": self._2_story_tower_35,
+            "2_STORY_TOWER_36": self._2_story_tower_36,
+            "2_STORY_TOWER_37": self._2_story_tower_37,
+            "2_STORY_TOWER_38": self._2_story_tower_38,
+            "2_STORY_TOWER_39": self._2_story_tower_39,
+            "2_STORY_TOWER_40": self._2_story_tower_40,
+            "2_STORY_TOWER_41": self._2_story_tower_41,
+            "2_STORY_TOWER_42": self._2_story_tower_42,
+            "2_STORY_TOWER_43": self._2_story_tower_43,
+            "2_STORY_TOWER_44": self._2_story_tower_44,
+            "2_STORY_TOWER_45": self._2_story_tower_45,
+            "2_STORY_TOWER_46": self._2_story_tower_46,
+            
+            "2_STORY_MAPPING_1": self._2_story_mapping_1,
+            "2_STORY_MAPPING_2": self._2_story_mapping_2,
+            "2_STORY_MAPPING_3": self._2_story_mapping_3,         
+            "2_STORY_MAPPING_4": self._2_story_mapping_4,         
+            "2_STORY_MAPPING_5": self._2_story_mapping_5,         
+            "2_STORY_MAPPING_6": self._2_story_mapping_6,         
+            "2_STORY_MAPPING_7": self._2_story_mapping_7,         
+            "2_STORY_MAPPING_8": self._2_story_mapping_8,         
+            "2_STORY_MAPPING_9": self._2_story_mapping_9,         
+            "2_STORY_MAPPING_10": self._2_story_mapping_10,         
+            "2_STORY_MAPPING_11": self._2_story_mapping_11,         
+            "2_STORY_MAPPING_12": self._2_story_mapping_12,         
+            "2_STORY_MAPPING_13": self._2_story_mapping_13,          
+            "2_STORY_MAPPING_14": self._2_story_mapping_14,         
+            "2_STORY_MAPPING_15": self._2_story_mapping_15,          
+            "2_STORY_MAPPING_16": self._2_story_mapping_16,         
+            "2_STORY_MAPPING_17": self._2_story_mapping_17,          
+            "2_STORY_MAPPING_18": self._2_story_mapping_18,         
+            "2_STORY_MAPPING_19": self._2_story_mapping_19,          
+            "2_STORY_MAPPING_20": self._2_story_mapping_20,            
+            "2_STORY_MAPPING_21": self._2_story_mapping_21,          
+            "2_STORY_MAPPING_22": self._2_story_mapping_22,          
+            "2_STORY_MAPPING_23": self._2_story_mapping_23,          
+            "2_STORY_MAPPING_24": self._2_story_mapping_24,          
+            "2_STORY_MAPPING_25": self._2_story_mapping_25,          
+            "2_STORY_MAPPING_26": self._2_story_mapping_26,          
+            "2_STORY_MAPPING_27": self._2_story_mapping_27,          
+            "2_STORY_MAPPING_28": self._2_story_mapping_28,          
+            "2_STORY_MAPPING_29": self._2_story_mapping_29,          
+            "2_STORY_MAPPING_30": self._2_story_mapping_30,          
+            "2_STORY_MAPPING_31": self._2_story_mapping_31,          
+            "2_STORY_MAPPING_32": self._2_story_mapping_32,           
+            "2_STORY_MAPPING_33": self._2_story_mapping_33,           
+            "2_STORY_MAPPING_34": self._2_story_mapping_34,           
+            "2_STORY_MAPPING_35": self._2_story_mapping_35,           
+            "2_STORY_MAPPING_36": self._2_story_mapping_36,           
+            "2_STORY_MAPPING_37": self._2_story_mapping_37,           
+            "2_STORY_MAPPING_38": self._2_story_mapping_38,           
+            "2_STORY_MAPPING_39": self._2_story_mapping_39,           
+            "2_STORY_MAPPING_40": self._2_story_mapping_40,           
+            "2_STORY_MAPPING_41": self._2_story_mapping_41,           
+            "2_STORY_MAPPING_42": self._2_story_mapping_42,           
+            "2_STORY_MAPPING_43": self._2_story_mapping_43,             
+            "2_STORY_MAPPING_44": self._2_story_mapping_44,           
+            "2_STORY_MAPPING_45": self._2_story_mapping_45,              
+
+            "2_STORY_TOWER_47": self._2_story_tower_47,
+            "2_STORY_TOWER_48": self._2_story_tower_48,
+            "2_STORY_TOWER_49": self._2_story_tower_49,
+            "2_STORY_TOWER_50": self._2_story_tower_50,
+            "2_STORY_TOWER_51": self._2_story_tower_51,
+            "2_STORY_TOWER_52": self._2_story_tower_52,
+            "2_STORY_TOWER_53": self._2_story_tower_53,
+            "2_STORY_TOWER_54": self._2_story_tower_54,
+            "2_STORY_TOWER_55": self._2_story_tower_55,
+            "2_STORY_TOWER_56": self._2_story_tower_56,
+            "2_STORY_TOWER_57": self._2_story_tower_57,
+            "2_STORY_TOWER_58": self._2_story_tower_58,
+            "2_STORY_TOWER_59": self._2_story_tower_59,
+            "2_STORY_TOWER_60": self._2_story_tower_60,
+            "2_STORY_TOWER_61": self._2_story_tower_61,
+            "2_STORY_TOWER_62": self._2_story_tower_62,
+            "2_STORY_TOWER_63": self._2_story_tower_63,
+            "2_STORY_TOWER_64": self._2_story_tower_64,
+            "2_STORY_TOWER_65": self._2_story_tower_65,
+            "2_STORY_TOWER_66": self._2_story_tower_66,
+            "2_STORY_TOWER_67": self._2_story_tower_67,
+            "2_STORY_TOWER_68": self._2_story_tower_68,
+            "2_STORY_TOWER_69": self._2_story_tower_69,
+            "2_STORY_TOWER_70": self._2_story_tower_70,
+            "2_STORY_TOWER_71": self._2_story_tower_71,
+            "2_STORY_TOWER_72": self._2_story_tower_72,
+            "2_STORY_TOWER_73": self._2_story_tower_73,
+            "2_STORY_TOWER_74": self._2_story_tower_74,
+            "2_STORY_TOWER_75": self._2_story_tower_75,
+            "2_STORY_TOWER_76": self._2_story_tower_76,
+            "2_STORY_TOWER_77": self._2_story_tower_77,
+            "2_STORY_TOWER_78": self._2_story_tower_78,
+            "2_STORY_TOWER_79": self._2_story_tower_79,
+            "2_STORY_TOWER_80": self._2_story_tower_80,
+            "2_STORY_TOWER_81": self._2_story_tower_81,
+            "2_STORY_TOWER_82": self._2_story_tower_82,
+            "2_STORY_TOWER_83": self._2_story_tower_83,
+            "2_STORY_TOWER_84": self._2_story_tower_84,
+            "2_STORY_TOWER_85": self._2_story_tower_85,
+            "2_STORY_TOWER_86": self._2_story_tower_86,
+            "2_STORY_TOWER_87": self._2_story_tower_87,
+            "2_STORY_TOWER_88": self._2_story_tower_88,
+            "2_STORY_TOWER_89": self._2_story_tower_89,
+            "2_STORY_TOWER_90": self._2_story_tower_90,
+            "2_STORY_TOWER_91": self._2_story_tower_91,
+            "2_STORY_TOWER_92": self._2_story_tower_92,
+            "2_STORY_TOWER_93": self._2_story_tower_93,
+            
+        }
+        
+        self._2_story_current_state="2_STORY_START_CHECK" 
+        self._2_story_current_state_init="2_STORY_TOWER_81"
+        #self._2_story_current_state_init="" 
+        
+    ######################################################
+    # Commonfunction
+    ######################################################
+        self.STATE_COMMON_SKILL_CHANGE_FUNCTION = {
+            "COMMON_SKILL_CHANGE_START": self.common_skill_change_start,
+            "COMMON_SKILL_CHANGE_START_CHECK": self.common_skill_change_start_check,
+            "COMMON_SKILL_CHANGE_POKEMON_SELECT": self.common_skill_change_pokemon_select,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN": self.common_skill_change_skill_window_open,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1": self.common_skill_change_skill_window_chtarget1,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2": self.common_skill_change_skill_window_chtarget2,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_skill_change_skill_window_close,
+            "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
+            }
+        self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
+
+        self.STATE_COMMON_FUNCTION = {
+            "COMMON_START": self.Common_start,
+            "COMMON_MAP_OPEN": self.Common_map_open,
+            "COMMON_GOTO_SELECT1": self.Common_goto_select1,
+            "COMMON_GOTO_SELECT2": self.Common_goto_select2,
+            "COMMON_CHANGE_TIME": self.Common_change_time,
+            "COMMON_CHECK_TIME": self.Common_check_time,
+            "COMMON_GOTO_JUMP" : self.Common_goto_jump#dummy
+            
+            #"COMMON_BATTLE_RETURN" : self.Common_battle_return,
+        }
+        self.Common_current_state="COMMON_START"
+        self.map_cursor_reset=0
+        
+    ######################################################
+    # Commonfunction
+    ######################################################
+    
+    ######################################################
+    # ZA_battle_infi_Base
+    ######################################################
+        self.ZA_infimode=1
+    
+        self.sleepcount=0
+        self.battlecount=0
+        self.battle_step=0
+        self.battle_step_return=0
+        self.show_value_bool = False
+        self.show_value_bool2 = self.show_value_bool
+        self.chicketmaxflag = 0
+        #self.ZL_state = 0
+        self.Rstick_state = 0
+        self.quasarcount = 0
+        self.quasarlosecount = 0
+        self.targetzone = 1
+        self.timecount=0
+        
+        self.testcode=0
+        self.testtarget=6
+        
+        self.fastread=True
+        self.battleescapecount=0
+        self.changetimecount=0
+        self.changetimemisscount=0
+        
+        self.inactioncount=0
+        self.battlecheck=0
+        self.notarget_movecount=0
+        
+        self.SEE_DEFAULT=0.6
+        self.SEE_LOW=0.3
+        self.see_r=self.SEE_DEFAULT
+        self.quasar_battle_lockon=0
+        self.notargetcount=0
+        self.escapecheckrange = 50
+        # ポケモン選択間隔 ,マップ選択間隔 ,ZL間隔 ,バトルゾーン判断開始までの猶予期間 ,RIGHT_Stick間隔
+        #self.sleetimes = [0.25,0.2,0.01,0.4,0,13]
+        
+        self.config_path="Commands/PythonCommands/ZA_story/zones.jsonc"
+        self.config_path2="Commands/PythonCommands/ZA_story/sleeps.jsonc"
+        
+        self.STATE_ZA_INFI_MAIN_FUNCTION = {
+            "ZA_INFI_MAIN_START": self.za_infi_main_start,
+            "ZA_INFI_MAIN_BENCH": self.za_infi_main_bench,
+            "ZA_INFI_MAIN_BATTLE_LOOP": self.za_infi_main_battle_loop,
+            "ZA_INFI_MAIN_END": self.za_infi_main_end,
+            "ZA_INFI_QUASAR_LOOP": self.za_infi_quasar_loop,
+        }
+        self.za_infi_main_current_state="ZA_INFI_MAIN_START"
+        
+        self.STATE_BENCH_FUNCTION = {
+            "BENCH_START": self.bench_start,
+            "BENCH_MAP_OPEN": self.bench_map_open,
+            "BENCH_POKECENTER_SELECT1": self.bench_goto_pokecenter1,
+            "BENCH_POKECENTER_SELECT2": self.bench_goto_pokecenter2,
+            "BENCH_CHANGE_TIME": self.bench_change_time,
+            "BENCH_CHECK_TIME": self.bench_check_time,
+            "BENCH_CHANGE_TIME2": self.bench_change_time,
+            
+            "QUASAR_MAP_OPEN" : self.quasar_map_open,
+            "QUASAR_SELECT1": self.goto_quasar1,
+            "QUASAR_SELECT2": self.goto_quasar2,
+            
+            "BATTLE_RETURN": self.battle_return
+        }
+        self.bench_current_state="BENCH_START"
+        
+        self.STATE_BATTLE_FUNCTION = {
+            "BATTLE_START": self.battle_start,
+            "BATTLE_MAP_OPEN": self.battle_map_open,
+            "BATTLE_GOTO_BATTLE_ZONE1": self.battle_goto_battle_zone1,
+            "BATTLE_GOTO_BATTLE_ZONE2": self.battle_goto_battle_zone2,
+            "BATTLE_MOVE": self.battle_move
+        }
+        self.battle_current_state="BATTLE_START"
+
+        self.STATE_QUASAR_FUNCTION = {
+            "QUASAR_START": self.quasar_start,
+            "QUASAR_MOVE_DOOR": self.quasar_move_door,
+            "QUASAR_MOVE_ENTRANCE": self.quasar_move_entrance,
+            "QUASAR_BATTLE_LOOP": self.quasar_battle_loop,
+        }
+        self.quasar_current_state="QUASAR_START"
+                
+        self.ZONELIST = {}
+        
+        self.zonecount = [0,0,0,0,0,0,0,0,0,0,0,0]
+        self.zonemisscount = [0,0,0,0,0,0,0,0,0,0,0,0]
+        self.targetzone = 1
+        
+        self.SLEEPLIST = {}
+        
+        # 50以下,55以下,60以下,65以下,70以下,75以下,80以下,85以下,90以下,95以下,100以下
+        self.target_left_max_val_list = [0,0,0,0,0,0,0,0,0,0,0]
+        self.target_right_max_val_list = [0,0,0,0,0,0,0,0,0,0,0]
+        
+        #PythonCoomandBase.pyの追加コードを使用(基本0としてください)
+        #self.TESTADDCODE=1
+        
+        self.target_start_low_count=0
+        self.target_end_low_count=0
+        self.target_start_count=0
+        self.target_end_count=0
+        self.target_start_mid_count=0
+        self.target_end_mid_count=0
+        
+        self.quasar_target_start_low_count=0
+        self.quasar_target_end_low_count=0
+        self.quasar_target_start_count=0
+        self.quasar_target_end_count=0
+        self.quasar_target_start_mid_count=0
+        self.quasar_target_end_mid_count=0  
+        
+        self.quasar_battle_display_start_count=0
+        self.quasar_battle_display_end_count=0
+      
+        self.battle_no_escape_count=0
+        self.battle_no_escape_count_max =30
+        self.battlemarker_skipcount_threshold=3
+        self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
+    ######################################################
+    # ZA_battle_infi_Base_End
+    ######################################################
+    
+    def load_json_with_comments(self, filename):
+        """コメント付きJSONを読み込む関数（// や # 行を無視）"""
+        with open(filename, "r", encoding="utf-8") as f:
+            lines = []
+            for line in f:
+                stripped = line.strip()
+                # コメントや空行をスキップ
+                if stripped.startswith("//") or stripped.startswith("#") or stripped == "":
+                    continue
+                lines.append(line)
+            json_text = "".join(lines)
+            return json.loads(json_text)
+
+    def save_sleeps(self):
+        """SLEEPLISTをJSONファイルに保存（整形付き）"""
+        try:
+            # キーを文字列に変換して保存（JSONでは数値キーが文字列化されるため）
+            data_to_save = {str(k): v for k, v in self.SLEEPLIST.items()}
+            
+            with open(self.config_path2, "w", encoding="utf-8") as f:
+                json.dump(data_to_save, f, ensure_ascii=False, indent=4)
+            
+            print("SLEEPLISTをファイルに保存しました。")
+        except Exception as e:
+            print(f"SLEEPLISTの保存エラー: {e}")
+
+    def load_zones(self):
+        added, changed = [], []
+        """ファイルからZONELISTを更新"""
+        try:
+            data = self.load_json_with_comments(self.config_path)
+            # JSONではキーが文字列になるのでintキーに変換
+            self.ZONELIST = {int(k): v for k, v in data.items()}
+            print("ZONELISTを更新しました。")
+            if not added and not changed:
+                print("（変更はありません）")
+            elif self.ZONELIST[key] != value:
+                print(f"ZONE {key} が更新されました。")
+                print(f"旧: {self.ZONELIST[key]}")
+                print(f"新: {value}")
+                changed.append(key)
+        except Exception as e:
+            print(f"ZONELISTの読み込みエラー: {e}")
+            
+    def load_sleeps(self):
+        added, changed = [], []  
+        try:
+            data = self.load_json_with_comments(self.config_path2)
+            # JSONではキーが文字列になるのでintキーに変換
+            self.SLEEPLIST = {int(k): v for k, v in data.items()}
+            print("SLEEPLISTを更新しました。")
+            if not added and not changed:
+                print("（変更はありません）")
+            elif self.SLEEPLIST[key] != value:
+                print(f"SLEEP {key} が更新されました。")
+                print(f"旧: {self.SLEEPLIST[key]}")
+                print(f"新: {value}")
+                changed2.append(key)
+        except Exception as e:
+            print(f"SLEEPLISTの読み込みエラー: {e}")
+
+    def watch_file(self):
+        """ファイル変更を監視して自動更新"""
+        last_mtime = 0
+        last_mtime2 = 0
+        while True:
+            try:
+                mtime = os.path.getmtime(self.config_path)
+                if mtime != last_mtime:
+                    last_mtime = mtime
+                    self.load_zones()
+            except FileNotFoundError:
+                print("zones.jsonc が見つかりません。")
+                
+        while True:
+            try:
+                mtime2 = os.path.getmtime(self.config_path2)
+                if mtime2 != last_mtime2:
+                    last_mtime2 = mtime2
+                    self.load_sleeps()
+            except FileNotFoundError:
+                print("sleeps.jsonc が見つかりません。")
+        
+    ######################################################
+    # Command
+    ######################################################
+    def sendCommand(self, row: str, wait: float = 0.04):
+        self.keys.ser.ser.write((row + '\r\n').encode('utf-8'))
+        self.wait(wait)
+        self.checkIfAlive()
+
+    def etc_sendCommand(self,str, wait: float = 0.04):
+        Lbutton_down1  = "0x0000 4"
+        Lbutton_down2  = "0x0000 8"
+        Bbutton1  = "0x0008 8"
+        Bbutton2  = "0x0000 8"
+        Lbutton_up1  = "0x0000 0"
+        Lbutton_up2  = "0x0000 8"
+        Lbutton_left1  = "0x0000 6"
+        Lbutton_left2  = "0x0000 8"
+        Lbutton_right1  = "0x0000 2"
+        Lbutton_right2  = "0x0000 8"
+        plusbutton1  = "0x0800 8"
+        plusbutton2  = "0x0000 8"
+        Lbutton_rab1  = "0x0018 6"
+        Lbutton_rb1  = "0x0008 6"
+
+        if str == "Lbutton_down":
+            self.sendCommand(Lbutton_down1,wait)
+            self.sendCommand(Lbutton_down2,wait)
+        elif str == "Lbutton_up":
+            self.sendCommand(Lbutton_up1,wait)
+            self.sendCommand(Lbutton_up2,wait)
+        elif str == "Lbutton_up_push":
+            self.sendCommand(Lbutton_up1,wait)
+        elif str == "Lbutton_up_pull":
+            self.sendCommand(Lbutton_up2,wait)
+            
+        elif str == "Lbutton_left":
+            self.sendCommand(Lbutton_left1,wait)
+            self.sendCommand(Lbutton_left2,wait)              
+        elif str == "Lbutton_right":
+            self.sendCommand(Lbutton_right1,wait)
+            self.sendCommand(Lbutton_right2,wait)
+        elif str == "plusbutton":
+            self.sendCommand(plusbutton1,wait)
+            self.sendCommand(plusbutton2,wait)
+        elif str == "plusbutton_push":
+            self.sendCommand(plusbutton1,wait)
+        elif str == "plusbutton_release":
+            self.sendCommand(plusbutton2,wait)
+
+    # ウインドウ取得関数 (win32gui仕様)
+    def window_acquire(Window_name:str,log=False,front_win=False):
+        hwnd_dict = {}
+        result = None
+        if front_win:
+            hwnd = win32gui.GetForegroundWindow() # 最前面ウィンドウのウィンドウハンドルを取得
+        
+        else:
+            key = value = []
+            def winEnumHandler(hwnd,ctx):
+                if win32gui.IsWindowVisible(hwnd) and win32gui.GetWindowText(hwnd) != '':
+                    key.append(hex(hwnd))
+                    value.append(win32gui.GetWindowText(hwnd))
+                hwnd_dict.update(zip(key, value))
+
+            win32gui.EnumWindows(winEnumHandler, None)
+            hwnd_dict.update(zip(key,value))
+
+            # 部分一致で検索
+            for wd_class in hwnd_dict.keys():
+                # 最初にヒットしたウインドウを取得
+                if Window_name in hwnd_dict[wd_class]:
+                    result = hwnd_dict[wd_class]
+                    if log: print(wd_class,result)
+                    break
+            else:
+                return None
+
+            if log:
+                print('--------ウインドウ一覧--------')
+                print(json.dumps(hwnd_dict, sort_keys=False, indent=2, ensure_ascii=False))  # なんかいい感じに表示
+
+            # ウィンドウタイトルでウィンドウハンドルを取得  第一引数はクラス名、なければNone  第二引数はタイトル名(完全一致)
+            hwnd = win32gui.FindWindow(None,result)
+
+        # 座標取得
+        rect = win32gui.GetWindowRect(hwnd)
+
+        x, y = rect[0], rect[1]
+        w, h = rect[2] - x, rect[3] - y
+        x_center, y_center = x + w/2 , y + h/2
+        #      0  1  2  3        4              5          6       7        8   
+        ret = [x, y, w, h, int(x_center), int(y_center), hwnd, hwnd_dict, result]
+        
+        if log:
+            print(f'window info: {ret}')
+            print(  f" Target_Window:{result}\n"
+                    f" Location:{x} {y}\n"
+                    f" Size:{w} {h}\n"
+                    f" Center:{x_center,y_center}" )
+
+        return ret
+    
+    ######################################################
+    # ZA_battle_infi_Base
+    ######################################################
+    def Benchi(self):
+        if self.sleepcount==0:
+            self.press(Direction(Stick.LEFT, 180), duration=0.7, wait=0.1)
+            self.press(Direction(Stick.LEFT, 90), duration=0.5, wait=0.1)
+        else:
+            self.press(Direction(Stick.LEFT, 270), duration=0.5, wait=0.1)
+        self.pressRep(Button.A, repeat=12, duration=0.15, wait=0.2, interval=0.3)
+
+    def zone_check(self):
+        self.wait(self.SLEEPLIST[3][2])
+        for i in range(1,13):
+            if self.image_check(self.ZONELIST[i][0],1):
+                self.zonecount[i-1] += 1
+                return i
+        return 12
+    
+    def MOVE_ACTION(self,movestep,lockonflg=1):
+        start = time.perf_counter()  # 計測開始
+        count= 0
+        waitflg=0
+        waitstart = time.perf_counter() 
+        if self.image_check("EYE_CHECK_HIGH"):
+            return movestep
+        elif self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK"):
+            return movestep
+        if self.ZONELIST[self.targetzone][5 + movestep][0]:
+            
+            self.hold(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+            self.wait(self.SLEEPLIST[5][2])
+            self.press(Button.B, wait=0.0)
+            while True:
+
+                if count % 30 == 0:
+                    self.ZL_ACTION(lockonflg=lockonflg)
+                if self.ZL_state == 1:
+                    self.press(Button.A, wait=0.0)
+                    if self.image_check("C+"):
+                        self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                        return movestep
+                
+                if self.image_check("ESCAPE"):
+                    self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                    return movestep
+
+                end = time.perf_counter()
+                elapsed = end - start
+                waitelapsed = end - waitstart
+                if waitflg == 1 and waitelapsed > self.ZONELIST[self.targetzone][5 + movestep][4] :
+                    self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                    
+                    if (movestep + 1 ) < self.ZONELIST[self.targetzone][3]:
+                        return (movestep + 1)
+                    else:
+                        return movestep
+                elif elapsed > self.ZONELIST[self.targetzone][5 + movestep][2] \
+                    or (self.image_check("ESCAPE") and self.battle_current_state == "BATTLE_MOVE"): 
+                    self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                    
+                    if (movestep + 1 ) < self.ZONELIST[self.targetzone][3]:
+                        return (movestep + 1)
+                    else:
+                        return movestep
+                elif self.image_check("EYE_CHECK_HIGH"):
+                    self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                    
+                    if (movestep + 1 ) < self.ZONELIST[self.targetzone][3]:
+                        return (movestep + 1)
+                    else:
+                        return movestep
+                elif self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK"):
+                    #ぎりぎりで止まると戦闘開始に行かないため遅延
+                    waitstart = time.perf_counter() 
+                    self.wait(self.ZONELIST[self.targetzone][5 + movestep][4])
+                    waitflg=1
+                    self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))
+                    
+                    if (movestep + 1 ) < self.ZONELIST[self.targetzone][3]:
+                        return (movestep + 1)
+                    else:
+                        return movestep
+                count +=1
+        self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))          
+        return movestep
+            
+    def MOVE_SEE(self,action = "RELOAD"):
+        if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.quasar_battle_lockon==0:
+            return
+        if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+            self.wait(0.1)
+        if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("C+"):
+            self.notargetcount=0
+            return
+        if action != "END":
+            if self.Rstick_state == 0:
+                self.hold(Direction(Stick.RIGHT, 180,self.see_r))
+                self.Rstick_state = 1
+            else:
+                self.holdEnd(Direction(Stick.RIGHT, 180))
+                self.wait(self.SLEEPLIST[4][2])
+                self.hold(Direction(Stick.RIGHT, 180,self.see_r))
+                self.Rstick_state = 1
+        elif action == "END" and self.Rstick_state == 1:
+            self.holdEnd(Direction(Stick.RIGHT, 180))
+            self.Rstick_state = 0
+        #else:
+        #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
+
+    ######################################################
+    # ZA_battle_infi_Base_End
+    ######################################################
+    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",event_picture="",sleeptime=0.5):
+
+        while True:
+            self.checkIfAlive()
+            
+            while True:
+                checkerflg=0
+                    
+                if sub_picture != "":
+                    if self.image_check(sub_picture):
+                        if sub_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
+                if sub2_picture != "":
+                    if self.image_check(sub2_picture):
+                        if sub2_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
+                if sub3_picture != "":
+                    if self.image_check(sub3_picture):
+                        if sub3_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
+                if sub4_picture != "":
+                    if self.image_check(sub4_picture):
+                        if sub4_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
+                if event_picture != "":
+                    if self.image_check(event_picture):
+                        self.EventSkip_plus()
+                        checkerflg=1
+                        self.wait(sleeptime)
+                if endpicture != "":
+                    if self.image_check(endpicture):
+                        return True
+                if endpicture2 != "":
+                    if self.image_check(endpicture2):
+                        return True    
+                if checkerflg==0:
+                    self.wait(sleeptime)
+                    break
+
+            if rendabutton == "B":
+                self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            self.wait(sleeptime)
+        return False
+
+    def ZL_ACTION(self,action = "RELOAD",lockonflg=1):
+        if action != "END":
+            if lockonflg == 0:
+                if self.ZL_state == 1:
+                    self.keys.inputEnd(Button.ZL)
+                    self.ZL_state = 0
+                return
+            if self.ZL_state == 0:
+                self.keys.input(Button.ZL)
+                self.ZL_state = 1
+            else:
+                self.keys.inputEnd(Button.ZL)
+                #間隔をあけないとロックオンがオンにならない？
+                self.wait(0.1)#self.wait(self.SLEEPLIST[2][2])
+                self.keys.input(Button.ZL)
+                self.ZL_state = 1
+        elif action == "END" and self.ZL_state == 1:
+            self.keys.inputEnd(Button.ZL)
+            self.ZL_state = 0
+            
+    def battle_coCp_noloop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0):
+        if self.image_check("SELECT"):
+            self.etc_sendCommand("Lbutton_up")
+        self.ZL_ACTION("")
+        for i in range(3):
+            if Xaction==1:
+                self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            if Aaction==1:
+                self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            if Yaction==1:
+                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            if Baction==1:
+                self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+        if lockon_endskip==0:
+            self.ZL_ACTION("END")
+        
+    def get_pokemon(self):
+        self.ZL_ACTION("")
+        self.wait(0.1)
+        self.keys.input(Button.ZR)
+        self.wait(0.15)
+        self.keys.inputEnd(Button.ZR)
+        self.wait(0.1)
+        self.ZL_ACTION("END")
+        
+    def EventSkip_plus(self):
+        for i in range(3):
+            self.etc_sendCommand("plusbutton")
+            self.wait(0.1)
+            self.etc_sendCommand("plusbutton_push")
+            self.wait(3.0)
+            self.etc_sendCommand("plusbutton_release")
+    
+    def markerdir(self,type,nofiled=False):
+        if type == "EVENT":
+            center = "EVENT_MARKER_CENTER"
+            center_wide = "EVENT_MARKER_CENTER_WIDE"
+            left = "EVENT_MARKER_LEFT_WIDE"
+            right = "EVENT_MARKER_RIGHT_WIDE"
+        elif type == "PIN":
+            center = "PIN_MARKER_CENTER"
+            center_wide = "PIN_MARKER_CENTER_WIDE"
+            left = "PIN_MARKER_LEFT_WIDE"
+            right = "PIN_MARKER_RIGHT_WIDE"
+        else:
+            return False
+        
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or nofiled:
+            if self.image_check(center):
+                return True
+            elif self.image_check(left):
+                if self.image_check(center_wide):
+                    self.press(Direction(Stick.RIGHT,180,0.3), duration=0.01, wait=0.0)
+                else:
+                    self.press(Direction(Stick.RIGHT,180), duration=0.01, wait=0.0)
+            elif self.image_check(right):
+                if self.image_check(center_wide):
+                    self.press(Direction(Stick.RIGHT,0,0.3), duration=0.01, wait=0.0)
+                else:
+                    self.press(Direction(Stick.RIGHT,0), duration=0.01, wait=0.0)
+            else:
+                self.press(Direction(Stick.RIGHT,180), duration=0.3, wait=0.0)
+            self.wait(0.1)
+        return False
+
+    def isContainTemplateUltra(self,         
+                template_path ='img_crop.png',
+                threshold = 0.7,
+                use_gray = True,
+                show_value = True,
+                show_position = True,
+                show_only_true_rect  = False,
+                ms  = 2000,
+                crop = [400,400,1280,710],
+                crop_template  = [], 
+                show_image = False,
+                color  = ["blue", "red", "orange"],
+        ):
+        
+        if show_image:
+            self.imshow_name = f'{template_path}_pokecon_img'
+            print(self.imshow_name)
+            if window_acquire(Window_name=self.imshow_name,log=False,front_win=False) is None:
+                while not window_acquire(Window_name=f'{self.imshow_name}',log=False,front_win=False) is None:
+                    self.wait(0.1)
+                # print('画像を表示します')
+                self.thevent = threading.Event()
+                if type(template_path) == str:
+                    self.show_img_thread = threading.Thread(target=self.cv2imshow, args=(f'{template_path}',f'{self.template_path_name}{template_path}',))
+                else:
+                    self.show_img_thread = threading.Thread(target=self.cv2imshow, args=(f'{template_path}',template_path,))
+                
+                self.show_img_thread.start()
+        
+        ret = self.isContainTemplate(
+            template_path =template_path, # 画像名またはbinary
+            threshold = threshold,
+            use_gray = use_gray,
+            show_value = show_value,
+            show_position = show_position,
+            show_only_true_rect  = show_only_true_rect, # Trueが返ってきたときのみに枠表示
+            ms  = ms, # 枠表示時間[ms]
+            crop = crop, # [左上x,左上y,右下x,右下y]
+            crop_template  = crop_template, # テンプレート画像のトリミング
+            show_image = False, # 画像を表示する。処理は一時停止する。
+            color  = color, # 判定True色, 判定False色, crop範囲色
+        )
+        
+        if ret:
+            self.imshow_end = True
+
+        return ret
+    
+    def isContainTemplateUltra_get_max_val(self,         
+                template_path ='img_crop.png',
+                threshold = 0.7,
+                use_gray = True,
+                show_value = True,
+                show_position = True,
+                show_only_true_rect  = False,
+                ms  = 2000,
+                crop = [400,400,1280,710],
+                crop_template  = [], 
+                show_image = False,
+                color  = ["blue", "red", "orange"],
+                get_max_val = False,
+        ):
+        #max_val取得用
+        max_val=0
+        
+        if show_image:
+            self.imshow_name = f'{template_path}_pokecon_img'
+            print(self.imshow_name)
+            if window_acquire(Window_name=self.imshow_name,log=False,front_win=False) is None:
+                while not window_acquire(Window_name=f'{self.imshow_name}',log=False,front_win=False) is None:
+                    self.wait(0.1)
+                # print('画像を表示します')
+                self.thevent = threading.Event()
+                if type(template_path) == str:
+                    self.show_img_thread = threading.Thread(target=self.cv2imshow, args=(f'{template_path}',f'{self.template_path_name}{template_path}',))
+                else:
+                    self.show_img_thread = threading.Thread(target=self.cv2imshow, args=(f'{template_path}',template_path,))
+                
+                self.show_img_thread.start()
+        
+        if (not get_max_val or (self.TESTADDCODE==0)):
+        
+            ret = self.isContainTemplate(
+                template_path =template_path, # 画像名またはbinary
+                threshold = threshold,
+                use_gray = use_gray,
+                show_value = show_value,
+                show_position = show_position,
+                show_only_true_rect  = show_only_true_rect, # Trueが返ってきたときのみに枠表示
+                ms  = ms, # 枠表示時間[ms]
+                crop = crop, # [左上x,左上y,右下x,右下y]
+                crop_template  = crop_template, # テンプレート画像のトリミング
+                show_image = False, # 画像を表示する。処理は一時停止する。
+                color  = color, # 判定True色, 判定False色, crop範囲色
+            )
+        else:
+            #max_val返却用
+            ret,max_val = self.isContainTemplate_get_max_val(
+                template_path =template_path, # 画像名またはbinary
+                threshold = threshold,
+                use_gray = use_gray,
+                show_value = show_value,
+                show_position = show_position,
+                show_only_true_rect  = show_only_true_rect, # Trueが返ってきたときのみに枠表示
+                ms  = ms, # 枠表示時間[ms]
+                crop = crop, # [左上x,左上y,右下x,右下y]
+                crop_template  = crop_template, # テンプレート画像のトリミング
+                show_image = False, # 画像を表示する。処理は一時停止する。
+                color  = color, # 判定True色, 判定False色, crop範囲色
+            )
+
+        if ret:
+            self.imshow_end = True
+
+        if (not get_max_val):
+            return ret
+        else:
+            return ret,max_val
+        
+
+######################################################
+# ZA_battle_infi_Base
+######################################################
+    def ZA_battle_infi_main(self):
+        
+        while True:
+            
+            self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+            self.wait(self.SLEEPLIST[9][2])
+            self.out_str = (
+                f'----------------------------'
+                f'\n STATE_MAIN_FUNCTION   :: {self.za_infi_main_current_state}'
+                f'\n'
+                f'\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
+                f'\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
+                f'\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
+                f'\n battlecount::{self.battlecount}'
+                f'\n battle_step::{self.battle_step}'      
+                f'\n chicketmaxflag::{self.chicketmaxflag}'
+                f'\n ZL_state::{self.ZL_state}'  
+                f'\n'  
+                f'\n ZONECOUNT'
+                f'\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
+                f'[ 2 :{self.zonemisscount[1]}/{self.zonecount[1]}] '
+                f'[ 3 :{self.zonemisscount[2]}/{self.zonecount[2]}] '
+                f'[ 4 :{self.zonemisscount[3]}/{self.zonecount[3]}] '
+                f'[ 5 :{self.zonemisscount[4]}/{self.zonecount[4]}] '
+                f'[ 6 :{self.zonemisscount[5]}/{self.zonecount[5]}] '
+                f'\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
+                f'[ 8 :{self.zonemisscount[7]}/{self.zonecount[7]}] '
+                f'[ 9 :{self.zonemisscount[8]}/{self.zonecount[8]}] '
+                f'[10 :{self.zonemisscount[9]}/{self.zonecount[9]}] '
+                f'[11 :{self.zonemisscount[10]}/{self.zonecount[10]}] '
+                f'[12 :{self.zonemisscount[11]}/{self.zonecount[11]}]'
+                f'\n'  
+                f'\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
+                f'\n battle_escape_count::{self.battleescapecount}'
+                f'\n inactioncount::{self.inactioncount}'
+                f'\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
+                f'\n'
+                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\n'
+                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\n'
+                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\n'
+                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\n'
+                f'\n'
+                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\n'  
+                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\n'
+                f'[left ::'
+                f'[{self.target_left_max_val_list[0]:03d}]'
+                f'[{self.target_left_max_val_list[1]:03d}]'
+                f'[{self.target_left_max_val_list[2]:03d}]'
+                f'[{self.target_left_max_val_list[3]:03d}]'
+                f'[{self.target_left_max_val_list[4]:03d}]'
+                f'[{self.target_left_max_val_list[5]:03d}]'
+                f'[{self.target_left_max_val_list[6]:03d}]'
+                f'[{self.target_left_max_val_list[7]:03d}]'
+                f'[{self.target_left_max_val_list[8]:03d}]'
+                f'[{self.target_left_max_val_list[9]:03d}]'
+                f'[{self.target_left_max_val_list[10]:03d}]'
+                f']\n'
+                f'[right::'
+                f'[{self.target_right_max_val_list[0]:03d}]'
+                f'[{self.target_right_max_val_list[1]:03d}]'
+                f'[{self.target_right_max_val_list[2]:03d}]'
+                f'[{self.target_right_max_val_list[3]:03d}]'
+                f'[{self.target_right_max_val_list[4]:03d}]'
+                f'[{self.target_right_max_val_list[5]:03d}]'
+                f'[{self.target_right_max_val_list[6]:03d}]'
+                f'[{self.target_right_max_val_list[7]:03d}]'
+                f'[{self.target_right_max_val_list[8]:03d}]'
+                f'[{self.target_right_max_val_list[9]:03d}]'
+                f'[{self.target_right_max_val_list[10]:03d}]'
+                f']\n'
+                f'\n----------------------------'
+                )
+
+            self.print_tb("d"); self.print_t(f'{self.out_str}')
+            self.checkIfAlive()
+        return True
+     
+    ######################################################
+    # MAIN FUNCTION
+    ######################################################  
+    def za_infi_main_start(self):
+        self.load_zones()      
+        if self.fastread:
+            self.load_sleeps()
+        self.fastread = False
+        #print(f'{self.SLEEPLIST}')
+        return "ZA_INFI_MAIN_BENCH"
+    
+    def za_infi_main_bench(self):
+        self.bench_current_state = self.STATE_BENCH_FUNCTION[self.bench_current_state]()
+        if self.bench_current_state == "BATTLE_RETURN":
+            self.bench_current_state="BENCH_START"
+            self.battle_current_state="BATTLE_MOVE"
+            return "ZA_INFI_MAIN_BATTLE_LOOP"
+        elif self.bench_current_state == "BENCH_START":
+            if self.chicketmaxflag == 2:
+                return "ZA_INFI_QUASAR_LOOP"
+            else:
+                return "ZA_INFI_MAIN_BATTLE_LOOP"
+        else:
+            return "ZA_INFI_MAIN_BENCH"
+        
+    def za_infi_main_battle_loop(self):
+        self.battle_current_state = self.STATE_BATTLE_FUNCTION[self.battle_current_state]()
+        
+        if self.battle_current_state == "BATTLE_START":
+            return "ZA_INFI_MAIN_END"
+        else:
+            return "ZA_INFI_MAIN_BATTLE_LOOP"
+
+    def za_infi_main_end(self):
+        return "ZA_INFI_MAIN_START"
+    
+    def za_infi_quasar_loop(self):
+        self.quasar_current_state = self.STATE_QUASAR_FUNCTION[self.quasar_current_state]()
+        if self.quasar_current_state == "QUASAR_START":
+            return "ZA_INFI_MAIN_END"
+        else:
+            return "ZA_INFI_QUASAR_LOOP"
+######################################################
+# ZA_battle_infi_Base_End
+######################################################
+
+######################################################
+# 具体機能実装 
+######################################################
+    def ZA_story_main(self):
+        
+        while True:
+            
+            self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
+            self.wait(0.1)
+            self.out_str = (
+                f'----------------------------'
+                f'\n STATE_MAIN_FUNCTION   :: {self.main_current_state}'
+                f'\n'
+                f'\n STATE_1_STORY_FUNCTION   :: {self._1_story_current_state}'
+                f'\n STATE_2_STORY_FUNCTION   :: {self._2_story_current_state}'
+                f'\n'
+                f'\n STATE_COMMON_SKILL_CHANGE_FUNCTION   :: {self.common_skill_change_current_state}'
+                f'\n----------------------------'
+                )
+
+            self.print_tb("d"); self.print_t(f'{self.out_str}')
+            self.checkIfAlive()
+        return True   
+    
+    ######################################################
+    # MAIN_STATE_INIT (引継ぎ実行用)
+    ######################################################
+    def main_state_init(self):
+        if  self.main_current_state_init=="":
+            return "MAIN_0_START"
+        elif  self.main_current_state_init=="MAIN_1_Z_LANK":
+            self._1_story_current_state=self._1_story_current_state_init
+            return "MAIN_1_Z_LANK"
+        elif  self.main_current_state_init=="MAIN_2_Y_LANK":
+            self._2_story_current_state=self._2_story_current_state_init
+            return "MAIN_2_Y_LANK"
+        else:
+            return self.main_current_state_init
+        
+    ######################################################
+    # MAIN_0_START FUNCTION
+    ######################################################
+    def main_0_start(self):
+        if self.check_picture==1:
+            if self.image_check("PROFILE",1):
+                print("PROFILE")
+            if self.image_check("STARTBTN_SELECT",1):
+                print("STARTBTN_SELECT")
+            
+            self.wait(1.0)
+        else:
+            if self.image_check("PROFILE"):
+                if self.image_check("STARTBTN_SELECT"):
+                    self.pressRep(Button.A, repeat=20, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.1)
+                    self.EventSkip_plus()
+                    return "MAIN_1_Z_LANK"
+        return "MAIN_0_START"
+    
+    ######################################################
+    # MAIN_1_Z_LANK FUNCTION
+    ######################################################
+    def main_1_z_lank(self):
+        self._1_story_current_state = self.STATE_1_STORY_FUNCTION[self._1_story_current_state]()
+        if self._1_story_current_state == "1_STORY_END":
+            return "MAIN_2_Y_LANK"
+        else:
+            return "MAIN_1_Z_LANK"
+    
+    ######################################################
+    # MAIN_2_Y_LANK FUNCTION
+    ######################################################
+    def main_2_y_lank(self):
+        self._2_story_current_state = self.STATE_2_STORY_FUNCTION[self._2_story_current_state]()
+        return "MAIN_2_Y_LANK"
+
+    ######################################################
+    # MAIN_1_Z_LANK SUB FUNCTION
+    ######################################################
+    def _1_story_start_check(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            return "1_STORY_TRAIN_OUT"  
+        elif self.image_check("TEXT_TRAIN_OUT_COMMENT"):
+            return "1_STORY_STATION_OUT"
+        else:
+            self.EventSkip_plus()
+            return "1_STORY_START_CHECK"
+        
+    def _1_story_train_out(self):
+        if self.check_picture==1:
+            if self.image_check("TEXT_BLACK_COMMENT"):
+                print("TEXT_BLACK_COMMENT")          
+            self.wait(1.0)
+        else:
+            if self.image_check("TEXT_BLACK_COMMENT"):
+                self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+                return "1_STORY_STATION_OUT"
+        return "1_STORY_TRAIN_OUT"  
+
+    def _1_story_staition_out(self):
+        ### AUTO_SAVE_POINT
+        if self.check_picture==1:
+            if self.image_check("TEXT_TRAIN_OUT_COMMENT"):
+                print("TEXT_TRAIN_OUT_COMMENT")
+            
+            self.wait(1.0)
+        else:
+            if self.image_check("TEXT_TRAIN_OUT_COMMENT"):
+                self.press(Direction(Stick.LEFT,80), duration=4.0, wait=1.0) # 位置調整
+                self.press(Direction(Stick.LEFT,0), duration=9.6, wait=1.0) # 位置調整
+                return "1_STORY_STATION_FRONT"
+
+        return "1_STORY_STATION_OUT"
+    
+    def _1_story_staition_front(self):
+        ### AUTO_SAVE_POINT
+        if self.check_picture==1:
+            if self.image_check("TEXT_STATION_LEAVE_COMMENT"):
+                print("TEXT_STATION_LEAVE_COMMENT")
+                
+        else:
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                if self.renda_button(rendabutton="B",endpicture="TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="2_SELECT",event_picture="QUASAR_MOVIE_ICON"):
+                    return "1_STORY_STATION_LEAVE_MOVE"
+        
+        return "1_STORY_STATION_FRONT"
+        
+    def _1_story_staition_leave_move(self):
+        if self.check_picture==1:
+            if self.image_check("TEXT_STATION_LEAVE_COMMENT"):
+                print("TEXT_STATION_LEAVE_COMMENT")   
+        else:
+            if self.image_check("TEXT_STATION_LEAVE_COMMENT"):
+                self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,180), duration=4.4, wait=1.0)
+                self.press(Direction(Stick.LEFT,90), duration=10.5, wait=1.0)
+                self.press(Direction(Stick.LEFT,180), duration=6.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,60), duration=0.13, wait=1.0)
+                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,240), duration=4.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=1.0)
+                return "1_STORY_BAG_CHASE_END"
+        return "1_STORY_STATION_LEAVE_MOVE"
+
+    def _1_story_bag_chase_end(self):
+        if self.check_picture==1:
+            if self.image_check("TEXT_STATION_LEAVE_COMMENT"):
+                print("TEXT_STATION_LEAVE_COMMENT") 
+        else:
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                if self.renda_button(rendabutton="B",endpicture="CHAT_MARKER",sub_button="A",sub_picture="2_SELECT"):
+                    return "1_STORY_FARST_POKEMON_SELECT"
+        return "1_STORY_BAG_CHASE_END"
+    
+    def _1_story_farst_pokemon_select(self):
+        ### AUTO_SAVE_POINT
+        if self.check_picture==1:
+            if self.image_check("CHAT_MARKER"):
+                print("CHAT_MARKER") 
+            if self.image_check("HELP_MARKER"):
+                print("HELP_MARKER") 
+        else:
+            if self.image_check("CHAT_MARKER"):
+                self.press(Direction(Stick.LEFT,150), duration=0.7, wait=1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                if self.renda_button(rendabutton="B",endpicture="HELP_MARKER",sub_button="A",sub_picture="2_SELECT"):
+                    return "1_STORY_FARST_BATTLE"
+        return "1_STORY_FARST_POKEMON_SELECT"
+    
+    def _1_story_farst_battle(self):
+        if self.check_picture==1:
+            if self.image_check("HELP_MARKER"):
+                print("HELP_MARKER") 
+        else:
+            if self.image_check("BATTLE_BALL_CHECK"):
+                self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=0)
+            elif self.image_check("TEXT_WHITE_COMMENT"):
+                return "1_STORY_FARST_BATTLE_END"
+            elif self.image_check("HELP_MARKER"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return "1_STORY_FARST_BATTLE"
+    
+    def _1_story_farst_battle_end(self):
+        if self.check_picture==1:
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                print("TEXT_WHITE_COMMENT") 
+        else:
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                    return "1_STORY_FARST_BATTLE_ZONE_MOVE1"
+        return "1_STORY_FARST_BATTLE_END"
+    
+    def _1_story_farst_battle_zone_move1(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=3.8, wait=1.0)#4.0
+            self.press(Direction(Stick.LEFT,0), duration=6.2, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=4.0, wait=1.0)
+            return "1_STORY_SECOND_BATTLE_START"
+        return "1_STORY_FARST_BATTLE_ZONE_MOVE1"
+    
+    def _1_story_second_battle_start(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_SECOND_BATTLE"
+        return "1_STORY_SECOND_BATTLE_START"
+    
+    def _1_story_second_battle(self):
+
+        if self.image_check("BATTLE_BALL_CHECK"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "1_STORY_SECOND_BATTLE_END"  
+        return "1_STORY_SECOND_BATTLE"  
+    
+    def _1_story_second_battle_end(self):
+
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_FARST_BATTLE_ZONE_MOVE2" 
+        return "1_STORY_SECOND_BATTLE_END" 
+
+    def _1_story_farst_battle_zone_move2(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.8, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=4.2, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.5, wait=1.0)
+            self.wait(3.0)
+            self.EventSkip_plus()
+            return "1_STORY_FARST_MOVIE_END"
+        return "1_STORY_FARST_BATTLE_ZONE_MOVE2"
+
+    def _1_story_farst_movie_end(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_FARST_BATTLE_ZONE_MOVE3" 
+        return "1_STORY_FARST_MOVIE_END"
+        
+    def _1_story_farst_battle_zone_move3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("OUT_MARKER"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(2.0)
+            return "1_STORY_FARST_BATTLE_ZONE_OUT"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            return "1_STORY_FARST_BATTLE_ZONE_MOVE3"
+        return "1_STORY_FARST_BATTLE_ZONE_MOVE3"
+
+    def _1_story_farst_battle_zone_out(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_FARST_BATTLE_ZONE_MOVE4" 
+        return "1_STORY_FARST_BATTLE_ZONE_OUT"
+
+    def _1_story_farst_battle_zone_move4(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,10), duration=8.0, wait=1.0)
+            return "1_STORY_HOTEL_Z_ARRIVAL"
+        return "1_STORY_FARST_BATTLE_ZONE_MOVE4"
+    
+    def _1_story_hote_z_arrival(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_HOTEL_Z_MOVE1"
+
+        return "1_STORY_HOTEL_Z_ARRIVAL"
+
+    def _1_story_hote_z_move1(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=5.0, wait=1.0)
+            return "1_STORY_HOTEL_Z_MOVE2"
+        return "1_STORY_HOTEL_Z_MOVE1"
+
+    def _1_story_hote_z_move2(self):
+        if self.image_check("IN_MARKER"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(2.0)
+            return "1_STORY_HOTEL_Z_FAST_IN"
+        return "1_STORY_HOTEL_Z_MOVE2"
+    
+    def _1_story_hote_z_fast_in(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_HOTEL_Z_MOVE3"
+        return "1_STORY_HOTEL_Z_FAST_IN"
+    
+    def _1_story_hote_z_move3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,95), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=0.1, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_AZ_CHAT"
+        return "1_STORY_HOTEL_Z_MOVE3"
+    
+    def _1_story_az_chat(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT"):
+                return "1_STORY_HOTEL_Z_MOVE4"
+        return "1_STORY_AZ_CHAT"
+    
+    def _1_story_hote_z_move4(self):
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_FAST_ELEVATOR"
+        return "1_STORY_HOTEL_Z_MOVE4"
+
+    def _1_story_fast_elevator(self):
+        if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            return "1_STORY_HOTEL_Z_MOVE5"
+        return "1_STORY_FAST_ELEVATOR"
+    
+    def _1_story_hote_z_move5(self):
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_HOTEL_Z_MOVE6"
+        return "1_STORY_HOTEL_Z_MOVE5"
+
+    def _1_story_hote_z_move6(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE7"
+
+        return "1_STORY_HOTEL_Z_MOVE6"   
+    
+    def _1_story_hote_z_move7(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("WANINOKO_ICON"):
+            self.press(Direction(Stick.LEFT,55), duration=1.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+
+            return "1_STORY_HOTEL_Z_MOVE8" 
+        return "1_STORY_HOTEL_Z_MOVE7"   
+    
+    def _1_story_hote_z_move8(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE9"
+
+        return "1_STORY_HOTEL_Z_MOVE8"  
+    
+    def _1_story_hote_z_move9(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,80), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_HOTEL_Z_MOVE10"
+        return "1_STORY_HOTEL_Z_MOVE9" 
+    
+    def _1_story_hote_z_move10(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE11"
+
+        return "1_STORY_HOTEL_Z_MOVE10"
+    
+    def _1_story_hote_z_move11(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,90), duration=2.4, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_HOTEL_Z_MOVE12"
+        return "1_STORY_HOTEL_Z_MOVE11" 
+    
+    def _1_story_hote_z_move12(self):
+        #左上のアイコンがバックアップ時に出ないため、小移動で休むアイコンが出るかで判断とする。
+        if self.image_check("WANINOKO_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=2.1, wait=1.0)
+
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            # ロワイヤル画面でFILED判定してしまう場合があるため一旦代用でWANINOKO_ICONで判断
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE13" 
+
+        return "1_STORY_HOTEL_Z_MOVE12" 
+    
+    def _1_story_hote_z_move13(self):
+        ### AUTO_SAVE_POINT
+        # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE13" 
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_HOTEL_Z_MOVE14"
+        return "1_STORY_HOTEL_Z_MOVE13"
+
+    def _1_story_hote_z_move14(self):
+        # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "1_STORY_HOTEL_Z_MOVE13" 
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.9, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_HOTEL_Z_MOVE15"
+        return "1_STORY_HOTEL_Z_MOVE14"
+    
+    def _1_story_hote_z_move15(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "1_STORY_THIRD_BATTLE"
+        return "1_STORY_HOTEL_Z_MOVE15"
+    
+    def _1_story_third_battle(self):
+        if self.image_check("BATTLE_BALL_CHECK"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+                for i in range(20):
+                    if self.image_check("BATTLE_BALL_CHECK"):
+                        return "1_STORY_THIRD_BATTLE"
+                    elif self.image_check("TEXT_WHITE_COMMENT"):
+                        self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER")
+                return "1_STORY_THIRD_BATTLE_END"
+        return "1_STORY_THIRD_BATTLE"
+    
+    def _1_story_third_battle_end(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_OUT_HOTEL_Z_1"
+        else:
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)    
+        return "1_STORY_THIRD_BATTLE_END"
+    
+    def _1_story_out_hotel_z_1(self):
+        ### AUTO_SAVE_POINT
+        self.press(Direction(Stick.LEFT,90), duration=11.0, wait=1.0)
+        for i in range(20):
+            self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+            if self.image_check("HASHIGO_ICON"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
+                return "1_STORY_OUT_HOTEL_Z_2"
+        return "1_STORY_OUT_HOTEL_Z_2"
+    
+    def _1_story_out_hotel_z_2(self):
+        self.press(Direction(Stick.LEFT,90), duration=7.0, wait=1.0)
+        return "1_STORY_OUT_HOTEL_Z_3"
+    
+    def _1_story_out_hotel_z_3(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_OUT_HOTEL_Z_4"
+        return "1_STORY_OUT_HOTEL_Z_3"
+    
+    def _1_story_out_hotel_z_4(self):
+        ### AUTO_SAVE_POINT
+        self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+        return "1_STORY_OUT_HOTEL_Z_5"
+    
+    def _1_story_out_hotel_z_5(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "1_STORY_OUT_HOTEL_Z_6"
+        return "1_STORY_OUT_HOTEL_Z_5"
+    
+    def _1_story_out_hotel_z_6(self):
+        ### AUTO_SAVE_POINT
+        self.press(Direction(Stick.LEFT,60), duration=5.2, wait=1.0)
+        self.press(Direction(Stick.LEFT,153), duration=4.0, wait=1.0)
+        self.wait(0.5)
+        if self.image_check("CHAT_MARKER"):
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_7"
+        
+        self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+        self.wait(0.5)
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return "1_STORY_OUT_HOTEL_Z_7"
+
+    def _1_story_out_hotel_z_7(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_8"
+
+        return "1_STORY_OUT_HOTEL_Z_7"
+
+    def _1_story_out_hotel_z_8(self):
+        ### AUTO_SAVE_POINT
+        self.press(Direction(Stick.LEFT,90), duration=14.0, wait=1.0)
+        return "1_STORY_OUT_HOTEL_Z_9"
+    
+    def _1_story_out_hotel_z_9(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                return "1_STORY_WANINOKO_SKILL_CHANGE1"
+        return "1_STORY_OUT_HOTEL_Z_9"
+    
+    def _1_story_waninoko_skill_change1(self):
+        #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(1,"Y","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE2"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE1"
+
+    def _1_story_waninoko_skill_change2(self):
+        #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(1,"X","A")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_OUT_HOTEL_Z_10"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE2"
+    
+    def _1_story_out_hotel_z_10(self):
+        ### AUTO_SAVE_POINT
+        self.press(Direction(Stick.LEFT,90), duration=5.0, wait=1.0)
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        self.wait(0.5)
+        return "1_STORY_OUT_HOTEL_Z_11"
+    
+    def _1_story_out_hotel_z_11(self):  
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+                return "1_STORY_OUT_HOTEL_Z_12"
+        return "1_STORY_OUT_HOTEL_Z_11"
+    
+    def _1_story_out_hotel_z_12(self):
+        self.get_pokemon()
+        return "1_STORY_OUT_HOTEL_Z_13"
+    
+    def _1_story_out_hotel_z_13(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+                return "1_STORY_OUT_HOTEL_Z_14"
+
+        return "1_STORY_OUT_HOTEL_Z_13"
+    
+    def _1_story_out_hotel_z_14(self):  
+        self.get_pokemon()
+        return "1_STORY_OUT_HOTEL_Z_15"
+    
+    def _1_story_out_hotel_z_15(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+                self._1_story_2nd_get_comment=0
+                return "1_STORY_OUT_HOTEL_Z_16"
+
+        return "1_STORY_OUT_HOTEL_Z_15"
+    
+    def _1_story_out_hotel_z_16(self):
+        if self._1_story_2nd_get_comment==1:
+            # ゲットチャンスコメントに妨害されるためコメントがでるまで以下で行わない。
+            if self.image_check("GETCHANCE_ICON4"):
+                self.get_pokemon()
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            self.wait(0.1)
+            if self.image_check("TEXT_2_GETCHANCE"):
+                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                    self.wait(0.1)
+                    self.get_pokemon()
+            elif self.image_check("TEXT_2_GET_SUCCESS"):
+                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                    self.ZL_ACTION("END")
+                    return "1_STORY_OUT_HOTEL_Z_17" 
+            else:
+                self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="HELP_MARKER")
+            self._1_story_2nd_get_comment=1
+ 
+        return "1_STORY_OUT_HOTEL_Z_16"
+        
+    def _1_story_out_hotel_z_17(self):
+        ### AUTO_SAVE_POINT
+        #コフキムシを探索
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,60), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,120), duration=0.1, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_18" 
+        return "1_STORY_OUT_HOTEL_Z_17"   
+    
+    def _1_story_out_hotel_z_18(self):
+        if self.image_check("KOHUKI_ICON_GET4"):
+            self.ZL_ACTION("END")
+            
+            #コフキムシは1体
+            return "1_STORY_OUT_HOTEL_Z_19"
+            return "1_STORY_OUT_HOTEL_Z_18_1"
+        elif self.image_check("GETCHANCE_ICON4"):
+            self.get_pokemon()
+            self.wait(2.0)
+            #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+        return "1_STORY_OUT_HOTEL_Z_18" 
+
+    def _1_story_out_hotel_z_18_1(self):
+        ### AUTO_SAVE_POINT
+        #コフキムシを探索
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=0.7, wait=1.0)
+            return "1_STORY_OUT_HOTEL_Z_18_2" 
+        return "1_STORY_OUT_HOTEL_Z_18_1"   
+    
+    def _1_story_out_hotel_z_18_2(self):
+        if self.image_check("KOHUKI_ICON_GET4") and self.image_check("KOHUKI_ICON_GET5"):
+            self.ZL_ACTION("END")
+            return "1_STORY_OUT_HOTEL_Z_19"
+        elif self.image_check("GETCHANCE_ICON4"):
+            self.get_pokemon()
+            self.wait(2.0)
+            #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+        return "1_STORY_OUT_HOTEL_Z_18_2" 
+
+    def _1_story_out_hotel_z_19(self):
+        ### AUTO_SAVE_POINT
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_19_1" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_19"
+
+    def _1_story_out_hotel_z_19_1(self):
+        #メリープを探索
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,120), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,70), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,40), duration=7.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,280), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,40), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,220), duration=0.5, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_20" 
+        return "1_STORY_OUT_HOTEL_Z_19_1" 
+    
+    def _1_story_out_hotel_z_20(self):
+        if self.image_check("MERIP_ICON_GET5"):
+            self.ZL_ACTION("END")
+            return "1_STORY_OUT_HOTEL_Z_20_1"
+        elif self.image_check("GETCHANCE_ICON4"):
+            self.wait(0.25)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.wait(0.25)
+            self.get_pokemon()
+            #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
+            self.wait(2.0)
+            
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            if self.image_check("EYE_CHECK"):
+                if self._1_story_out_hotel_z_20_not_eyecheck_count > 10:
+                    self.press(Direction(Stick.RIGHT,0), duration=0.1, wait=1.0)
+                    self._1_story_out_hotel_z_20_not_eyecheck_count=0
+            else:
+                self._1_story_out_hotel_z_20_not_eyecheck_count+=1
+                
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        return "1_STORY_OUT_HOTEL_Z_20" 
+    
+    def _1_story_out_hotel_z_20_1(self):
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_21" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_20_1"
+        
+    def _1_story_out_hotel_z_21(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            #方向が不明のため、出口右の隅にオーバーラン
+            #self.press(Direction(Stick.LEFT,250), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,10), duration=5.0, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            if self.image_check("OUT_MARKER"):
+                self.wait(0.1)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "1_STORY_OUT_HOTEL_Z_22" 
+            for i in range(5):
+                self.press(Direction(Stick.LEFT,180), duration=0.3, wait=1.0)
+                if self.image_check("OUT_MARKER"):
+                    self.wait(0.1)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "1_STORY_OUT_HOTEL_Z_22"
+            for i in range(20):
+                self.press(Direction(Stick.LEFT,280), duration=0.2, wait=1.0)
+                self.press(Direction(Stick.LEFT,180), duration=0.2, wait=1.0)
+                if self.image_check("OUT_MARKER"):
+                    self.wait(0.1)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "1_STORY_OUT_HOTEL_Z_22"
+        return "1_STORY_OUT_HOTEL_Z_21" 
+    
+    def _1_story_out_hotel_z_22(self):
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_23" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_22"
+        
+    def _1_story_out_hotel_z_23(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            return "1_STORY_OUT_HOTEL_Z_24" 
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)
+        return "1_STORY_OUT_HOTEL_Z_23"
+    
+    def _1_story_out_hotel_z_24(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_25" 
+        return "1_STORY_OUT_HOTEL_Z_24" 
+    
+    def _1_story_out_hotel_z_25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_26" 
+        return "1_STORY_OUT_HOTEL_Z_25" 
+    
+    def _1_story_out_hotel_z_26(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_27" 
+
+        return "1_STORY_OUT_HOTEL_Z_26" 
+    
+    def _1_story_out_hotel_z_27(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,95), duration=1.6, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_28" 
+        return "1_STORY_OUT_HOTEL_Z_27" 
+    
+    def _1_story_out_hotel_z_28(self):
+        if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT"):
+            self.wait(0.3)
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)            
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_29" 
+        return "1_STORY_OUT_HOTEL_Z_28" 
+    
+    def _1_story_out_hotel_z_29(self):
+        if self.image_check("TEXT_WHITE_COMMENT2"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_30" 
+
+        return "1_STORY_OUT_HOTEL_Z_29" 
+    
+    def _1_story_out_hotel_z_30(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,140), duration=1.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,30), duration=2.0, wait=1.0)
+            return "1_STORY_OUT_HOTEL_Z_31" 
+        return "1_STORY_OUT_HOTEL_Z_30" 
+    
+    def _1_story_out_hotel_z_31(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_32" 
+
+        return "1_STORY_OUT_HOTEL_Z_31" 
+    
+    def _1_story_out_hotel_z_32(self):
+        if self.common_skill_change_start_check() == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+            return "1_STORY_OUT_HOTEL_Z_33" 
+
+        return "1_STORY_OUT_HOTEL_Z_32" 
+
+    def _1_story_out_hotel_z_33(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                self.wait(0.5)
+                for i in range(3):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                for i in range(30):
+                    self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    if self.image_check("TEXT_WHITE_COMMENT"):
+                        return "1_STORY_OUT_HOTEL_Z_34" 
+            elif self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(7):
+                    self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+        return "1_STORY_OUT_HOTEL_Z_33" 
+    
+    def _1_story_out_hotel_z_34(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                #ネットワーク開放
+                return "1_STORY_OUT_HOTEL_Z_35"  
+        return "1_STORY_OUT_HOTEL_Z_34" 
+    
+    def _1_story_out_hotel_z_35(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,330), duration=2.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=1.6, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_36" 
+        return "1_STORY_OUT_HOTEL_Z_35" 
+    
+    def _1_story_out_hotel_z_36(self):
+        if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT"):
+            self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)            
+            self.wait(1.0)
+        return "1_STORY_OUT_HOTEL_Z_37"
+    
+    def _1_story_out_hotel_z_37(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.6, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_38" 
+        return "1_STORY_OUT_HOTEL_Z_37" 
+    
+    def _1_story_out_hotel_z_38(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_WANINOKO_SKILL_CHANGE3"
+        return "1_STORY_OUT_HOTEL_Z_38"
+    
+    def _1_story_waninoko_skill_change3(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(2,"X","A")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE4"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE3"
+        
+    def _1_story_waninoko_skill_change4(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(2,"X","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE5"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE4"
+
+    def _1_story_waninoko_skill_change5(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(3,"A","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE6"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE5"
+        
+    def _1_story_waninoko_skill_change6(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(3,0,"A",1)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE7"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE6" 
+        
+    def _1_story_waninoko_skill_change7(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(4,"X","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE8"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE7"  
+        
+    def _1_story_waninoko_skill_change8(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(5,"X","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "1_STORY_WANINOKO_SKILL_CHANGE9"
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE8"  
+        
+    def _1_story_waninoko_skill_change9(self):
+        #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
+        ret = self.common_skill_change_function(6,"X","B")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_39_0" 
+        else: 
+            return "1_STORY_WANINOKO_SKILL_CHANGE9"  
+
+    def _1_story_out_hotel_z_39_0(self):
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_39" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_39_0"
+        
+    def _1_story_out_hotel_z_39(self):
+        
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,99), duration=2.3, wait=0.0)
+            self.press(Direction(Stick.LEFT,55), duration=5.5, wait=0.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "1_STORY_OUT_HOTEL_Z_39_1" 
+        return "1_STORY_OUT_HOTEL_Z_39" 
+
+    def _1_story_out_hotel_z_39_1(self):
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_40" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_39_1"
+    
+    def _1_story_out_hotel_z_40(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,35), duration=10.0, wait=0.0)
+            self.press(Direction(Stick.LEFT,88), duration=5.2, wait=0.0)
+            self.press(Direction(Stick.LEFT,45), duration=15.0, wait=0.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            for i in range(20):
+                self.press(Direction(Stick.LEFT,225), duration=0.2, wait=0.3)
+                self.press(Direction(Stick.LEFT,115), duration=0.35, wait=0.3)
+                if self.image_check("OUT_MARKER"):
+                    self.wait(0.1)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "1_STORY_OUT_HOTEL_Z_40_1"
+        return "1_STORY_OUT_HOTEL_Z_40" 
+
+    def _1_story_out_hotel_z_40_1(self):
+        if self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_41" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_40_1"
+    
+    def _1_story_out_hotel_z_41(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,45), duration=2.2, wait=0.0)
+            return "1_STORY_OUT_HOTEL_Z_42" 
+        return "1_STORY_OUT_HOTEL_Z_41" 
+    
+    def _1_story_out_hotel_z_42(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_43" 
+        return "1_STORY_OUT_HOTEL_Z_42" 
+    
+    def _1_story_out_hotel_z_43(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD3") or self.image_check("FIELD_BACK3"):
+                self.wait(1.0)
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(1.0)
+                return "1_STORY_OUT_HOTEL_Z_44" 
+            else:
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(0.3)
+        return "1_STORY_OUT_HOTEL_Z_43"
+    
+    def _1_story_out_hotel_z_44(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            for i in range(3):
+                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+            return "1_STORY_OUT_HOTEL_Z_45" 
+        return "1_STORY_OUT_HOTEL_Z_44" 
+    
+    def _1_story_out_hotel_z_45(self):
+        if self.image_check("IN_MARKER"):
+            self.wait(0.1)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_47" 
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,300), duration=0.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,90), duration=6.5, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_46" 
+        return "1_STORY_OUT_HOTEL_Z_45" 
+    
+    def _1_story_out_hotel_z_46(self):
+        if self.image_check("IN_MARKER"):
+            self.wait(0.1)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_47" 
+        elif self.markerdir("EVENT"):
+            return "1_STORY_OUT_HOTEL_Z_45" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_46"
+    
+    def _1_story_out_hotel_z_47(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_48"  
+        return "1_STORY_OUT_HOTEL_Z_47" 
+    
+    def _1_story_out_hotel_z_48(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,102), duration=1.2, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_49" 
+        return "1_STORY_OUT_HOTEL_Z_48" 
+    
+    def _1_story_out_hotel_z_49(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.5, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_50" 
+        return "1_STORY_OUT_HOTEL_Z_49" 
+    
+    def _1_story_out_hotel_z_50(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_51"  
+        return "1_STORY_OUT_HOTEL_Z_50"
+    
+    def _1_story_out_hotel_z_51(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_52" 
+        return "1_STORY_OUT_HOTEL_Z_51"
+    
+    def _1_story_out_hotel_z_52(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_53"  
+
+        return "1_STORY_OUT_HOTEL_Z_52"
+    
+    
+    def _1_story_out_hotel_z_53(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_map_open()
+        if  ret == "COMMON_GOTO_SELECT1":
+            return "1_STORY_OUT_HOTEL_Z_54"
+        return "1_STORY_OUT_HOTEL_Z_53"
+    
+    def _1_story_out_hotel_z_54(self):
+        #イベントマーカーがないため、方向を確定させられるようにマーカーを設置する。
+        if self.image_check("MAP2"):  
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_55"
+        return "1_STORY_OUT_HOTEL_Z_54"
+    
+    def _1_story_out_hotel_z_55(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.75, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.1, wait=0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_56"
+        return "1_STORY_OUT_HOTEL_Z_55"
+    
+    def _1_story_out_hotel_z_56(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.75, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_57"
+        return "1_STORY_OUT_HOTEL_Z_56"
+    
+    def _1_story_out_hotel_z_57(self):
+        if self.image_check("BATTLE_BALL_CHECK"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_GREEN_COMMENT"):
+            return "1_STORY_OUT_HOTEL_Z_58"
+        return "1_STORY_OUT_HOTEL_Z_57"
+    
+    def _1_story_out_hotel_z_58(self):
+        if self.image_check("TEXT_GREEN_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_59"  
+        return "1_STORY_OUT_HOTEL_Z_58"
+    
+    # 敗北用フォローを入れるか、リロード対応を入れた方がよい。位置が変わるのでリロードが良い
+    def _1_story_out_hotel_z_59(self):
+        ### AUTO_SAVE_POINT
+        if self.markerdir("PIN"):
+            return "1_STORY_OUT_HOTEL_Z_60" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_59"
+
+    def _1_story_out_hotel_z_60(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,330), duration=4.0, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_60_1"
+        return "1_STORY_OUT_HOTEL_Z_60" 
+    
+    def _1_story_out_hotel_z_60_1(self):
+        if self.markerdir("PIN"):
+            return "1_STORY_OUT_HOTEL_Z_60_2" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_60_1"
+    
+    def _1_story_out_hotel_z_60_2(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,180), duration=9.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,240), duration=9.0, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_61"
+        return "1_STORY_OUT_HOTEL_Z_60_2" 
+    
+    def _1_story_out_hotel_z_61(self):
+        if self.markerdir("PIN"):
+            return "1_STORY_OUT_HOTEL_Z_62" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_61"
+    
+    def _1_story_out_hotel_z_62(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,120), duration=1.4, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_63" 
+        return "1_STORY_OUT_HOTEL_Z_62" 
+    
+    def _1_story_out_hotel_z_63(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_64" 
+        return "1_STORY_OUT_HOTEL_Z_63" 
+    
+    def _1_story_out_hotel_z_64(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,87), duration=4.0, wait=0.5)
+            self.etc_sendCommand("Lbutton_up")
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_65" 
+        return "1_STORY_OUT_HOTEL_Z_64" 
+    
+    def _1_story_out_hotel_z_65(self):
+        if self.image_check("BATTLE_BALL_CHECK"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_GREEN_COMMENT"):
+            return "1_STORY_OUT_HOTEL_Z_66"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        return "1_STORY_OUT_HOTEL_Z_65" 
+    
+    def _1_story_out_hotel_z_66(self):
+        if self.image_check("TEXT_GREEN_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_67"  
+
+        return "1_STORY_OUT_HOTEL_Z_66" 
+    
+    def _1_story_out_hotel_z_67(self):
+        ### AUTO_SAVE_POINT
+        if self.markerdir("PIN"):
+            self.wait(0.5)
+            self.etc_sendCommand("Lbutton_down")
+            return "1_STORY_OUT_HOTEL_Z_68" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_67"
+    
+    def _1_story_out_hotel_z_68(self):
+        #回復ように移動
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,30), duration=4.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,300), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,300), duration=6.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,120), duration=20.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,270), duration=3.2, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_69" 
+
+        return "1_STORY_OUT_HOTEL_Z_68" 
+    
+    def _1_story_out_hotel_z_69(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+            return "1_STORY_OUT_HOTEL_Z_70"
+        return "1_STORY_OUT_HOTEL_Z_69" 
+    
+    def _1_story_out_hotel_z_70(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,0), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,70), duration=0.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,30), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,330), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,30), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,250), duration=10.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,300), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,220), duration=3.0, wait=0.5)
+            return "1_STORY_OUT_HOTEL_Z_71" 
+
+        return "1_STORY_OUT_HOTEL_Z_70"
+    
+    def _1_story_out_hotel_z_71(self):
+        if self.markerdir("PIN"):
+            return "1_STORY_OUT_HOTEL_Z_72" 
+        else:
+            return "1_STORY_OUT_HOTEL_Z_71"
+    
+    def _1_story_out_hotel_z_72(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,355), duration=15.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,200), duration=1.2, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_73" 
+        return "1_STORY_OUT_HOTEL_Z_72"
+    
+    def _1_story_out_hotel_z_73(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+            return "1_STORY_OUT_HOTEL_Z_74"
+        return "1_STORY_OUT_HOTEL_Z_73"
+    
+    def _1_story_out_hotel_z_74(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,45), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,320), duration=1.2, wait=0.5)
+            self.press(Direction(Stick.LEFT,290), duration=2.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,30), duration=1.2, wait=0.5)
+            self.press(Direction(Stick.LEFT,320), duration=1.2, wait=0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_75" 
+        return "1_STORY_OUT_HOTEL_Z_74"
+    
+    def _1_story_out_hotel_z_75(self):
+        if self.image_check("BATTLE_BALL_CHECK"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_GREEN_COMMENT"):
+            return "1_STORY_OUT_HOTEL_Z_76"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+
+        return "1_STORY_OUT_HOTEL_Z_75"
+    
+    def _1_story_out_hotel_z_76(self):
+        if self.image_check("TEXT_GREEN_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_77"  
+
+        return "1_STORY_OUT_HOTEL_Z_76"
+    
+    def _1_story_out_hotel_z_77(self):
+        ret = self.Common_goto(2,0,0)#ポケセンベールで回復
+        
+        if ret == "START":
+            return "1_STORY_OUT_HOTEL_Z_78"
+        else:
+            return "1_STORY_OUT_HOTEL_Z_77"
+    
+    def _1_story_out_hotel_z_78(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT, 90), duration=2.3, wait=0.1)
+            self.wait(0.1)
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.1)
+            self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.1)
+            return "1_STORY_OUT_HOTEL_Z_79"
+        return "1_STORY_OUT_HOTEL_Z_78"
+    
+    def _1_story_out_hotel_z_79(self):
+        ret = self.Common_goto(2,0,0)#ポケセンベールに移動で位置確定
+        
+        if ret == "START":
+            return "1_STORY_OUT_HOTEL_Z_80"
+        else:
+            return "1_STORY_OUT_HOTEL_Z_79"
+    
+    def _1_story_out_hotel_z_80(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,355), duration=1.3, wait=0.5)
+            self.press(Direction(Stick.LEFT,92), duration=2.2, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.1, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_81"
+        return "1_STORY_OUT_HOTEL_Z_80"
+    
+    def _1_story_out_hotel_z_81(self):
+        self.wait(3.0)
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_82" 
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "1_STORY_OUT_HOTEL_Z_79"
+        return "1_STORY_OUT_HOTEL_Z_81"
+    
+    def _1_story_out_hotel_z_82(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=20.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_83"
+        return "1_STORY_OUT_HOTEL_Z_82"
+    
+    def _1_story_out_hotel_z_83(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "1_STORY_OUT_HOTEL_Z_84" 
+        return "1_STORY_OUT_HOTEL_Z_83"
+    
+    def _1_story_out_hotel_z_84(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_83"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "1_STORY_OUT_HOTEL_Z_85"
+        return "1_STORY_OUT_HOTEL_Z_84"
+    
+    def _1_story_out_hotel_z_85(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sub4_button="A",sub4_picture="MORNING"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "1_STORY_END"
+        return "1_STORY_OUT_HOTEL_Z_85"
+    
+    def _1_story_end(self):
+        return "1_STORY_START_CHECK" 
+
+    ######################################################
+    # MAIN_2_Y_LANK SUB FUNCTION
+    ######################################################
+    def _2_story_start_check(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("IN_ICON"):
+            return "2_STORY_TOWER_1"
+        else:
+            return "2_STORY_START_CHECK"
+    
+    def _2_story_tower_1(self):
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_2"
+        return "2_STORY_TOWER_1"
+    
+    def _2_story_tower_2(self):
+        if self.markerdir("EVENT",nofiled=True):
+            return "2_STORY_TOWER_3"
+        else:
+            return "2_STORY_TOWER_2"
+    
+    def _2_story_tower_3(self):
+        if self.image_check("EVENT_MARKER_CENTER"):
+            self.press(Direction(Stick.LEFT,90), duration=2.4, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_4"
+        return "2_STORY_TOWER_3"
+    
+    def _2_story_tower_4(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "2_STORY_TOWER_5"
+        return "2_STORY_TOWER_4"
+    
+    def _2_story_tower_5(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_6"
+        return "2_STORY_TOWER_5"
+    
+    def _2_story_tower_6(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "2_STORY_TOWER_7"
+        return "2_STORY_TOWER_6"
+    
+    def _2_story_tower_7(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_TOWER_8"
+        return "2_STORY_TOWER_7"
+    
+    def _2_story_tower_8(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_9"
+        return "2_STORY_TOWER_8"
+    
+    def _2_story_tower_9(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            return "2_STORY_TOWER_10"
+        return "2_STORY_TOWER_9"
+    
+    def _2_story_tower_10(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_11"
+        return "2_STORY_TOWER_10"
+    
+    def _2_story_tower_11(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,100), duration=0.7, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.press(Direction(Stick.LEFT,90), duration=15.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,150), duration=0.3, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=0.5)
+            return "2_STORY_TOWER_12"
+        return "2_STORY_TOWER_11"
+    
+    def _2_story_tower_12(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_13"
+        return "2_STORY_TOWER_12"
+    
+    def _2_story_tower_13(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=14.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,270), duration=1.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,0), duration=3.0, wait=0.5)
+            return "2_STORY_TOWER_14"
+        return "2_STORY_TOWER_13"
+    
+    def _2_story_tower_14(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_15_0"
+        return "2_STORY_TOWER_14"
+    
+    def _2_story_tower_15_0(self):
+        ### AUTO_SAVE_POINT
+        if self.markerdir("EVENT",nofiled=True):
+            return "2_STORY_TOWER_15"
+        else:
+            return "2_STORY_TOWER_15_0"
+    def _2_story_tower_15(self):
+        
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,85), duration=12.0, wait=0.5)
+            return "2_STORY_TOWER_16"
+        return "2_STORY_TOWER_15"
+    
+    def _2_story_tower_16(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_17"
+        return "2_STORY_TOWER_16"
+    
+    def _2_story_tower_17(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            return "2_STORY_TOWER_18"
+        return "2_STORY_TOWER_17"
+    
+    def _2_story_tower_18(self):
+        if self.image_check("TEXT_GREEN_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_19"
+        return "2_STORY_TOWER_18"
+    
+    def _2_story_tower_19(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,140), duration=9.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,90), duration=11.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,50), duration=10.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,95), duration=14.0, wait=0.5)
+            return "2_STORY_TOWER_20"
+        return "2_STORY_TOWER_19"
+    
+    def _2_story_tower_20(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_21"
+        return "2_STORY_TOWER_20"
+    
+    def _2_story_tower_21(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,105), duration=11.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,160), duration=14.0, wait=0.5)
+            return "2_STORY_TOWER_22"
+        return "2_STORY_TOWER_21"
+    
+    def _2_story_tower_22(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_23"
+        return "2_STORY_TOWER_22"
+    
+    def _2_story_tower_23(self):
+        #ポケモンセンターのスポット登録
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,12), duration=10.0, wait=0.5)
+            return "2_STORY_TOWER_24"
+        return "2_STORY_TOWER_23"
+    
+    def _2_story_tower_24(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        
+        if ret == "START":
+            return "2_STORY_TOWER_25"
+        else:
+            return "2_STORY_TOWER_24"
+    
+    def _2_story_tower_25(self):
+        ### AUTO_SAVE_POINT
+        if self.markerdir("EVENT"):
+            return "2_STORY_TOWER_26"
+        else:
+            return "2_STORY_TOWER_25"
+    
+    def _2_story_tower_26(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=14.0, wait=0.5)
+            return "2_STORY_TOWER_27"
+        return "2_STORY_TOWER_26"
+    
+    def _2_story_tower_27(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_28"
+        return "2_STORY_TOWER_27"
+    
+    def _2_story_tower_28(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("2_SELECT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_28"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_29"
+        return "2_STORY_TOWER_28"
+    
+    def _2_story_tower_29(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_30"
+        return "2_STORY_TOWER_29"
+    
+    def _2_story_tower_30(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_31"
+        else:
+            return "2_STORY_TOWER_30"
+    
+    def _2_story_tower_31(self):
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "2_STORY_TOWER_32"
+        else:
+            return "2_STORY_TOWER_31"
+    
+    def _2_story_tower_32(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_33"
+        else:
+            return "2_STORY_TOWER_32"
+    
+    def _2_story_tower_33(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,186), duration=20.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_34"
+        return "2_STORY_TOWER_33"
+    
+    def _2_story_tower_34(self):
+        if self.markerdir("EVENT"):
+            return "2_STORY_TOWER_35"
+        else:
+            return "2_STORY_TOWER_34"
+    
+    def _2_story_tower_35(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,55), duration=5.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,33), duration=1.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,240), duration=12.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,55), duration=0.8, wait=0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_36"
+        
+        return "2_STORY_TOWER_35"
+    
+    def _2_story_tower_36(self):
+        if self.image_check("PIKA_ICON_GET6"):
+            if self.image_check("EYE_CHECK"):
+                if self.image_check("FIELD_W"):
+                    self.etc_sendCommand("Lbutton_up")
+                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            else:
+                self.ZL_ACTION("END")
+                return "2_STORY_TOWER_37"
+        if self.image_check("GETCHANCE_ICON4"):
+            self.get_pokemon()
+            self.wait(2.0)
+            #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+
+        return "2_STORY_TOWER_36"
+    
+    def _2_story_tower_37(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_38"
+        else:
+            return "2_STORY_TOWER_37"
+    
+    def _2_story_tower_38(self):
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "2_STORY_TOWER_39"
+        else:
+            return "2_STORY_TOWER_38"
+    
+    def _2_story_tower_39(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_40"
+        else:
+            return "2_STORY_TOWER_39"
+    
+    def _2_story_tower_40(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,185), duration=15.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,170), duration=10.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,110), duration=11.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,55), duration=10.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,120), duration=8.0, wait=0.5)
+            return "2_STORY_TOWER_41"
+
+        return "2_STORY_TOWER_40"
+    
+    def _2_story_tower_41(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_42"
+
+        return "2_STORY_TOWER_41"
+    
+    def _2_story_tower_42(self):
+        ### AUTO_SAVE_POINT?
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.8, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_43"
+        return "2_STORY_TOWER_42"
+    
+    def _2_story_tower_43(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            #誤検知するため・上下アイコンが表示されないためワニノコ・メリープアイコンで判定
+            #if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_44"
+        return "2_STORY_TOWER_43"
+    
+    def _2_story_tower_44(self):
+        ### AUTO_SAVE_POINT
+        #if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+        if self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_45"
+        return "2_STORY_TOWER_44"
+    
+    def _2_story_tower_45(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_46"
+        return "2_STORY_TOWER_45"
+    
+    def _2_story_tower_46(self):
+        if self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,230), duration=1.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_1"
+        return "2_STORY_TOWER_46"
+
+    def _2_story_mapping_1(self):
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,-1)#ハンサムハウスに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_2"
+        else:
+            return "2_STORY_MAPPING_1"
+    
+    def _2_story_mapping_2(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=8.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,250), duration=6.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,170), duration=16.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,80), duration=5.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_3"
+        return "2_STORY_MAPPING_2"
+    
+    def _2_story_mapping_3(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE4"):
+                print("MOVEPOINT_TARGET_W_ZONE4")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE4"):
+                print("MOVEPOINT_PIC_W_ZONE4")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ゾーン4が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE4",pic2="MOVEPOINT_PIC_W_ZONE4") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_5"#再移動となるため5にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_1"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_3"
+            else:
+                return "2_STORY_MAPPING_3"
+        return "2_STORY_MAPPING_3"
+    
+    def _2_story_mapping_4(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(4,0,-1)#ゾーン4
+        if ret == "START":
+            return "2_STORY_MAPPING_5"
+        else:
+            return "2_STORY_MAPPING_4"
+    
+    def _2_story_mapping_5(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=15.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            return "2_STORY_MAPPING_6"
+        return "2_STORY_MAPPING_5"
+    
+    def _2_story_mapping_6(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_RUDU"):
+                print("MOVEPOINT_TARGET_POKECENTER_RUDU")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_RUDU"):
+                print("MOVEPOINT_PIC_POKECENTER_RUDU")
+            
+        else:
+            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンルージュが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_RUDU",pic2="MOVEPOINT_PIC_POKECENTER_RUDU") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_7"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_4"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_6"
+            else:
+                return "2_STORY_MAPPING_6"
+        return "2_STORY_MAPPING_6"
+    
+    def _2_story_mapping_7(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(4,0,-1)#ゾーン4
+        if ret == "START":
+            return "2_STORY_MAPPING_8"
+        else:
+            return "2_STORY_MAPPING_7"
+    
+    def _2_story_mapping_8(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=10.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_9"
+        return "2_STORY_MAPPING_8"
+    
+    def _2_story_mapping_9(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_RESTAURANT_DREAM"):
+                print("MOVEPOINT_TARGET_RESTAURANT_DREAM")
+            if self.image_check("MOVEPOINT_PIC_RESTAURANT_DREAM"):
+                print("MOVEPOINT_PIC_RESTAURANT_DREAM")
+            
+        else:
+            ret = self.Common_goto(1,0,-1,movepoint_check=1)#ポケセンルージュが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_RESTAURANT_DREAM",pic2="MOVEPOINT_PIC_RESTAURANT_DREAM") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_10"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_7"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_9"
+            else:
+                return "2_STORY_MAPPING_9"
+        return "2_STORY_MAPPING_9"
+    
+    def _2_story_mapping_10(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,0)#プリズムタワー
+        if ret == "START":
+            return "2_STORY_MAPPING_11"
+        else:
+            return "2_STORY_MAPPING_10"
+    
+    def _2_story_mapping_11(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,140), duration=18.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,195), duration=18.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,105), duration=2.0, wait=0.5) 
+            return "2_STORY_MAPPING_12"
+        return "2_STORY_MAPPING_11"
+    
+    def _2_story_mapping_12(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_CAFE_MAN"):
+                print("MOVEPOINT_TARGET_CAFE_MAN")
+            if self.image_check("MOVEPOINT_PIC_CAFE_MAN"):
+                print("MOVEPOINT_PIC_CAFE_MAN")
+            
+        else:
+            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェ・おとこまえが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_MAN",pic2="MOVEPOINT_PIC_CAFE_MAN") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_14"#再移動となるため14にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_10"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_12"
+            else:
+                return "2_STORY_MAPPING_12"
+        return "2_STORY_MAPPING_12"
+    
+    def _2_story_mapping_13(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(3,0,-1)#カフェ・おとこまえ
+        if ret == "START":
+            return "2_STORY_MAPPING_14"
+        else:
+            return "2_STORY_MAPPING_13"
+    
+    def _2_story_mapping_14(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=20.0, wait=0.5)
+            self.wait(1.0)
+            #self.press(Direction(Stick.LEFT,105), duration=2.0, wait=0.5) 
+            return "2_STORY_MAPPING_15"
+        return "2_STORY_MAPPING_14"
+    
+    def _2_story_mapping_15(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_ROSE_SQUARE"):
+                print("MOVEPOINT_TARGET_ROSE_SQUARE")
+            if self.image_check("MOVEPOINT_PIC_ROSE_SQUARE"):
+                print("MOVEPOINT_PIC_ROSE_SQUARE")
+            
+        else:
+            ret = self.Common_goto(1,0,4,movepoint_check=1)#ローズ広場が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_ROSE_SQUARE",pic2="MOVEPOINT_PIC_ROSE_SQUARE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_17"#再移動となるため17にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_13"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_15"
+            else:
+                return "2_STORY_MAPPING_15"
+        return "2_STORY_MAPPING_15"
+    
+    def _2_story_mapping_16(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,4)#ローズ広場
+        if ret == "START":
+            return "2_STORY_MAPPING_17"
+        else:
+            return "2_STORY_MAPPING_16"
+    
+    def _2_story_mapping_17(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,270), duration=2.0, wait=0.5) 
+            self.wait(1.0)
+            return "2_STORY_MAPPING_18"
+        return "2_STORY_MAPPING_17"
+    
+    def _2_story_mapping_18(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_ROSE_S"):
+                print("MOVEPOINT_TARGET_POKECENTER_ROSE_S")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_ROSE_S"):
+                print("MOVEPOINT_PIC_POKECENTER_ROSE_S")
+            
+        else:
+            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンローズ広場が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_ROSE_S",pic2="MOVEPOINT_PIC_POKECENTER_ROSE_S") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_19"#再移動となるため17にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_16"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_18"
+            else:
+                return "2_STORY_MAPPING_18"
+        return "2_STORY_MAPPING_18"
+    
+    def _2_story_mapping_19(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,4)#ローズ広場
+        if ret == "START":
+            return "2_STORY_MAPPING_20"
+        else:
+            return "2_STORY_MAPPING_19"
+    
+    def _2_story_mapping_20(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,75), duration=20.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=32.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5) 
+            self.wait(1.0)
+            return "2_STORY_MAPPING_21"
+        return "2_STORY_MAPPING_20"
+    
+    def _2_story_mapping_21(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_ROSE"):
+                print("MOVEPOINT_TARGET_POKECENTER_ROSE")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_ROSE"):
+                print("MOVEPOINT_PIC_POKECENTER_ROSE")
+            
+        else:
+            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンローズが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_ROSE",pic2="MOVEPOINT_PIC_POKECENTER_ROSE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_22"#再移動となるため17にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_19"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_21"
+            else:
+                return "2_STORY_MAPPING_21"
+        return "2_STORY_MAPPING_21"
+    
+    def _2_story_mapping_22(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,0)#プリズムタワーに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_23"
+        else:
+            return "2_STORY_MAPPING_22"
+    
+    def _2_story_mapping_23(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,270), duration=39.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=6.0, wait=0.5) 
+            self.wait(1.0)
+            #self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5) 
+            #self.wait(1.0)
+            return "2_STORY_MAPPING_24"
+        return "2_STORY_MAPPING_23"
+    
+    def _2_story_mapping_24(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_PRANTAN"):
+                print("MOVEPOINT_TARGET_POKECENTER_PRANTAN")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_PRANTAN"):
+                print("MOVEPOINT_PIC_POKECENTER_PRANTAN")
+            
+        else:
+            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_PRANTAN",pic2="MOVEPOINT_PIC_POKECENTER_PRANTAN") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_25"#再移動となるため17にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_22"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_24"
+            else:
+                return "2_STORY_MAPPING_24"
+        return "2_STORY_MAPPING_24"
+    
+    def _2_story_mapping_25(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_26"
+        else:
+            return "2_STORY_MAPPING_25"
+    
+    def _2_story_mapping_26(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=0.1, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,75), duration=0.1, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=20.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,85), duration=0.1, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=32.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,5), duration=0.1, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=0.5) 
+            self.wait(1.0)
+            #self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5) 
+            #self.wait(1.0)
+            return "2_STORY_MAPPING_27"
+        return "2_STORY_MAPPING_26"
+    
+    def _2_story_mapping_27(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_BLUE"):
+                print("MOVEPOINT_TARGET_POKECENTER_BLUE")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_BLUE"):
+                print("MOVEPOINT_PIC_POKECENTER_BLUE")
+            
+        else:
+            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_BLUE",pic2="MOVEPOINT_PIC_POKECENTER_BLUE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_28"#再移動となるため17にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_25"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_27"
+            else:
+                return "2_STORY_MAPPING_27"
+        return "2_STORY_MAPPING_27"
+    
+    def _2_story_mapping_28(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(4,0,1)#ワイルドゾーン3に移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_29"
+        else:
+            return "2_STORY_MAPPING_28"
+    
+    def _2_story_mapping_29(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,30), duration=10.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,320), duration=16.2, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,50), duration=20.6, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,320), duration=7.0, wait=0.5) 
+            self.wait(1.0)
+            return "2_STORY_MAPPING_30"
+        return "2_STORY_MAPPING_29"
+    
+    def _2_story_mapping_30(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_EVEL"):
+                print("MOVEPOINT_TARGET_POKECENTER_EVEL")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_EVEL"):
+                print("MOVEPOINT_PIC_POKECENTER_EVEL")
+            
+        else:
+            ret = self.Common_goto(2,0,-1,movepoint_check=1)#ポケセンイベールが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_EVEL",pic2="MOVEPOINT_PIC_POKECENTER_EVEL") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_32"#再移動となるため32にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_28"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_30"
+            else:
+                return "2_STORY_MAPPING_30"
+        return "2_STORY_MAPPING_30"
+    
+    def _2_story_mapping_31(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(2,0,-1)#ポケセンイベールに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_32"
+        else:
+            return "2_STORY_MAPPING_31"
+    
+    def _2_story_mapping_32(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,350), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,270), duration=30.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,190), duration=10.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,160), duration=15.0, wait=0.5) 
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,170), duration=7.0, wait=0.5) 
+            self.wait(1.0)
+            return "2_STORY_MAPPING_33"
+        return "2_STORY_MAPPING_32"
+    
+    def _2_story_mapping_33(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_CAFE_RETAKE"):
+                print("MOVEPOINT_TARGET_CAFE_RETAKE")
+            if self.image_check("MOVEPOINT_PIC_CAFE_RETAKE"):
+                print("MOVEPOINT_PIC_CAFE_RETAKE")
+            
+        else:
+            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェリテイクが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_RETAKE",pic2="MOVEPOINT_PIC_CAFE_RETAKE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_35"#再移動となるため35にジャンプ
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_31"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_33"
+            else:
+                return "2_STORY_MAPPING_33"
+        return "2_STORY_MAPPING_33"
+    
+    def _2_story_mapping_34(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(3,0,-1)##カフェリテイクに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_35"
+        else:
+            return "2_STORY_MAPPING_34"
+    
+    def _2_story_mapping_35(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=15.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,140), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,80), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            return "2_STORY_MAPPING_36"
+        return "2_STORY_MAPPING_35"
+    
+    def _2_story_mapping_36(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_POKECENTER_JONE"):
+                print("MOVEPOINT_TARGET_POKECENTER_JONE")
+            if self.image_check("MOVEPOINT_PIC_POKECENTER_JONE"):
+                print("MOVEPOINT_PIC_POKECENTER_JONE")
+            
+        else:
+            ret = self.Common_goto(2,0,-2,movepoint_check=1)#ポケセンジョーヌが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_POKECENTER_JONE",pic2="MOVEPOINT_PIC_POKECENTER_JONE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_37"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_34"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_36"
+            else:
+                return "2_STORY_MAPPING_36"
+        return "2_STORY_MAPPING_36"
+    
+    def _2_story_mapping_37(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(3,0,1)##ヌーヴォカフェに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_38"
+        else:
+            return "2_STORY_MAPPING_37"
+    
+    def _2_story_mapping_38(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=15.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_39"
+        return "2_STORY_MAPPING_38"
+    
+    def _2_story_mapping_39(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE2"):
+                print("MOVEPOINT_TARGET_W_ZONE2")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE2"):
+                print("MOVEPOINT_PIC_W_ZONE2")
+            
+        else:
+            ret = self.Common_goto(4,0,1,movepoint_check=1)#ワイルドゾーン2が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE2",pic2="MOVEPOINT_PIC_W_ZONE2") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_40"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_37"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_39"
+            else:
+                return "2_STORY_MAPPING_39"
+        return "2_STORY_MAPPING_39"
+    
+    def _2_story_mapping_40(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,0)#プリズムタワーに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_41"
+        else:
+            return "2_STORY_MAPPING_40"
+
+    
+    def _2_story_mapping_41(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,170), duration=11.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_42"
+        return "2_STORY_MAPPING_41"
+
+    def _2_story_mapping_42(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE5"):
+                print("MOVEPOINT_TARGET_W_ZONE5")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE5"):
+                print("MOVEPOINT_PIC_W_ZONE5")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン5が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE5",pic2="MOVEPOINT_PIC_W_ZONE5") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_MAPPING_43"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_40"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_42"
+            else:
+                return "2_STORY_MAPPING_42"
+        return "2_STORY_MAPPING_42"
+    
+    def _2_story_mapping_43(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_44"
+        else:
+            return "2_STORY_MAPPING_43"
+    
+    def _2_story_mapping_44(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,290), duration=8.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,260), duration=20.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=1.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_45"
+        return "2_STORY_MAPPING_44"
+    
+    def _2_story_mapping_45(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE6"):
+                print("MOVEPOINT_TARGET_W_ZONE6")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE6"):
+                print("MOVEPOINT_PIC_W_ZONE6")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン6が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE6",pic2="MOVEPOINT_PIC_W_ZONE6") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_TOWER_47"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_43"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_45"
+            else:
+                return "2_STORY_MAPPING_45"
+        return "2_STORY_MAPPING_45"
+    
+    def _2_story_tower_47(self):
+        #ヘラクロス交換
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_48"
+        else:
+            return "2_STORY_TOWER_47"
+    
+    def _2_story_tower_48(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,350), duration=3.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,110), duration=8.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_49"
+        return "2_STORY_TOWER_48"
+    
+    def _2_story_tower_49(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_50"
+        return "2_STORY_TOWER_49"
+    
+    def _2_story_tower_50(self):
+        ### AUTO_SAVE_POINT
+        if self.check_picture==1:
+            if self.image_check("PIKA_ICON_BOX6"):
+                print("PIKA_ICON_BOX6")
+            return "2_STORY_TOWER_50"
+        else:
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_TOWER_51"
+            return "2_STORY_TOWER_50"
+    
+    def _2_story_tower_51(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="PIKA_ICON_BOX6",sleeptime=2.0):
+                self.wait(1.0)
+                if self.image_check("SIDE_MARKER_CENTER_WIDE"):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                else:
+                    return "2_STORY_TOWER_52"
+        return "2_STORY_TOWER_51"
+    
+    def _2_story_tower_52(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_53"
+        else:
+            return "2_STORY_TOWER_52"
+    
+    def _2_story_tower_53(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,45), duration=0.5, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_54"
+        return "2_STORY_TOWER_53"
+    
+    def _2_story_tower_54(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_55"
+        return "2_STORY_TOWER_54"
+    
+    def _2_story_tower_55(self): 
+        ### AUTO_SAVE_POINT
+        if self.check_picture==1:
+            if self.image_check("SIDE_SELECT_TOP_MAP"):
+                print("SIDE_SELECT_TOP_MAP")
+            return "2_STORY_TOWER_55"
+        else:
+            ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+            if ret == "START":
+                return "2_STORY_TOWER_56"
+            else:
+                return "2_STORY_TOWER_55"
+    
+    def _2_story_tower_56(self): 
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_57"
+        return "2_STORY_TOWER_56"
+    
+    def _2_story_tower_57(self): 
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=14.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,110), duration=6.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=1.8, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_58"
+        return "2_STORY_TOWER_57"
+    
+    def _2_story_tower_58(self): 
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_59"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "2_STORY_TOWER_55"
+        return "2_STORY_TOWER_58"
+    
+    def _2_story_tower_59(self):
+        if self.image_check("ESCAPE"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                if self.image_check("FIELD_W"):
+                    self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            return "2_STORY_TOWER_60"
+        return "2_STORY_TOWER_59"
+    
+    def _2_story_tower_60(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="TEXT_BLACK_COMMENT"):
+                return "2_STORY_TOWER_61"
+        return "2_STORY_TOWER_60"
+    
+    def _2_story_tower_61(self): 
+        ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_62"
+        else:
+            return "2_STORY_TOWER_61"
+    
+    def _2_story_tower_62(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,45), duration=0.5, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_TOWER_63"
+        return "2_STORY_TOWER_62"
+    
+    def _2_story_tower_63(self): 
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_64"
+        return "2_STORY_TOWER_63"
+    
+    def _2_story_tower_64(self): 
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_65"
+        else:
+            return "2_STORY_TOWER_64"
+    
+    def _2_story_tower_65(self):
+        if self.Common_pokemon_recovery():
+            return "2_STORY_TOWER_66"
+        return "2_STORY_TOWER_65"
+    
+    def _2_story_tower_66(self):
+        #親分クエスト
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(4,0,2)#Wゾーン3に移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_67"
+        else:
+            return "2_STORY_TOWER_66"
+    
+    def _2_story_tower_67(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,25), duration=13.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,86), duration=5.5, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_68"
+        return "2_STORY_TOWER_67"
+    
+    def _2_story_tower_68(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_69"
+        return "2_STORY_TOWER_68"
+    
+    def _2_story_tower_69(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,0,-1)#ローリングドリーマーに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_70"
+        else:
+            return "2_STORY_TOWER_69"
+    
+    def _2_story_tower_70(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=37.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,190), duration=8.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=0.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,260), duration=7.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,220), duration=10.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,35), duration=3.3, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_71"
+        return "2_STORY_TOWER_70"
+    
+    def _2_story_tower_71(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_72"
+        return "2_STORY_TOWER_71"
+    
+    def _2_story_tower_72(self):
+        #親分ホルビーが必要な場合はゲットマーカー4でゲット処理を追加
+        #敗戦対応が必要なはず
+        #移動なしでも行けるので一旦プレイヤー移動なしで実施
+        if self.image_check("ESCAPE"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                if self.image_check("FIELD_W"):
+                    self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_TOWER_73"
+
+        return "2_STORY_TOWER_72"
+    
+    def _2_story_tower_73(self): 
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_74"
+        return "2_STORY_TOWER_73"
+
+    def _2_story_tower_74(self): 
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_75"
+        else:
+            return "2_STORY_TOWER_74"
+    
+    def _2_story_tower_75(self):
+        if self.Common_pokemon_recovery():
+            return "2_STORY_TOWER_76"
+        return "2_STORY_TOWER_75"
+    
+    def _2_story_tower_76(self): 
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,0,-2)#ハンサムハウスに移動で位置確定
+        if ret == "START":
+            return "2_STORY_TOWER_77"
+        else:
+            return "2_STORY_TOWER_76"
+    
+    def _2_story_tower_77(self): 
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_78"
+        return "2_STORY_TOWER_77"
+    
+    def _2_story_tower_78(self): 
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_79"
+        return "2_STORY_TOWER_78"
+    
+    def _2_story_tower_79(self): 
+        if self.image_check("WANINOKO_ICON") or self.image_check("MERIP_ICON_GET5"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_80"    
+        return "2_STORY_TOWER_79"
+    
+    def _2_story_tower_80(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,145), duration=3.8, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "2_STORY_TOWER_81"  
+        return "2_STORY_TOWER_80"
+    
+    def _2_story_tower_81(self): 
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_82"
+        return "2_STORY_TOWER_81"
+    
+    def _2_story_tower_82(self):
+        if self.image_check("ESCAPE"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                if self.image_check("FIELD_W"):
+                    self.etc_sendCommand("Lbutton_up")
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_TOWER_83"
+        return "2_STORY_TOWER_82"
+    
+    def _2_story_tower_83(self): 
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_TOWER_84"
+        return "2_STORY_TOWER_83"
+    
+    def _2_story_tower_84(self): 
+        return "2_STORY_TOWER_84"
+    
+    def _2_story_tower_85(self): 
+        return "2_STORY_TOWER_85"
+    
+    def _2_story_tower_86(self): 
+        return "2_STORY_TOWER_86"
+    
+    def _2_story_tower_87(self): 
+        return "2_STORY_TOWER_87"
+    
+    def _2_story_tower_88(self): 
+        return "2_STORY_TOWER_88"
+    
+    def _2_story_tower_89(self): 
+        return "2_STORY_TOWER_89"
+    
+    def _2_story_tower_90(self): 
+        return "2_STORY_TOWER_90"
+    
+    def _2_story_tower_91(self): 
+        return "2_STORY_TOWER_91"
+    
+    def _2_story_tower_92(self): 
+        return "2_STORY_TOWER_92"
+    
+    def _2_story_tower_93(self): 
+        return "2_STORY_TOWER_93"
+    
+    def _2_story_tower_94(self): 
+        return "2_STORY_TOWER_94"
+
+    ######################################################
+    # Commonfunction
+    ######################################################
+    def common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0):
+        if self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+            self.common_skill_change_current_state = self.common_skill_change_pokemon_select(selectnum=selectpokemonnum)
+        elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1":
+            self.common_skill_change_current_state = self.common_skill_change_skill_window_chtarget1(target1=target1,machine=machine)
+        elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2":
+            self.common_skill_change_current_state = self.common_skill_change_skill_window_chtarget2(target2=target2)
+        else:
+            self.common_skill_change_current_state = self.STATE_COMMON_SKILL_CHANGE_FUNCTION[self.common_skill_change_current_state]()
+
+        return self.common_skill_change_current_state
+
+    def common_skill_change_start(self):
+        return "COMMON_SKILL_CHANGE_START_CHECK"
+            
+    def common_skill_change_start_check(self):
+        if self.check_picture==1:
+            if self.image_check("X_MENU_OPEN"):
+                print("X_MENU_OPEN")
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                print("SIDE_SELECT_X_MENU_W")
+            if self.image_check("DOWN_SELECT_X_MENU_W"):
+                print("DOWN_SELECT_X_MENU_W")
+            if self.image_check("POKEMON_MENU_X_MENU_W"):
+                print("POKEMON_MENU_X_MENU_W")
+            if self.image_check("POKEMON_MENU_X_MENU_W_SELECT_SKILL"):
+                print("POKEMON_MENU_X_MENU_W_SELECT_SKILL")
+            if self.image_check("SKILL_PAGE_WINDOW"):
+                print("SKILL_PAGE_WINDOW")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_Y"):
+                print("SKILL_PAGE_SIDE_SELECT_Y")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_X"):
+                print("SKILL_PAGE_SIDE_SELECT_X")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_A"):
+                print("SKILL_PAGE_SIDE_SELECT_A")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_B"):
+                print("SKILL_PAGE_SIDE_SELECT_B")
+            self.wait(2.0)
+        else:
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.pressRep(Button.X, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+            elif self.image_check("X_MENU_OPEN"):
+                self.wait(0.5)
+                return "COMMON_SKILL_CHANGE_POKEMON_SELECT"
+            elif self.image_check("HELP_MARKER"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+
+        return "COMMON_SKILL_CHANGE_START_CHECK"
+            
+    def common_skill_change_pokemon_select(self,selectnum):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                self.wait(0.5)
+                for i in range(selectnum):
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+                return "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN"
+            elif self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(7):
+                    self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+        return "COMMON_SKILL_CHANGE_POKEMON_SELECT"
+    
+    def common_skill_change_skill_window_open(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(2):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.3)
+            elif self.image_check("POKEMON_MENU_X_MENU_W_SELECT_SKILL"): 
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+                return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
+        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN"
+        
+    def common_skill_change_skill_window_chtarget1(self,target1,machine):
+        if self.image_check("SKILL_PAGE_WINDOW"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                if target1 == "X":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                elif target1 == "Y":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target1 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_right")
+                elif target1 == "B":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_down")
+                else:
+                    if machine==1:
+                        self.pressRep(Button.ZR, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                        self.wait(0.3)
+                    for i in range(target1):
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(0.3)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_Y"):
+                if target1 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target1 == "Y":
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+                elif target1 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target1 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+                #else:
+                #TOPCHECKが必要なため省略
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_X"):
+                if target1 == "X":
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+                elif target1 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target1 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target1 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+                #else:
+                #TOPCHECKが必要なため省略
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_A"):
+                if target1 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target1 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target1 == "A":
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+                elif target1 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+                #else:
+                #TOPCHECKが必要なため省略
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_B"):
+                if target1 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target1 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target1 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target1 == "B":
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+                #else:
+                #TOPCHECKが必要なため省略
+        self.wait(0.3)
+        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
+
+    def common_skill_change_skill_window_chtarget2(self,target2):
+        if self.image_check("SKILL_PAGE_WINDOW"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                if target2 == "X":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                elif target2 == "Y":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target2 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_right")
+                elif target2 == "B":
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_down")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_Y"):
+                if target2 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target2 == "Y":
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+                elif target2 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target2 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_X"):
+                if target2 == "X":
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+                elif target2 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target2 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target2 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_A"):
+                if target2 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target2 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target2 == "A":
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+                elif target2 == "B":
+                    self.etc_sendCommand("Lbutton_down")
+            if self.image_check("SKILL_PAGE_SIDE_SELECT_B"):
+                if target2 == "X":
+                    self.etc_sendCommand("Lbutton_up")
+                elif target2 == "Y":
+                    self.etc_sendCommand("Lbutton_left")
+                elif target2 == "A":
+                    self.etc_sendCommand("Lbutton_right")
+                elif target2 == "B":
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+        self.wait(0.3)
+        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+    def common_skill_change_skill_window_close(self):
+        while True:
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                return "COMMON_SKILL_CHANGE_END"
+        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+    def common_skill_change_end(self):
+        return "COMMON_SKILL_CHANGE_START"
+    ######################################################
+    # Common Map
+    ######################################################
+    def Common_start(self):
+        #dummy
+        return "COMMON_MAP_OPEN"
+
+    def Common_map_open(self):
+        self.map_cursor_reset=0
+        self.ZL_ACTION("END")
+        self.wait(0.1)#self.wait(self.SLEEPLIST[8][2])
+        # 想定外の話しかけ用
+        if self.image_check("TEXT_BOX"):
+            self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)
+        if self.image_check("TEXT_BOX2"):
+            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)         
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            self.wait(0.1)
+            return "COMMON_GOTO_SELECT1"
+        # ステップ遷移ミス用
+        elif self.image_check("MAP"):
+            return "COMMON_GOTO_SELECT1"
+        elif self.image_check("MAP2"):
+            return "COMMON_GOTO_SELECT1"
+        #elif self.image_check("MORNING"):  
+        #    return "CHECK_TIME"
+        #elif self.image_check("NIGHT"):
+        #    return "CHECK_TIME"
+
+        return "COMMON_MAP_OPEN"
+    
+    def Common_goto_select1(self,position):
+        # position:0 すべて
+        # position:1 施設
+        # position:2 ポケセン
+        # position:3 カフェ
+        # position:4 ゾーン
+        # position:5 やめる
+        self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):      
+            self.wait(0.1)
+            if self.image_check("MOVESPOT_TAB"):
+                if self.map_cursor_reset==0:
+                    if self.image_check("SIDE_SELECT_TOP_MAP"):
+                        self.map_cursor_reset=1
+                    else:
+                        self.etc_sendCommand("Lbutton_left")
+                    self.wait(0.5)
+                    return "COMMON_GOTO_SELECT1"
+                else:
+                    if self.image_check("TAB_FILTER"):       
+                        self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                        
+                    elif self.image_check("SELECT_ALL"):
+                        # SELECT
+                        for i in range(position):
+                            self.etc_sendCommand("Lbutton_down")
+                            #self.wait(0.1)#回数が多い場合に移動が足りない場合は必要
+                            
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                        return "COMMON_GOTO_SELECT2"
+            else:
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        
+        # ステップ遷移ミス用
+        #elif self.image_check("MORNING"):  
+        #    return "CHECK_TIME"
+        #elif self.image_check("NIGHT"):
+        #    return "CHECK_TIME"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+            for i in range(5):
+                if self.image_check("MAP2"):
+                    return "COMMON_GOTO_SELECT1"
+                self.wait(0.1)
+            print("W_select1")
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            self.wait(0.1)
+            return "COMMON_GOTO_SELECT1"
+        elif not self.image_check("MAP2"):
+            # マップ開きミス用
+            for i in range(5):
+                if self.image_check("MAP2"):
+                    return "COMMON_GOTO_SELECT1"
+                self.wait(0.1)
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            self.wait(0.1)
+            return "COMMON_GOTO_SELECT1"
+        return "COMMON_GOTO_SELECT1"
+    
+    def Common_goto_select2(self,positionright,positiondown,movepoint_check):
+        self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):        
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):
+                    # FILTER
+                    for i in range(positionright):
+                        self.etc_sendCommand("Lbutton_right")
+                        self.wait(0.1)#回数が多い場合に移動が足りない場合は必要
+                    if positiondown > -1:
+                        for i in range(positiondown):
+                            self.etc_sendCommand("Lbutton_down")
+                            self.wait(0.1)#回数が多い場合に移動が足りない場合は必要
+                    else:
+                        for i in range(positiondown*-1):
+                            self.etc_sendCommand("Lbutton_up")
+                            self.wait(0.1)#回数が多い場合に移動が足りない場合は必要
+                    if movepoint_check == 0:
+                        ret = self.Common_goto_jump()#移動
+                        return ret
+                    else:
+                        return "COMMON_GOTO_JUMP"
+                        
+        return "COMMON_GOTO_SELECT2"
+
+    def Common_goto_jump(self):
+        self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
+     
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        for i in range(1,10):
+            self.wait(0.1)#self.wait(self.SLEEPLIST[10][2])
+            if self.image_check("MOVE_COMMENT"): 
+                self.pressRep(Button.A, repeat=15, duration=0.15, wait=0.1, interval=0.1)
+                self.sleepcount=0
+                return "COMMON_CHANGE_TIME"
+            
+            elif self.image_check("MOVE_COMMENT_BATTLE"):
+                self.inactioncount+=1
+                self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.1, interval=0.1)
+                self.battle_step_return=1
+                return "COMMON_BATTLE_RETURN"
+            
+            elif i == 1:
+                if self.image_check("MOVE_COMMENT"): 
+                    self.pressRep(Button.A, repeat=15, duration=0.15, wait=0.1, interval=0.1)
+                    self.sleepcount=0
+                    return "COMMON_CHANGE_TIME"
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+        print("MOVE_COM_ELSE")
+        if self.battlecheck == 1:
+            self.inactioncount+=1
+            self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+            self.battle_step_return=1
+            return "COMMON_BATTLE_RETURN"
+        self.sleepcount=0
+        self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+        return "COMMON_CHANGE_TIME"
+
+
+    def Benchi(self):
+        if self.sleepcount==0:
+            self.press(Direction(Stick.LEFT, 180), duration=0.7, wait=0.1)
+            self.press(Direction(Stick.LEFT, 90), duration=0.5, wait=0.1)
+        else:
+            self.press(Direction(Stick.LEFT, 270), duration=0.5, wait=0.1)
+        self.pressRep(Button.A, repeat=12, duration=0.15, wait=0.2, interval=0.3)
+        
+    def Common_change_time(self):
+        
+        #マップコメントの捕捉失敗用
+        #if self.image_check("ESCAPE"):
+        #    self.battlecheck=1
+        #    return "GOTO_SELECT1"
+               
+        #ポケモンセンター用
+        #elif self.image_check("DEAD"):
+        #    self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
+        #    self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
+        #    self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.2, interval=0.1)
+        #    if self.chicketmaxflag == 1:
+        #        self.chicketmaxflag = 2
+        #        return "QUASAR_MAP_OPEN"
+        #    else:
+        #        return "BENCH_MAP_OPEN"
+        #el
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.Benchi()
+            return "COMMON_CHECK_TIME"
+
+        else:
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(0.1)#self.wait(self.SLEEPLIST[0][2])
+        return "COMMON_CHANGE_TIME"
+
+    def Common_check_time(self,check_timing):
+
+        # (時間切り替わりの補足ができない？その場合は朝扱いで一度抜ける(夜だった場合再度、朝・夜の切り替えを行う))
+        #必ずMORNING、NIGHT判定できる時間以上のカウント数にしてください。
+          
+        if self.image_check("MORNING") or (check_timing != "MORNING" and self.timecount > 200):
+            print("朝")
+            self.timecount=0
+            while True:
+                #ジャスティス会への話しかけが発生する可能性があるので、ループしてしまう場合はBボタンが必要になる場合がある                
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+                    self.timecount=0
+                    self.changetimecount+=1
+                    if check_timing != "MORNING":
+                        self.sleepcount=1
+                        return "COMMON_CHANGE_TIME"
+                    else:
+                        return "COMMON_START"
+
+        elif self.image_check("NIGHT") or (check_timing != "NIGHT" and self.timecount > 200):
+            #1ループの戦闘中移動失敗カウンタの初期化
+            self.inactioncount=0
+            print("夜")
+            while True:
+                #ジャスティス会への話しかけが発生する可能性があるので、ループしてしまう場合はBボタンが必要になる場合がある       
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+                    self.timecount=0
+                    self.changetimecount+=1
+                    if check_timing != "NIGHT":
+                        self.sleepcount=1
+                        return "COMMON_CHANGE_TIME"
+                    else:
+                        return "COMMON_START"
+        
+        self.wait(0.1)#self.wait(self.SLEEPLIST[6][2])
+        #抜けミス用カウント
+        self.timecount+=1
+        return "COMMON_CHECK_TIME"
+    
+    def Common_change_time_set(self,check_timing,type=0):
+        #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
+        if self.Common_current_state == "COMMON_CHECK_TIME":  
+            self.Common_current_state = self.Common_check_time(check_timing)
+        elif self.Common_current_state == "COMMON_CHANGE_TIME":  
+            self.Common_current_state = self.Common_change_time()
+        else:
+            ret = self.Common_goto(2,1,0)
+            
+            if ret == "START":
+                self.Common_current_state = "COMMON_CHANGE_TIME"
+                
+        if self.Common_current_state == "COMMON_START":
+            return "START"
+        else:
+            return "EXEC"
+
+
+    def Common_goto(self,position1,position2left,position2down,movepoint_check=0):
+        #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
+        if self.Common_current_state == "COMMON_GOTO_SELECT1":
+            self.Common_current_state = self.Common_goto_select1(position1)
+        elif self.Common_current_state == "COMMON_GOTO_SELECT2":
+            self.Common_current_state = self.Common_goto_select2(position2left,position2down,movepoint_check)
+        else:
+            self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state]()
+            
+        if movepoint_check==1 and self.Common_current_state == "COMMON_GOTO_JUMP":#移動先画像チェック用
+            self.Common_current_state = "COMMON_START"#画像位置で停止するが、移動するかは確定出ないためstartに戻す。(移動の際は移動関数を直接叩く)
+            return "MOVEPOINT_PIC"
+        elif ((self.Common_current_state == "COMMON_CHANGE_TIME") or (self.Common_current_state == "COMMON_CHECK_TIME")):
+            self.Common_current_state = "COMMON_START"
+            return "START"
+        else:
+            return "EXEC"
+        
+    def Common_pokemon_recovery(self):  
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
+            self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.2, interval=0.1)
+            return True
+        else:
+            return False
+    
+    def Common_mappic_check(self,pic1="NULL",pic2="NULL"):
+        for i in range(1,10):
+            if ((pic1=="NULL" or self.image_check(pic1)) and (pic2=="NULL" or self.image_check(pic2))):
+                return True
+            self.wait(0.1)
+        return False
+    
+######################################################
+# ZA_battle_infi_Base
+######################################################
+    ######################################################
+    # BENCH FUNCTION
+    ###################################################### 
+    def bench_start(self):
+        return "BENCH_MAP_OPEN"
+    
+    def bench_map_open(self):
+        self.ZL_ACTION("END")
+        self.wait(self.SLEEPLIST[8][2])
+        
+        # 想定外の話しかけ用
+        if self.image_check("TEXT_BOX"):
+            self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)
+        if self.image_check("TEXT_BOX2"):
+            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)        
+        #マップコメントの捕捉失敗用
+        if self.image_check("ESCAPE"):
+            self.battlecheck=1
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            return "BENCH_POKECENTER_SELECT1"   
+        elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+
+            #マップコメントの捕捉失敗用
+            if self.image_check("ESCAPE"):
+                self.battlecheck=1
+            else:
+                self.battlecheck=0
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            self.wait(0.1)
+            return "BENCH_POKECENTER_SELECT1"
+        # ステップ遷移ミス用
+        elif self.image_check("MAP"):
+            return "BENCH_POKECENTER_SELECT1"
+        elif self.image_check("MORNING"):  
+            return "BENCH_CHECK_TIME"
+        elif self.image_check("NIGHT"):
+            return "BENCH_CHECK_TIME"
+        
+        #バトルタイムアウト用
+        elif self.image_check("ESCAPE"):
+            self.battlecheck=1
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            return "BENCH_POKECENTER_SELECT1"
+
+        #はしごでマップ開けていない用
+        
+        elif self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+            noescapeflg=0
+            for i in range(1,20):
+                if self.image_check("ESCAPE"):
+                    noescapeflg=1
+                    break
+                elif self.image_check("SELECT"):
+                    self.etc_sendCommand("Lbutton_up")
+                    noescapeflg=1
+                    break
+                self.wait(0.1)
+            
+            if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                self.wait(0.3)
+                
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                self.battlecount=self.battlecount+1
+                return "BENCH_POKECENTER_SELECT1"
+        
+        elif not (self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD")):
+            self.etc_sendCommand("Lbutton_left")
+            #話しかけた時用のキャンセル
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+            self.wait(self.SLEEPLIST[0][2])
+            #戦闘中、マップを開けない状態用
+            #if self.image_check("BATTLE"):
+            #    if self.image_check("ESCAPE"):
+            #        self.battlecheck=1
+            #        self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            #        return "BENCH_POKECENTER_SELECT1"
+            #    else:
+            #        self.press(Direction(Stick.LEFT, 90), duration=4.0, wait=0.01)
+            #        return "BENCH_MAP_OPEN"
+            
+        return "BENCH_MAP_OPEN"
+    
+    def bench_goto_pokecenter1(self):        
+        self.wait(self.SLEEPLIST[7][2])
+        
+        if self.image_check("MOVE_COMMENT_BATTLE"): 
+            self.inactioncount+=1
+            self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+            self.battle_step_return=1
+            return "BATTLE_RETURN"
+        if self.image_check("MAP2"):      
+            self.wait(0.1)
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):       
+                    self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    
+                elif self.image_check("SELECT_ALL"):        
+                    self.etc_sendCommand("Lbutton_down")
+                    self.etc_sendCommand("Lbutton_down")
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    return "BENCH_POKECENTER_SELECT2"
+            else:
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        
+        # ステップ遷移ミス用
+        elif self.image_check("MORNING"):  
+            return "BENCH_CHECK_TIME"
+        elif self.image_check("NIGHT"):
+            return "BENCH_CHECK_TIME"
+        elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+            return "BENCH_MAP_OPEN"
+        elif not self.image_check("MAP2"):
+            # マップ開きミス用
+            self.wait(1.0)
+            if not self.image_check("MAP2"):
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+        return "BENCH_POKECENTER_SELECT1"
+    
+    def bench_goto_pokecenter2(self):
+        self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):        
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.etc_sendCommand("Lbutton_down")
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+                    for i in range(1,10):
+                        self.wait(self.SLEEPLIST[10][2])
+                        if self.image_check("MOVE_COMMENT"): 
+                            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                            self.sleepcount=0
+                            return "BENCH_CHANGE_TIME"
+                        elif self.image_check("MOVE_COMMENT_BATTLE"):
+                            self.inactioncount+=1
+                            self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.1, interval=0.1)
+                            self.battle_step_return=1
+                            return "BATTLE_RETURN"
+                        elif i == 1:
+                            if self.image_check("MOVE_COMMENT"): 
+                                self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                                self.sleepcount=0
+                                return "BENCH_CHANGE_TIME"
+                            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+                    print("MOVE_COM_ELSE")
+                    if self.battlecheck == 1:
+                        self.inactioncount+=1
+                        self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+                        self.battle_step_return=1
+                        return "BATTLE_RETURN"
+                    
+                    self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                    return "BENCH_CHANGE_TIME"
+        return "BENCH_POKECENTER_SELECT2"
+
+    def bench_change_time(self):
+        
+        #マップコメントの捕捉失敗用
+        if self.image_check("ESCAPE"):
+            self.battlecheck=1
+            return "BENCH_POKECENTER_SELECT1"
+        
+        if not (self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD")):
+            self.etc_sendCommand("Lbutton_left")
+            #話しかけた時用のキャンセル
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+            self.wait(self.SLEEPLIST[0][2])
+            return "BENCH_CHANGE_TIME"
+       
+        elif self.image_check("DEAD") or self.chicketmaxflag == 1:
+            self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
+            self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.2, interval=0.1)
+            if self.chicketmaxflag == 1:
+                self.chicketmaxflag = 2
+                return "QUASAR_MAP_OPEN"
+            else:
+                return "BENCH_MAP_OPEN"
+        elif self.image_check("FIELD") or self.image_check("FIELD_BACK"):
+            self.Benchi()
+            return "BENCH_CHECK_TIME"
+
+        else:
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(self.SLEEPLIST[0][2])
+        return "BENCH_CHANGE_TIME"
+
+    def bench_check_time(self):
+
+        # (時間切り替わりの補足ができない？その場合は朝扱いで一度抜ける(夜だった場合再度、朝・夜の切り替えを行う))
+        #必ずMORNING、NIGHT判定できる時間以上のカウント数にしてください。
+        if self.timecount > 100:
+        
+            self.changetimemisscount+=1
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+            return "BENCH_START"
+        elif self.image_check("MORNING") or self.timecount > 100:
+            print("朝")
+            self.sleepcount=1
+            self.timecount=0
+            while True:
+                #ジャスティス会への話しかけが発生する可能性があるので、ループしてしまう場合はBボタンが必要になる場合がある                
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                # 画像認識のずれで処理前に抜ける可能性があるので削除
+                #if not self.image_check("MORNING") or self.timecount > 150:
+                #    self.timecount=0
+                #    return "BENCH_CHANGE_TIME"
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+                    self.timecount=0
+                    self.changetimecount+=1
+                    return "BENCH_CHANGE_TIME"
+                #抜けミス用カウント
+                #self.timecount+=1
+        elif self.image_check("NIGHT"):
+            #1ループの戦闘中移動失敗カウンタの初期化
+            self.inactioncount=0
+            print("夜")
+            while True:
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                # 画像認識のずれで処理前に抜ける可能性があるので削除
+                #if not self.image_check("NIGHT"):#解決後完全に削除 or self.timecount > 150:
+                #    self.timecount=0
+                #    return "BENCH_START"
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+                    self.timecount=0
+                    self.changetimecount+=1
+                    return "BENCH_START"
+                #抜けミス用カウント
+                #self.timecount+=1
+        
+        self.wait(self.SLEEPLIST[6][2])
+        #抜けミス用カウント
+        self.timecount+=1
+        return "BENCH_CHECK_TIME"
+
+    def quasar_map_open(self):
+        
+        ret = self.bench_map_open()
+        if ret == "BENCH_POKECENTER_SELECT1":
+            return "QUASAR_SELECT1"    
+        else:
+            return "QUASAR_MAP_OPEN"
+
+    def goto_quasar1(self):
+        self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):      
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):       
+                    self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                elif self.image_check("SELECT_ALL"):        
+                    self.etc_sendCommand("Lbutton_down")
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    return "QUASAR_SELECT2"
+            else:
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        
+        # ステップ遷移ミス用    
+        elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+            return "QUASAR_MAP_OPEN"
+        elif not self.image_check("MAP2"):
+            # マップ開きミス用
+            self.wait(1.0)
+            if not self.image_check("MAP2"):
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+        return "QUASAR_SELECT1"
+    
+    def goto_quasar2(self):
+        self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):        
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(self.SLEEPLIST[1][2])
+                    self.etc_sendCommand("Lbutton_down")
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+                    for i in range(1,10):
+                        self.wait(self.SLEEPLIST[10][2])
+                        if self.image_check("MOVE_COMMENT"): 
+                            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                            self.sleepcount=0
+                            return "BENCH_START"
+                        elif i == 1:
+                            if self.image_check("MOVE_COMMENT"): 
+                                self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                                self.sleepcount=0
+                                return "BENCH_START"
+                            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+                    print("MOVE_COM_ELSE_Q")
+                    if self.battlecheck == 1:
+                        self.inactioncount+=1
+                        self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+                        self.battle_step_return=1
+                        return "BENCH_START"
+
+                    self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                    self.sleepcount=0
+                    if self.battlecount> 2:
+                        return "BENCH_START"
+                    else:
+                        self.battle_step_return=0
+                        return "BENCH_START"
+                            
+        return "QUASAR_SELECT2"
+    
+    def battle_return(self):
+        return "BATTLE_RETURN"
+    ######################################################
+    # BATTLE FUNCTION
+    ###################################################### 
+    def battle_start(self):
+        self.battlecount=0
+        return "BATTLE_MAP_OPEN"
+    
+    def battle_map_open(self):
+        self.wait(self.SLEEPLIST[8][2])
+        
+        if self.image_check("MORNING"):
+            print("朝_loop battle_map_open")
+            while True:
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+                    break
+            self.MOVE_SEE("END")
+            self.ZL_ACTION("END")
+
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            self.battlecount=3
+            return "BATTLE_START" 
+        
+        if self.image_check("LOSE"):
+            for i in range(20):
+                self.press(Button.B, wait=0.0)
+            self.quasarcount += 1
+            self.quasarlosecount += 1
+            self.MOVE_SEE("END")
+            self.ZL_ACTION("END")
+            if self.quasar_current_state=="QUASAR_BATTLE_LOOP": 
+                return "QUASAR_START"
+            else:
+                return "BATTLE_START"
+        # 想定外の話しかけ用
+        if self.image_check("TEXT_BOX"):
+            self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)
+        if self.image_check("TEXT_BOX2"):
+            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+            self.wait(0.1)    
+        
+        if self.image_check("ESCAPE"):
+            return "BATTLE_MOVE"
+        elif self.image_check("MAP"):
+            return "BATTLE_GOTO_BATTLE_ZONE1"
+        elif self.image_check("DEAD"):
+            return "BATTLE_START"
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            #マップコメントの捕捉失敗用
+            if self.image_check("ESCAPE"):
+                return "BATTLE_MOVE"
+            else:
+                self.battlecheck=0
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            return "BATTLE_GOTO_BATTLE_ZONE1"
+        elif not(self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+            for i in range(20):
+                if (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+                     return "BATTLE_MAP_OPEN"
+                self.wait(1.0)
+            self.press(Direction(Stick.LEFT, 90), duration=6.0, wait=0.1)
+            self.wait(0.3)
+            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            return "BATTLE_MAP_OPEN"
+        else:
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(self.SLEEPLIST[0][2])
+        return "BATTLE_MAP_OPEN"
+
+    def battle_goto_battle_zone1(self):
+        self.wait(self.SLEEPLIST[7][2])
+
+        if self.image_check("MAP2"):      
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):       
+                    self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                elif self.image_check("SELECT_ALL"):        
+                    self.etc_sendCommand("Lbutton_down")
+                    self.etc_sendCommand("Lbutton_down")
+                    self.etc_sendCommand("Lbutton_down")
+                    self.etc_sendCommand("Lbutton_down")
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    return "BATTLE_GOTO_BATTLE_ZONE2"
+            else:
+                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        
+        # ステップ遷移ミス用            
+        elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+            return "BATTLE_MAP_OPEN"
+        elif not self.image_check("MAP2"):
+            # マップ開きミス用
+            self.wait(1.0)
+            if not self.image_check("MAP2"):
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+        return "BATTLE_GOTO_BATTLE_ZONE1"
+    
+    def battle_goto_battle_zone2(self):
+        self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2"):        
+            if self.image_check("MOVESPOT_TAB"):         
+                if self.image_check("TAB_FILTER"):
+                    for i in range(0,(self.battlecount + 1)):
+                        self.etc_sendCommand("Lbutton_up")
+                        
+                    for i in range(0,3):
+                        if not self.battlecount> 2:
+                            self.targetzone=self.zone_check()
+                        if self.battlecount> 2:
+                            break
+                        elif (self.testcode==0 and(not self.ZONELIST[self.targetzone][2]) or (self.testcode==2 and (not (self.targetzone == self.testtarget)))):
+                            print(str(self.targetzone) + ": " + self.ZONELIST[self.targetzone][1])
+                            self.battlecount=self.battlecount+1
+                            self.etc_sendCommand("Lbutton_up")
+                            self.zonemisscount[self.targetzone-1]+=1
+                            print("SKIP")
+                            print("==================================")
+                            self.wait(self.SLEEPLIST[1][2])
+                        else:
+                            print(str(self.targetzone) + ": " + self.ZONELIST[self.targetzone][1])
+                            break
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+
+                    for i in range(1,10):
+                        self.wait(self.SLEEPLIST[10][2])
+                        if self.image_check("MOVE_COMMENT"): 
+                            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                            self.sleepcount=0
+
+                            if self.battlecount> 2:
+                                return "BATTLE_START"
+                            else:
+                                self.battle_step_return=0
+                                return "BATTLE_MOVE"
+                        elif self.image_check("MOVE_COMMENT_BATTLE"):
+                            self.inactioncount+=1
+                            self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.1, interval=0.1)
+                            self.battle_step_return=1
+                            return "BATTLE_MOVE"
+                        elif i == 1:
+                            if self.image_check("MOVE_COMMENT"): 
+                                self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                                self.sleepcount=0
+                                if self.battlecount> 2:
+                                    return "BATTLE_START"
+                                else:
+                                    self.battle_step_return=0
+                                    return "BATTLE_MOVE"
+                            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
+                            
+                    print("MOVE_COM_ELSE")
+                    if self.battlecheck == 1:
+                        self.inactioncount+=1
+                        self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+                        self.battle_step_return=1
+                        return "BATTLE_MOVE"
+
+                    self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.1, interval=0.1)
+                    self.sleepcount=0
+                    if self.battlecount> 2:
+                        return "BATTLE_START"
+                    else:
+                        self.battle_step_return=0
+                        return "BATTLE_MOVE"
+        return "BATTLE_GOTO_BATTLE_ZONE2"
+    
+    def battle_move(self):
+        
+        if self.battle_step_return == 0:
+            self.battle_step=0
+        else:
+        	self.battle_step=self.battle_step_return  
+        
+        count=0
+        if self.battle_step_return == 0:
+            if not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+                for i in range(20):
+                    if (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+                        return "BATTLE_MOVE"
+                    self.wait(1.0)
+                return "BATTLE_START"
+
+            elif not (self.image_check("FIELD") or self.image_check("FIELD_BACK")):
+                self.etc_sendCommand("Lbutton_left")
+                if self.battle_current_state=="BATTLE_MOVE":
+                    self.pressRep(Button.B, repeat=10, duration=0.15, wait=0.1, interval=0.1)
+                if self.image_check("DEAD"):
+                    return "BATTLE_START"
+                elif not self.image_check("BATTLE"):
+                    return "BATTLE_MOVE"
+                #else:
+                #    return "BATTLE_MOVE"
+            elif self.image_check("DEAD"):
+                return "BATTLE_START"
+         
+		#TEST
+        if self.battle_step_return == 0:
+            return self.battle_move_test()
+        else:
+            self.battle_step_return = 0
+            return self.battle_move_test(1)      
+        
+    def battle_move_test(self,fast=0):
+        self.quasar_battle_lockon=0
+        count=0
+        movestep=0
+        Seecheckflg=0
+        Seecheckflg2=0
+        self.notargetcount=0
+        self.see_r=self.SEE_DEFAULT
+        
+        self.MOVE_SEE("END")
+        self.ZL_ACTION("END")
+        
+        if self.battle_current_state=="BATTLE_MOVE" and self.inactioncount>3 and self.image_check("ESCAPE"):
+            self.MOVE_SEE("END")
+            self.ZL_ACTION("END")
+
+            self.battleescapecount+=1
+            self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            for loop in range(100):
+                if self.image_check("ESCAPE_SELECT"):
+                    self.press(Button.A, wait=0.0)
+                elif self.image_check("ESCAPE_COMMENT1"):
+                    self.press(Button.A, wait=0.0)
+                elif self.image_check("ESCAPE_COMMENT2"):
+                    for i in range(1,10):
+                        self.press(Button.B, wait=0.0)
+                        return "BATTLE_START"
+                #補足できなかった場合の代用
+                elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+                    for i in range(1,10):
+                        self.press(Button.B, wait=0.0)
+                        return "BATTLE_START"
+
+        if self.ZONELIST[self.targetzone][4] == -1 or self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+            lockonflg = 1
+        else:
+            lockonflg = 0
+        
+        start = time.perf_counter()  # 計測開始
+        end = start
+        endbk = end
+        lastescape = time.perf_counter() 
+        
+        if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+            self.battle_step=1
+            self.ZL_ACTION("END")
+            self.ZL_ACTION("")
+        else:
+            if fast==0:
+                #ワイルドゾーンIN
+                self.press(Direction(Stick.LEFT, 90), duration=1.8, wait=0.01)
+                for i in range(0,3):
+                    self.press(Button.A, wait=0.0)
+                self.battle_step=0
+            #バトルゾーン入った直後に停止する＿
+            #else:
+            #    self.battle_step=1
+            #    self.ZL_ACTION("END")
+            #    self.ZL_ACTION("")
+        
+        while True:
+            self.out_str = (
+                f'----------------------------'
+                f'\n STATE_MAIN_FUNCTION   :: {self.main_current_state}'
+                f'\n'
+                f'\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
+                f'\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
+                f'\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
+                f'\n battlecount::{self.battlecount}'
+                f'\n battle_step::{self.battle_step}'      
+                f'\n chicketmaxflag::{self.chicketmaxflag}'
+                f'\n ZL_state::{self.ZL_state}'  
+                f'\n'  
+                f'\n ZONECOUNT'
+                f'\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
+                f'[ 2 :{self.zonemisscount[1]}/{self.zonecount[1]}] '
+                f'[ 3 :{self.zonemisscount[2]}/{self.zonecount[2]}] '
+                f'[ 4 :{self.zonemisscount[3]}/{self.zonecount[3]}] '
+                f'[ 5 :{self.zonemisscount[4]}/{self.zonecount[4]}] '
+                f'[ 6 :{self.zonemisscount[5]}/{self.zonecount[5]}] '
+                f'\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
+                f'[ 8 :{self.zonemisscount[7]}/{self.zonecount[7]}] '
+                f'[ 9 :{self.zonemisscount[8]}/{self.zonecount[8]}] '
+                f'[10 :{self.zonemisscount[9]}/{self.zonecount[9]}] '
+                f'[11 :{self.zonemisscount[10]}/{self.zonecount[10]}] '
+                f'[12 :{self.zonemisscount[11]}/{self.zonecount[11]}]'
+                f'\n'  
+                f'\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
+                f'\n battle_escape_count::{self.battleescapecount}'
+                f'\n inactioncount::{self.inactioncount}'
+                f'\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
+                f'\n'
+                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\n'
+                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\n'
+                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\n'
+                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\n'
+                f'\n'
+                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\n'  
+                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\n'
+                f'[left ::'
+                f'[{self.target_left_max_val_list[0]:03d}]'
+                f'[{self.target_left_max_val_list[1]:03d}]'
+                f'[{self.target_left_max_val_list[2]:03d}]'
+                f'[{self.target_left_max_val_list[3]:03d}]'
+                f'[{self.target_left_max_val_list[4]:03d}]'
+                f'[{self.target_left_max_val_list[5]:03d}]'
+                f'[{self.target_left_max_val_list[6]:03d}]'
+                f'[{self.target_left_max_val_list[7]:03d}]'
+                f'[{self.target_left_max_val_list[8]:03d}]'
+                f'[{self.target_left_max_val_list[9]:03d}]'
+                f'[{self.target_left_max_val_list[10]:03d}]'
+                f']\n'
+                f'[right::'
+                f'[{self.target_right_max_val_list[0]:03d}]'
+                f'[{self.target_right_max_val_list[1]:03d}]'
+                f'[{self.target_right_max_val_list[2]:03d}]'
+                f'[{self.target_right_max_val_list[3]:03d}]'
+                f'[{self.target_right_max_val_list[4]:03d}]'
+                f'[{self.target_right_max_val_list[5]:03d}]'
+                f'[{self.target_right_max_val_list[6]:03d}]'
+                f'[{self.target_right_max_val_list[7]:03d}]'
+                f'[{self.target_right_max_val_list[8]:03d}]'
+                f'[{self.target_right_max_val_list[9]:03d}]'
+                f'[{self.target_right_max_val_list[10]:03d}]'
+                f']\n'
+                f'\n----------------------------'
+                )
+            self.print_tb("d"); self.print_t(f'{self.out_str}')
+            
+            #バトルゾーンで朝になった場合
+            if self.image_check("MORNING") and self.battle_current_state=="BATTLE_MOVE":
+                print("朝_BATTLE_LOOP")
+
+                self.wait(0.3)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                #リザルト判定の取得ミスのため、ミスカウントはしない
+                #self.zonemisscount[self.targetzone-1]+=1
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                #マップコメントの捕捉失敗用
+                self.wait(0.3)
+                
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                self.battlecount=self.battlecount+1
+                return "BATTLE_START"
+            #はしごなどで逃げるボタン非活性の場合、はしごにのぼる
+            
+            
+            if self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                print("check1")
+                noescapeflg=0
+                for i in range(1,self.escapecheckrange):
+                    if self.image_check("ESCAPE"):
+                        noescapeflg=1
+                        break
+                    elif self.image_check("SELECT"):
+                        self.etc_sendCommand("Lbutton_up")
+                        noescapeflg=1
+                        break
+                    self.wait(0.1)
+                
+                if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                    self.wait(0.3)
+                    
+                    self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                    self.battlecount=self.battlecount+1
+                    return "BATTLE_START"
+            #バトルゾーン話しかけ対応(ひとまずひたすらAで再度話しかけを許容して、その後話しかけをBで終了(アイテムはＡボタンでないと進めないため))
+            if self.battle_current_state=="BATTLE_MOVE" and (self.image_check("TEXT_BOX") or self.image_check("TEXT_BOX2")):
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                self.pressRep(Button.A, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+                self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
+
+            #敗北用の保険                
+            if self.battle_current_state=="BATTLE_MOVE" and self.image_check("LOSE"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.01, interval=0.1)
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.01, interval=0.1)
+                return "BATTLE_START"
+
+            if self.battle_step==0 and self.battle_current_state=="BATTLE_MOVE":
+                self.etc_sendCommand("Lbutton_up")
+            # 想定外の話しかけ用
+            if self.image_check("TEXT_BOX"):
+                if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.quasarlosecount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                else:
+                    self.wait(1.0)#判定できない場合待機してから再度確認
+                    if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                    elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.quasarlosecount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                    self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.05, interval=0.1)
+                    self.wait(0.1)
+            #アイテムテキスト用
+            if self.image_check("TEXT_BOX2"):#基本的にこちらに入る場合、報酬ありなので問題なし
+                if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.quasarlosecount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                else:
+                    self.wait(1.0)#判定できない場合待機してから再度確認
+                    if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                    elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.quasarlosecount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.05, interval=0.1)
+                    self.wait(0.1)        
+			#バトル中はチェックしない
+            if self.battle_current_state=="BATTLE_MOVE" and self.battle_step != 1 and self.image_check("CHICKET_MAX_RIGHT"):
+                print("CHICKET_MAX2")
+                self.chicketmaxflag = 1
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                self.battlecount=3
+                return "BATTLE_START"   
+            if self.battle_current_state=="BATTLE_MOVE" and self.image_check("MORNING"):
+                print("朝_loop")
+                for i in range(100):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    if self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+                        break
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+
+                if self.image_check("ESCAPE"):
+                    self.battlecheck=1
+                    self.battle_no_escape_count=0
+                    break
+                elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                    self.battlecheck=1
+                    print("check2")
+                    noescapeflg=0
+                    for i in range(1,self.escapecheckrange):
+                        if self.image_check("ESCAPE"):
+                            noescapeflg=1
+                            break
+                        elif self.image_check("SELECT"):
+                            self.etc_sendCommand("Lbutton_up")
+                            noescapeflg=1
+                            break
+                        self.wait(0.1)
+                    
+                    if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                        self.wait(0.3)
+                        
+                        self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                        self.battlecount=self.battlecount+1
+                        return "BATTLE_START"
+                
+                else:
+                    self.battlecheck=0
+                    break
+                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                self.battlecount=3
+                return "BATTLE_START"             
+                
+
+            ### バトル終了の抜けミス対策
+            if self.battle_step==1 and self.battle_current_state=="BATTLE_MOVE":
+                noescapetime = time.perf_counter()
+                escapeelapsed = noescapetime - lastescape
+                if escapeelapsed >= 30:
+                    print("エスケープマークが30.0秒以上経過しました。強制的に終了します。")
+                    #リザルト判定の取得ミスのため、ミスカウントはしない
+                    #self.zonemisscount[self.targetzone-1]+=1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    #マップコメントの捕捉失敗用
+
+                    if self.image_check("ESCAPE"):
+                        self.battlecheck=1
+                        self.battle_no_escape_count=0
+                        break
+                    elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                        self.battlecheck=1
+                        print("check3")
+                        noescapeflg=0
+                        for i in range(1,self.escapecheckrange):
+                            if self.image_check("ESCAPE"):
+                                noescapeflg=1
+                                break
+                            elif self.image_check("SELECT"):
+                                self.etc_sendCommand("Lbutton_up")
+                                noescapeflg=1
+                                break
+                            self.wait(0.1)
+                        
+                        if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                            self.MOVE_SEE("END")
+                            self.ZL_ACTION("END")
+                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                            self.wait(0.3)
+                            
+                            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                            self.battlecount=self.battlecount+1
+                            return "BATTLE_MAP_OPEN"
+
+                    else:
+                        self.battlecheck=0
+                        break
+                    
+                    # コメントなどの場合用のキャンセル
+                    for i in range(1,20):
+                        self.press(Button.B, wait=0.0)
+                    self.wait(0.1)
+                    
+                    self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                    self.battlecount=self.battlecount+1
+                    return "BATTLE_MAP_OPEN"
+                    
+            self.ZL_ACTION(lockonflg=lockonflg)
+            if self.ZL_state == 1:
+                for i in range(5):
+                    # 技使用を判定させるため
+                    if self.image_check("C+"):
+                        self.notarget_movecount=0
+                        self.press(Button.A, wait=0.0)
+                        self.press(Button.B, wait=0.0)
+                        self.notargetcount=0
+                    ### リワード戦コメント送り or カード拾いなど
+                    elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" or (self.battle_step==0 and self.battle_current_state=="BATTLE_MOVE"):
+                        self.press(Button.A, wait=0.0)
+
+                    if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                    elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                        for i in range(5):
+                            self.press(Button.B, wait=0.0)
+                        self.quasarcount += 1
+                        self.quasarlosecount += 1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        return "QUASAR_START"
+                if self.image_check("C+"):
+                    self.press(Button.A, wait=0.0)
+                    self.press(Button.B, wait=0.0)
+                    self.notargetcount=0
+                if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.quasarlosecount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                if self.image_check("C+"):
+                    self.press(Button.X, wait=0.0)
+                    self.notargetcount=0
+                
+            if self.battle_current_state=="BATTLE_MOVE" and self.image_check("EYE_CHECK_HIGH"):
+                Seecheckflg+=1
+                if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
+                    self.MOVE_SEE()
+                    #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
+                elif Seecheckflg>5 and self.image_check("C+") or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and self.image_check("C+"))):
+                    self.MOVE_SEE("END")
+                    Seecheckflg2=2
+                elif Seecheckflg>5 and (not self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and (not self.image_check("C+"))):
+                    self.MOVE_SEE()
+
+            elif self.battle_current_state=="BATTLE_MOVE" and (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK")):
+                Seecheckflg+=1
+                if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
+                    self.MOVE_SEE()
+                    #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
+                elif Seecheckflg>5 and self.image_check("C+") or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and self.image_check("C+"))):
+                    self.MOVE_SEE("END")
+                    Seecheckflg2=2
+                elif Seecheckflg>5 and (not self.image_check("C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and (not self.image_check("C+"))):
+                    self.MOVE_SEE()
+                    
+            elif self.battle_current_state=="BATTLE_MOVE" and (not (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("EYE_CHECK"))): 
+                self.MOVE_SEE("END")
+                Seecheckflg=0
+
+            #敗北用の保険                
+            if self.battle_current_state=="BATTLE_MOVE" and self.image_check("LOSE"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.01, interval=0.1)
+                return "BATTLE_START"
+                
+            if (self.battle_step==1 and self.battle_current_state=="BATTLE_MOVE" and self.image_check("REWARD_RESULT")) or self.battle_step==2:
+                lastescape = time.perf_counter() 
+                endbk = end
+                end = time.perf_counter()
+                self.DebugLog(2,"while if REWARD_RESULT",end,endbk)
+                
+                self.battle_step=2
+                for i in range(1,15):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    if (self.image_check("CHICKET_MAX") or self.image_check("CHICKET_MAX_RIGHT"))and self.chicketmaxflag == 0:
+                        print("CHICKET_MAX")
+                        self.battlecount=3
+                        self.chicketmaxflag = 1
+                    
+                self.battlecount=self.battlecount+1
+                
+                end = time.perf_counter()    # 計測終了
+                print(f"処理時間: {end - start:.5f} 秒")
+                print("==================================")
+                self.notargetcount=0
+                
+                if self.battlecount>2:
+                    self.battle_step=0
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "BATTLE_START"
+                self.battle_step=0
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                return "BATTLE_MAP_OPEN"
+            
+            elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                for i in range(5):
+                    self.press(Button.B, wait=0.0)
+                self.quasarcount += 1
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                return "QUASAR_START"
+            elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                for i in range(5):
+                    self.press(Button.B, wait=0.0)
+                self.quasarcount += 1
+                self.quasarlosecount += 1
+                self.MOVE_SEE("END")
+                self.ZL_ACTION("END")
+                return "QUASAR_START"
+    
+            elif self.image_check("ESCAPE") or self.image_check("BATTLE_BALL_CHECK"):
+                
+                endbk = end
+                end = time.perf_counter()
+                self.DebugLog(3,"while elif ESCAPE",end,endbk)
+                
+                if self.battle_step==0:
+                    
+                    endbk = end
+                    end = time.perf_counter()
+                    self.DebugLog(4,"while elif ESCAPE step0",end,endbk)
+                    
+                    #end = time.perf_counter()    # 計測途中
+                    print(f"バトル開始時間: {end - start:.5f} 秒")
+                    self.battle_step=1
+                    self.notargetcount=0
+                    lockonflg=1
+                self.ZL_ACTION("END")
+                self.ZL_ACTION("")
+
+                self.battle_lockon_test()
+                   
+                if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_END"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("REWORD_LOSE"):
+                    for i in range(5):
+                        self.press(Button.B, wait=0.0)
+                    self.quasarcount += 1
+                    self.quasarlosecount += 1
+                    self.MOVE_SEE("END")
+                    self.ZL_ACTION("END")
+                    return "QUASAR_START"
+                   
+                    
+                if self.battle_step==1:
+                    if ((not self.image_check("ESCAPE")) and (not self.image_check("C+")) and (self.image_check("BATTLE_BALL_CHECK"))and self.battle_current_state=="BATTLE_MOVE"):
+
+                        self.battlecheck=1
+                        print("check4")
+                        noescapeflg=0
+                        for i in range(1,self.escapecheckrange):
+                            if self.image_check("ESCAPE"):
+                                noescapeflg=1
+                                break
+                            elif self.image_check("SELECT"):
+                                self.etc_sendCommand("Lbutton_up")
+                                noescapeflg=1
+                                break
+                            self.wait(0.1)
+                        
+                        if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                            self.MOVE_SEE("END")
+                            self.ZL_ACTION("END")
+                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                            self.wait(0.3)
+                            
+                            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                            self.battlecount=self.battlecount+1
+                            return "BATTLE_MAP_OPEN"             
+                    
+                    lockonflg = 1
+                    lastescape = time.perf_counter() 
+                    endbk = end
+                    end = time.perf_counter()
+                    elapsed = end - start
+                    #ハマった場合の逃走(ヤミラミループなど)
+                    if elapsed >= 200 and self.battle_current_state=="BATTLE_MOVE":
+                        print("200.0秒以上経過しました。逃走し強制的に終了します。")
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        if self.image_check("ESCAPE"):
+                            self.battleescapecount+=1
+                            self.battle_no_escape_count=0
+                            self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                            for i in range(100):#無限ループ抜け
+                                if self.image_check("ESCAPE_SELECT"):
+                                    self.press(Button.A, wait=0.0)
+                                elif self.image_check("ESCAPE_COMMENT1"):
+                                    self.press(Button.A, wait=0.0)
+                                elif self.image_check("ESCAPE_COMMENT2"):
+                                    for i in range(1,10):
+                                        self.press(Button.B, wait=0.0)
+                                        return "BATTLE_START"
+                                #補足できなかった場合の代用
+                                elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+                                    for i in range(1,10):
+                                        self.press(Button.B, wait=0.0)
+                                        return "BATTLE_START"
+                                self.wait(0.1)
+                        
+                        elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+
+                            print("check5")
+                            noescapeflg=0
+                            for i in range(1,self.escapecheckrange):
+                                if self.image_check("ESCAPE"):
+                                    noescapeflg=1
+                                    break
+                                elif self.image_check("SELECT"):
+                                    self.etc_sendCommand("Lbutton_up")
+                                    noescapeflg=1
+                                    break
+                                self.wait(0.1)
+                            
+                            if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                self.MOVE_SEE("END")
+                                self.ZL_ACTION("END")
+                                self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                                self.wait(0.3)
+                                
+                                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                self.battlecount=self.battlecount+1
+                                return "BATTLE_MAP_OPEN"           
+
+                        else:
+                            #マップコメントの捕捉失敗用
+
+                            if self.image_check("ESCAPE"):
+                                self.battlecheck=1
+                                self.battle_no_escape_count=0
+                                break
+                            elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                print("check6")
+                                noescapeflg=0
+                                for i in range(1,self.escapecheckrange):
+                                    if self.image_check("ESCAPE"):
+                                        noescapeflg=1
+                                        break
+                                    elif self.image_check("SELECT"):
+                                        self.etc_sendCommand("Lbutton_up")
+                                        noescapeflg=1
+                                        break
+                                    self.wait(0.1)
+                                
+                                if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                    self.MOVE_SEE("END")
+                                    self.ZL_ACTION("END")
+                                    self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                                    self.wait(0.3)
+                                    
+                                    self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                    self.battlecount=self.battlecount+1
+                                    return "BATTLE_MAP_OPEN"
+                            else:
+
+                                self.battlecheck=0
+                                break
+                        self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                        self.battlecount=self.battlecount+1
+                        return "BATTLE_MAP_OPEN"    
+
+                    self.DebugLog(5,"while elif ESCAPE step1",end,endbk)
+                    
+                    if self.image_check("SELECT"):
+
+                        endbk = end
+                        end = time.perf_counter()
+                        self.DebugLog(6,"while elif ESCAPE step1 SELECT",end,endbk)
+                        for i in range(0,3):
+                            self.etc_sendCommand("Lbutton_up")
+                    elif self.image_check("C+"):
+                        self.notargetcount=0
+                        self.MOVE_SEE("END")
+                    else:
+                        if self.notargetcount > 8:
+                            self.ZL_ACTION(lockonflg=lockonflg)
+                            self.MOVE_SEE()
+                        #ハマり対策仮
+                        #if notargetcount % 2 == 1:
+                        #    self.MOVE_SEE("END")
+                        #    self.ZL_ACTION("END")
+                        #    self.wait(0.1)
+                        #    self.ZL_ACTION()
+                        #    self.MOVE_SEE()
+                        if self.notargetcount % 10 == 9:
+                            if self.battle_current_state=="BATTLE_MOVE":
+                                self.press(Direction(Stick.LEFT, 90), duration=0.3, wait=0.1)
+                            else:
+                                #リワードロック対策での移動距離を多めにする。
+                                self.MOVE_SEE("END")
+                                self.ZL_ACTION("END")
+                                self.press(Direction(Stick.LEFT, 90), duration=3.0, wait=0.1)
+                                self.ZL_ACTION()
+                                self.MOVE_SEE()
+                                
+                            self.notarget_movecount+=1
+                            if self.notarget_movecount>3:
+                                #逃げ
+                                self.MOVE_SEE("END")
+                                self.ZL_ACTION("END")
+                                if self.image_check("ESCAPE"):
+                                    self.battleescapecount+=1
+                                    self.battle_no_escape_count=0
+                                    self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                    for i in range(100):
+                                        if self.image_check("ESCAPE_SELECT"):
+                                            self.press(Button.A, wait=0.0)
+                                        elif self.image_check("ESCAPE_COMMENT1"):
+                                            self.press(Button.A, wait=0.0)
+                                        elif self.image_check("ESCAPE_COMMENT2"):
+                                            for i in range(1,10):
+                                                self.press(Button.B, wait=0.0)
+                                                return "BATTLE_START"
+                                        #補足できなかった場合の代用
+                                        elif self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD"):
+                                            for i in range(1,10):
+                                                self.press(Button.B, wait=0.0)
+                                                return "BATTLE_START"
+                                        self.wait(0.1)
+                                elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                    print("check7")
+                                    noescapeflg=0
+                                    for i in range(1,self.escapecheckrange):
+                                        if self.image_check("ESCAPE"):
+                                            noescapeflg=1
+                                            break
+                                        elif self.image_check("SELECT"):
+                                            self.etc_sendCommand("Lbutton_up")
+                                            noescapeflg=1
+                                            break
+                                        self.wait(0.1)
+                                    
+                                    if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                        self.MOVE_SEE("END")
+                                        self.ZL_ACTION("END")
+                                        self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                                        self.wait(0.3)
+                                        
+                                        self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                        self.battlecount=self.battlecount+1
+                                        return "BATTLE_MAP_OPEN"
+                                
+                                else:
+                                    #マップコメントの捕捉失敗用
+
+                                    if self.image_check("ESCAPE"):
+                                        self.battlecheck=1
+                                        self.battle_no_escape_count=0
+                                        break
+                                    elif self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                        self.battlecheck=1
+                                        print("check8")
+                                        noescapeflg=0
+                                        for i in range(1,self.escapecheckrange):
+                                            if self.image_check("ESCAPE"):
+                                                noescapeflg=1
+                                                break
+                                            elif self.image_check("SELECT"):
+                                                self.etc_sendCommand("Lbutton_up")
+                                                noescapeflg=1
+                                                break
+                                            self.wait(0.1)
+                                        
+                                        if noescapeflg==0 and self.image_check("BATTLE_BALL_CHECK") and (not self.image_check("ESCAPE")):
+                                            self.MOVE_SEE("END")
+                                            self.ZL_ACTION("END")
+                                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+
+                                            self.wait(0.3)
+                                            
+                                            self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                            self.battlecount=self.battlecount+1
+                                            return "BATTLE_MAP_OPEN"
+                                    else:
+
+                                        self.battlecheck=0
+                                        break
+                                self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                                self.battlecount=self.battlecount+1
+                                return "BATTLE_MAP_OPEN"
+                        
+            else:
+                if self.battle_step==0 and self.battle_current_state=="BATTLE_MOVE":
+                    if count > self.ZONELIST[self.targetzone][4]:
+                        lockonflg=1
+                    self.etc_sendCommand("Lbutton_up")
+                    if Seecheckflg==0:
+                        movestep = self.MOVE_ACTION(movestep,lockonflg=lockonflg)
+                    #movestep=+1
+                    end = time.perf_counter()
+                    elapsed = end - start
+
+                    if elapsed >= 40 and self.battle_current_state=="BATTLE_MOVE":
+                        print("40.0秒以上経過しました。強制的に終了します。")
+                        self.battlecount=self.battlecount+1
+                        self.zonemisscount[self.targetzone-1]+=1
+                        self.MOVE_SEE("END")
+                        self.ZL_ACTION("END")
+                        #マップコメントの捕捉失敗用
+
+                        if self.image_check("ESCAPE"):
+                            self.battlecheck=1
+                            self.battle_no_escape_count=0
+                            break
+                        else:
+
+                            self.battlecheck=0
+                            break
+                        # コメントなどの場合用のキャンセル
+                        for i in range(1,20):
+                            self.press(Button.B, wait=0.0)
+                        self.wait(0.1)
+                            
+                        self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                        self.battlecount=self.battlecount+1
+                        return "BATTLE_MAP_OPEN"
+                    self.notargetcount=0
+
+            self.checkIfAlive()
+            count=count+1
+            self.notargetcount += 1
+
+        self.MOVE_SEE("END")
+        self.ZL_ACTION("END")
+
+        return "BATTLE_MAP_OPEN" 
+
+    def battle_lockon_test(self):
+        self.quasar_battle_lockon=1
+        self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
+        self.notargetcount=0
+        start = time.perf_counter()  # 計測開始
+        while True:
+            if self.notargetcount>3:
+                if (self.battle_current_state=="BATTLE_MOVE" and (self.notargetcount % 9 == 1)):
+                    self.press(Direction(Stick.LEFT, 90), duration=0.9, wait=0.1)
+                elif (self.battle_current_state=="QUASAR_BATTLE_LOOP" and (self.notargetcount % 9 == 1)):
+                    self.press(Direction(Stick.LEFT, 90), duration=0.9, wait=0.1)
+                self.MOVE_SEE("")
+            self.ZL_ACTION("END")
+            self.ZL_ACTION("")
+            #self.press(Button.A, wait=0.0)
+            end = time.perf_counter()
+            elapsed = end - start
+            
+
+            if self.image_check("R_push"):
+                self.press(Button.RCLICK,0.05,0.1) 
+
+            if self.image_check("C+"):
+                self.MOVE_SEE("END")
+                self.press(Button.A, wait=0.0)
+                self.press(Button.B, wait=0.0)
+                self.notargetcount=0
+                
+                return
+            elif self.battle_step==1 and self.battle_current_state=="BATTLE_MOVE" and self.image_check("REWARD_RESULT"):
+                self.battle_step=2
+                self.MOVE_SEE("END")
+                return
+            elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("LOSE"):
+                self.MOVE_SEE("END")
+                return
+            
+            if (self.image_check("REWORD_END") or self.image_check("REWORD_LOSE")):
+                self.MOVE_SEE("END")
+                return
+            if self.image_check("SELECT"):
+                self.MOVE_SEE("END")
+                return
+            if not self.image_check("ESCAPE"):
+                self.MOVE_SEE("END")
+                return
+            
+            if self.image_check("ESCAPE") or self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                #if self.image_check("TARGET_L_ALL"):
+                self.battlemarker_skipcount+=1
+                if ((self.battlemarker_skipcount > self.battlemarker_skipcount_threshold) and (self.image_check("TARGET_RIGHT_LOW") or self.image_check("TARGET_LEFT_LOW") or (self.Rstick_state == 0 and (self.image_check("TARGET_RIGHT_RIHGT_CHECK_LOW") or self.image_check("TARGET_LEFT_RIHGT_CHECK_LOW"))))):# LOWで数回確認後通常のマーカーでもチェックできた場合継続(画像検知位置は回転を考慮し左寄り) 視点回転していない場合右も確認
+
+                
+                    self.MOVE_SEE("END")
+                    if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                        self.quasar_target_start_low_count+=1
+                    else:
+                        self.target_start_low_count+=1
+                    time.sleep(0.2)
+                    for i in range(0,3):
+                       #print("target_loop")
+
+                        if self.image_check("C+"):
+                            self.notargetcount=0
+                            self.press(Button.A, wait=0.0)
+                            self.press(Button.B, wait=0.0)
+                            #print("##### target_loop_END")
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_end_low_count+=1
+                            else:
+                                self.target_end_low_count+=1
+                            return
+                        elif self.image_check("SELECT"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_low_count+=1
+                            else:
+                                self.target_start_low_count-=1
+                            return
+                        elif not self.image_check("ESCAPE"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_low_count+=1
+                            else:
+                                self.target_start_low_count-=1
+                            return
+                        
+                        self.ZL_ACTION("END")
+                        time.sleep(0.2)
+                        self.ZL_ACTION("")
+                        time.sleep(0.2)
+                        #self.notargetcount=0#
+                        
+                    if self.image_check("TARGET_RIGHT") or self.image_check("TARGET_LEFT") or (self.Rstick_state == 0 and (self.image_check("TARGET_RIGHT_RIHGT_CHECK") or self.image_check("TARGET_LEFT_RIHGT_CHECK"))):# 視点回転していない場合右も確認
+                        if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                            self.quasar_target_start_mid_count+=1
+                        else:
+                            self.target_start_mid_count+=1
+                        if self.image_check("C+"):
+                            self.notargetcount=0
+                            self.press(Button.A, wait=0.0)
+                            self.press(Button.B, wait=0.0)
+                            #print("##### target_loop_END")
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_end_mid_count+=1
+                            else:
+                                self.target_end_mid_count+=1
+                            return
+                        elif self.image_check("SELECT"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_mid_count-=1
+                            else:
+                                self.target_start_mid_count-=1
+                            return
+                        elif not self.image_check("ESCAPE"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_mid_count-=1
+                            else:
+                                self.target_start_mid_count-=1
+                            return
+                        
+                        self.ZL_ACTION("END")
+                        time.sleep(0.2)
+                        self.ZL_ACTION("")
+                        time.sleep(0.2)
+                        self.notargetcount+=1
+                    else:
+                        #LOWでチェックできない場合、しばらくLOWでのチェックをしない(同じ画面でLOWチェックを連続しておこなわないように) 主に車のタイヤで誤チェックされてしまう
+                        #if self.battle_current_state=="BATTLE_MOVE":
+                            #テスト バトルエリアのみLOWモードの間隔をあける
+                        self.battlemarker_skipcount=0
+                        self.notargetcount+=1
+                             
+                    
+                elif ((self.battlemarker_skipcount <= self.battlemarker_skipcount_threshold) and (self.image_check("TARGET_RIGHT") or self.image_check("TARGET_LEFT") or (self.Rstick_state == 0 and (self.image_check("TARGET_RIGHT_RIHGT_CHECK") or self.image_check("TARGET_LEFT_RIHGT_CHECK"))))):# 視点回転していない場合右も確認 LOWでチェックミスがある場合しばらくLOWを使用しない。
+
+                    self.MOVE_SEE("END")
+                    
+                    if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                        self.quasar_target_start_count+=1
+                    else:
+                        self.target_start_count+=1
+                    time.sleep(0.2)
+                    for i in range(0,3):
+                       #print("target_loop")
+
+                        if self.image_check("C+"):
+                            self.notargetcount=0
+                            self.press(Button.A, wait=0.0)
+                            self.press(Button.B, wait=0.0)
+                            #print("##### target_loop_END")
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_end_count+=1
+                            else:
+                                self.target_end_count+=1
+                            return
+                        elif self.image_check("SELECT"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_count-=1
+                            else:
+                                self.target_start_count-=1
+                            return
+                        elif not self.image_check("ESCAPE"):
+                            if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
+                                self.quasar_target_start_count-=1
+                            else:
+                                self.target_start_count-=1
+                            return
+                        
+                        self.ZL_ACTION("END")
+                        time.sleep(0.2)
+                        self.ZL_ACTION("")
+                        time.sleep(0.2)
+                    self.notargetcount+=1
+                elif ((self.quasar_current_state=="QUASAR_BATTLE_LOOP" and (self.image_check("ATTACK_DISPLAY") or self.image_check("ATTACK_C+_DISPLAY"))) or (self.Rstick_state == 0 and (self.quasar_current_state=="QUASAR_BATTLE_LOOP" and (self.image_check("ATTACK_DISPLAY_RIHGT_CHECKW") or self.image_check("ATTACK_C+_DISPLAY_RIHGT_CHECKW"))))):# 攻撃表示による判定
+                #elif ( (self.image_check("ATTACK_DISPLAY") or self.image_check("ATTACK_C+_DISPLAY"))or (self.Rstick_state == 0 and (self.image_check("ATTACK_DISPLAY_RIHGT_CHECKW") or self.image_check("ATTACK_C+_DISPLAY_RIHGT_CHECKW")))):# 攻撃表示による判定
+                    self.MOVE_SEE("END")
+                    self.quasar_battle_display_start_count+=1
+                    time.sleep(0.2)
+                    for i in range(0,3):
+                        if self.image_check("C+"):
+                            self.notargetcount=0
+                            self.press(Button.A, wait=0.0)
+                            self.press(Button.B, wait=0.0)
+                            #print("##### target_loop_END")
+                            self.quasar_battle_display_end_count+=1
+                            return
+                        elif self.image_check("SELECT"):
+                            self.quasar_battle_display_start_count-=1
+                            return
+                        elif not self.image_check("ESCAPE"):
+                            self.quasar_battle_display_start_count-=1
+                            return
+                        
+                        self.ZL_ACTION("END")
+                        time.sleep(0.2)
+                        self.ZL_ACTION("")
+                        time.sleep(0.2)
+                        self.notargetcount+=1
+                else:
+                    self.notargetcount+=1
+            else:
+                ## 交換中などのため0にする(間隔をあけるため-8?)
+                self.MOVE_SEE("END")
+                self.notargetcount=0#-8
+                self.press(Button.A, wait=0.0)
+                    
+            if elapsed >= 20:
+                return
+                    
+            
+    def battle_lockon_test_all(self):
+        if self.image_check("TARGET_LEFT"):
+            print("left_check")
+        
+        if self.image_check("TARGET_RIGHT"):
+            print("right_check")
+
+    def DebugLog(self,num,logmessage,endtime=0,starttime=0):
+        return
+        if starttime == 0:
+            print(f"[lognum:{num}] {logmessage}")
+        else:
+            print(f"[lognum:{num}] {logmessage} 処理時間: {endtime - starttime:.5f} 秒")
+
+    ######################################################
+    # QUASAR_FUNCTION
+    ###################################################### 
+    def quasar_start(self):
+        self.chicketmaxflag = 0
+        return "QUASAR_MOVE_DOOR"
+    def quasar_move_door(self):
+        if not (self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD")):
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(self.SLEEPLIST[0][2])
+            return "QUASAR_MOVE_DOOR"
+        
+        self.press(Direction(Stick.LEFT, 90), duration=7.0, wait=0.1)
+        if self.image_check("DOOR_A"):
+            self.press(Button.A, wait=0.0)
+            return "QUASAR_MOVE_ENTRANCE"
+        return "QUASAR_MOVE_DOOR"
+    def quasar_move_entrance(self):
+        if not (self.image_check("FIELD") or self.image_check("FIELD_BACK") or self.image_check("DEAD")):
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(self.SLEEPLIST[0][2])
+            return "QUASAR_MOVE_ENTRANCE"
+        
+        self.press(Direction(Stick.LEFT, 90), duration=11.0, wait=0.1)
+        self.press(Direction(Stick.LEFT, 10), duration=1.0, wait=0.1)
+        for i in range(30):
+            self.press(Button.A, wait=0.0)
+        return "QUASAR_BATTLE_LOOP"
+    
+    def quasar_battle_loop(self):
+        self.notargetcount=0
+        return self.battle_move_test()
+
+######################################################
+# ZA_battle_infi_Base_End
+######################################################
+    
+    ######################################################
+    # 画像認識
+    ######################################################
+    def image_check(self,targetimage,nocheckflag=1):
+        # テスト用出力スキップ
+        if nocheckflag==0:
+            return False
+        
+        ######################################################
+        # MAIN_0_START FUNCTION
+        ######################################################
+        if targetimage=="PROFILE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_0_Start\Profile.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [60,40,260,70]
+                                    ):
+                
+                return True
+            else:
+                return False
+        
+        elif targetimage=="STARTBTN_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_0_Start\startbutton_select.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [120,520,500,610]
+                                    ):
+                return True
+            else:
+                return False
+            
+        elif targetimage=="TEXT_TRAIN_OUT_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_1_z_lank\station_field.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [1020,120,1210,190]
+                                    ):
+                return True
+            else:
+                return False
+            
+        elif targetimage=="TEXT_STATION_LEAVE_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_1_z_lank\station_leave_comment.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [950,130,1150,230]
+                                    ):
+                return True
+            else:
+                return False
+
+        elif targetimage=="SLEEP_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_1_z_lank\\sleep_icon.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,150,900,650]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="WANINOKO_ICON":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_1_z_lank\\waninokoicon.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="QUASAR_MOVIE_ICON":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_1_z_lank\\quasar_movie_icon.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [250,150,850,550],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="TEXT_2_GETCHANCE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_1_z_lank\\getchance_comment.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="TEXT_2_GET_SUCCESS":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\_1_z_lank\\2get_success.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="KOHUKI_ICON_GET4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_1_z_lank\\kohukiicon.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [200,640,250,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False           
+        elif targetimage=="MERIP_ICON_GET5":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_1_z_lank\\meripicon.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [250,640,300,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="PIKA_ICON_GET6":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_2_y_lank\\pikaicon.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [300,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="PIKA_ICON_BOX6":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_2_y_lank\\pikaicon_box6.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [450,80,550,200],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        ######################################################
+        # COMMON
+        ######################################################
+        elif targetimage=="TEXT_BLACK_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\black_comment.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="TEXT_WHITE_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\white_comment.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="TEXT_WHITE_COMMENT2":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\white_comment2.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="1_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\1_select.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,400,1180,550]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="2_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\2_select.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,400,1180,550]
+                                    ):
+                return True
+            else:
+                return False 
+            
+        elif targetimage=="3_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\3_select.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,340,1180,550]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="4_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\4_select.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,300,1180,550]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="CHAT_MARKER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\chatmarker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,300,850,500]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="HELP_MARKER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\helpmarker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,50,500,110]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="BATTLE_BALL_CHECK":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\battle_ball_check.png',
+                                    threshold = 0.95,
+                                    use_gray = False,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [500,30,850,70],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False 
+        if targetimage=="ESCAPE":
+            if self.isContainTemplateUltra_get_max_val(                
+                    template_path ='ZA_Story\Common\\escape.png',
+                    threshold = 0.80,
+                    use_gray = True,
+                    show_value = False,
+                    show_position = True,
+                    show_only_true_rect  = False,
+                    ms  = 2000,
+                    crop = [54,477,75,497],
+                    crop_template  = []
+                    ):
+                return True
+            else:
+                return False
+        
+        elif targetimage=="FIELD":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [50,680,97,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,680,97,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_W":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [50,680,350,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK_W":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,680,350,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD3":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [150,680,200,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK3":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [150,680,200,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+            
+        elif targetimage=="DEAD":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\dead.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="OUT_MARKER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\outmarker.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,300,850,500]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="IN_MARKER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\inmarker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,300,850,500]
+                                    ):
+                return True
+            else:
+                return False   
+            
+        elif targetimage=="IN_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\in_icon.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,150,900,350]
+                                    ):
+                return True
+            else:
+                return False 
+           
+        elif targetimage=="ELEVATOR_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\elevator_icon.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,150,900,600]
+                                    ):
+                return True
+            else:
+                return False 
+
+        elif targetimage=="GETCHANCE_ICON4":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\getmerker4.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,150,1000,720]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="X_MENU_OPEN":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\x_menu_window.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [50,50,450,120]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="SIDE_SELECT_X_MENU_W":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [30,150,100,700]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="SIDE_SELECT_TOP_MAP":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [20,160,60,230]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="DOWN_SELECT_X_MENU_W":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\down_select.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,120,1250,160]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="POKEMON_MENU_X_MENU_W":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\pokemon_menu.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,120,1250,500]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="POKEMON_MENU_X_MENU_W_SELECT_SKILL":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\pokemon_menu_select_skill.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,120,1250,500]
+                                    ):
+                return True
+            else:
+                return False  
+        elif targetimage=="SKILL_PAGE_WINDOW":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\skillpage.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,170,750,250]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="SKILL_PAGE_SIDE_SELECT_Y":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.92,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [560,360,600,400]
+                                    ):
+                return True
+            else:
+                return False  
+        elif targetimage=="SKILL_PAGE_SIDE_SELECT_A":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.92,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [880,360,930,400]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="SKILL_PAGE_SIDE_SELECT_X":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.92,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [720,300,760,350]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="SKILL_PAGE_SIDE_SELECT_B":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\X_menu\\side_select.png',
+                                    threshold = 0.92,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [720,410,760,460]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="EVENT_MARKER_CENTER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\event_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="EVENT_MARKER_CENTER_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\event_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,0,720,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="EVENT_MARKER_LEFT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\event_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [250,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="EVENT_MARKER_RIGHT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\event_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,1100,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="HASHIGO_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\hashigomarker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,150,900,650]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="C+":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\C+.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [1000,565,1280,720],
+                                    crop_template  = []):
+                return True
+            else:
+                return False
+        elif targetimage=="MAP2" or targetimage=="MAP":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\map2.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [20,0,200,70],
+                                    crop_template  = []
+                                    ):   
+                return True
+            else:
+                return False
+        elif targetimage=="MORNING":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\morning.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [540,155,740,350],
+                                    crop_template  = []
+                                    ):    
+                return True
+            else:
+                return False
+        elif targetimage=="NIGHT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\night.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [430,350,850,520],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVE_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\move_comment.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [290,550,1000,690],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVESPOT_TAB":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\movespot_tab.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [30,120,220,250],
+                                    crop_template  = []
+                                    ):        
+                return True
+            else:
+                return False
+        elif targetimage=="SELECT_ALL":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\select_all.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = self.show_value_bool,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [20,270,280,595],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="TAB_FILTER":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\tab_filter.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [30,570,90,600],
+                                    crop_template  = []
+                                    ): 
+                return True
+            else:
+                return False
+        elif targetimage=="TEXT_BOX":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\text_box.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,555,1000,680]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="TEXT_BOX2":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\text_box2.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [550,555,1000,680]
+                                    ):
+                return True
+            else:
+                return False
+            
+        elif targetimage=="TEXT_GREEN_COMMENT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\green_comment.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,555,1000,700]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="PIN_MARKER_CENTER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\pin_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="PIN_MARKER_CENTER_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\pin_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,0,720,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="PIN_MARKER_LEFT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\pin_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [250,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="PIN_MARKER_RIGHT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\pin_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,1100,600]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="SELECT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\SELECT.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [80,640,135,695]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="COIN_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\many_icon.png',
+                                    threshold = 0.8,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [1000,0,1200,100]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="EYE_CHECK":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\eye_check.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,50,700,120],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="EYE_CHECK_HIGH":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\eye_check_high.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [400,50,900,120],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="SIDE_MARKER_CENTER_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\side_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [600,0,720,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="BATTLE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\battle.png',
+                                        threshold = 0.75,
+                                        use_gray = True,
+                                        show_value = self.show_value_bool,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
+        elif targetimage=="ARROW":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\arrow.png',
+                                    threshold = 0.88,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [910,620,966,676],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False
+        ######################################################
+        # COMMON MOVEPOINT_TARGET
+        ######################################################
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE4_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_RUDU":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rudu_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_RESTAURANT_DREAM":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\restaurant_dream_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_CAFE_MAN":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\cafe_man_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_ROSE_SQUARE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\rose_square_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_ROSE_S":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rose_square_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_ROSE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rose_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_PRANTAN":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_prantan_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_BLUE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_blue_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_EVEL":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_evel_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_CAFE_RETAKE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\cafe_retake_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_POKECENTER_JONE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_jone_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE2_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE5":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE5_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE6":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE6_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        ######################################################
+        # COMMON MOVEPOINT_PIC
+        ######################################################
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE4_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_RUDU":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rudu_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False     
+        elif targetimage=="MOVEPOINT_PIC_RESTAURANT_DREAM":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\restaurant_dream_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False   
+        elif targetimage=="MOVEPOINT_PIC_CAFE_MAN":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\cafe_man_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_ROSE_SQUARE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\rose_square_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_ROSE_S":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rose_square_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_ROSE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_rose_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_PRANTAN":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_prantan_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_BLUE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_blue_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_EVEL":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_evel_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_CAFE_RETAKE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\cafe_retake_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_POKECENTER_JONE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\pokecenter_jone_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE2_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE5":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE5_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE6":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE6_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+            
+        ######################################################
+        # ZA_INFI
+        ######################################################
+        elif targetimage=="REWARD_RESULT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\REWARD.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [930,45,1030,60],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="CHICKET_MAX":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\chicket_max.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [700,600,1000,750],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="CHICKET_MAX_RIGHT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\chicket_95_118x1122_1268.png',#chicket_max.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [1122,95,1268,118],#crop = [700,600,1000,750],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE1":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone1.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone2.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE3":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone3.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone4.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE5":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone5.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE6":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone6.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE7":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone7.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE8":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone8.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE9":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone9.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE10":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone10.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE11":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\ZONE\\zone11.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,205,1235,345],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="ZONE12":
+            return True
+        elif targetimage=="DOOR_A":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\doorA.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [680,400,760,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="REWORD_END":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\reword_end.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [200,500,1080,720],
+                                    crop_template  = []
+                                    ) \
+                                    or self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\reword_end2.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [200,500,1080,720],
+                                    crop_template  = []
+                                    ) :  
+                return True
+            else:
+                return False
+        elif targetimage=="REWORD_LOSE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\reword_lose.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool2,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [200,500,1080,720],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVE_COMMENT_BATTLE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\move_comment_battle.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [290,550,1000,690],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="LOSE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\lose.png',
+                                    threshold = 0.80,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [290,550,1000,690],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="ESCAPE_COMMENT1":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\escapecomment1.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [290,550,1000,690],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="ESCAPE_COMMENT2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\escapecomment2.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [290,550,1000,690],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="ESCAPE_SELECT":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\escapecommentselect.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [900,400,1200,550],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_LEFT":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.75,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.75,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+            
+        elif targetimage=="TARGET_LEFT_LOW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.55,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT_LOW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.55,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_LEFT_RIHGT_CHECK":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.75,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT_RIHGT_CHECK":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.75,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+            
+        elif targetimage=="TARGET_LEFT_RIHGT_CHECK_LOW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.55,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT_RIHGT_CHECK_LOW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.55,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False  
+        elif targetimage=="ATTACK_DISPLAY":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\attack_display.png',
+                                    threshold = 0.7,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,650],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.attack_display_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="ATTACK_DISPLAY_RIHGT_CHECKW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\attack_display.png',
+                                    threshold = 0.7,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,880,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.attack_display_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="ATTACK_C+_DISPLAY":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\attack_display.png',
+                                    threshold = 0.7,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,650],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.attack_display_Template_savelist("LEFT_C",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="ATTACK_C+_DISPLAY_RIHGT_CHECKW":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\attack_display.png',
+                                    threshold = 0.7,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,880,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.attack_display_Template_savelist("RIGHT_C",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="R_push":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\\ZA_infi\\R_push.png',
+                                    threshold = 0.75,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [1000,565,1280,720],#[1150,565,1260,620],
+                                    crop_template  = []):
+                return True
+            else:
+                return False
+        return False 
+        
+######################################################
+# テストコード
+######################################################
+        
+    def Test(self):
+        self.show_value_bool = True
+        while True:
+            self.checkIfAlive()
+                
+            if self.image_check("2_SELECT"):
+                print("2_SELECT")
+            self.wait(2.0)
+        return True
+            
+    def Testimagecheck(self,num):
+        if num == 1:
+            print("test")
+            
+######################################################
+# こっからがコマンド
+######################################################               
+class ZA_story(ZA_story_Base):
+    version_major = 0
+    version_minor = 0
+    version_patch = 0
+    if self.ZA_infimode==1:
+        ZA_infi_custom_name = "_ZA_infi_custom_name"
+    else:
+        ZA_infi_custom_name = ""
+    
+    NAME = f'ZA_story_v{version_major}.{version_minor}.{version_patch}{ZA_infi_custom_name}'
+    def __init__(self, cam):
+        super().__init__(cam)
+    def do(self):
+        # スクリプト継承
+        if self.testcode==1:
+            self.Test()
+        elif self.ZA_infimode==1:
+            self.ZA_battle_infi_main()
+        else:
+            self.ZA_story_main()
