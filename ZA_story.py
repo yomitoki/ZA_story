@@ -2039,7 +2039,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_second_battle_start(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="2_SELECT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="2_SELECT"):
                 return "1_STORY_SECOND_BATTLE"
         return "1_STORY_SECOND_BATTLE_START"
     
@@ -6020,14 +6020,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move11(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
                 return "2_STORY_W_LANK_MOVE12"
         return "2_STORY_W_LANK_MOVE11"
     
     def _2_story_w_lank_move12(self):
         if self.image_check("W_BATTLE_END"):
             return "2_STORY_W_LANK_MOVE13"
-        elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -6125,7 +6125,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
     def _2_story_absol_move7(self):
-        if self.image_check("BATTLE_BALL_CHECK"):# or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         #elif self.image_check("TEXT_BLACK_COMMENT"):
         #    self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -6153,7 +6153,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
                 self.wait(1.0)
-                if not self.image_check("BATTLE_BALL_CHECK"):
+                if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
                     return "2_STORY_ABSOL_MOVE9"
                 else:
                     return "2_STORY_ABSOL_MOVE7"
@@ -6238,7 +6238,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE17"
     
     def _2_story_absol_move18(self):
-        if self.image_check("BATTLE_BALL_CHECK"):# or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -6265,7 +6265,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
                 self.wait(1.0)
-                if not self.image_check("BATTLE_BALL_CHECK"):
+                if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
                     return "2_STORY_ABSOL_MOVE20"
                 else:
                     return "2_STORY_ABSOL_MOVE18"
