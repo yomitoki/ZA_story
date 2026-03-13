@@ -511,16 +511,48 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_ABSOL_MOVE36": self._2_story_absol_move36,
             "2_STORY_ABSOL_MOVE37": self._2_story_absol_move37,
             "2_STORY_ABSOL_MOVE38": self._2_story_absol_move38,
-            "2_STORY_ABSOL_MOVE39": self._2_story_absol_move39,
-            "2_STORY_ABSOL_MOVE40": self._2_story_absol_move40,
+            "2_STORY_RESTAURANT_DOHUTSU_LOOP": self._2_story_restaurant_dohutsu_loop,
+
+            "2_STORY_MEGA_MOVE1": self._2_story_mega_move1,
+            "2_STORY_MEGA_MOVE2": self._2_story_mega_move2,
+            "2_STORY_MEGA_MOVE3": self._2_story_mega_move3,
+            "2_STORY_MEGA_MOVE4": self._2_story_mega_move4,
+            "2_STORY_MEGA_MOVE5": self._2_story_mega_move5,
+            "2_STORY_MEGA_MOVE6": self._2_story_mega_move6,
+            "2_STORY_MEGA_MOVE7": self._2_story_mega_move7,
+            "2_STORY_MEGA_MOVE8": self._2_story_mega_move8,
+            "2_STORY_MEGA_MOVE9": self._2_story_mega_move9,
+            "2_STORY_MEGA_MOVE10": self._2_story_mega_move10,
+            "2_STORY_MEGA_MOVE11": self._2_story_mega_move11,
+            "2_STORY_MEGA_MOVE12": self._2_story_mega_move12,
+            "2_STORY_MEGA_MOVE13": self._2_story_mega_move13,
+            "2_STORY_MEGA_MOVE14": self._2_story_mega_move14,
+            "2_STORY_MEGA_MOVE15": self._2_story_mega_move15,
+            "2_STORY_MEGA_MOVE16": self._2_story_mega_move16,
+            "2_STORY_MEGA_MOVE17": self._2_story_mega_move17,
+            "2_STORY_MEGA_MOVE18": self._2_story_mega_move18,
+            "2_STORY_MEGA_MOVE19": self._2_story_mega_move19,
+            "2_STORY_MEGA_MOVE20": self._2_story_mega_move20,
+            "2_STORY_MEGA_MOVE21": self._2_story_mega_move21,
+            "2_STORY_MEGA_MOVE22": self._2_story_mega_move22,
+            "2_STORY_MEGA_MOVE23": self._2_story_mega_move23,
+            "2_STORY_MEGA_MOVE24": self._2_story_mega_move24,
+
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
         self._2_story_current_state_init= "2_STORY_Y_LANK_BATTLE_ZONE"
         self._2_story_current_state_init= "2_STORY_ABSOL_BATTLE"
         self._2_story_current_state_init="2_STORY_ABSOL_MOVE1"
-        self._2_story_current_state_init="2_STORY_ABSOL_MOVE39"
+        self._2_story_current_state_init="2_STORY_MEGA_MOVE1"
+        
         #self._2_story_current_state_init="" 
+        self._2_story_restaurant_dohutsu_loop_count=0
+        self._2_story_restaurant_dohutsu_loop_threshold=2
+        
+        self._2_story_restaurant_dohutsu_white_check=1
+        self._2_story_restaurant_dohutsu_black_check=0
+        self._2_story_restaurant_dohutsu_battle_count=0
         
     ######################################################
     # Commonfunction
@@ -1814,6 +1846,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n'
                 f'\n STATE_1_STORY_FUNCTION   :: {self._1_story_current_state}'
                 f'\n STATE_2_STORY_FUNCTION   :: {self._2_story_current_state}'
+                f'\n'
+                f'\n ### STATE_2_VAR ###'
+                f'\n BATTLE_COUNT :: {self._2_story_restaurant_dohutsu_battle_count}'
+                f'\n WHITE_CHECK :: {self._2_story_restaurant_dohutsu_white_check}'
+                f'\n BLACK_CHECK  :: {self._2_story_restaurant_dohutsu_black_check}'
                 f'\n'
                 f'\n STATE_COMMON_SKILL_CHANGE_FUNCTION   :: {self.common_skill_change_current_state}'
                 f'\n----------------------------'
@@ -6386,15 +6423,132 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_ABSOL_MOVE39"
         return "2_STORY_ABSOL_MOVE38"
     
-    def _2_story_absol_move39(self):
+    def _2_story_restaurant_dohutsu_loop(self):
         if self.image_check("ESCAPE"):
+            self._2_story_restaurant_dohutsu_black_check=0
+            self._2_story_restaurant_dohutsu_white_check=1
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self._2_story_restaurant_dohutsu_white_check=0
+            self._2_story_restaurant_dohutsu_black_check+=1
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
         else:
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
-        return "2_STORY_ABSOL_MOVE39"
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                #self.wait(0.3)
+                self._2_story_restaurant_dohutsu_white_check=1
+                if (self._2_story_restaurant_dohutsu_black_check >= 3):
+                    self._2_story_restaurant_dohutsu_battle_count+=1
+                    if self._2_story_restaurant_dohutsu_battle_count >= self._2_story_restaurant_dohutsu_loop_threshold:
+                        self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.5, interval=0.1)
+                        return "2_STORY_MEGA_MOVE1"
+                else:
+                    self._2_story_restaurant_dohutsu_black_check=0
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
+                    
+                self._2_story_restaurant_dohutsu_black_check=0
+                
+            else:
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return "2_STORY_RESTAURANT_DOHUTSU_LOOP"
     
-    def _2_story_absol_move40(self):
-        return "2_STORY_ABSOL_MOVE40"
+    
+    ###進化と技設定
+    
+    def _2_story_mega_move1(self):
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE2"
+        else:
+            return "2_STORY_MEGA_MOVE1"
+    
+    def _2_story_mega_move2(self):
+        ret = self.Common_goto(3,1,0)#ヌーヴォカフェ２号へ移動
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE3"
+        else:
+            return "2_STORY_MEGA_MOVE2"
+    
+    def _2_story_mega_move3(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,190), duration=20.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,200), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,325), duration=11.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,330), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_MEGA_MOVE4"
+        return "2_STORY_MEGA_MOVE3"
+    
+    def _2_story_mega_move5(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "2_STORY_MEGA_MOVE6"  
+        return "2_STORY_MEGA_MOVE5"
+    
+    def _2_story_mega_move6(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE7"
+        return "2_STORY_MEGA_MOVE6"
+    
+    def _2_story_mega_move7(self):
+        return "2_STORY_MEGA_MOVE7"
+    
+    def _2_story_mega_move8(self):
+        return "2_STORY_MEGA_MOVE8"
+    
+    def _2_story_mega_move9(self):
+        return "2_STORY_MEGA_MOVE9"
+    
+    def _2_story_mega_move10(self):
+        return "2_STORY_MEGA_MOVE10"
+    
+    def _2_story_mega_move11(self):
+        return "2_STORY_MEGA_MOVE11"
+    
+    def _2_story_mega_move12(self):
+        return "2_STORY_MEGA_MOVE12"
+    
+    def _2_story_mega_move13(self):
+        return "2_STORY_MEGA_MOVE13"
+    
+    def _2_story_mega_move14(self):
+        return "2_STORY_MEGA_MOVE14"
+    
+    def _2_story_mega_move15(self):
+        return "2_STORY_MEGA_MOVE15"
+    
+    def _2_story_mega_move16(self):
+        return "2_STORY_MEGA_MOVE16"
+    
+    def _2_story_mega_move17(self):
+        return "2_STORY_MEGA_MOVE17"
+    
+    def _2_story_mega_move18(self):
+        return "2_STORY_MEGA_MOVE18"
+    
+    def _2_story_mega_move19(self):
+        return "2_STORY_MEGA_MOVE19"
+    
+    def _2_story_mega_move20(self):
+        return "2_STORY_MEGA_MOVE20"
+    
+    def _2_story_mega_move21(self):
+        return "2_STORY_MEGA_MOVE21"
+    
+    def _2_story_mega_move22(self):
+        return "2_STORY_MEGA_MOVE22"
+    
+    def _2_story_mega_move23(self):
+        return "2_STORY_MEGA_MOVE23"
+    
+    def _2_story_mega_move24(self):
+        return "2_STORY_MEGA_MOVE24"
     ######################################################
     # MAIN_2_X_LANK SUB FUNCTION
     ######################################################
