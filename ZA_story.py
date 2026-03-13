@@ -544,7 +544,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._2_story_current_state_init= "2_STORY_Y_LANK_BATTLE_ZONE"
         self._2_story_current_state_init= "2_STORY_ABSOL_BATTLE"
         self._2_story_current_state_init="2_STORY_ABSOL_MOVE1"
-        self._2_story_current_state_init="2_STORY_MEGA_MOVE1"
+        self._2_story_current_state_init="2_STORY_MEGA_MOVE21"
         
         #self._2_story_current_state_init="" 
         self._2_story_restaurant_dohutsu_loop_count=0
@@ -1534,6 +1534,42 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
         if lockon_endskip==0:
             self.ZL_ACTION("END")
+            
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0):
+        noCp_count=0
+        while True:
+            if self.image_check("SELECT"):
+                self.etc_sendCommand("Lbutton_up")
+                
+            self.ZL_ACTION("")
+            
+            for i in range(5):
+                #バトル中チェック チェックできない場合は、一旦抜ける
+                if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("C+"):
+                    if self.image_check("C+"):
+                        if Xaction==1:
+                            self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Aaction==1:
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Yaction==1:
+                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Baction==1:
+                            self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    elif (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
+                        self.MOVE_SEE(action = "",in_see_r=0.6)
+                    else:
+                        if noCp_count>=3:
+                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                        noCp_count=+1
+
+                else:
+                    self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    return
+                
+            if lockon_endskip==0:
+                self.ZL_ACTION("END")
+
         
     def get_pokemon(self):
         self.ZL_ACTION("")
@@ -6505,51 +6541,152 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE6"
     
     def _2_story_mega_move7(self):
-        return "2_STORY_MEGA_MOVE7"
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE8"
+        else:
+            return "2_STORY_MEGA_MOVE7"
     
     def _2_story_mega_move8(self):
-        return "2_STORY_MEGA_MOVE8"
+        ret = self.Common_goto(1,0,-2)#レストランキワミへ移動
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE9"
+        else:
+            return "2_STORY_MEGA_MOVE8"
     
     def _2_story_mega_move9(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,300), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_MEGA_MOVE10"
         return "2_STORY_MEGA_MOVE9"
     
     def _2_story_mega_move10(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE11" 
         return "2_STORY_MEGA_MOVE10"
     
     def _2_story_mega_move11(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MEGA_MOVE10"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "2_STORY_MEGA_MOVE10"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MEGA_MOVE10"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_MEGA_MOVE12"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
         return "2_STORY_MEGA_MOVE11"
     
     def _2_story_mega_move12(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE13" 
         return "2_STORY_MEGA_MOVE12"
     
     def _2_story_mega_move13(self):
+        ###AUTO SAVE アスレチックのため、ミスがあった場合はセーブポイントから開始とする。
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,88), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=0.3, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.4, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,300), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,170), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_MEGA_MOVE14"
         return "2_STORY_MEGA_MOVE13"
     
     def _2_story_mega_move14(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
     
     def _2_story_mega_move15(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "2_STORY_MEGA_MOVE16" 
         return "2_STORY_MEGA_MOVE15"
     
     def _2_story_mega_move16(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE17"
         return "2_STORY_MEGA_MOVE16"
     
     def _2_story_mega_move17(self):
-        return "2_STORY_MEGA_MOVE17"
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE18"
+        else:
+            return "2_STORY_MEGA_MOVE17"
     
     def _2_story_mega_move18(self):
-        return "2_STORY_MEGA_MOVE18"
+        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        if ret == "START":
+            return "2_STORY_MEGA_MOVE19"
+        else:
+            return "2_STORY_MEGA_MOVE18"
     
     def _2_story_mega_move19(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,270), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,355), duration=24.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,100), duration=13.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_MEGA_MOVE20"
         return "2_STORY_MEGA_MOVE19"
     
     def _2_story_mega_move20(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
     
     def _2_story_mega_move21(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "2_STORY_MEGA_MOVE22" 
         return "2_STORY_MEGA_MOVE21"
     
     def _2_story_mega_move22(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE23" 
         return "2_STORY_MEGA_MOVE22"
     
     def _2_story_mega_move23(self):
@@ -9302,7 +9439,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="GETCHANCE_ICON4":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\getmerker4.png',
-                                    threshold = 0.75,
+                                    threshold = 0.75,#70?
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
