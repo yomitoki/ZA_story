@@ -6485,15 +6485,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_MEGA_MOVE4"
         return "2_STORY_MEGA_MOVE3"
     
-    def _2_story_mega_move5(self):
+    def _2_story_mega_move4(self):
         if self.mega_evolution_battle_mode_select(mode=0):
-            return "2_STORY_MEGA_MOVE6"  
+            return "2_STORY_MEGA_MOVE5"  
+        return "2_STORY_MEGA_MOVE4"
+    
+    def _2_story_mega_move5(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_MEGA_MOVE6"
         return "2_STORY_MEGA_MOVE5"
     
     def _2_story_mega_move6(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
-                return "2_STORY_MEGA_MOVE7"
         return "2_STORY_MEGA_MOVE6"
     
     def _2_story_mega_move7(self):
