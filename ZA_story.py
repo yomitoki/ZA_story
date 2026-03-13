@@ -44,12 +44,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             "MAIN_STATE_INIT": self.main_state_init,
             "MAIN_0_START": self.main_0_start,
             "MAIN_1_Z_LANK": self.main_1_z_lank,
-            "MAIN_2_Y_LANK": self.main_2_y_lank,
+            "MAIN_2_Y_V_LANK": self.main_2_y_v_lank,
         }
         self.main_current_state="MAIN_STATE_INIT"
         #
         self.main_current_state_init="MAIN_1_Z_LANK" 
-        self.main_current_state_init="MAIN_2_Y_LANK" 
+        self.main_current_state_init="MAIN_2_Y_V_LANK" 
         #self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
@@ -428,18 +428,98 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_Y_LANK_BATTLE_ZONE": self._2_story_y_lank_battle_zone,
             
             "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
-            "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
+            "2_STORY_Y_LANK_MOVE2": self._2_story_y_lank_move2,
+            "2_STORY_Y_LANK_MOVE3": self._2_story_y_lank_move3,
+            "2_STORY_Y_LANK_MOVE4": self._2_story_y_lank_move4,
+            "2_STORY_Y_LANK_MOVE5": self._2_story_y_lank_move5,
+
+            "2_STORY_Y_END":self._2_story_y_end,
+
+            "2_STORY_X_LANK_MOVE1": self._2_story_x_lank_move1,
+            "2_STORY_X_LANK_MOVE2": self._2_story_x_lank_move2,
+            "2_STORY_X_LANK_MOVE3": self._2_story_x_lank_move3,
+            "2_STORY_X_LANK_MOVE4": self._2_story_x_lank_move4,
+            "2_STORY_X_LANK_MOVE5": self._2_story_x_lank_move5,
+            "2_STORY_X_LANK_MOVE6": self._2_story_x_lank_move6,
+            "2_STORY_X_LANK_MOVE7": self._2_story_x_lank_move7,
+            "2_STORY_X_LANK_MOVE8": self._2_story_x_lank_move8,
+
+            "2_STORY_X_LANK_BATTLE_ZONE": self._2_story_x_lank_battle_zone,
+
+            "2_STORY_X_LANK_MOVE9": self._2_story_x_lank_move9,
+            "2_STORY_X_LANK_MOVE10": self._2_story_x_lank_move10,
+            "2_STORY_X_LANK_MOVE11": self._2_story_x_lank_move11,
+            "2_STORY_X_LANK_MOVE12": self._2_story_x_lank_move12,
+            "2_STORY_X_LANK_MOVE13": self._2_story_x_lank_move13,
+            
+            "2_STORY_W_LANK_MOVE1": self._2_story_w_lank_move1,
+            "2_STORY_W_LANK_MOVE2": self._2_story_w_lank_move2,
+            "2_STORY_W_LANK_MOVE3": self._2_story_w_lank_move3,
+            "2_STORY_W_LANK_MOVE4": self._2_story_w_lank_move4,
+            "2_STORY_W_LANK_MOVE5": self._2_story_w_lank_move5,
+            "2_STORY_W_LANK_MOVE6": self._2_story_w_lank_move6,
+            "2_STORY_W_LANK_MOVE7": self._2_story_w_lank_move7,
+            
+            "2_STORY_X_LANK_BATTLE_ZONE":self._2_story_w_lank_battle_zone,
+            
+            "2_STORY_W_LANK_MOVE8": self._2_story_w_lank_move8,
+            "2_STORY_W_LANK_MOVE9": self._2_story_w_lank_move9,
+            "2_STORY_W_LANK_MOVE10": self._2_story_w_lank_move10,
+            "2_STORY_W_LANK_MOVE11": self._2_story_w_lank_move11,
+            "2_STORY_W_LANK_MOVE12": self._2_story_w_lank_move12,
+            "2_STORY_W_LANK_MOVE13": self._2_story_w_lank_move13,
+            
+            "2_STORY_ABSOL_MOVE1": self._2_story_absol_move1,
+            "2_STORY_ABSOL_MOVE2": self._2_story_absol_move2,
+            
+            "2_STORY_ABSOL_BATTLE": self._2_story_absol_battle,
+            
+            "2_STORY_ABSOL_MOVE3": self._2_story_absol_move3,
+            "2_STORY_ABSOL_MOVE4": self._2_story_absol_move4,
+            "2_STORY_ABSOL_MOVE5": self._2_story_absol_move5,
+            "2_STORY_ABSOL_MOVE6": self._2_story_absol_move6,
+            "2_STORY_ABSOL_MOVE7": self._2_story_absol_move7,
+            "2_STORY_ABSOL_MOVE8": self._2_story_absol_move8,
+            "2_STORY_ABSOL_MOVE9": self._2_story_absol_move9,
+            
+            "2_STORY_ABSOL_MOVE10": self._2_story_absol_move10,
+            "2_STORY_ABSOL_MOVE11": self._2_story_absol_move11,
+            "2_STORY_ABSOL_MOVE12": self._2_story_absol_move12,
+            "2_STORY_ABSOL_MOVE13": self._2_story_absol_move13,
+            "2_STORY_ABSOL_MOVE14": self._2_story_absol_move14,
+            "2_STORY_ABSOL_MOVE15": self._2_story_absol_move15,
+            "2_STORY_ABSOL_MOVE16": self._2_story_absol_move16,
+            "2_STORY_ABSOL_MOVE17": self._2_story_absol_move17,
+            "2_STORY_ABSOL_MOVE18": self._2_story_absol_move18,
+            "2_STORY_ABSOL_MOVE19": self._2_story_absol_move19,
+            "2_STORY_ABSOL_MOVE20": self._2_story_absol_move20,
+            "2_STORY_ABSOL_MOVE21": self._2_story_absol_move21,
+            "2_STORY_ABSOL_MOVE22": self._2_story_absol_move22,
+            "2_STORY_ABSOL_MOVE23": self._2_story_absol_move23,
+            "2_STORY_ABSOL_MOVE24": self._2_story_absol_move24,
+            "2_STORY_ABSOL_MOVE25": self._2_story_absol_move25,
+            "2_STORY_ABSOL_MOVE26": self._2_story_absol_move26,
+            "2_STORY_ABSOL_MOVE27": self._2_story_absol_move27,
+            "2_STORY_ABSOL_MOVE28": self._2_story_absol_move28,
+            "2_STORY_ABSOL_MOVE29": self._2_story_absol_move29,
+            "2_STORY_ABSOL_MOVE30": self._2_story_absol_move30,
+            "2_STORY_ABSOL_MOVE31": self._2_story_absol_move31,
+            "2_STORY_ABSOL_MOVE32": self._2_story_absol_move32,
+            "2_STORY_ABSOL_MOVE33": self._2_story_absol_move33,
+            "2_STORY_ABSOL_MOVE34": self._2_story_absol_move34,
+            "2_STORY_ABSOL_MOVE35": self._2_story_absol_move35,
+            "2_STORY_ABSOL_MOVE36": self._2_story_absol_move36,
+            "2_STORY_ABSOL_MOVE37": self._2_story_absol_move37,
+            "2_STORY_ABSOL_MOVE38": self._2_story_absol_move38,
+            "2_STORY_ABSOL_MOVE39": self._2_story_absol_move39,
+            "2_STORY_ABSOL_MOVE40": self._2_story_absol_move40,
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
         self._2_story_current_state_init= "2_STORY_Y_LANK_BATTLE_ZONE"
-        self._2_story_current_state_init= "2_STORY_Y_LANK_MOVE1"
+        self._2_story_current_state_init= "2_STORY_ABSOL_BATTLE"
+        self._2_story_current_state_init="2_STORY_ABSOL_MOVE1"
+        self._2_story_current_state_init="2_STORY_ABSOL_MOVE39"
         #self._2_story_current_state_init="" 
         
     ######################################################
@@ -487,6 +567,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.chicketmaxflag = 0
         #self.ZL_state = 0
         self.Rstick_state = 0
+        self.Lstick_state = 0
+        self.Lstick_state2 = 0
+        self.Lstick_state3 = 0
+        self.Lstick_state4 = 0
         self.quasarcount = 0
         self.quasarlosecount = 0
         self.targetzone = 1
@@ -873,8 +957,27 @@ class ZA_story_Base(ImageProcPythonCommand):
                 count +=1
         self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))          
         return movestep
+
+    def MOVE_SEE2(self,action1 = "RELOAD",action2 = "RELOAD",in_see_r1=0.0,in_see_r2=0.0,dirnum=1,action = "RELOAD"):
+        if action != "END":
+            if self.Rstick_state == 0:
+                print(f"{self.keys.holdButton}")
+                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
+                self.Rstick_state = 1
+            else:
+                self.holdEnd(Direction(Stick.RIGHT, 180))
+                self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
+                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
+                self.Rstick_state = 1
+        elif action == "END" and self.Rstick_state == 1:
+            self.holdEnd(Direction(Stick.RIGHT, 180))
+            self.Rstick_state = 0
+    def MOVE_SEE(self,action = "RELOAD",in_see_r=0.0):
+        if in_see_r==0.0:
+            local_see_r = self.see_r
+        else:
+            local_see_r = in_see_r
             
-    def MOVE_SEE(self,action = "RELOAD"):
         if (self.no_Cplus==1 and (not self.image_check("ESCAPE"))):#一旦視点移動はC+がない時のみ
             self.notargetcount=0
             if self.Rstick_state == 1:
@@ -891,12 +994,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             return
         if action != "END":
             if self.Rstick_state == 0:
-                self.hold(Direction(Stick.RIGHT, 180,self.see_r))
+                print(f"{self.keys.holdButton}")
+                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
                 self.Rstick_state = 1
             else:
                 self.holdEnd(Direction(Stick.RIGHT, 180))
-                self.wait(self.SLEEPLIST[4][2])
-                self.hold(Direction(Stick.RIGHT, 180,self.see_r))
+                self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
+                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
                 self.Rstick_state = 1
         elif action == "END" and self.Rstick_state == 1:
             self.holdEnd(Direction(Stick.RIGHT, 180))
@@ -904,10 +1008,66 @@ class ZA_story_Base(ImageProcPythonCommand):
         #else:
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
+    def MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD"):
+            
+        if action != "END":
+            if self.Lstick_state == 0 and self.Lstick_state2 == 0:# and self.Lstick_state3 == 0:
+                if dirnum==1: 
+                    self.hold(Direction(Stick.LEFT, dir1,1.0))
+                    self.Lstick_state = 1
+                elif dirnum==2: 
+                    self.hold(Direction(Stick.LEFT, dir2,1.0))
+                    self.Lstick_state2 = 1
+                elif dirnum==3: 
+                    self.hold(Direction(Stick.LEFT, dir3,1.0))
+                    self.Lstick_state3 = 1
+                elif dirnum==4: 
+                    self.hold(Direction(Stick.LEFT, dir4,1.0))
+                    self.Lstick_state4 = 1  
+            else:
+                if self.Lstick_state == 1:
+                    self.holdEnd(Direction(Stick.LEFT, dir1))
+                    self.Lstick_state = 0
+                if self.Lstick_state2 == 1:
+                    self.holdEnd(Direction(Stick.LEFT, dir2))
+                    self.Lstick_state2 = 0
+                if self.Lstick_state3 == 1:
+                    self.holdEnd(Direction(Stick.LEFT, dir3))
+                    self.Lstick_state3 = 0
+                if self.Lstick_state4 == 1:
+                    self.holdEnd(Direction(Stick.LEFT, dir4))
+                    self.Lstick_state4 = 0
+                self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
+                
+                if dirnum==1: 
+                    self.hold(Direction(Stick.LEFT, dir1,1.0))
+                    self.Lstick_state = 1
+                elif dirnum==2: 
+                    self.hold(Direction(Stick.LEFT, dir2,1.0))
+                    self.Lstick_state2 = 1
+                elif dirnum==3: 
+                    self.hold(Direction(Stick.LEFT, dir3,1.0))
+                    self.Lstick_state3 = 1    
+                elif dirnum==4: 
+                    self.hold(Direction(Stick.LEFT, dir4,1.0))
+                    self.Lstick_state4 = 1   
+        elif action == "END":
+            if self.Lstick_state == 1:
+                self.holdEnd(Direction(Stick.LEFT, dir1))
+                self.Lstick_state = 0
+            if self.Lstick_state2 == 1:
+                self.holdEnd(Direction(Stick.LEFT, dir2))
+                self.Lstick_state2 = 0
+            if self.Lstick_state3 == 1:
+                self.holdEnd(Direction(Stick.LEFT, dir3))
+                self.Lstick_state3 = 0
+            if self.Lstick_state4 == 1:
+                self.holdEnd(Direction(Stick.LEFT, dir4))
+                self.Lstick_state4 = 0
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",event_picture="",sleeptime=0.5):
+    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",event_picture="",sleeptime=0.5):
 
         while True:
             self.checkIfAlive()
@@ -949,6 +1109,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                         return True
                 if endpicture2 != "":
                     if self.image_check(endpicture2):
+                        return True
+                if endpicture3 != "":
+                    if self.image_check(endpicture3):
+                        return True
+                if endpicture4 != "":
+                    if self.image_check(endpicture4):
+                        return True     
+                if endpicture5 != "":
+                    if self.image_check(endpicture5):
                         return True    
                 if checkerflg==0:
                     self.wait(sleeptime)
@@ -958,6 +1127,345 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
             self.wait(sleeptime)
         return False
+    
+    def mega_evolution_battle_mode_select(self,mode=0):
+        #アブソル Bはまもるのため選ばない。
+        #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT"):
+
+            return True
+            
+    
+
+    def mega_evolution_battle(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, endpicture="",end2picture=""):
+        count=0
+        self.no_Cplus=0
+        no_target_count=0
+        no_target_count_threshold=0
+        target_count=0
+        target_count_threshold=10
+        target_count_threshold2=10
+        target_marker_count=0
+        while True:
+            
+            self.ZL_ACTION("")
+
+            if count==0 and Aaction==1 and self.image_check("C+"):
+                self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                
+                #回避行動用
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.wait(0.3)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    self.wait(0.1)
+                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                self.ZL_ACTION("")
+            elif count==1:
+                if Baction==1 and self.image_check("C+"):
+                    self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                #回避行動用
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.wait(0.3)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    self.wait(0.1)
+                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                self.ZL_ACTION("")
+            elif count==2 and Xaction==1 and self.image_check("C+"):
+                self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                #回避行動用
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.wait(0.3)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    self.wait(0.1)
+                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                self.ZL_ACTION("")
+            elif count==3:
+                if Yaction==1 and self.image_check("C+"):
+                    self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                #回避行動用
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.wait(0.3)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    self.wait(0.1)
+                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    self.wait(0.1)
+                    if no_target_count>no_target_count_threshold:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                    elif target_count>target_count_threshold2:
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                    
+                self.ZL_ACTION("")
+                
+                
+            if not (self.image_check("TEXT_GREEN_COMMENT") or self.image_check("TEXT_BLACK_COMMENT")):    
+                if (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
+                    
+                    if target_marker_count==1:
+                        self.MOVE_SEE(action = "",in_see_r=see_r)
+                        for i in range(5):
+                            self.ZL_ACTION("END")
+                            self.wait(0.1)
+                            self.ZL_ACTION("")
+                            if Aaction==1 and self.image_check("C+"):
+                                self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.wait(0.3)
+                                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    self.wait(0.1)
+                                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    self.wait(0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    break
+                            if Baction==1 and self.image_check("C+"):
+                                self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.wait(0.3)
+                                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    self.wait(0.1)
+                                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    self.wait(0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    break
+                            elif Xaction==1 and self.image_check("C+"):
+                                self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.wait(0.3)
+                                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    self.wait(0.1)
+                                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    self.wait(0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    break
+                            elif Yaction==1 and self.image_check("C+"):
+                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
+                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.wait(0.3)
+                                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    self.wait(0.1)
+                                    self.pressRep(Button.Y, repeat=8, duration=0.04, wait=0.0, interval=0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    self.wait(0.1)
+                                    if no_target_count>no_target_count_threshold:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"END")
+                                    elif target_count>target_count_threshold2:
+                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"END")
+                                    break
+                        
+                        target_marker_count+=1
+                    elif target_marker_count>2:
+                        target_marker_count=0
+                    else:
+                        self.MOVE_SEE(action = "",in_see_r=see_r)
+                else:
+                    target_marker_count=0
+                    self.MOVE_SEE(action = "",in_see_r=see_r)
+            self.ZL_ACTION("")
+            count=(count + 1) % 4
+            
+            if not self.image_check("TEXT_BLACK_COMMENT"):
+                if no_target_count>no_target_count_threshold:
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                elif target_count>target_count_threshold2:
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")
+                #self.MOVE_SEE(action = "END",in_see_r=see_r)
+                self.wait(0.1)
+                
+                if not self.image_check("C+"):
+                    print("wer2")
+                    self.ZL_ACTION("END")
+                    self.wait(0.1)
+                    self.ZL_ACTION("")
+
+                    no_target_count+=1
+                    target_count=0
+                else:
+                    no_target_count=0
+                    target_count+=1
+            elif self.image_check("TEXT_BLACK_COMMENT"):
+                no_target_count=0
+                no_target_count=target_count_threshold2
+                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    
+            if self.image_check("FIELD_W"):
+                self.etc_sendCommand("Lbutton_up")
+
+            if endpicture != "" or end2picture != "":
+                if self.image_check(endpicture):
+                    self.ZL_ACTION("END")
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.MOVE_SEE(action = "END",in_see_r=see_r)
+                    return True
+            if self.image_check("R_push"):
+                self.press(Button.RCLICK,0.05,0.1) 
+
+            if self.image_check("TEXT_BLACK_COMMENT"):
+                no_target_count=0
+                no_target_count=target_count_threshold2
+                self.MOVE_LStick(dir1,dir2,1,dir3,dir4,"END")
+                self.wait(1.0)
+                if self.image_check("2_SELECT"):
+                    self.wait(1.0)
+                    if self.image_check("2_SELECT_TUTORIAL"):
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
+                    else:
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(1.0)
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
+                elif self.image_check("3_SELECT"):
+                    self.wait(1.0)
+                    if self.image_check("3_SELECT_SELECT"):
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    else:
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(1.0)
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                else:
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                     
+            elif self.image_check("TEXT_GREEN_COMMENT"):
+                self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER")
+
+            elif self.image_check("2_SELECT"):
+                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.wait(1.0)
+                if self.image_check("2_SELECT_TUTORIAL"):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
+                else:
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(1.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
+            elif self.image_check("3_SELECT"):
+                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.wait(1.0)
+                if self.image_check("3_SELECT_SELECT"):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                else:
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(1.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+
+            self.wait(0.5)
+
+            
 
     def ZL_ACTION(self,action = "RELOAD",lockonflg=1):
         if action != "END":
@@ -1324,9 +1832,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif  self.main_current_state_init=="MAIN_1_Z_LANK":
             self._1_story_current_state=self._1_story_current_state_init
             return "MAIN_1_Z_LANK"
-        elif  self.main_current_state_init=="MAIN_2_Y_LANK":
+        elif  self.main_current_state_init=="MAIN_2_Y_V_LANK":
             self._2_story_current_state=self._2_story_current_state_init
-            return "MAIN_2_Y_LANK"
+            return "MAIN_2_Y_V_LANK"
         else:
             return self.main_current_state_init
         
@@ -1356,16 +1864,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     def main_1_z_lank(self):
         self._1_story_current_state = self.STATE_1_STORY_FUNCTION[self._1_story_current_state]()
         if self._1_story_current_state == "1_STORY_END":
-            return "MAIN_2_Y_LANK"
+            return "MAIN_2_Y_V_LANK"
         else:
             return "MAIN_1_Z_LANK"
     
     ######################################################
-    # MAIN_2_Y_LANK FUNCTION
+    # MAIN_2_Y_V_LANK FUNCTION
     ######################################################
-    def main_2_y_lank(self):
+    def main_2_y_v_lank(self):
         self._2_story_current_state = self.STATE_2_STORY_FUNCTION[self._2_story_current_state]()
-        return "MAIN_2_Y_LANK"
+        return "MAIN_2_Y_V_LANK"
 
     ######################################################
     # MAIN_1_Z_LANK SUB FUNCTION
@@ -2599,6 +3107,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "1_STORY_OUT_HOTEL_Z_84" 
         return "1_STORY_OUT_HOTEL_Z_83"
     
+    #Zランク
     def _1_story_out_hotel_z_84(self):
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
@@ -2625,7 +3134,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_START_CHECK" 
 
     ######################################################
-    # MAIN_2_Y_LANK SUB FUNCTION
+    # MAIN_2_Y_V_LANK SUB FUNCTION
     ######################################################
     def _2_story_start_check(self):
         ### AUTO_SAVE_POINT
@@ -5166,13 +5675,730 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_Y_LANK_BATTLE_ZONE"
     
     def _2_story_y_lank_move1(self):
-        ret = self.Common_goto(2,0,1)
+        ret = self.Common_goto(4,0,-2)#Wゾーン5側から
         if ret == "START":
             return "2_STORY_Y_LANK_MOVE2"
         else:
             return "2_STORY_Y_LANK_MOVE1"
-    
 
+    def _2_story_y_lank_move2(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,350), duration=5.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,233), duration=0.5, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=8.5, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_Y_LANK_MOVE3"
+        return "2_STORY_Y_LANK_MOVE2"
+
+    def _2_story_y_lank_move3(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+                return "2_STORY_Y_LANK_MOVE4"
+        return "2_STORY_Y_LANK_MOVE3"
+
+    #Yランク
+    def _2_story_y_lank_move4(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_Y_LANK_MOVE3"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_Y_LANK_MOVE5"
+        return "2_STORY_Y_LANK_MOVE4"
+
+    def _2_story_y_lank_move5(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sub4_button="A",sub4_picture="MORNING"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_Y_END"
+        return "2_STORY_Y_LANK_MOVE5"
+
+    def _2_story_y_end(self):
+        return "2_STORY_X_LANK_MOVE1"
+
+    def _2_story_x_lank_move1(self):
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE2"
+        return "2_STORY_X_LANK_MOVE1"
+    
+    def _2_story_x_lank_move2(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE3"
+        return "2_STORY_X_LANK_MOVE2"
+    
+    def _2_story_x_lank_move3(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "2_STORY_X_LANK_MOVE4"
+        return "2_STORY_X_LANK_MOVE3"
+    
+    def _2_story_x_lank_move4(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.5, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_X_LANK_MOVE3"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE5"
+
+        return "2_STORY_X_LANK_MOVE4"
+    
+    def _2_story_x_lank_move5(self):
+        if self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_X_LANK_MOVE6"
+        return "2_STORY_X_LANK_MOVE5"
+
+    def _2_story_x_lank_move6(self):
+        #スボミーイベントを想定外に発生しないために処理
+        ret = self.Common_goto(2,0,2)#ポケセンタープランタンへ移動
+        if ret == "START":
+            return "2_STORY_X_LANK_MOVE7"
+        else:
+            return "2_STORY_X_LANK_MOVE6"
+        
+    def _2_story_x_lank_move7(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_X_LANK_MOVE8"
+        return "2_STORY_X_LANK_MOVE7"
+
+    def _2_story_x_lank_move8(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "2_STORY_X_LANK_BATTLE_ZONE"
+        return "2_STORY_X_LANK_MOVE8"
+
+    def _2_story_x_lank_battle_zone(self):
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=1
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "2_STORY_X_LANK_MOVE9"
+        else: 
+            return "2_STORY_X_LANK_BATTLE_ZONE"
+
+    def _2_story_x_lank_move9(self):
+        ret = self.Common_goto(1,0,-2)#レストランドキワミへ移動
+        if ret == "START":
+            return "2_STORY_X_LANK_MOVE10"
+        else:
+            return "2_STORY_X_LANK_MOVE9"
+    
+    def _2_story_x_lank_move10(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            
+            self.press(Direction(Stick.LEFT,4), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,75), duration=6.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=14.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,280), duration=0.4, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE11"
+        return "2_STORY_X_LANK_MOVE10"
+    
+    def _2_story_x_lank_move11(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "2_STORY_X_LANK_MOVE12"
+        return "2_STORY_X_LANK_MOVE11"
+    
+    def _2_story_x_lank_move12(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    #self.press(Direction(Stick.LEFT,90), duration=0.5, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_X_LANK_MOVE11"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "2_STORY_X_LANK_MOVE11"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE11"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_X_LANK_MOVE13"
+        return "2_STORY_X_LANK_MOVE12"
+    
+    def _2_story_x_lank_move13(self):
+        if self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+                return "2_STORY_X_LANK_MOVE14"
+        return "2_STORY_X_LANK_MOVE13"
+    
+    def _2_story_w_lank_move1(self):
+        ret = self.Common_goto(4,0,1)#Wゾーン2へ移動
+        if ret == "START":
+            return "2_STORY_W_LANK_MOVE2"
+        else:
+            return "2_STORY_W_LANK_MOVE1"
+    
+    def _2_story_w_lank_move2(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            
+            self.press(Direction(Stick.LEFT,170), duration=11.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=7.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,200), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=14.0, wait=1.0)
+            self.wait(0.5)
+
+            return "2_STORY_W_LANK_MOVE3"
+        return "2_STORY_W_LANK_MOVE2"
+    
+    def _2_story_w_lank_move3(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+                return "2_STORY_W_LANK_MOVE4"
+        return "2_STORY_W_LANK_MOVE3"
+    
+    def _2_story_w_lank_move4(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,75), duration=4.0, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_W_LANK_MOVE3"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "2_STORY_W_LANK_MOVE3"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_W_LANK_MOVE3"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_W_LANK_MOVE5"
+        return "2_STORY_W_LANK_MOVE4"
+    
+    def _2_story_w_lank_move5(self):
+        if self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                return "2_STORY_W_LANK_MOVE6"
+        return "2_STORY_W_LANK_MOVE5"
+    
+    #ヒトカゲの対策を先にした方がよい？(回復はしないが通る)
+    def _2_story_w_lank_move6(self):
+        ret = self.Common_goto(2,0,2)#ポケセンタープランタンへ移動
+        if ret == "START":
+            return "2_STORY_W_LANK_MOVE7"
+        else:
+            return "2_STORY_W_LANK_MOVE6"
+    
+    def _2_story_w_lank_move7(self):
+        if self.Common_pokemon_recovery():
+            return "2_STORY_X_LANK_BATTLE_ZONE"
+        return "2_STORY_W_LANK_MOVE7"
+    
+    def _2_story_w_lank_battle_zone(self):
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=1
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "2_STORY_W_LANK_MOVE8"
+        else: 
+            return "2_STORY_X_LANK_BATTLE_ZONE"
+    
+    def _2_story_w_lank_move8(self):
+        ret = self.Common_goto(1,0,5)#レストランドフツーへ移動
+        if ret == "START":
+            return "2_STORY_W_LANK_MOVE9"
+        else:
+            return "2_STORY_W_LANK_MOVE8"
+    
+    def _2_story_w_lank_move9(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            return "2_STORY_W_LANK_MOVE10"
+        return "2_STORY_W_LANK_MOVE9"
+    
+    def _2_story_w_lank_move10(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,0), duration=0.3, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            return "2_STORY_W_LANK_MOVE11"
+        return "2_STORY_W_LANK_MOVE10"
+    
+    def _2_story_w_lank_move11(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "2_STORY_W_LANK_MOVE12"
+        return "2_STORY_W_LANK_MOVE11"
+    
+    def _2_story_w_lank_move12(self):
+        if self.image_check("W_BATTLE_END"):
+            return "2_STORY_W_LANK_MOVE13"
+        elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_W_LANK_MOVE11"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "2_STORY_W_LANK_MOVE11"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_W_LANK_MOVE11"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_W_LANK_MOVE13"
+        else:#想定外の復帰用
+            if self.renda_button(rendabutton="B",endpicture="TEXT_WHITE_COMMENT",endpicture2="BATTLE_BALL_CHECK",endpicture3="COIN_ICON",endpicture4="EVENT_MARKER_CENTER_WIDE",endpicture5="W_BATTLE_END",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                if self.image_check("COIN_ICON"):
+                    return "2_STORY_W_LANK_MOVE13"
+                return "2_STORY_W_LANK_MOVE12"
+        return "2_STORY_W_LANK_MOVE12"
+    #check
+    def _2_story_w_lank_move13(self):
+        if self.image_check("W_BATTLE_END"):
+            return "_2_story_absol_move1"
+        elif self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                return _2_story_absol_move1
+        return "2_STORY_W_LANK_MOVE13"
+    
+    #リセットでしか戻れない・緑のコメントで戻した方がよい
+    def _2_story_absol_move1(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,60), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=7.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=6.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,95), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,100), duration=7.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_ABSOL_MOVE2"
+        return "2_STORY_ABSOL_MOVE1"
+    
+    def _2_story_absol_move2(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_ABSOL_BATTLE"
+        return "2_STORY_ABSOL_MOVE2"
+
+    def _2_story_absol_battle(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "2_STORY_ABSOL_MOVE3"   
+        return "2_STORY_ABSOL_BATTLE"
+    
+    def _2_story_absol_move3(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "2_STORY_ABSOL_MOVE4"
+        return "2_STORY_ABSOL_MOVE3" 
+    
+    def _2_story_absol_move4(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE5"
+        return "2_STORY_ABSOL_MOVE4"
+    
+    def _2_story_absol_move5(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE6"
+        return "2_STORY_ABSOL_MOVE5"
+    
+    def _2_story_absol_move6(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_ABSOL_MOVE7"
+        return "2_STORY_ABSOL_MOVE6"
+    
+    #アブソル入れ替え処理後で実施
+    #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
+    def _2_story_absol_move7(self):
+        if self.image_check("BATTLE_BALL_CHECK"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        #elif self.image_check("TEXT_BLACK_COMMENT"):
+        #    self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+        #    for i in range(10):
+        #        self.wait(1.0)
+        #        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+        #            self.press(Direction(Stick.LEFT,75), duration=4.0, wait=0.5)
+        #            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        #            return "2_STORY_W_LANK_MOVE3"
+        #        elif self.image_check("TEXT_BLACK_COMMENT"):
+        #            return "2_STORY_W_LANK_MOVE3"
+        #elif self.image_check("EVENT_MARKER_CENTER_WIDE"):
+        #    self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+        #    return "2_STORY_W_LANK_MOVE3"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_ABSOL_MOVE8"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE8"
+        return "2_STORY_ABSOL_MOVE7"
+    
+    
+    
+    def _2_story_absol_move8(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                if not self.image_check("BATTLE_BALL_CHECK"):
+                    return "2_STORY_ABSOL_MOVE9"
+                else:
+                    return "2_STORY_ABSOL_MOVE7"
+
+        return "2_STORY_ABSOL_MOVE8"
+    
+    #Wゾーン7-10のマッピング
+    
+    def _2_story_absol_move9(self):
+        ret = self.Common_goto(1,0,-4)#レストランドリニューへ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE10"
+        else:
+            return "2_STORY_ABSOL_MOVE9"
+    
+    def _2_story_absol_move10(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,230), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,300), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_ABSOL_MOVE11"
+        return "2_STORY_ABSOL_MOVE10"
+    
+    def _2_story_absol_move11(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE12"
+        return "2_STORY_ABSOL_MOVE11"
+    
+    def _2_story_absol_move12(self):
+        if self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_ABSOL_MOVE13"
+        return "2_STORY_ABSOL_MOVE12"
+    
+    def _2_story_absol_move13(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE14"
+        return "2_STORY_ABSOL_MOVE13"
+    
+    def _2_story_absol_move14(self):
+        ### AUTO_SAVE_POINT
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=1
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "2_STORY_ABSOL_MOVE15"
+        else: 
+            return "2_STORY_ABSOL_MOVE14"
+    
+    def _2_story_absol_move15(self):
+        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE16"
+        else:
+            return "2_STORY_ABSOL_MOVE15"
+    
+    def _2_story_absol_move16(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,130), duration=12.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,58), duration=2.2, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE17"
+        return "2_STORY_ABSOL_MOVE16"
+    
+    def _2_story_absol_move17(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE18"
+
+        return "2_STORY_ABSOL_MOVE17"
+    
+    def _2_story_absol_move18(self):
+        if self.image_check("BATTLE_BALL_CHECK"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_ABSOL_MOVE17"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "2_STORY_ABSOL_MOVE17"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE17"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "2_STORY_ABSOL_MOVE19"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE19"
+        return "2_STORY_ABSOL_MOVE18"
+    
+    def _2_story_absol_move19(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                if not self.image_check("BATTLE_BALL_CHECK"):
+                    return "2_STORY_ABSOL_MOVE20"
+                else:
+                    return "2_STORY_ABSOL_MOVE18"
+        return "2_STORY_ABSOL_MOVE19"
+    
+    def _2_story_absol_move20(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE21"
+        else:
+            return "2_STORY_ABSOL_MOVE20"
+    
+    def _2_story_absol_move21(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE22"
+        return "2_STORY_ABSOL_MOVE21"
+    
+    def _2_story_absol_move22(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE23"
+        return "2_STORY_ABSOL_MOVE22"
+    
+    def _2_story_absol_move23(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,120), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE24"
+        return "2_STORY_ABSOL_MOVE23"
+    
+    def _2_story_absol_move24(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE25"
+        return "2_STORY_ABSOL_MOVE24"
+    
+    def _2_story_absol_move25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,80), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,130), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE26"
+        return "2_STORY_ABSOL_MOVE25"
+    
+    def _2_story_absol_move26(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE27"
+        return "2_STORY_ABSOL_MOVE26"
+    
+    def _2_story_absol_move27(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,270), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,230), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE27"
+        return "2_STORY_ABSOL_MOVE27"
+    
+    def _2_story_absol_move28(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE29"
+        return "2_STORY_ABSOL_MOVE28"
+    
+    def _2_story_absol_move29(self):
+        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE30"
+        else:
+            return "2_STORY_ABSOL_MOVE29"
+    
+    def _2_story_absol_move30(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            return "2_STORY_ABSOL_MOVE31"
+        return "2_STORY_ABSOL_MOVE30"
+    
+    def _2_story_absol_move31(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE32"
+        return "2_STORY_ABSOL_MOVE31"
+    
+    def _2_story_absol_move32(self):
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE33"
+        else:
+            return "2_STORY_ABSOL_MOVE32"
+    
+    def _2_story_absol_move33(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE34"
+        return "2_STORY_ABSOL_MOVE33"
+    
+    def _2_story_absol_move34(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,50), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=0.7, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE35"
+        return "2_STORY_ABSOL_MOVE34"
+    
+    def _2_story_absol_move35(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE36"
+        return "2_STORY_ABSOL_MOVE35"
+    
+    def _2_story_absol_move36(self):
+        ret = self.Common_goto(1,0,5)#レストランフツーへ移動
+        if ret == "START":
+            return "2_STORY_ABSOL_MOVE37"
+        else:
+            return "2_STORY_ABSOL_MOVE36"
+    
+    def _2_story_absol_move37(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE38"
+        return "2_STORY_ABSOL_MOVE37"
+    
+    def _2_story_absol_move38(self):
+        if self.image_check("WANINOKO_ICON"):
+            self.press(Direction(Stick.LEFT,30), duration=0.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE39"
+        return "2_STORY_ABSOL_MOVE38"
+    
+    def _2_story_absol_move39(self):
+        if self.image_check("ESCAPE"):
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        else:
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+        return "2_STORY_ABSOL_MOVE39"
+    
+    def _2_story_absol_move40(self):
+        return "2_STORY_ABSOL_MOVE40"
+    ######################################################
+    # MAIN_2_X_LANK SUB FUNCTION
+    ######################################################
+    #TODO
 
     ######################################################
     # Commonfunction
@@ -7543,6 +8769,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        elif targetimage=="W_BATTLE_END":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_2_y_lank\\Wbattle_end.png',
+                                        threshold = 0.85,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,80,200,200],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
         ######################################################
         # COMMON
         ######################################################
@@ -7563,7 +8804,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TEXT_WHITE_COMMENT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\white_comment.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -7577,7 +8818,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TEXT_WHITE_COMMENT2":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\white_comment2.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -7616,10 +8857,37 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False 
-            
+        elif targetimage=="2_SELECT_TUTORIAL":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\2_select_tutorial.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,400,1180,550]
+                                    ):
+                return True
+            else:
+                return False 
         elif targetimage=="3_SELECT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\3_select.png',
+                                    threshold = 0.9,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [920,340,1180,550]
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="3_SELECT_SELECT":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\3_select_select.png',
                                     threshold = 0.9,
                                     use_gray = True,
                                     show_value = False,
@@ -9910,7 +11178,38 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
-            
+        elif targetimage=="TARGET_LEFT_MID":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.65,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT_MID":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.65,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,600,550],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
         elif targetimage=="TARGET_LEFT_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
@@ -9975,7 +11274,38 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
-            
+        elif targetimage=="TARGET_LEFT_RIHGT_CHECK_MID":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
+                                    threshold = 0.65,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("LEFT",max_val)
+            if ret:
+                return True
+            else:
+                return False
+        elif targetimage=="TARGET_RIGHT_RIHGT_CHECK_MID":
+            ret ,max_val = self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
+                                    threshold = 0.65,#0.72,#0.75,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [580,100,1280,720],#[100,100,1100,600],#crop = [300,100,900,600]
+                                    get_max_val = True)
+            #self.target_marker_Template_savelist("RIGHT",max_val)
+            if ret:
+                return True
+            else:
+                return False
         elif targetimage=="TARGET_LEFT_RIHGT_CHECK_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
