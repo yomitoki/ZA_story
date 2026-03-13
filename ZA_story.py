@@ -50,7 +50,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #
         self.main_current_state_init="MAIN_1_Z_LANK" 
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
-        #self.main_current_state_init="" 
+        self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -2878,7 +2878,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_56"
     
     def _1_story_out_hotel_z_57(self):
-        if self.image_check("BATTLE_BALL_CHECK"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_58"
@@ -2945,7 +2945,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_64" 
     
     def _1_story_out_hotel_z_65(self):
-        if self.image_check("BATTLE_BALL_CHECK"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_66"
@@ -3033,7 +3033,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_74"
     
     def _1_story_out_hotel_z_75(self):
-        if self.image_check("BATTLE_BALL_CHECK"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_76"
@@ -3103,13 +3103,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_83(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_84" 
         return "1_STORY_OUT_HOTEL_Z_83"
     
     #Zランク
     def _1_story_out_hotel_z_84(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -3346,12 +3346,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_27(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
                 return "2_STORY_TOWER_28"
         return "2_STORY_TOWER_27"
     
     def _2_story_tower_28(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("2_SELECT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -5699,13 +5699,13 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_y_lank_move3(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
                 return "2_STORY_Y_LANK_MOVE4"
         return "2_STORY_Y_LANK_MOVE3"
 
     #Yランク
     def _2_story_y_lank_move4(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -5748,12 +5748,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_x_lank_move3(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
                 return "2_STORY_X_LANK_MOVE4"
         return "2_STORY_X_LANK_MOVE3"
     
     def _2_story_x_lank_move4(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -5837,12 +5837,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_x_lank_move11(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
                 return "2_STORY_X_LANK_MOVE12"
         return "2_STORY_X_LANK_MOVE11"
     
     def _2_story_x_lank_move12(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -5899,12 +5899,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move3(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",end2picture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
                 return "2_STORY_W_LANK_MOVE4"
         return "2_STORY_W_LANK_MOVE3"
     
     def _2_story_w_lank_move4(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("TEXT_WHITE_COMMENT"):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -6444,13 +6444,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                 self.pressRep(Button.X, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                self.wait(0.5)
+                self.wait(1.0)
             elif self.image_check("X_MENU_OPEN"):
-                self.wait(0.5)
+                self.wait(1.0)
                 return "COMMON_SKILL_CHANGE_POKEMON_SELECT"
             elif self.image_check("HELP_MARKER"):
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                self.wait(0.5)
+                self.wait(1.0)
 
         return "COMMON_SKILL_CHANGE_START_CHECK"
             
@@ -9140,7 +9140,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="GETCHANCE_ICON4":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\getmerker4.png',
-                                    threshold = 0.80,
+                                    threshold = 0.75,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
