@@ -2433,10 +2433,17 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             #コフキムシは1体
             return "1_STORY_OUT_HOTEL_Z_19"
-            return "1_STORY_OUT_HOTEL_Z_18_1"
+            #return "1_STORY_OUT_HOTEL_Z_18_1"
         elif self.image_check("GETCHANCE_ICON4"):
             self.get_pokemon()
-            self.wait(2.0)
+            self.wait(3.0)
+            for i in range(6):
+                if self.image_check("KOHUKI_ICON_GET4"):
+                    self.ZL_ACTION("END")
+                    return "1_STORY_OUT_HOTEL_Z_19"
+                elif self.image_check("EYE_CHECK"):
+                    self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+                self.wait(1.0)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             if self.image_check("FIELD_W"):
@@ -2492,12 +2499,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "1_STORY_OUT_HOTEL_Z_20_1"
         elif self.image_check("GETCHANCE_ICON4"):
             self.wait(0.25)
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
             self.wait(0.25)
             self.get_pokemon()
+            self.wait(0.25)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
-            self.wait(2.0)
-            
+            for i in range(6):
+                if self.image_check("MERIP_ICON_GET5"):
+                    self.ZL_ACTION("END")
+                    return "1_STORY_OUT_HOTEL_Z_20_1"
+                elif self.image_check("EYE_CHECK"):
+                    self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+                self.wait(1.0)
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             if self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
@@ -2508,7 +2521,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             else:
                 self._1_story_out_hotel_z_20_not_eyecheck_count+=1
                 
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
         return "1_STORY_OUT_HOTEL_Z_20" 
     
     def _1_story_out_hotel_z_20_1(self):
@@ -2729,10 +2742,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         ret = self.common_skill_change_function(5,"X","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
-            return "1_STORY_WANINOKO_SKILL_CHANGE9"
+            return "1_STORY_OUT_HOTEL_Z_39_0"
         else: 
             return "1_STORY_WANINOKO_SKILL_CHANGE8"  
         
+    #6体目のゲットをなくしたため破棄
     def _1_story_waninoko_skill_change9(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
         ret = self.common_skill_change_function(6,"X","B")
@@ -3227,6 +3241,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
             self.wait(0.5)
             return "2_STORY_TOWER_8"
+        else:
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_7"
     
     def _2_story_tower_8(self):
@@ -9302,7 +9319,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="GETCHANCE_ICON4":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\getmerker4.png',
-                                    threshold = 0.75,
+                                    threshold = 0.60,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
