@@ -2994,7 +2994,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "1_STORY_OUT_HOTEL_Z_47" 
         elif self.markerdir("EVENT"):
-            return "1_STORY_OUT_HOTEL_Z_45" 
+            #いわくだきできていない用に
+            return "1_STORY_OUT_HOTEL_Z_44" 
         else:
             return "1_STORY_OUT_HOTEL_Z_46"
     
@@ -4508,7 +4509,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
                 if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_ALAMODE",pic2="MOVEPOINT_PIC_CAFE_ALAMODE") == True:
                     self.Common_goto_jump()
-                    return "2_STORY_TOWER_49"
+                    return "2_STORY_MAPPING_49"
                 else:
                     #登録できていない場合、移動元からやり直し
                     self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
