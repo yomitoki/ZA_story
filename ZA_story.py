@@ -590,14 +590,56 @@ class ZA_story_Base(ImageProcPythonCommand):
             "3_STORY_CANARI_27": self._3_story_canari_27,   
             "3_STORY_CANARI_28": self._3_story_canari_28,   
             "3_STORY_CANARI_29": self._3_story_canari_29,   
-            "3_STORY_CANARI_30": self._3_story_canari_30,  
+            "3_STORY_CANARI_30": self._3_story_canari_30,   
+            "3_STORY_CANARI_31": self._3_story_canari_31,    
+            "3_STORY_CANARI_32": self._3_story_canari_32,    
+            "3_STORY_CANARI_33": self._3_story_canari_33,    
+            "3_STORY_CANARI_34": self._3_story_canari_34,    
+            "3_STORY_CANARI_35": self._3_story_canari_35,    
+            "3_STORY_CANARI_36": self._3_story_canari_36,    
+            "3_STORY_CANARI_37": self._3_story_canari_37,    
+            "3_STORY_CANARI_38": self._3_story_canari_38,    
+            "3_STORY_CANARI_39": self._3_story_canari_39,   
+            "3_STORY_CANARI_40": self._3_story_canari_40,    
+            "3_STORY_CANARI_41": self._3_story_canari_41,   
+            "3_STORY_CANARI_42": self._3_story_canari_42,   
+            "3_STORY_CANARI_43": self._3_story_canari_43,   
+            "3_STORY_CANARI_44": self._3_story_canari_44,   
+            "3_STORY_CANARI_45": self._3_story_canari_45,   
+            "3_STORY_CANARI_46": self._3_story_canari_46,   
+            "3_STORY_CANARI_47": self._3_story_canari_47,   
+            "3_STORY_CANARI_48": self._3_story_canari_48,   
+            "3_STORY_CANARI_49": self._3_story_canari_49,   
+            "3_STORY_CANARI_50": self._3_story_canari_50,   
+            
+            "3_STORY_MEGA_MOVE1": self._3_story_mega_move1, 
+            "3_STORY_MEGA_MOVE2": self._3_story_mega_move2, 
+            "3_STORY_MEGA_MOVE3": self._3_story_mega_move3, 
+            "3_STORY_MEGA_MOVE4": self._3_story_mega_move4, 
+            "3_STORY_MEGA_MOVE5": self._3_story_mega_move5, 
+            "3_STORY_MEGA_MOVE6": self._3_story_mega_move6, 
+            "3_STORY_MEGA_MOVE7": self._3_story_mega_move7, 
+            "3_STORY_MEGA_MOVE8": self._3_story_mega_move8, 
+            "3_STORY_MEGA_MOVE9": self._3_story_mega_move9,
+            "3_STORY_MEGA_MOVE10": self._3_story_mega_move10,
+            "3_STORY_MEGA_MOVE11": self._3_story_mega_move11, 
+            "3_STORY_MEGA_MOVE12": self._3_story_mega_move12, 
+            "3_STORY_MEGA_MOVE13": self._3_story_mega_move13, 
+            "3_STORY_MEGA_MOVE14": self._3_story_mega_move14, 
+            "3_STORY_MEGA_MOVE15": self._3_story_mega_move15, 
+            "3_STORY_MEGA_MOVE16": self._3_story_mega_move16, 
+            "3_STORY_MEGA_MOVE17": self._3_story_mega_move17, 
+            "3_STORY_MEGA_MOVE18": self._3_story_mega_move18, 
+            "3_STORY_MEGA_MOVE19": self._3_story_mega_move19, 
+            "3_STORY_MEGA_MOVE20": self._3_story_mega_move20, 
+             
              
             "3_STORY_END": self._3_story_end,
         }
         
         self._3_story_current_state="3_STORY_START_CHECK" 
         
-        self._3_story_current_state_init= "3_STORY_CANARI_11"
+        self._3_story_current_state_init= "3_STORY_MEGA_MOVE9"
 
 
     ######################################################
@@ -6945,64 +6987,510 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_10"
     
     def _3_story_canari_11(self):
-        return "3_STORY_CANARI_11"
+        ret = self.Common_change_time_set(check_timing="NIGHT")#想定外に時間変更があると補足できないため
+        if ret == "START":
+            return "3_STORY_CANARI_12"
+        else:
+            return "3_STORY_CANARI_11"
     
     def _3_story_canari_12(self):
-        return "3_STORY_CANARI_12"
+        ret = self.Common_goto(2,0,3)#ポケセンターローズへ移動
+        if ret == "START":
+            return "3_STORY_CANARI_13"
+        else:
+            return "3_STORY_CANARI_12"
     
     def _3_story_canari_13(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,0), duration=9.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=13.0, wait=1.0)
+            self.wait(0.5)
+
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "3_STORY_CANARI_14"
         return "3_STORY_CANARI_13"
     
     def _3_story_canari_14(self):
+        for i in range(5):
+            if self.image_check("TEXT_WHITE_COMMENT"):
+                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                    return "3_STORY_CANARI_15"
+            self.wait(0.5)
+        if not self.image_check("TEXT_WHITE_COMMENT"):
+            return "3_STORY_CANARI_11"
         return "3_STORY_CANARI_14"
     
     def _3_story_canari_15(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,100), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,80), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.3, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "3_STORY_CANARI_16"
         return "3_STORY_CANARI_15"
     
     def _3_story_canari_16(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+                self.wait(0.5)
+                return "3_STORY_CANARI_17"
         return "3_STORY_CANARI_16"
     
     def _3_story_canari_17(self):
+        if self.image_check("3_SELECT"):
+            for i in range(2):
+                self.etc_sendCommand("Lbutton_down")
+                self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_18"
+            
         return "3_STORY_CANARI_17"
     
     def _3_story_canari_18(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+                self.wait(0.5)
+                return "3_STORY_CANARI_19"
         return "3_STORY_CANARI_18"
     
     def _3_story_canari_19(self):
+        if self.image_check("3_SELECT"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_20"
         return "3_STORY_CANARI_19"
     
     def _3_story_canari_20(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+                self.wait(0.5)
+                return "3_STORY_CANARI_21"
         return "3_STORY_CANARI_20"
     
     def _3_story_canari_21(self):
+        if self.image_check("3_SELECT"):
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_22"
         return "3_STORY_CANARI_21"
     
     def _3_story_canari_22(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_23"
+
         return "3_STORY_CANARI_22"
     
     def _3_story_canari_23(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,190), duration=2.0, wait=1.0)
+            self.wait(0.5)
+
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "3_STORY_CANARI_24"
         return "3_STORY_CANARI_23"
     
     def _3_story_canari_24(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_25"
+
         return "3_STORY_CANARI_24"
     
     def _3_story_canari_25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,350), duration=2.0, wait=1.0)
+            self.wait(0.5)
+
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "3_STORY_CANARI_26"
         return "3_STORY_CANARI_25"
     
     def _3_story_canari_26(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_27"
+
         return "3_STORY_CANARI_26"
     
     def _3_story_canari_27(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,190), duration=2.0, wait=1.0)
+            self.wait(0.5)
+
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            return "3_STORY_CANARI_28"
         return "3_STORY_CANARI_27"
     
     def _3_story_canari_28(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_29"
         return "3_STORY_CANARI_28"
     
     def _3_story_canari_29(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            return "3_STORY_CANARI_30"
         return "3_STORY_CANARI_29"
     
     def _3_story_canari_30(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_31"
         return "3_STORY_CANARI_30"
+    
+    def _3_story_canari_31(self):
+        ret = self.Common_goto(3,2,0)#カフェおとこまえへ移動
+        if ret == "START":
+            return "3_STORY_CANARI_32"
+        else:
+            return "3_STORY_CANARI_31"
+    
+    def _3_story_canari_32(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_33"
+        return "3_STORY_CANARI_32"
+    
+    def _3_story_canari_33(self):
+        ret = self.Common_change_time_set(check_timing="NIGHT")#想定外に時間変更があると補足できないため
+        if ret == "START":
+            return "3_STORY_CANARI_34"
+        else:
+            return "3_STORY_CANARI_33"
+    
+    def _3_story_canari_34(self):
+        ret = self.Common_goto(2,0,3)#ポケセンターローズへ移動
+        if ret == "START":
+            return "3_STORY_CANARI_35"
+        else:
+            return "3_STORY_CANARI_34"
+    
+    def _3_story_canari_35(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,0), duration=9.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=2.3, wait=1.0)
+            self.wait(0.5)
+            return "3_STORY_CANARI_36"
+        return "3_STORY_CANARI_35"
+    
+    def _3_story_canari_36(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_37"
+        return "3_STORY_CANARI_36"
+    
+    def _3_story_canari_37(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,75), duration=0.3, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return"3_STORY_CANARI_36"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "3_STORY_CANARI_36"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.press(Direction(Stick.LEFT,75), duration=0.3, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_36"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "3_STORY_CANARI_38"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_38"
+
+        return "3_STORY_CANARI_37"
+    
+    def _3_story_canari_38(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",endpicture4="4_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            for i in range(5):
+                self.wait(0.5)
+                if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                    return "3_STORY_CANARI_37"
+                elif self.image_check("4_SELECT"):
+                    self.wait(1.0)
+                    return "3_STORY_CANARI_39"
+            return "3_STORY_CANARI_38"
+        elif (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+            return "3_STORY_CANARI_37"
+
+        return "3_STORY_CANARI_38"
+    
+    def _3_story_canari_39(self):
+        if self.image_check("4_SELECT"):
+            for i in range(3):
+                self.etc_sendCommand("Lbutton_down")
+                self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_40"
+        return "3_STORY_CANARI_39"
+    
+    def _3_story_canari_40(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_41"
+        return "3_STORY_CANARI_40"
+    
+    def _3_story_canari_41(self):
+        ret = self.Common_goto(1,0,4)#ラシーヌ工務店へ移動
+        if ret == "START":
+            return "3_STORY_CANARI_42"
+        else:
+            return "3_STORY_CANARI_41"
+    
+    def _3_story_canari_42(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_43"
+        return "3_STORY_CANARI_42"
+    
+    def _3_story_canari_43(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_44"
+        return "3_STORY_CANARI_43"
+    
+    def _3_story_canari_44(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_45"
+        return "3_STORY_CANARI_44"
+    
+    def _3_story_canari_45(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,75), duration=0.3, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return"3_STORY_CANARI_44"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "3_STORY_CANARI_44"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
+            self.press(Direction(Stick.LEFT,75), duration=0.3, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_46"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "3_STORY_CANARI_46"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_46"
+        return "3_STORY_CANARI_45"
+    
+    def _3_story_canari_46(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            for i in range(5):
+                self.wait(0.5)
+                if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                    return "3_STORY_CANARI_45"
+            return "3_STORY_CANARI_47"
+        elif (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+            return "3_STORY_CANARI_45"
+        return "3_STORY_CANARI_46"
+    
+    def _3_story_canari_47(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,130), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,70), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_48"
+        return "3_STORY_CANARI_47"
+    
+    def _3_story_canari_48(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            return "3_STORY_CANARI_49"
+        return "3_STORY_CANARI_48"
+    
+    def _3_story_canari_49(self):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
+            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return"3_STORY_CANARI_48"
+                elif self.image_check("TEXT_BLACK_COMMENT"):
+                    return "3_STORY_CANARI_48"
+        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_LEFT_WIDE"):
+            self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_48"
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return "3_STORY_CANARI_50"
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_50"
+        return "3_STORY_CANARI_49"
+    
+    def _3_story_canari_50(self):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            for i in range(5):
+                self.wait(0.5)
+                if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                    return "3_STORY_CANARI_49"
+            return "3_STORY_MEGA_MOVE1"
+        elif (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+            return "3_STORY_CANARI_49"
+        return "3_STORY_CANARI_50"
+    
+    def _3_story_mega_move1(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,30), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_MEGA_MOVE2"
+        return "3_STORY_MEGA_MOVE1"
+    
+    def _3_story_mega_move2(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "3_STORY_MEGA_MOVE3"
+        return "3_STORY_MEGA_MOVE2"
+    
+    #Wゾーンマッピング 11-13   
+
+    def _3_story_mega_move3(self):
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "3_STORY_MEGA_MOVE4"
+        else:
+            return "3_STORY_MEGA_MOVE3"
+    
+    def _3_story_mega_move4(self):
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "3_STORY_MEGA_MOVE5"
+        else:
+            return "3_STORY_MEGA_MOVE4"
+
+    
+    def _3_story_mega_move5(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,30), duration=3.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,120), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_MEGA_MOVE6"
+        return "3_STORY_MEGA_MOVE5"
+    
+    def _3_story_mega_move6(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "3_STORY_MEGA_MOVE7"
+        return "3_STORY_MEGA_MOVE6"
+    
+    def _3_story_mega_move7(self):
+        #AUTOSAVE ロトムグライド開放
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.hold(Direction(Stick.LEFT, 160,1.0))
+            self.pressRep(Button.A, repeat=20, duration=0.15, wait=0.5, interval=0.1)
+            self.holdEnd(Direction(Stick.LEFT, 160))
+            return "3_STORY_MEGA_MOVE8"
+        return "3_STORY_MEGA_MOVE7"
+    
+    def _3_story_mega_move8(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "3_STORY_MEGA_MOVE9"
+        return "3_STORY_MEGA_MOVE8"
+    
+    def _3_story_mega_move9(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=1.0)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=1.0)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=1.0)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,50), duration=6.0, wait=1.0)
+            self.wait(0.5) 
+            return "3_STORY_MEGA_MOVE10"
+        return "3_STORY_MEGA_MOVE9"
+    
+    def _3_story_mega_move10(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                return "3_STORY_MEGA_MOVE11"
+        return "3_STORY_MEGA_MOVE10"
+    
+    def _3_story_mega_move11(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "3_STORY_MEGA_MOVE12"
+        return "3_STORY_MEGA_MOVE11"
+    
+    def _3_story_mega_move12(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "3_STORY_MEGA_MOVE13"
+        return "3_STORY_MEGA_MOVE12"
+    
+    def _3_story_mega_move13(self):
+        return "3_STORY_MEGA_MOVE13"
+    
+    def _3_story_mega_move14(self):
+        return "3_STORY_MEGA_MOVE14"
+    
+    def _3_story_mega_move15(self):
+        return "3_STORY_MEGA_MOVE15"
+    
+    def _3_story_mega_move16(self):
+        return "3_STORY_MEGA_MOVE16"
+    
+    def _3_story_mega_move17(self):
+        return "3_STORY_MEGA_MOVE17"
+    
+    def _3_story_mega_move18(self):
+        return "3_STORY_MEGA_MOVE18"
+    
+    def _3_story_mega_move19(self):
+        return "3_STORY_MEGA_MOVE19"
+    
+    def _3_story_mega_move20(self):
+        return "3_STORY_MEGA_MOVE20"
+    
+
+
     
     
     def _3_story_end(self):
@@ -9442,7 +9930,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="1_SELECT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\1_select.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -9456,7 +9944,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="2_SELECT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\2_select.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -9470,7 +9958,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="2_SELECT_TUTORIAL":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\2_select_tutorial.png',
-                                    threshold = 0.9,
+                                    threshold = 0.90,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -9484,7 +9972,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="3_SELECT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\3_select.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
@@ -9512,7 +10000,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="4_SELECT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\4_select.png',
-                                    threshold = 0.9,
+                                    threshold = 0.85,
                                     use_gray = True,
                                     show_value = False,
                                     show_position = True,
