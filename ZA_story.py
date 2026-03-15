@@ -54,7 +54,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
         self.main_current_state_init="MAIN_3_F_LANK"
         self.main_current_state_init="MAIN_4_E_LANK"
-        self.main_current_state_init="" 
+        #self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -555,7 +555,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_ABSOL_MOVE4"
+        self._2_story_current_state_init="2_STORY_W_LANK_BATTLE_ZONE"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=2
@@ -669,13 +669,74 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_8": self._4_story_shiro_8,        
             "4_STORY_SHIRO_9": self._4_story_shiro_9,        
             "4_STORY_SHIRO_10": self._4_story_shiro_10,        
-            "4_STORY_SHIRO_11": self._4_story_shiro_11,
+            "4_STORY_SHIRO_11": self._4_story_shiro_11,        
+            "4_STORY_SHIRO_12": self._4_story_shiro_12,        
+            "4_STORY_SHIRO_13": self._4_story_shiro_13,        
+            "4_STORY_SHIRO_14": self._4_story_shiro_14,        
+            "4_STORY_SHIRO_15": self._4_story_shiro_15,        
+            "4_STORY_SHIRO_16": self._4_story_shiro_16,        
+            "4_STORY_SHIRO_17": self._4_story_shiro_17,        
+            "4_STORY_SHIRO_18": self._4_story_shiro_18,        
+            "4_STORY_SHIRO_19": self._4_story_shiro_19,        
+            "4_STORY_SHIRO_20": self._4_story_shiro_20,        
+            "4_STORY_SHIRO_21": self._4_story_shiro_21,        
+            "4_STORY_SHIRO_21_1": self._4_story_shiro_21_1,         
+            "4_STORY_SHIRO_21_2": self._4_story_shiro_21_2,         
+            "4_STORY_SHIRO_22": self._4_story_shiro_22,        
+            "4_STORY_SHIRO_23": self._4_story_shiro_23,        
+            "4_STORY_SHIRO_24": self._4_story_shiro_24,        
+            "4_STORY_SHIRO_25": self._4_story_shiro_25,        
+            "4_STORY_SHIRO_26": self._4_story_shiro_26,        
+            "4_STORY_SHIRO_27": self._4_story_shiro_27,        
+            "4_STORY_SHIRO_28": self._4_story_shiro_28,        
+            "4_STORY_SHIRO_29": self._4_story_shiro_29,        
+            "4_STORY_SHIRO_30": self._4_story_shiro_30,        
+            "4_STORY_SHIRO_31": self._4_story_shiro_31,        
+            "4_STORY_SHIRO_32": self._4_story_shiro_32,        
+            "4_STORY_SHIRO_33": self._4_story_shiro_33,        
+            "4_STORY_SHIRO_34": self._4_story_shiro_34,        
+            "4_STORY_SHIRO_35": self._4_story_shiro_35,        
+            "4_STORY_SHIRO_36": self._4_story_shiro_36,        
+            "4_STORY_SHIRO_37": self._4_story_shiro_37,        
+            "4_STORY_SHIRO_38": self._4_story_shiro_38,        
+            "4_STORY_SHIRO_39": self._4_story_shiro_39,        
+            "4_STORY_SHIRO_40": self._4_story_shiro_40,        
+            "4_STORY_SHIRO_41": self._4_story_shiro_41,        
+            "4_STORY_SHIRO_42": self._4_story_shiro_42,        
+            "4_STORY_SHIRO_43": self._4_story_shiro_43,        
+            "4_STORY_SHIRO_44": self._4_story_shiro_44,        
+            "4_STORY_SHIRO_45": self._4_story_shiro_45,        
+            "4_STORY_SHIRO_46": self._4_story_shiro_46,        
+            "4_STORY_SHIRO_47": self._4_story_shiro_47,        
+            "4_STORY_SHIRO_48": self._4_story_shiro_48,        
+            "4_STORY_SHIRO_49": self._4_story_shiro_49,        
+            "4_STORY_SHIRO_50": self._4_story_shiro_50,        
+            "4_STORY_SHIRO_51": self._4_story_shiro_51,        
+            "4_STORY_SHIRO_52": self._4_story_shiro_52,        
+            "4_STORY_SHIRO_53": self._4_story_shiro_53,        
+            "4_STORY_SHIRO_54": self._4_story_shiro_54,        
+            "4_STORY_SHIRO_55": self._4_story_shiro_55,        
+            "4_STORY_SHIRO_56": self._4_story_shiro_56,        
+            "4_STORY_SHIRO_57": self._4_story_shiro_57,        
+            "4_STORY_SHIRO_58": self._4_story_shiro_58,        
+            "4_STORY_SHIRO_59": self._4_story_shiro_59,        
+            "4_STORY_SHIRO_60": self._4_story_shiro_60,        
+            "4_STORY_SHIRO_61": self._4_story_shiro_61,        
+            "4_STORY_SHIRO_62": self._4_story_shiro_62,        
+            "4_STORY_SHIRO_63": self._4_story_shiro_63,        
+            "4_STORY_SHIRO_64": self._4_story_shiro_64,        
+            "4_STORY_SHIRO_65": self._4_story_shiro_65,        
+            "4_STORY_SHIRO_66": self._4_story_shiro_66,        
+            "4_STORY_SHIRO_67": self._4_story_shiro_67,        
+            "4_STORY_SHIRO_68": self._4_story_shiro_68,        
+            "4_STORY_SHIRO_69": self._4_story_shiro_69,        
+            "4_STORY_SHIRO_70": self._4_story_shiro_70,
                  
             "4_STORY_END": self._4_story_end,
         }
         
         self._4_story_current_state="4_STORY_START_CHECK" 
-        self._4_story_current_state_init= "4_STORY_SHIRO_6"
+        self._4_story_current_state_init= "4_STORY_SHIRO_51"
             
     ######################################################
     # Commonfunction
@@ -701,10 +762,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2": self.common_skill_change_skill_window_chtarget2,
             "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_skill_change_skill_window_close,
             "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
+            "COMMON_SKILL_CHANGE_FALSE": self.common_skill_change_false,
             }
         self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
-
-
 
         self.STATE_COMMON_FUNCTION = {
             "COMMON_START": self.Common_start,
@@ -1240,12 +1300,30 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",event_picture="",sleeptime=0.5):
+    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",event_picture="",sleeptime=0.5):
         while True:
             self.checkIfAlive()
             
             while True:
                 checkerflg=0
+                    
+                #誤判定回避用で指定画面での検知を除外する
+                if not self.image_check(not_endpicture):
+                    if endpicture != "":
+                        if self.image_check(endpicture):
+                            return True
+                    if endpicture2 != "":
+                        if self.image_check(endpicture2):
+                            return True
+                    if endpicture3 != "":
+                        if self.image_check(endpicture3):
+                            return True
+                    if endpicture4 != "":
+                        if self.image_check(endpicture4):
+                            return True     
+                    if endpicture5 != "":
+                        if self.image_check(endpicture5):
+                            return True
                     
                 if sub_picture != "":
                     if self.image_check(sub_picture):
@@ -1271,30 +1349,18 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                             checkerflg=1
                             self.wait(sleeptime)
+                if sub5_picture != "":
+                    if self.image_check(sub5_picture):
+                        if sub5_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
                 if event_picture != "":
                     if self.image_check(event_picture):
                         self.EventSkip_plus()
                         checkerflg=1
                         self.wait(sleeptime)
                      
-                #誤判定回避用で指定画面での検知を除外する
-                if not self.image_check(not_endpicture):
-                    if endpicture != "":
-                        if self.image_check(endpicture):
-                            return True
-                    if endpicture2 != "":
-                        if self.image_check(endpicture2):
-                            return True
-                    if endpicture3 != "":
-                        if self.image_check(endpicture3):
-                            return True
-                    if endpicture4 != "":
-                        if self.image_check(endpicture4):
-                            return True     
-                    if endpicture5 != "":
-                        if self.image_check(endpicture5):
-                            return True
-
                 if checkerflg==0:
                     self.wait(sleeptime)
                     break
@@ -1307,12 +1373,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     def mega_evolution_battle_mode_select(self,mode=0):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT", end2picture="MORNING"):
+        if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT"):
 
             return True
-            
-    
-
+        
     def mega_evolution_battle(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, endpicture="",end2picture=""):
         count=0
         self.no_Cplus=0
@@ -1645,8 +1709,6 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             self.wait(0.5)
 
-            
-
     def ZL_ACTION(self,action = "RELOAD",lockonflg=1):
         if action != "END":
             if lockonflg == 0:
@@ -1683,7 +1745,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0):
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0):
         noCp_count=0
         while True:
             if self.image_check("SELECT"):
@@ -1694,6 +1756,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             for i in range(5):
                 #バトル中チェック チェックできない場合は、一旦抜ける
                 if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("C+"):
+                    
+                    if get_chanceicon4==1 and self.image_check("GETCHANCE_ICON4"):
+                        self.get_pokemon()
                     if self.image_check("C+"):
                         if Xaction==1:
                             self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -1713,12 +1778,77 @@ class ZA_story_Base(ImageProcPythonCommand):
 
                 else:
                     self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    if lockon_endskip==0:
+                        self.ZL_ACTION("END")
                     return
                 
             if lockon_endskip==0:
                 self.ZL_ACTION("END")
 
-        
+    ######################################################
+    # story_Template
+    ######################################################
+    def story_Template_battle_before(self,noprg_ret,prg_ret,green_check=0,sleeptime=0.5):
+        if self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+                self.wait(1.0)
+                return prg_ret
+        return noprg_ret
+
+    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,noCp=0):
+        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
+            if noCp==0:
+                self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            ##noCp
+        elif self.image_check("CHAT_MARKER"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return bkprg_ret
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
+            for i in range(10):
+                self.wait(1.0)
+                if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                    if self.image_check("TEXT_BLACK_COMMENT"):
+                        return bkprg_ret
+        elif self.image_check("TEXT_GREEN_COMMENT"):
+            return prg_ret
+        elif self.image_check("TEXT_WHITE_COMMENT"):
+            return prg_ret
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return prg_ret
+        elif not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                if self.markerdir("EVENT"):
+                    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                    return noprg_ret
+                else:
+                    return noprg_ret
+        #elif self.image_check("EVENT_MARKER_CENTER"):
+        #    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+        #    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        #    return bkprg_ret
+
+        return noprg_ret
+    
+    def story_Template_battle_after(self,bkprg_ret,prg_ret,selected_pic="RETURN FALSE",selected_target=0,sleeptime=0.5):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",endpicture4=selected_pic,sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+            for i in range(10):
+                self.wait(0.5)
+                if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                    return bkprg_ret
+                elif self.image_check(selected_pic):
+                    self.wait(1.0)
+                    for i in range(selected_target):
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(0.5)
+                    if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+                        return prg_ret
+            return prg_ret
+    
+    ######################################################
+    # story_Template
+    ###################################################### 
     def get_pokemon(self):
         self.ZL_ACTION("")
         self.wait(0.1)
@@ -1728,6 +1858,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(0.1)
         self.ZL_ACTION("END")
         
+    def ball_change(self,type=0):
+        self.keys.input(Button.ZR)
+        self.wait(1.0)
+        for i in range(20):
+            self.etc_sendCommand("Lbutton_left")
+            self.wait(1.0)
+            if type==0 and self.image_check("M_BALL_ICON"):
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(1.0)
+                self.keys.inputEnd(Button.ZR)
+                return True
+            elif type==2 and self.image_check("M_BALL_ICON"):
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(1.0)
+                self.keys.inputEnd(Button.ZR)
+                return True
+        self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        self.wait(1.0)
+        self.keys.inputEnd(Button.ZR)
+        return False
+    
     def EventSkip_plus(self):
         for i in range(3):
             self.etc_sendCommand("plusbutton")
@@ -6364,7 +6515,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_BATTLE"
     
     def _2_story_absol_move3(self):
-        
         if self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "2_STORY_ABSOL_MOVE4"
@@ -6450,7 +6600,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
-                    return "2_STORY_ABSOL_MOVE9___"
+                    return "2_STORY_ABSOL_MOVE9"
                 else:
                     return "2_STORY_ABSOL_MOVE7"
 
@@ -7848,19 +7998,456 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_7"
     
     def _4_story_shiro_8(self):
-        return "4_STORY_SHIRO_8"
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "4_STORY_SHIRO_9"
+        else:
+            return "4_STORY_SHIRO_8"
     
     def _4_story_shiro_9(self):
-        return "4_STORY_SHIRO_9"
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "4_STORY_SHIRO_10"
+        else:
+            return "4_STORY_SHIRO_9"
     
     def _4_story_shiro_10(self):
-        return "4_STORY_SHIRO_10"
+        ret = self.Common_goto(1,0,-6)#ハンサムハウスへ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_11"
+        else:
+            return "4_STORY_SHIRO_10"
     
     def _4_story_shiro_11(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_12"
         return "4_STORY_SHIRO_11"
     
     def _4_story_shiro_12(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_13"
         return "4_STORY_SHIRO_12"
+    
+    def _4_story_shiro_13(self):
+        ret = self.Common_goto(4,0,7)#Wゾーン8へ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_14"
+        else:
+            return "4_STORY_SHIRO_13"
+    
+    def _4_story_shiro_14(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,270), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_15"
+        return "4_STORY_SHIRO_14"
+    
+    def _4_story_shiro_15(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_16"
+        return "4_STORY_SHIRO_15"
+    
+    def _4_story_shiro_16(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,120), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,120), duration=4.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_17"
+        return "4_STORY_SHIRO_16"
+    
+    def _4_story_shiro_17(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_18"
+        return "4_STORY_SHIRO_17"
+    
+    def _4_story_shiro_18(self):
+        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_19"
+        else:
+            return "4_STORY_SHIRO_18"
+    
+    def _4_story_shiro_19(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            return "4_STORY_SHIRO_20"
+        return "4_STORY_SHIRO_19"
+    
+    def _4_story_shiro_20(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_21"
+        return "4_STORY_SHIRO_20"
+    
+    def _4_story_shiro_21(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "4_STORY_SHIRO_21_1"
+        else:
+            return "4_STORY_SHIRO_21"
+        
+    def _4_story_shiro_21_1(self):
+        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "4_STORY_SHIRO_21_2"
+        else:
+            return "4_STORY_SHIRO_21_1"
+    
+    def _4_story_shiro_21_2(self):
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "4_STORY_SHIRO_22"
+        else:
+            return "4_STORY_SHIRO_21_2"
+    
+    def _4_story_shiro_22(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(3,1,0)#ヌーヴォカフェ2号へ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_23"
+        else:
+            return "4_STORY_SHIRO_22"
+    
+    def _4_story_shiro_23(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,200), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=10.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,320), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,110), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_24"
+        return "4_STORY_SHIRO_23"
+    
+    def _4_story_shiro_24(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.markerdir("EVENT"):
+                return "4_STORY_SHIRO_25"
+        return "4_STORY_SHIRO_24"
+    
+    def _4_story_shiro_25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,120), duration=3.5, wait=1.0)
+            return "4_STORY_SHIRO_26"
+        return "4_STORY_SHIRO_25"
+    
+    def _4_story_shiro_26(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD3"):
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(1.0)
+                return "4_STORY_SHIRO_27"
+            elif self.image_check("FIELD_BACK3"):
+                self.wait(1.0)
+                return "4_STORY_SHIRO_27"
+            else:
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(1.0)
+
+        return "4_STORY_SHIRO_26"
+    
+    def _4_story_shiro_27(self):
+        self.wait(1.0)
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                return "4_STORY_SHIRO_28"
+        return "4_STORY_SHIRO_27"
+    
+    def _4_story_shiro_28(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.markerdir("EVENT"):
+                return "4_STORY_SHIRO_29"
+        return "4_STORY_SHIRO_28"
+    
+    def _4_story_shiro_29(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_30"
+        return "4_STORY_SHIRO_29"
+    
+    def _4_story_shiro_30(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                return "4_STORY_SHIRO_31"
+        return "4_STORY_SHIRO_30"
+    
+    def _4_story_shiro_31(self):
+        if self.image_check("EYE_CHECK_HIGH_POKE"):
+            return "4_STORY_SHIRO_30"
+        ret = self.Common_goto(1,0,4)#ラシーヌ工務店へ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_32"
+        else:
+            return "4_STORY_SHIRO_31"
+    
+    def _4_story_shiro_32(self):
+        ret = self.common_skill_change_function(1,1,"X",1,targetskill_pic="REIBI_SKILL")
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_FALSE":
+            return "4_STORY_SHIRO_21"
+        elif ret == "COMMON_SKILL_CHANGE_START":
+            return "4_STORY_SHIRO_33"
+        else: 
+            return "4_STORY_SHIRO_32"
+    
+    def _4_story_shiro_33(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_34"
+        return "4_STORY_SHIRO_33"
+
+    def _4_story_shiro_34(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,30), duration=15.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_35"
+        return "4_STORY_SHIRO_34"
+    
+    def _4_story_shiro_35(self):
+        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_36",green_check=1)
+    
+    def _4_story_shiro_36(self):
+        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_37",noprg_ret="4_STORY_SHIRO_36")
+    
+    def _4_story_shiro_37(self):
+        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_36",prg_ret="4_STORY_SHIRO_38",selected_pic="4_SELECT",selected_target=1)
+    
+    def _4_story_shiro_38(self):
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "4_STORY_SHIRO_39"
+        else:
+            return "4_STORY_SHIRO_38"
+    
+    def _4_story_shiro_39(self):
+        ret = self.Common_goto(2,0,1)#ポケセンターブルーへ移動
+        if ret == "START":
+            return "4_STORY_SHIRO_40"
+        else:
+            return "4_STORY_SHIRO_39"
+    
+    def _4_story_shiro_40(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,180), duration=3.2, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_41"
+        return "4_STORY_SHIRO_40"
+    
+    def _4_story_shiro_41(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
+                return "4_STORY_SHIRO_42"
+        return "4_STORY_SHIRO_41"
+    
+    def _4_story_shiro_42(self):
+        if self.image_check("3_SELECT"):
+            for i in range(2):
+                self.etc_sendCommand("Lbutton_down")
+                self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+                return "4_STORY_SHIRO_43"
+        return "4_STORY_SHIRO_42"
+    
+    def _4_story_shiro_43(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD1") or self.image_check("FIELD_BACK1"): 
+                self.wait(0.5)
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(4.0)
+                #C+チェックをして、battle_Cp_loopでC+チェックを抜けるため
+                self.ZL_ACTION("")
+                self.battle_Cp_loop(Xaction=1,Aaction=0,Yaction=0,Baction=0)
+                return "4_STORY_SHIRO_44"
+            else:   
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+        return "4_STORY_SHIRO_43"
+    
+    def _4_story_shiro_44(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_45"
+        return "4_STORY_SHIRO_44"
+    
+    def _4_story_shiro_45(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,70), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=0.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=5.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,120), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,340), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_46"
+        return "4_STORY_SHIRO_45"
+    
+    def _4_story_shiro_46(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_47"
+        return "4_STORY_SHIRO_46"
+    
+    def _4_story_shiro_47(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90-3), duration=13.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0-3), duration=11.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90-3), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180-3), duration=5.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90-3), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_48"
+        return "4_STORY_SHIRO_47"
+    
+    def _4_story_shiro_48(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_49"
+        return "4_STORY_SHIRO_48"
+    
+    def _4_story_shiro_49(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_50"
+        return "4_STORY_SHIRO_49"
+    
+    def _4_story_shiro_50(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_51"
+        return "4_STORY_SHIRO_50"
+    
+    def _4_story_shiro_51(self):
+
+        return "4_STORY_SHIRO_51"
+    
+    def _4_story_shiro_52(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,0), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_53"
+        return "4_STORY_SHIRO_52"
+    
+    def _4_story_shiro_53(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_54"
+        return "4_STORY_SHIRO_53"
+    
+    def _4_story_shiro_54(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.ball_change(2):#ハイパーボールチェック
+                return "4_STORY_SHIRO_55"
+        return "4_STORY_SHIRO_54"
+    
+    def _4_story_shiro_55(self):
+        if self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
+            return "4_STORY_SHIRO_55"
+        return "4_STORY_SHIRO_55"
+    
+    def _4_story_shiro_56(self):
+        return "4_STORY_SHIRO_56"
+    
+    def _4_story_shiro_57(self):
+        return "4_STORY_SHIRO_57"
+    
+    def _4_story_shiro_58(self):
+        return "4_STORY_SHIRO_58"
+    
+    def _4_story_shiro_59(self):
+        return "4_STORY_SHIRO_59"
+    
+    def _4_story_shiro_60(self):
+        return "4_STORY_SHIRO_60"
+    
+    def _4_story_shiro_61(self):
+        return "4_STORY_SHIRO_61"
+    
+    def _4_story_shiro_62(self):
+        return "4_STORY_SHIRO_62"
+    
+    def _4_story_shiro_63(self):
+        return "4_STORY_SHIRO_63"
+    
+    def _4_story_shiro_64(self):
+        return "4_STORY_SHIRO_64"
+    
+    def _4_story_shiro_65(self):
+        return "4_STORY_SHIRO_65"
+    
+    def _4_story_shiro_66(self):
+        return "4_STORY_SHIRO_66"
+    
+    def _4_story_shiro_67(self):
+        return "4_STORY_SHIRO_67"
+    
+    def _4_story_shiro_68(self):
+        return "4_STORY_SHIRO_68"
+    
+    def _4_story_shiro_69(self):
+        return "4_STORY_SHIRO_69"
+    
+    def _4_story_shiro_70(self):
+        return "4_STORY_SHIRO_70"
+    
+    def _4_story_shiro_71(self):
+        return "4_STORY_SHIRO_71"
+    
+
+    
+
     
     def _4_story_end(self):
         return "4_STORY_START_CHECK" 
@@ -8223,7 +8810,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #dummy
         return "COMMON_MAP_OPEN"
 
-    def Common_map_open(self):
+    def Common_map_open(self,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN"):
         self.map_cursor_reset=0
         self.ZL_ACTION("END")
         self.wait(0.1)#self.wait(self.SLEEPLIST[8][2])
@@ -8234,7 +8821,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("TEXT_BOX2"):
             self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.01, interval=0.1)
             self.wait(0.1)         
-        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
+        elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD") or self.image_check(check_pic1) or self.image_check(check_pic2):
             self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
             self.wait(0.1)
             return "COMMON_GOTO_SELECT1"
@@ -8461,9 +9048,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "EXEC"
 
 
-    def Common_goto(self,position1,position2left,position2down,movepoint_check=0):
+    def Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
-        if self.Common_current_state == "COMMON_GOTO_SELECT1":
+        if self.Common_current_state == "COMMON_MAP_OPEN":
+            self.Common_current_state = self.Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2)
+        elif self.Common_current_state == "COMMON_GOTO_SELECT1":
             self.Common_current_state = self.Common_goto_select1(position1)
         elif self.Common_current_state == "COMMON_GOTO_SELECT2":
             self.Common_current_state = self.Common_goto_select2(position2left,position2down,movepoint_check)
@@ -10154,7 +10743,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return False
         
         ######################################################
-        # MAIN_0_START FUNCTION
+        # MAIN_0_START PIC
         ######################################################
         if targetimage=="PROFILE":
             if self.isContainTemplateUltra_get_max_val(          
@@ -10186,7 +10775,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
-            
+        ######################################################
+        # 1_Z_LANK PIC
+        ######################################################
         elif targetimage=="TEXT_TRAIN_OUT_COMMENT":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\_1_z_lank\station_field.png',
@@ -10319,6 +10910,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        ######################################################
+        # 2_Y_LANK PIC
+        ######################################################
         elif targetimage=="PIKA_ICON_GET6":
             if self.isContainTemplateUltra_get_max_val(                
                                         template_path ='ZA_Story\_2_y_lank\\pikaicon.png',
@@ -10364,6 +10958,56 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        ######################################################
+        # 4_E_LANK PIC
+        ######################################################
+        elif targetimage=="ODAIRU_ICON":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_4_e_lank\\Odairu_icon.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False 
+            
+        elif targetimage=="ABSOL_ICON":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_4_e_lank\\absol_icon.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,640,350,680],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False 
+        elif targetimage=="REIBI_SKILL":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\_4_e_lank\\reibi_skill.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [40,200,320,300],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False 
+            
         ######################################################
         # COMMON
         ######################################################
@@ -10612,6 +11256,36 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        elif targetimage=="FIELD1":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [50,680,100,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK1":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [50,680,100,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
         elif targetimage=="FIELD3":
             if self.isContainTemplateUltra_get_max_val(                
                                 template_path ='ZA_Story\Common\\field.png',
@@ -10642,7 +11316,36 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
-            
+        elif targetimage=="FIELD4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [200,680,250,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK4":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [200,680,250,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
         elif targetimage=="DEAD":
             if self.isContainTemplateUltra_get_max_val(                
                                         template_path ='ZA_Story\Common\\dead.png',
@@ -11220,7 +11923,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(                
                                     template_path ='ZA_Story\Common\\eye_check_high.png',
                                     threshold = 0.80,
-                                    use_gray = True,
+                                    use_gray = False,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [400,50,900,120],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="EYE_CHECK_HIGH_POKE":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\eye_check_high_p.png',
+                                    threshold = 0.80,
+                                    use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -11290,6 +12008,34 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        elif targetimage=="M_BALL_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\ball_icon\\m_ball.png',
+                                    threshold = 0.85,
+                                    use_gray = False,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [610,595,670,650]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="H_BALL_ICON":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\ball_icon\\h_ball.png',
+                                    threshold = 0.85,
+                                    use_gray = False,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [610,595,670,650]
+                                    ):
+                return True
+            else:
+                return False 
         elif targetimage=="BOX_WINDOW":
             if self.isContainTemplateUltra_get_max_val(                
                                     template_path ='ZA_Story\Common\\boxwindow.png',
