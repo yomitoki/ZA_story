@@ -54,7 +54,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
         self.main_current_state_init="MAIN_3_F_LANK"
         self.main_current_state_init="MAIN_4_E_LANK"
-        #self.main_current_state_init="" 
+        self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -480,6 +480,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             "2_STORY_ABSOL_MOVE3": self._2_story_absol_move3,
             "2_STORY_ABSOL_MOVE4": self._2_story_absol_move4,
+            
+            "2_STORY_BOX_CHANGE1": self._2_story_box_change1,
+            "2_STORY_BOX_CHANGE2": self._2_story_box_change2,
+            
             "2_STORY_ABSOL_MOVE5": self._2_story_absol_move5,
             "2_STORY_ABSOL_MOVE6": self._2_story_absol_move6,
             "2_STORY_ABSOL_MOVE7": self._2_story_absol_move7,
@@ -551,7 +555,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_W_LANK_BATTLE_ZONE"
+        self._2_story_current_state_init="2_STORY_ABSOL_MOVE4"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=2
@@ -676,6 +680,18 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # Commonfunction
     ######################################################
+        self.STATE_COMMON_BOX_CHANGE_FUNCTION = {
+            "COMMON_BOX_CHANGE_START": self.common_skill_change_start,
+            "COMMON_BOX_CHANGE_START_CHECK": self.common_skill_change_start_check,
+            "COMMON_BOX_CHANGE_BOX_OPEN": self.common_box_change_box_open,
+            "COMMON_BOX_CHANGE_BOX_TARGET1": self.common_box_change_box_target1,
+            "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT": self.common_box_change_box_target1_select,
+            "COMMON_BOX_CHANGE_BOX_TARGET2": self.common_box_change_box_target2,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
+            "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
+            }
+        self.common_box_change_current_state="COMMON_BOX_CHANGE_START"
+
         self.STATE_COMMON_SKILL_CHANGE_FUNCTION = {
             "COMMON_SKILL_CHANGE_START": self.common_skill_change_start,
             "COMMON_SKILL_CHANGE_START_CHECK": self.common_skill_change_start_check,
@@ -687,6 +703,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
             }
         self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
+
+
 
         self.STATE_COMMON_FUNCTION = {
             "COMMON_START": self.Common_start,
@@ -1289,7 +1307,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def mega_evolution_battle_mode_select(self,mode=0):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT", end2picture="MORNING"):
 
             return True
             
@@ -1305,7 +1323,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         target_count_threshold2=10
         target_marker_count=0
         while True:
-            
+            if endpicture != "" or end2picture != "":
+                if self.image_check(endpicture):
+                    self.ZL_ACTION("END")
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.MOVE_SEE(action = "END",in_see_r=see_r)
+                    return True
+                if self.image_check(end2picture):
+                    self.ZL_ACTION("END")
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.MOVE_SEE(action = "END",in_see_r=see_r)
+                    return True
             self.ZL_ACTION("")
 
             if count==0 and Aaction==1 and self.image_check("C+"):
@@ -1566,12 +1594,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
 
-            if endpicture != "" or end2picture != "":
-                if self.image_check(endpicture):
-                    self.ZL_ACTION("END")
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-                    self.MOVE_SEE(action = "END",in_see_r=see_r)
-                    return True
             if self.image_check("R_push"):
                 self.press(Button.RCLICK,0.05,0.1) 
 
@@ -2017,6 +2039,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n BLACK_CHECK  :: {self._2_story_restaurant_dohutsu_black_check}'
                 f'\n'
                 f'\n STATE_COMMON_SKILL_CHANGE_FUNCTION   :: {self.common_skill_change_current_state}'
+                f'\n STATE_COMMON_BOX_CHANGE_FUNCTION   :: {self.common_box_change_current_state}'
                 f'\n----------------------------'
                 )
 
@@ -2341,7 +2364,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_HOTEL_Z_MOVE4"
 
     def _1_story_fast_elevator(self):
-        if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
             return "1_STORY_HOTEL_Z_MOVE5"
         return "1_STORY_FAST_ELEVATOR"
     
@@ -2355,7 +2378,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_hote_z_move6(self):
         if self.image_check("TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE7"
 
         return "1_STORY_HOTEL_Z_MOVE6"   
@@ -2372,7 +2395,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move8(self):
         if self.image_check("TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE9"
 
         return "1_STORY_HOTEL_Z_MOVE8"  
@@ -2388,7 +2411,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move10(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="IN_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE11"
 
         return "1_STORY_HOTEL_Z_MOVE10"
@@ -2410,7 +2433,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             # ロワイヤル画面でFILED判定してしまう場合があるため一旦代用でWANINOKO_ICONで判断
-            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
 
         return "1_STORY_HOTEL_Z_MOVE12" 
@@ -2419,7 +2442,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
@@ -2430,7 +2453,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_hote_z_move14(self):
         # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=2.9, wait=1.0)
@@ -2440,7 +2463,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move15(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "1_STORY_THIRD_BATTLE"
         return "1_STORY_HOTEL_Z_MOVE15"
     
@@ -2448,7 +2471,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("BATTLE_BALL_CHECK"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
         elif self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.5):
                 for i in range(20):
                     if self.image_check("BATTLE_BALL_CHECK"):
                         return "1_STORY_THIRD_BATTLE"
@@ -2557,7 +2580,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_11(self):  
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_OUT_HOTEL_Z_12"
         return "1_STORY_OUT_HOTEL_Z_11"
     
@@ -2567,7 +2590,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_13(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_OUT_HOTEL_Z_14"
 
         return "1_STORY_OUT_HOTEL_Z_13"
@@ -2578,7 +2601,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_15(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER",sleeptime=0.5):
                 self._1_story_2nd_get_comment=0
                 return "1_STORY_OUT_HOTEL_Z_16"
 
@@ -3410,7 +3433,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_3"
     
     def _2_story_tower_4(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "2_STORY_TOWER_5"
         return "2_STORY_TOWER_4"
     
@@ -3424,7 +3447,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_5"
     
     def _2_story_tower_6(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_6"
     
@@ -3435,13 +3458,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             return "2_STORY_TOWER_8"
         else:
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_7"
     
     def _2_story_tower_8(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_9"
         return "2_STORY_TOWER_8"
     
@@ -3457,7 +3480,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_10(self):
         if self.image_check("TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_11"
         return "2_STORY_TOWER_10"
     
@@ -3475,7 +3498,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_12(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_13"
         return "2_STORY_TOWER_12"
     
@@ -3490,7 +3513,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_14(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_15_0"
         return "2_STORY_TOWER_14"
     
@@ -3509,7 +3532,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_16(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_17"
         return "2_STORY_TOWER_16"
     
@@ -3522,7 +3545,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_18(self):
         if self.image_check("TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_19"
         return "2_STORY_TOWER_18"
     
@@ -3538,7 +3561,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_20(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_21"
         return "2_STORY_TOWER_20"
     
@@ -3556,7 +3579,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_22(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_23"
         return "2_STORY_TOWER_22"
     
@@ -3593,7 +3616,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_27(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_28"
         return "2_STORY_TOWER_27"
     
@@ -3615,7 +3638,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_29(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_30"
         return "2_STORY_TOWER_29"
     
@@ -3726,7 +3749,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_41(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_42"
 
         return "2_STORY_TOWER_41"
@@ -3744,8 +3767,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_tower_43(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
             #誤検知するため・上下アイコンが表示されないためワニノコ・メリープアイコンで判定
-            #if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
-            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            #if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_44"
         return "2_STORY_TOWER_43"
     
@@ -3760,7 +3783,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_45(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="EVENT_MARKER_CENTER_WIDE",endpicture2="EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_46"
         return "2_STORY_TOWER_45"
     
@@ -6066,7 +6089,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_x_lank_move8(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "2_STORY_X_LANK_BATTLE_ZONE"
         return "2_STORY_X_LANK_MOVE8"
 
@@ -6110,7 +6133,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_x_lank_move11(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "2_STORY_X_LANK_MOVE12"
         return "2_STORY_X_LANK_MOVE11"
     
@@ -6131,7 +6154,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_X_LANK_MOVE11"
         elif self.image_check("TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",endpicture3="EVENT_MARKER_CENTER_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",endpicture3="EVENT_MARKER_CENTER_WIDE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "2_STORY_X_LANK_MOVE12"
         elif self.image_check("COIN_ICON"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -6175,7 +6198,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move3(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 return "2_STORY_W_LANK_MOVE4"
         return "2_STORY_W_LANK_MOVE3"
     
@@ -6196,7 +6219,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_W_LANK_MOVE3"
         elif self.image_check("TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sleeptime=0.5):
                 "2_STORY_W_LANK_MOVE4"
         elif self.image_check("COIN_ICON"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -6262,12 +6285,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move11(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "2_STORY_W_LANK_MOVE12"
         for i in range(10):
             self.wait(0.5)
             if self.image_check("TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+                if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                     return "2_STORY_W_LANK_MOVE12"
         return "2_STORY_W_LANK_MOVE8"
     
@@ -6301,10 +6324,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     #check
     def _2_story_w_lank_move13(self):
         if self.image_check("W_BATTLE_END"):
-            return "_2_story_absol_move1"
+            return "2_STORY_ABSOL_MOVE1"
         elif self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
-                return _2_story_absol_move1
+                return "2_STORY_ABSOL_MOVE1"
         return "2_STORY_W_LANK_MOVE13"
     
     #リセットでしか戻れない・緑のコメントで戻した方がよい
@@ -6331,7 +6354,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move2(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_ABSOL_BATTLE"
         return "2_STORY_ABSOL_MOVE2"
 
@@ -6341,31 +6364,57 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_BATTLE"
     
     def _2_story_absol_move3(self):
+        
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
+                return "2_STORY_ABSOL_MOVE4"
+        elif self.image_check("MORNING"):
+            self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.5, interval=0.1)
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "2_STORY_ABSOL_MOVE4"
         return "2_STORY_ABSOL_MOVE3" 
     
     def _2_story_absol_move4(self):
         ### AUTO_SAVE_POINT
-        if self.image_check("IN_ICON"):
-            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
-            self.wait(0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE5"
+        if self.check_picture==1:
+            if self.image_check("BOXWINDOW"):
+                print("BOXWINDOW")
+            if self.image_check("BOXMENU"):
+                print("BOXMENU")
+        else:
+            if self.image_check("IN_ICON"):
+                self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+                self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_BOX_CHANGE1"
         return "2_STORY_ABSOL_MOVE4"
+    
+    def _2_story_box_change1(self):
+        self.common_box_change_current_state = self.common_box_change_function(target1=0,target2=3,target1_high=0,target2_high=-1)
+        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
+            return "2_STORY_BOX_CHANGE2"
+        else:
+            return "2_STORY_BOX_CHANGE1"
+        
+    def _2_story_box_change2(self):
+        self.common_box_change_current_state = self.common_box_change_function(target1=4,target2=1,target1_high=-1,target2_high=0)
+        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
+            return "2_STORY_ABSOL_MOVE5"
+        else:
+            return "2_STORY_BOX_CHANGE2"
+        
     
     def _2_story_absol_move5(self):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
-            self.wait(0.5)
+            self.wait(1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_ABSOL_MOVE6"
         return "2_STORY_ABSOL_MOVE5"
     
     def _2_story_absol_move6(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_ABSOL_MOVE7"
         return "2_STORY_ABSOL_MOVE6"
     
@@ -6398,10 +6447,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move8(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
-                    return "2_STORY_ABSOL_MOVE9"
+                    return "2_STORY_ABSOL_MOVE9___"
                 else:
                     return "2_STORY_ABSOL_MOVE7"
 
@@ -6427,7 +6476,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move11(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE12"
         return "2_STORY_ABSOL_MOVE11"
@@ -6441,7 +6490,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move13(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE14"
         return "2_STORY_ABSOL_MOVE13"
@@ -6478,7 +6527,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move17(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE18"
 
@@ -6510,7 +6559,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move19(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
                     return "2_STORY_ABSOL_MOVE20"
@@ -6537,7 +6586,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move22(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE23"
         return "2_STORY_ABSOL_MOVE22"
@@ -6553,7 +6602,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move24(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE25"
         return "2_STORY_ABSOL_MOVE24"
@@ -6570,7 +6619,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move26(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE27"
         return "2_STORY_ABSOL_MOVE26"
@@ -6589,7 +6638,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move28(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE29"
         return "2_STORY_ABSOL_MOVE28"
@@ -6610,7 +6659,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move31(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE32"
         return "2_STORY_ABSOL_MOVE31"
@@ -6642,7 +6691,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move35(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE36"
         return "2_STORY_ABSOL_MOVE35"
@@ -6736,7 +6785,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move4(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE5"
         return "2_STORY_MEGA_MOVE4"
     
@@ -6747,7 +6796,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move6(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE7"
         return "2_STORY_MEGA_MOVE6"
     
@@ -6776,7 +6825,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move10(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE11" 
         return "2_STORY_MEGA_MOVE10"
     
@@ -6805,7 +6854,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move12(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE13" 
         return "2_STORY_MEGA_MOVE12"
     
@@ -6841,7 +6890,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move14(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
     
@@ -6852,7 +6901,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move16(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE17"
         return "2_STORY_MEGA_MOVE16"
     
@@ -6885,7 +6934,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move20(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
     
@@ -6896,7 +6945,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move22(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE23" 
         return "2_STORY_MEGA_MOVE22"
     
@@ -6922,7 +6971,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move25(self):
         if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE26" 
 
         return "2_STORY_MEGA_MOVE25"
@@ -6952,7 +7001,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move27(self):
         if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",not_endpicture="ZA_ROYALE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",not_endpicture="ZA_ROYALE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_END"
         return "2_STORY_MEGA_MOVE27"
     
@@ -6987,7 +7036,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_3(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_CANARI_4"
         return "3_STORY_CANARI_3"
 
@@ -7017,7 +7066,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_5(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 for i in range(10):
                     self.wait(0.5)
                     if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
@@ -7067,7 +7116,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_10(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_END" 
 
         return "3_STORY_CANARI_10"
@@ -7101,7 +7150,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_canari_14(self):
         for i in range(10):
             if self.image_check("TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+                if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                     return "3_STORY_CANARI_15"
             self.wait(0.5)
         if not self.image_check("TEXT_WHITE_COMMENT"):
@@ -7123,7 +7172,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_16(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_17"
         return "3_STORY_CANARI_16"
@@ -7140,7 +7189,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_18(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_19"
         return "3_STORY_CANARI_18"
@@ -7153,7 +7202,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_20(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_21"
         return "3_STORY_CANARI_20"
@@ -7167,7 +7216,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_21"
     
     def _3_story_canari_22(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_23"
 
         return "3_STORY_CANARI_22"
@@ -7183,7 +7232,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_23"
     
     def _3_story_canari_24(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_25"
 
         return "3_STORY_CANARI_24"
@@ -7199,7 +7248,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_25"
     
     def _3_story_canari_26(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_27"
 
         return "3_STORY_CANARI_26"
@@ -7215,7 +7264,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_27"
     
     def _3_story_canari_28(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_29"
         return "3_STORY_CANARI_28"
     
@@ -7227,7 +7276,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_29"
     
     def _3_story_canari_30(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_31"
         return "3_STORY_CANARI_30"
     
@@ -7239,7 +7288,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "3_STORY_CANARI_31"
     
     def _3_story_canari_32(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_33"
         return "3_STORY_CANARI_32"
     
@@ -7271,7 +7320,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_35"
     
     def _3_story_canari_36(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_37"
         return "3_STORY_CANARI_36"
     
@@ -7301,7 +7350,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_37"
     
     def _3_story_canari_38(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",endpicture4="4_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",endpicture4="4_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
@@ -7325,7 +7374,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_39"
     
     def _3_story_canari_40(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_41"
         return "3_STORY_CANARI_40"
     
@@ -7353,7 +7402,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_43"
     
     def _3_story_canari_44(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_45"
         return "3_STORY_CANARI_44"
     
@@ -7382,7 +7431,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_45"
     
     def _3_story_canari_46(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
@@ -7404,7 +7453,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_47"
     
     def _3_story_canari_48(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_49"
         return "3_STORY_CANARI_48"
     
@@ -7433,7 +7482,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_49"
     
     def _3_story_canari_50(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
@@ -7454,7 +7503,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move2(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE3"
         return "3_STORY_MEGA_MOVE2"
     
@@ -7493,7 +7542,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move6(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE7"
         return "3_STORY_MEGA_MOVE6"
     
@@ -7506,7 +7555,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move8(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE9"
         return "3_STORY_MEGA_MOVE8"
     
@@ -7536,7 +7585,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move10(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
     
@@ -7547,7 +7596,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move12(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE13"
         return "3_STORY_MEGA_MOVE12"
     
@@ -7590,7 +7639,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move16(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE17"
         return "3_STORY_MEGA_MOVE16"
     
@@ -7602,7 +7651,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move18(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE19"
 
         return "3_STORY_MEGA_MOVE18"
@@ -7648,7 +7697,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move23(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE24"
         return "3_STORY_MEGA_MOVE23"
     
@@ -7672,7 +7721,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move25(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE26"
         return "3_STORY_MEGA_MOVE25"
     
@@ -7684,7 +7733,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move27(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE28"
         return "3_STORY_MEGA_MOVE27"
     
@@ -7705,7 +7754,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move30(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
                 return "3_STORY_END"
         return "3_STORY_MEGA_MOVE30"
     
@@ -7756,10 +7805,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_5"
         return "4_STORY_SHIRO_4"
-    
+            
     def _4_story_shiro_5(self):
         if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 return "4_STORY_SHIRO_6"
         return "4_STORY_SHIRO_5"
     
@@ -7788,7 +7837,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_6"
     
     def _4_story_shiro_7(self):
-        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.3):
+        if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
             for i in range(5):
                 self.wait(0.5)
                 if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
@@ -7820,6 +7869,9 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     ######################################################
     # Commonfunction
+    ######################################################
+    ######################################################
+    # Commonskill
     ######################################################
     def common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0):
         if self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
@@ -8054,6 +8106,116 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
     def common_skill_change_end(self):
         return "COMMON_SKILL_CHANGE_START"
+    ######################################################
+    # Commonboxchange
+    ######################################################
+    def common_box_change_function(self,target1,target2,target1_high=0,target2_high=0):
+        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
+            ret = self.common_skill_change_start()
+            if ret == "COMMON_SKILL_CHANGE_START_CHECK":
+                self.common_box_change_current_state = "COMMON_BOX_CHANGE_START_CHECK"
+            else:
+                self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
+        elif self.common_box_change_current_state == "COMMON_BOX_CHANGE_START_CHECK":
+            ret = self.common_skill_change_start_check()
+            if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+                self.common_box_change_current_state = "COMMON_BOX_CHANGE_BOX_OPEN"
+            else:
+                self.common_box_change_current_state = "COMMON_BOX_CHANGE_START_CHECK"     
+        else:
+            if self.common_box_change_current_state == "COMMON_BOX_CHANGE_BOX_TARGET1":
+                self.common_box_change_current_state = self.common_box_change_box_target1(target1,target1_high)   
+            elif self.common_box_change_current_state == "COMMON_BOX_CHANGE_BOX_TARGET2":
+                self.common_box_change_current_state = self.common_box_change_box_target2(target2-target1,target2_high - target1_high)
+            else:
+                self.common_box_change_current_state = self.STATE_COMMON_BOX_CHANGE_FUNCTION[self.common_box_change_current_state]()
+
+        return self.common_box_change_current_state
+    
+    def common_box_change_box_open(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                self.wait(0.5)
+                if self.image_check("SIDE_SELECT_TOP_MAP"):
+                    self.wait(0.5)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return "COMMON_BOX_CHANGE_BOX_TARGET1"
+                self.wait(0.5)
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(0.5)
+            elif self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(7):
+                    self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+        return "COMMON_BOX_CHANGE_BOX_OPEN"
+    
+    def common_box_change_box_target1(self,target1,target1_high=0):
+        #BOX 1:1が開始点と判定させる
+        if self.image_check("BOX_WINDOW"):
+            self.wait(1.0)
+            if target1 > 0:
+                for i in range(target1):
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(1.0)
+            elif target1 < 0:
+                for i in range(-(target1)):
+                    self.etc_sendCommand("Lbutton_left")
+                    self.wait(1.0)
+                    
+            if target1_high > 0:
+                for i in range(target1_high1):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(1.0)
+            elif target1_high < 0:
+                for i in range(-(target1_high)):
+                    self.etc_sendCommand("Lbutton_up")
+                    self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0) 
+            return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"        
+        return "COMMON_BOX_CHANGE_BOX_TARGET1"
+    
+    def common_box_change_box_target1_select(self):
+        if self.image_check("BOX_WINDOW"):
+            if self.image_check("BOX_MENU"):
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "COMMON_BOX_CHANGE_BOX_TARGET2"
+        return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
+    
+    def common_box_change_box_target2(self,target_sub,target_sub_high=0):
+        if self.image_check("BOX_WINDOW"):
+            self.wait(1.0)
+            if target_sub > 0:
+                for i in range(target_sub):
+                    self.etc_sendCommand("Lbutton_right")
+                    self.wait(1.0)
+            elif target_sub < 0:
+                for i in range(-(target_sub)):
+                    self.etc_sendCommand("Lbutton_left")
+                    self.wait(1.0)
+                    
+            if target_sub_high > 0:
+                for i in range(target_sub_high):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(1.0)
+            elif target_sub_high < 0:
+                for i in range(-(target_sub_high)):
+                    self.etc_sendCommand("Lbutton_up")
+                    self.wait(1.0)
+                 
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)   
+            return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+        return "COMMON_BOX_CHANGE_BOX_TARGET2"
+    
+    def common_box_change_window_close(self):
+        if self.image_check("BOX_WINDOW"):
+            self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
+            return "COMMON_SKILL_CHANGE_END"
+        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+
+    def common_skill_change_end(self):
+        return "COMMON_BOX_CHANGE_START"
     ######################################################
     # Common Map
     ######################################################
@@ -10606,7 +10768,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     show_position = True,
                                     show_only_true_rect  = False,
                                     ms  = 2000,
-                                    crop = [20,160,60,230]
+                                    crop = [20,160,100,230]
                                     ):
                 return True
             else:
@@ -11123,6 +11285,36 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     show_only_true_rect  = False,
                                     ms  = 2000,
                                     crop = [20,40,380,80],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="BOX_WINDOW":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\boxwindow.png',
+                                    threshold = 0.88,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [160,10,290,60],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="BOX_MENU":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\boxmenu.png',
+                                    threshold = 0.88,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [20,40,850,700],
                                     crop_template  = []
                                     ):
                 return True
