@@ -8220,6 +8220,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         ret = self.common_skill_change_function(1,1,"X",1,targetskill_pic="REIBI_SKILL")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_FALSE":
+            self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
             return "4_STORY_SHIRO_21"
         elif ret == "COMMON_SKILL_CHANGE_START":
             return "4_STORY_SHIRO_33"
@@ -8692,6 +8693,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "COMMON_SKILL_CHANGE_END"
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
     def common_skill_change_end(self):
+        return "COMMON_SKILL_CHANGE_START"
+    
+    def common_skill_change_false(self):
         return "COMMON_SKILL_CHANGE_START"
     ######################################################
     # Commonboxchange
