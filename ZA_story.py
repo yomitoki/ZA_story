@@ -54,7 +54,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
         self.main_current_state_init="MAIN_3_F_LANK"
         self.main_current_state_init="MAIN_4_E_LANK"
-        #self.main_current_state_init="" 
+        self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -483,11 +483,24 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             "2_STORY_BOX_CHANGE1": self._2_story_box_change1,
             "2_STORY_BOX_CHANGE2": self._2_story_box_change2,
+            "2_STORY_ITEM_GIVE1": self._2_story_item_give1,
             
             "2_STORY_ABSOL_MOVE5": self._2_story_absol_move5,
             "2_STORY_ABSOL_MOVE6": self._2_story_absol_move6,
             "2_STORY_ABSOL_MOVE7": self._2_story_absol_move7,
             "2_STORY_ABSOL_MOVE8": self._2_story_absol_move8,
+            
+               
+            "2_STORY_MAPPING_110": self._2_story_mapping_110,
+            "2_STORY_MAPPING_111": self._2_story_mapping_111,
+            "2_STORY_MAPPING_112": self._2_story_mapping_112,
+            "2_STORY_MAPPING_113": self._2_story_mapping_113, 
+            "2_STORY_MAPPING_114": self._2_story_mapping_114,
+            "2_STORY_MAPPING_115": self._2_story_mapping_115,
+            "2_STORY_MAPPING_116": self._2_story_mapping_116,
+            "2_STORY_MAPPING_117": self._2_story_mapping_117,
+            "2_STORY_MAPPING_118": self._2_story_mapping_118,
+            
             "2_STORY_ABSOL_MOVE9": self._2_story_absol_move9,
             
             "2_STORY_ABSOL_MOVE10": self._2_story_absol_move10,
@@ -555,7 +568,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_W_LANK_BATTLE_ZONE"
+        self._2_story_current_state_init="2_STORY_ABSOL_MOVE4"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=2
@@ -765,6 +778,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_SKILL_CHANGE_FALSE": self.common_skill_change_false,
             }
         self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
+
+        self.STATE_COMMON_ITEM_GIVE_FUNCTION = {
+            "COMMON_ITEM_GIVE_START": self.common_skill_change_start,
+            "COMMON_ITEM_GIVE_START_CHECK": self.common_skill_change_start_check,
+            "COMMON_ITEM_GIVE_POKEMON_SELECT": self.common_skill_change_pokemon_select,
+            "COMMON_ITEM_GIVE_WINDOW_OPEN": self.common_item_give_window_open,
+            "COMMON_ITEM_GIVE_TARGET_SIDE": self.common_item_give_target_side,
+            "COMMON_ITEM_GIVE_TARGET_HIGH": self.common_item_give_target_high,
+            "COMMON_ITEM_GIVE_WINDOW_CLOSE": self.common_item_give_window_close,
+            "COMMON_ITEM_GIVE_END": self.common_item_give_end,
+            }
+        self.common_item_give_current_state="COMMON_ITEM_GIVE_START"
+
 
         self.STATE_COMMON_FUNCTION = {
             "COMMON_START": self.Common_start,
@@ -1795,11 +1821,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return prg_ret
         return noprg_ret
 
-    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,noCp=0):
+    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,sleeptime=0.5):
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
             if noCp==0:
-                self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
-            ##noCp
+                self.battle_Cp_loop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction)
+            else:
+                self.battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction)
+    
         elif self.image_check("CHAT_MARKER"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return bkprg_ret
@@ -1817,6 +1845,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("COIN_ICON"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return prg_ret
+        elif self.image_check("COIN_ICON"):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return noprg_ret
         elif not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
             if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                 if self.markerdir("EVENT"):
@@ -1824,6 +1855,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return noprg_ret
                 else:
                     return noprg_ret
+            elif self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="COIN_ICON",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",endpicture5="TEXT_WHITE_COMMENT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+                return noprg_ret
         #elif self.image_check("EVENT_MARKER_CENTER"):
         #    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
         #    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -2191,8 +2224,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n'
                 f'\n STATE_COMMON_SKILL_CHANGE_FUNCTION   :: {self.common_skill_change_current_state}'
                 f'\n STATE_COMMON_BOX_CHANGE_FUNCTION   :: {self.common_box_change_current_state}'
+                f'\n STATE_COMMON_ITEM_GIVE_FUNCTION   :: {self.common_item_give_current_state}'
                 f'\n----------------------------'
                 )
+            
 
             self.print_tb("d"); self.print_t(f'{self.out_str}')
             self.checkIfAlive()
@@ -6540,20 +6575,28 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE4"
     
     def _2_story_box_change1(self):
+        #アブソルと入れ替え
         self.common_box_change_current_state = self.common_box_change_function(target1=0,target2=3,target1_high=0,target2_high=-1)
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
-            return "2_STORY_BOX_CHANGE2"
+            return "2_STORY_ITEM_GIVE1"
+            #return "2_STORY_BOX_CHANGE2"
         else:
             return "2_STORY_BOX_CHANGE1"
         
     def _2_story_box_change2(self):
         self.common_box_change_current_state = self.common_box_change_function(target1=4,target2=1,target1_high=-1,target2_high=0)
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
-            return "2_STORY_ABSOL_MOVE5"
+            return "2_STORY_ITEM_GIVE1"
         else:
             return "2_STORY_BOX_CHANGE2"
-        
     
+    def _2_story_item_give1(self):
+        self.common_item_give_current_state = self.common_item_give_function(selectnum=4,target1=4,target2=0)
+        if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
+            return "2_STORY_ABSOL_MOVE5"
+        else:
+            return "2_STORY_ITEM_GIVE1"
+
     def _2_story_absol_move5(self):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
@@ -6563,14 +6606,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE5"
     
     def _2_story_absol_move6(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                return "2_STORY_ABSOL_MOVE7"
-        return "2_STORY_ABSOL_MOVE6"
+        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE7",green_check=1)
     
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
     def _2_story_absol_move7(self):
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         #elif self.image_check("TEXT_BLACK_COMMENT"):
@@ -6596,19 +6638,153 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     def _2_story_absol_move8(self):
+        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_ABSOL_MOVE9")
+
         if self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
-                    return "2_STORY_ABSOL_MOVE9"
+                    return "2_STORY_ABSOL_MOVE9"#
                 else:
                     return "2_STORY_ABSOL_MOVE7"
 
         return "2_STORY_ABSOL_MOVE8"
     
     #Wゾーン7-10のマッピング
+    def _2_story_mapping_110(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_108"
+        else:
+            return "2_STORY_MAPPING_107"
+    
+    def _2_story_mapping_111(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
+            return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_108"
+    
+    def _2_story_mapping_112(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
+                print("MOVEPOINT_TARGET_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
+                print("MOVEPOINT_PIC_CAFE_CUTE")
+            
+        else:
+            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_TOWER_47"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_107"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_109"
+            else:
+                return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_109"
+    
+    def _2_story_mapping_113(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_108"
+        else:
+            return "2_STORY_MAPPING_107"
+    
+    def _2_story_mapping_114(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
+            return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_108"
+    
+    def _2_story_mapping_115(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
+                print("MOVEPOINT_TARGET_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
+                print("MOVEPOINT_PIC_CAFE_CUTE")
+            
+        else:
+            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_TOWER_47"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_107"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_109"
+            else:
+                return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_109"
+    
+    def _2_story_mapping_116(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_108"
+        else:
+            return "2_STORY_MAPPING_107"
+    
+    def _2_story_mapping_117(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
+            return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_108"
+    
+    def _2_story_mapping_118(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
+                print("MOVEPOINT_TARGET_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
+                print("MOVEPOINT_PIC_CAFE_CUTE")
+            
+        else:
+            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                    self.Common_goto_jump()
+                    return "2_STORY_TOWER_47"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "2_STORY_MAPPING_107"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "2_STORY_MAPPING_109"
+            else:
+                return "2_STORY_MAPPING_109"
+        return "2_STORY_MAPPING_109"
     
     def _2_story_absol_move9(self):
+        return "4"
         ret = self.Common_goto(1,0,-4)#レストランドリニューへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE10"
@@ -8807,6 +8983,76 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def common_skill_change_end(self):
         return "COMMON_BOX_CHANGE_START"
+    ######################################################
+    # Commonitemgive
+    ######################################################
+    def common_item_give_function(self,selectnum,target1,target2):
+        if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
+            ret = self.common_skill_change_start()
+            if ret == "COMMON_SKILL_CHANGE_START_CHECK":
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_START_CHECK"
+            else:
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_START"
+        elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_START_CHECK":
+            ret = self.common_skill_change_start_check()
+            if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_POKEMON_SELECT"
+            else:
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_START_CHECK" 
+        elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_POKEMON_SELECT":
+            ret = self.common_skill_change_pokemon_select(selectnum)
+            if ret == "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN":
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_WINDOW_OPEN"
+            else:
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_POKEMON_SELECT"        
+        else:
+            if self.common_item_give_current_state == "COMMON_ITEM_GIVE_TARGET_SIDE":
+                self.common_item_give_current_state = self.common_item_give_target_side(target1)   
+            elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_TARGET_HIGH":
+                self.common_item_give_current_state = self.common_item_give_target_high(target2)
+            else:
+                self.common_item_give_current_state = self.STATE_COMMON_ITEM_GIVE_FUNCTION[self.common_item_give_current_state]()
+
+        return self.common_item_give_current_state
+    
+    def common_item_give_window_open(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(2):
+                    self.etc_sendCommand("Lbutton_up")
+                    self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+                return "COMMON_ITEM_GIVE_TARGET_SIDE"
+        return "COMMON_ITEM_GIVE_WINDOW_OPEN"
+    
+    def common_item_give_target_side(self,target1):
+        if self.image_check("ITEM_WINDOW"):
+            for i in range(target1):
+                self.keys.input(Button.R)
+                self.wait(0.15)
+                self.keys.inputEnd(Button.R)
+                self.wait(0.5)
+            return "COMMON_ITEM_GIVE_TARGET_HIGH"
+        return "COMMON_ITEM_GIVE_TARGET_SIDE"
+    
+    def common_item_give_target_high(self,target2):
+        if self.image_check("ITEM_WINDOW"):
+            for i in range(target2):
+                self.etc_sendCommand("Lbutton_down")
+                self.wait(0.5)
+                
+            self.pressRep(Button.A, repeat=3, duration=0.15, wait=1.0, interval=1.0)
+            return "COMMON_ITEM_GIVE_WINDOW_CLOSE" 
+        return "COMMON_ITEM_GIVE_TARGET_HIGH"
+    
+    def common_item_give_window_close(self):
+        self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
+        return "COMMON_ITEM_GIVE_END"
+    
+    def common_item_give_end(self):
+        return "COMMON_ITEM_GIVE_START"
+    
     ######################################################
     # Common Map
     ######################################################
@@ -11187,7 +11433,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if targetimage=="ESCAPE":
             if self.isContainTemplateUltra_get_max_val(                
                     template_path ='ZA_Story\Common\\escape.png',
-                    threshold = 0.80,
+                    threshold = 0.85,
                     use_gray = True,
                     show_value = False,
                     show_position = True,
@@ -12065,6 +12311,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     show_only_true_rect  = False,
                                     ms  = 2000,
                                     crop = [20,40,850,700],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="ITEM_WINDOW":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\itemwindow.png',
+                                    threshold = 0.88,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [80,30,230,65],
                                     crop_template  = []
                                     ):
                 return True
