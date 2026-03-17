@@ -571,7 +571,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_ABSOL_MOVE29"
+        self._2_story_current_state_init="2_STORY_RESTAURANT_DOHUTSU_LOOP"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -7048,7 +7048,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,30), duration=0.1, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE39"
+            return "2_STORY_RESTAURANT_DOHUTSU_LOOP"
         return "2_STORY_ABSOL_MOVE38"
     
     def _2_story_restaurant_dohutsu_loop(self):
@@ -7064,7 +7064,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("TEXT_WHITE_COMMENT"):
                 #self.wait(0.3)
                 self._2_story_restaurant_dohutsu_white_check=1
-                if (self._2_story_restaurant_dohutsu_black_check_max >= 3):
+                if (self._2_story_restaurant_dohutsu_black_check >= 3):
                     self._2_story_restaurant_dohutsu_battle_count+=1
                     if self._2_story_restaurant_dohutsu_battle_count >= self._2_story_restaurant_dohutsu_loop_threshold:
                         self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.5, interval=0.1)
