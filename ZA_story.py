@@ -52,9 +52,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         #
         self.main_current_state_init="MAIN_1_Z_LANK" 
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
-        self.main_current_state_init="MAIN_3_F_LANK"
-        self.main_current_state_init="MAIN_4_E_LANK"
-        self.main_current_state_init="" 
+        #self.main_current_state_init="MAIN_3_F_LANK"
+        #self.main_current_state_init="MAIN_4_E_LANK"
+        #self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -495,11 +495,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_MAPPING_111": self._2_story_mapping_111,
             "2_STORY_MAPPING_112": self._2_story_mapping_112,
             "2_STORY_MAPPING_113": self._2_story_mapping_113, 
+            "2_STORY_MAPPING_114_0": self._2_story_mapping_114_0,
             "2_STORY_MAPPING_114": self._2_story_mapping_114,
-            "2_STORY_MAPPING_115": self._2_story_mapping_115,
+            "2_STORY_MAPPING_114_1": self._2_story_mapping_114_1,
+            "2_STORY_MAPPING_115": self._2_story_mapping_115, 
+            "2_STORY_MAPPING_116_0": self._2_story_mapping_116_0,
             "2_STORY_MAPPING_116": self._2_story_mapping_116,
+            "2_STORY_MAPPING_116_1": self._2_story_mapping_116_1,
             "2_STORY_MAPPING_117": self._2_story_mapping_117,
-            "2_STORY_MAPPING_118": self._2_story_mapping_118,
             
             "2_STORY_ABSOL_MOVE9": self._2_story_absol_move9,
             
@@ -568,13 +571,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_ABSOL_MOVE4"
+        self._2_story_current_state_init="2_STORY_ABSOL_MOVE29"
 
         self._2_story_restaurant_dohutsu_loop_count=0
-        self._2_story_restaurant_dohutsu_loop_threshold=2
+        self._2_story_restaurant_dohutsu_loop_threshold=400
         
         self._2_story_restaurant_dohutsu_white_check=1
         self._2_story_restaurant_dohutsu_black_check=0
+        
         self._2_story_restaurant_dohutsu_battle_count=0
         
         self.STATE_3_STORY_FUNCTION = {
@@ -2219,6 +2223,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n'
                 f'\n ### STATE_2_VAR ###'
                 f'\n BATTLE_COUNT :: {self._2_story_restaurant_dohutsu_battle_count}'
+                f'\n'
                 f'\n WHITE_CHECK :: {self._2_story_restaurant_dohutsu_white_check}'
                 f'\n BLACK_CHECK  :: {self._2_story_restaurant_dohutsu_black_check}'
                 f'\n'
@@ -6644,147 +6649,193 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
-                    return "2_STORY_ABSOL_MOVE9"#
+                    return "2_STORY_MAPPING_110"#
                 else:
                     return "2_STORY_ABSOL_MOVE7"
 
         return "2_STORY_ABSOL_MOVE8"
     
-    #Wゾーン7-10のマッピング
+    #Wゾーン8-10のマッピング
     def _2_story_mapping_110(self):
         ### AUTO_SAVE_POINT
-        #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        ret = self.Common_change_time_set(check_timing="MORNING")
         if ret == "START":
-            return "2_STORY_MAPPING_108"
+            return "2_STORY_MAPPING_111"
         else:
-            return "2_STORY_MAPPING_107"
-    
+            return "2_STORY_MAPPING_110"
+
     def _2_story_mapping_111(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_112"
+        else:
+            return "2_STORY_MAPPING_111"
+    
+    def _2_story_mapping_112(self):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
-            return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_108"
+            self.press(Direction(Stick.LEFT,330), duration=3.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,50), duration=16.7, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,110), duration=24.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,80), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_113"
+        return "2_STORY_MAPPING_112"
     
-    def _2_story_mapping_112(self):
+    def _2_story_mapping_113(self):
         if self.check_picture==1:
-            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
-                print("MOVEPOINT_TARGET_CAFE_CUTE")
-            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
-                print("MOVEPOINT_PIC_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE8"):
+                print("MOVEPOINT_TARGET_W_ZONE8")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE8"):
+                print("MOVEPOINT_PIC_W_ZONE8")
             
         else:
-            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン8が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE8",pic2="MOVEPOINT_PIC_W_ZONE8") == True:
                     self.Common_goto_jump()
-                    return "2_STORY_TOWER_47"
+                    return "2_STORY_MAPPING_114_0"
                 else:
                     #登録できていない場合、移動元からやり直し
                     self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                    return "2_STORY_MAPPING_107"
+                    return "2_STORY_MAPPING_110"
             elif ret == "START":
                 #想定外にこちらに来た場合は開きなおし
                 self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_113"
             else:
-                return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_113"
+        return "2_STORY_MAPPING_113"
     
-    def _2_story_mapping_113(self):
+    def _2_story_mapping_114_0(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        ret = self.Common_change_time_set(check_timing="MORNING")
         if ret == "START":
-            return "2_STORY_MAPPING_108"
+            return "2_STORY_MAPPING_114"
         else:
-            return "2_STORY_MAPPING_107"
+            return "2_STORY_MAPPING_114_0"
     
     def _2_story_mapping_114(self):
         ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(3,1,2)#カフェスロラームに移動で位置確定
+        if ret == "START":
+            return "2_STORY_MAPPING_114_1"
+        else:
+            return "2_STORY_MAPPING_114"
+
+    def _2_story_mapping_114_1(self):
+        ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
-            return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_108"
-    
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,200), duration=3.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_115"
+        return "2_STORY_MAPPING_114_1"
+        
     def _2_story_mapping_115(self):
         if self.check_picture==1:
-            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
-                print("MOVEPOINT_TARGET_CAFE_CUTE")
-            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
-                print("MOVEPOINT_PIC_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE9"):
+                print("MOVEPOINT_TARGET_W_ZONE9")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE9"):
+                print("MOVEPOINT_PIC_W_ZONE9")
             
         else:
-            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン9が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE9",pic2="MOVEPOINT_PIC_W_ZONE9") == True:
                     self.Common_goto_jump()
-                    return "2_STORY_TOWER_47"
+                    return "2_STORY_MAPPING_116"
                 else:
                     #登録できていない場合、移動元からやり直し
                     self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                    return "2_STORY_MAPPING_107"
+                    return "2_STORY_MAPPING_114_0"
             elif ret == "START":
                 #想定外にこちらに来た場合は開きなおし
                 self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_115"
             else:
-                return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_115"
+        return "2_STORY_MAPPING_115"
+
+    def _2_story_mapping_116_0(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "2_STORY_MAPPING_116"
+        else:
+            return "2_STORY_MAPPING_116_0"
     
     def _2_story_mapping_116(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        ret = self.Common_goto(3,0,6)#カフェフォーカスに移動で位置確定
         if ret == "START":
-            return "2_STORY_MAPPING_108"
+            return "2_STORY_MAPPING_116_1"
         else:
-            return "2_STORY_MAPPING_107"
-    
-    def _2_story_mapping_117(self):
+            return "2_STORY_MAPPING_116"
+        
+    def _2_story_mapping_116_1(self):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,330), duration=15.0, wait=0.5)
-            return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_108"
-    
-    def _2_story_mapping_118(self):
+            self.press(Direction(Stick.LEFT,350), duration=5.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,80), duration=10.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "2_STORY_MAPPING_117"
+        return "2_STORY_MAPPING_116_1"
+        
+    def _2_story_mapping_117(self):
         if self.check_picture==1:
-            if self.image_check("MOVEPOINT_TARGET_CAFE_CUTE"):
-                print("MOVEPOINT_TARGET_CAFE_CUTE")
-            if self.image_check("MOVEPOINT_PIC_CAFE_CUTE"):
-                print("MOVEPOINT_PIC_CAFE_CUTE")
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE10"):
+                print("MOVEPOINT_TARGET_W_ZONE10")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE10"):
+                print("MOVEPOINT_PIC_W_ZONE10")
             
         else:
-            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン10が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_CAFE_CUTE",pic2="MOVEPOINT_PIC_CAFE_CUTE") == True:
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE10",pic2="MOVEPOINT_PIC_W_ZONE10") == True:
                     self.Common_goto_jump()
-                    return "2_STORY_TOWER_47"
+                    return "2_STORY_ABSOL_MOVE9"
                 else:
                     #登録できていない場合、移動元からやり直し
                     self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                    return "2_STORY_MAPPING_107"
+                    return "2_STORY_MAPPING_116_0"
             elif ret == "START":
                 #想定外にこちらに来た場合は開きなおし
                 self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
-                return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_117"
             else:
-                return "2_STORY_MAPPING_109"
-        return "2_STORY_MAPPING_109"
+                return "2_STORY_MAPPING_117"
+        return "2_STORY_MAPPING_117"
     
+
     def _2_story_absol_move9(self):
-        return "4"
         ret = self.Common_goto(1,0,-4)#レストランドリニューへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE10"
@@ -6801,25 +6852,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE10"
     
     def _2_story_absol_move11(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                self.wait(1.0)
-                return "2_STORY_ABSOL_MOVE12"
-        return "2_STORY_ABSOL_MOVE11"
+        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
     
     def _2_story_absol_move12(self):
-        if self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
-        elif self.image_check("TEXT_WHITE_COMMENT"):
-            return "2_STORY_ABSOL_MOVE13"
-        return "2_STORY_ABSOL_MOVE12"
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
     
     def _2_story_absol_move13(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                self.wait(1.0)
-                return "2_STORY_ABSOL_MOVE14"
-        return "2_STORY_ABSOL_MOVE13"
+        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
     
     def _2_story_absol_move14(self):
         ### AUTO_SAVE_POINT
@@ -6852,46 +6891,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE16"
     
     def _2_story_absol_move17(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                self.wait(1.0)
-                return "2_STORY_ABSOL_MOVE18"
-
-        return "2_STORY_ABSOL_MOVE17"
+        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",green_check=1)
     
     def _2_story_absol_move18(self):
-        if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
-        elif self.image_check("TEXT_BLACK_COMMENT"):
-            self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
-            for i in range(10):
-                self.wait(1.0)
-                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                    self.press(Direction(Stick.LEFT,90), duration=0.3, wait=0.5)
-                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                    return "2_STORY_ABSOL_MOVE17"
-                elif self.image_check("TEXT_BLACK_COMMENT"):
-                    return "2_STORY_ABSOL_MOVE17"
-        elif self.image_check("EVENT_MARKER_CENTER_WIDE") or self.image_check("EVENT_MARKER_RIGHT_WIDE"):
-            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE17"
-        elif self.image_check("TEXT_WHITE_COMMENT"):
-            return "2_STORY_ABSOL_MOVE19"
-        elif self.image_check("COIN_ICON"):
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE19"
-        return "2_STORY_ABSOL_MOVE18"
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE19",noprg_ret="2_STORY_ABSOL_MOVE18",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
     
     def _2_story_absol_move19(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                self.wait(1.0)
-                if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
-                    return "2_STORY_ABSOL_MOVE20"
-                else:
-                    return "2_STORY_ABSOL_MOVE18"
-        return "2_STORY_ABSOL_MOVE19"
+        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE18",prg_ret="2_STORY_ABSOL_MOVE20")
     
     def _2_story_absol_move20(self):
         ### AUTO_SAVE_POINT
@@ -6959,7 +6965,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,230), duration=3.0, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE27"
+            return "2_STORY_ABSOL_MOVE28"
         return "2_STORY_ABSOL_MOVE27"
     
     def _2_story_absol_move28(self):
@@ -7058,7 +7064,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("TEXT_WHITE_COMMENT"):
                 #self.wait(0.3)
                 self._2_story_restaurant_dohutsu_white_check=1
-                if (self._2_story_restaurant_dohutsu_black_check >= 3):
+                if (self._2_story_restaurant_dohutsu_black_check_max >= 3):
                     self._2_story_restaurant_dohutsu_battle_count+=1
                     if self._2_story_restaurant_dohutsu_battle_count >= self._2_story_restaurant_dohutsu_loop_threshold:
                         self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.5, interval=0.1)
@@ -12565,8 +12571,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
-            
-            
         elif targetimage=="MOVEPOINT_TARGET_CAFE_ALAMODE":
             if self.isContainTemplateUltra_get_max_val(                
                                     template_path ='ZA_Story\MovePoint\\cafe_alamode_target.png',
@@ -12870,6 +12874,201 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="MOVEPOINT_TARGET_CAFE_CUTE":
             if self.isContainTemplateUltra_get_max_val(                
                                     template_path ='ZA_Story\MovePoint\\cafe_cute_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE8":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE8_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE9":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE9_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE10":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE10_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE11":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE11_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE12":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE12_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE13":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE13_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE14":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE14_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE15":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE15_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE16":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE16_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE17":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE17_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE18":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE18_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE19":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE19_target.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [0,100,450,600],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False
+        elif targetimage=="MOVEPOINT_TARGET_W_ZONE20":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE20_target.png',
                                     threshold = 0.90,
                                     use_gray = True,
                                     show_value = self.show_value_bool,
@@ -13427,6 +13626,201 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE8":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE8_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE9":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE9_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE10":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE10_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE11":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE11_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE12":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE12_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE13":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE13_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE14":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE14_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE15":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE15_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE16":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE16_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE17":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE17_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE18":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE18_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE19":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE19_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
+        elif targetimage=="MOVEPOINT_PIC_W_ZONE20":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\MovePoint\\W_ZONE20_pic.png',
+                                    threshold = 0.90,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [850,100,1270,450],
+                                    crop_template  = []
+                                    ):  
+                return True
+            else:
+                return False 
         ######################################################
         # ZA_INFI
         ######################################################
