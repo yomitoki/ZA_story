@@ -53,9 +53,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         #
         self.main_current_state_init="MAIN_1_Z_LANK" 
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
-        self.main_current_state_init="MAIN_3_F_LANK"
-        self.main_current_state_init="MAIN_4_E_LANK"
-        self.main_current_state_init="MAIN_5_D_LANK"
+        #self.main_current_state_init="MAIN_3_F_LANK"
+        #self.main_current_state_init="MAIN_4_E_LANK"
         #self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
@@ -9627,7 +9626,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
 
     def common_skill_change_end(self):
-        return "COMMON_BOX_CHANGE_START"
+        return "COMMON_SKILL_CHANGE_START"
     ######################################################
     # Commonitemgive
     ######################################################
