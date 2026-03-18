@@ -47,13 +47,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             "MAIN_2_Y_V_LANK": self.main_2_y_v_lank,
             "MAIN_3_F_LANK": self.main_3_f_lank,
             "MAIN_4_E_LANK": self.main_4_e_lank,
+            "MAIN_5_D_LANK": self.main_5_d_lank,
         }
         self.main_current_state="MAIN_STATE_INIT"
         #
         self.main_current_state_init="MAIN_1_Z_LANK" 
         self.main_current_state_init="MAIN_2_Y_V_LANK" 
-        #self.main_current_state_init="MAIN_3_F_LANK"
-        #self.main_current_state_init="MAIN_4_E_LANK"
+        self.main_current_state_init="MAIN_3_F_LANK"
+        self.main_current_state_init="MAIN_4_E_LANK"
+        self.main_current_state_init="MAIN_5_D_LANK"
         #self.main_current_state_init="" 
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
@@ -747,13 +749,92 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_67": self._4_story_shiro_67,        
             "4_STORY_SHIRO_68": self._4_story_shiro_68,        
             "4_STORY_SHIRO_69": self._4_story_shiro_69,        
-            "4_STORY_SHIRO_70": self._4_story_shiro_70,
-                 
+            "4_STORY_SHIRO_70": self._4_story_shiro_70,       
+            "4_STORY_SHIRO_71": self._4_story_shiro_71,       
+            "4_STORY_SHIRO_72": self._4_story_shiro_72,       
+            "4_STORY_SHIRO_73": self._4_story_shiro_73,       
+            "4_STORY_SHIRO_74": self._4_story_shiro_74,       
+            "4_STORY_SHIRO_75": self._4_story_shiro_75,       
+            "4_STORY_SHIRO_76": self._4_story_shiro_76,       
+            "4_STORY_SHIRO_77": self._4_story_shiro_77,       
+            "4_STORY_SHIRO_78": self._4_story_shiro_78,       
+            "4_STORY_SHIRO_79": self._4_story_shiro_79,       
+            "4_STORY_SHIRO_80": self._4_story_shiro_80,       
+            "4_STORY_SHIRO_81": self._4_story_shiro_81,       
+            "4_STORY_SHIRO_82": self._4_story_shiro_82,       
+            "4_STORY_SHIRO_83": self._4_story_shiro_83,       
+            "4_STORY_SHIRO_84": self._4_story_shiro_84,       
+            "4_STORY_SHIRO_85": self._4_story_shiro_85,       
+            "4_STORY_SHIRO_86": self._4_story_shiro_86,       
+            "4_STORY_SHIRO_87": self._4_story_shiro_87,       
+            "4_STORY_SHIRO_88": self._4_story_shiro_88, 
+                  
+
             "4_STORY_END": self._4_story_end,
         }
-        
         self._4_story_current_state="4_STORY_START_CHECK" 
-        self._4_story_current_state_init= "4_STORY_SHIRO_51"
+        self._4_story_current_state_init= "4_STORY_SHIRO_84"
+        
+        self.STATE_5_STORY_FUNCTION = {
+            "5_STORY_START_CHECK": self._5_story_start_check,
+            "5_STORY_MAPPING_1": self._5_story_mapping_1,
+            "5_STORY_MAPPING_2": self._5_story_mapping_2,
+            "5_STORY_MAPPING_3": self._5_story_mapping_3,
+            "5_STORY_MAPPING_4": self._5_story_mapping_4,
+            "5_STORY_MAPPING_5": self._5_story_mapping_5,
+            "5_STORY_MAPPING_6": self._5_story_mapping_6,            
+            
+            "5_STORY_D_LANK_BATTLE_ZONE": self._5_story_d_lank_battle_zone,
+            
+            "5_STORY_KARASUBA_1": self._5_story_karasuba_1, 
+            "5_STORY_KARASUBA_2": self._5_story_karasuba_2, 
+            "5_STORY_KARASUBA_3": self._5_story_karasuba_3, 
+            "5_STORY_KARASUBA_4": self._5_story_karasuba_4, 
+            "5_STORY_KARASUBA_5": self._5_story_karasuba_5, 
+            "5_STORY_KARASUBA_6": self._5_story_karasuba_6, 
+            "5_STORY_KARASUBA_7": self._5_story_karasuba_7, 
+            "5_STORY_KARASUBA_8": self._5_story_karasuba_8, 
+            "5_STORY_KARASUBA_9": self._5_story_karasuba_9, 
+            "5_STORY_KARASUBA_10": self._5_story_karasuba_10, 
+            "5_STORY_KARASUBA_11": self._5_story_karasuba_11, 
+            "5_STORY_KARASUBA_12": self._5_story_karasuba_12, 
+            "5_STORY_KARASUBA_13": self._5_story_karasuba_13, 
+            "5_STORY_KARASUBA_14": self._5_story_karasuba_14, 
+            "5_STORY_KARASUBA_15": self._5_story_karasuba_15, 
+            "5_STORY_KARASUBA_16": self._5_story_karasuba_16, 
+            "5_STORY_KARASUBA_17": self._5_story_karasuba_17, 
+            "5_STORY_KARASUBA_18": self._5_story_karasuba_18, 
+            "5_STORY_KARASUBA_19": self._5_story_karasuba_19, 
+            "5_STORY_KARASUBA_20": self._5_story_karasuba_20, 
+            "5_STORY_KARASUBA_21": self._5_story_karasuba_21, 
+            "5_STORY_KARASUBA_22": self._5_story_karasuba_22, 
+            "5_STORY_KARASUBA_23": self._5_story_karasuba_23, 
+            "5_STORY_KARASUBA_24": self._5_story_karasuba_24, 
+            "5_STORY_KARASUBA_25": self._5_story_karasuba_25, 
+            "5_STORY_KARASUBA_26": self._5_story_karasuba_26, 
+            "5_STORY_KARASUBA_27": self._5_story_karasuba_27, 
+            "5_STORY_KARASUBA_28": self._5_story_karasuba_28, 
+            "5_STORY_KARASUBA_29": self._5_story_karasuba_29, 
+            "5_STORY_KARASUBA_30": self._5_story_karasuba_30, 
+            "5_STORY_KARASUBA_31": self._5_story_karasuba_31, 
+            "5_STORY_KARASUBA_32": self._5_story_karasuba_32, 
+            "5_STORY_KARASUBA_33": self._5_story_karasuba_33, 
+            "5_STORY_KARASUBA_34": self._5_story_karasuba_34, 
+            "5_STORY_KARASUBA_35": self._5_story_karasuba_35, 
+            "5_STORY_KARASUBA_36": self._5_story_karasuba_36, 
+            "5_STORY_KARASUBA_37": self._5_story_karasuba_37, 
+            "5_STORY_KARASUBA_38": self._5_story_karasuba_38, 
+            "5_STORY_KARASUBA_39": self._5_story_karasuba_39, 
+            "5_STORY_KARASUBA_40": self._5_story_karasuba_40, 
+            "5_STORY_KARASUBA_41": self._5_story_karasuba_41, 
+            "5_STORY_KARASUBA_42": self._5_story_karasuba_42, 
+    
+            
+            
+            "5_STORY_END": self._5_story_end,
+        }
+        self._5_story_current_state="5_STORY_START_CHECK" 
+        self._5_story_current_state_init= "5_STORY_D_LANK_BATTLE_ZONE"
             
     ######################################################
     # Commonfunction
@@ -1775,9 +1856,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0):
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0):
         noCp_count=0
         while True:
+            self.checkIfAlive()
             if self.image_check("SELECT"):
                 self.etc_sendCommand("Lbutton_up")
                 
@@ -1785,7 +1867,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             for i in range(5):
                 #バトル中チェック チェックできない場合は、一旦抜ける
-                if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("C+"):
+                if mode==0 and (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("C+")):
                     
                     if get_chanceicon4==1 and self.image_check("GETCHANCE_ICON4"):
                         self.get_pokemon()
@@ -1805,22 +1887,51 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if noCp_count>=3:
                             self.MOVE_SEE(action = "",in_see_r=0.6)
                         noCp_count=+1
-
+                elif mode==1 and (self.image_check("EYE_CHECK_HIGH_POKE") or self.image_check("C+")):
+                    if self.image_check("FIELD_W"):
+                        self.etc_sendCommand("Lbutton_up")
+                        
+                    if get_chanceicon4==1 and self.image_check("GETCHANCE_ICON4"):
+                        self.get_pokemon()
+                    if self.image_check("C+"):
+                        if Xaction==1:
+                            self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Aaction==1:
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Yaction==1:
+                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if Baction==1:
+                            self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    elif (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
+                        self.MOVE_SEE(action = "",in_see_r=0.6)
+                    else:
+                        if noCp_count>=3:
+                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                        noCp_count=+1
                 else:
                     self.MOVE_SEE(action = "END",in_see_r=0.6)
                     if lockon_endskip==0:
                         self.ZL_ACTION("END")
-                    return
+                    return True
                 
             if lockon_endskip==0:
                 self.ZL_ACTION("END")
+        return True
 
     ######################################################
     # story_Template
     ######################################################
-    def story_Template_battle_before(self,noprg_ret,prg_ret,green_check=0,sleeptime=0.5):
+    def story_Template_battle_before(self,noprg_ret,prg_ret,green_check=0,no_filed=0,sleeptime=0.5):
         if self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
+            if no_filed==0:
+                endpicture="FIELD_W"
+                endpicture2="FIELD_BACK_W"
+            else:
+                endpicture="FALSE_RETURN"
+                endpicture2="FALSE_RETURN"
+                
+            if self.renda_button(rendabutton="B",endpicture=endpicture,endpicture2=endpicture2,endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
                 self.wait(1.0)
                 return prg_ret
         return noprg_ret
@@ -1896,24 +2007,30 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZL_ACTION("END")
         
     def ball_change(self,type=0):
-        self.keys.input(Button.ZR)
-        self.wait(1.0)
+
         for i in range(20):
-            self.etc_sendCommand("Lbutton_left")
-            self.wait(1.0)
+            self.keys.input(Button.ZR)
+            self.wait(2.0)
             if type==0 and self.image_check("M_BALL_ICON"):
                 self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 self.wait(1.0)
                 self.keys.inputEnd(Button.ZR)
                 return True
-            elif type==2 and self.image_check("M_BALL_ICON"):
+            elif type==2 and self.image_check("H_BALL_ICON"):
                 self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 self.wait(1.0)
                 self.keys.inputEnd(Button.ZR)
                 return True
-        self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-        self.wait(1.0)
-        self.keys.inputEnd(Button.ZR)
+            else:
+                self.wait(1.0)
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(1.0)
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.keys.inputEnd(Button.ZR)
+            self.wait(2.0)
+
+
         return False
     
     def EventSkip_plus(self):
@@ -2220,6 +2337,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n STATE_2_STORY_FUNCTION   :: {self._2_story_current_state}'
                 f'\n STATE_3_STORY_FUNCTION   :: {self._3_story_current_state}'
                 f'\n STATE_4_STORY_FUNCTION   :: {self._4_story_current_state}'
+                f'\n STATE_5_STORY_FUNCTION   :: {self._5_story_current_state}'
                 f'\n'
                 f'\n ### STATE_2_VAR ###'
                 f'\n BATTLE_COUNT :: {self._2_story_restaurant_dohutsu_battle_count}'
@@ -2256,6 +2374,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif  self.main_current_state_init=="MAIN_4_E_LANK":
             self._4_story_current_state=self._4_story_current_state_init
             return "MAIN_4_E_LANK"
+        elif  self.main_current_state_init=="MAIN_5_D_LANK":
+            self._5_story_current_state=self._5_story_current_state_init
+            return "MAIN_5_D_LANK"
         else:
             return self.main_current_state_init
         
@@ -2318,6 +2439,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "MAIN_5_D_LANK"
         else:
             return "MAIN_4_E_LANK"
+        
+    ######################################################
+    # MAIN_5_D_LANK FUNCTION
+    ######################################################
+    def main_5_d_lank(self):
+        self._5_story_current_state = self.STATE_5_STORY_FUNCTION[self._5_story_current_state]()
+        if self._5_story_current_state == "5_STORY_END":
+            return "MAIN_6_C_LANK"
+        else:
+            return "MAIN_5_D_LANK"
     ######################################################
     # MAIN_1_Z_LANK SUB FUNCTION
     ######################################################
@@ -8579,7 +8710,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
             return "4_STORY_SHIRO_55"
         return "4_STORY_SHIRO_55"
-    
+    #todo
     def _4_story_shiro_56(self):
         return "4_STORY_SHIRO_56"
     
@@ -8596,44 +8727,552 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_60"
     
     def _4_story_shiro_61(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=8.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_62"
         return "4_STORY_SHIRO_61"
     
     def _4_story_shiro_62(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_63"
         return "4_STORY_SHIRO_62"
     
     def _4_story_shiro_63(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,30), duration=4.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_64"
         return "4_STORY_SHIRO_63"
     
     def _4_story_shiro_64(self):
+        if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_65"
         return "4_STORY_SHIRO_64"
     
     def _4_story_shiro_65(self):
-        return "4_STORY_SHIRO_65"
+        if self.markerdir("EVENT"):
+            return "4_STORY_SHIRO_66"
+        else:
+            return "4_STORY_SHIRO_65"
     
     def _4_story_shiro_66(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,130), duration=3.5, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,220), duration=0.1, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_67"
         return "4_STORY_SHIRO_66"
     
     def _4_story_shiro_67(self):
+        if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_68"
         return "4_STORY_SHIRO_67"
     
     def _4_story_shiro_68(self):
-        return "4_STORY_SHIRO_68"
+        if self.markerdir("EVENT"):
+            return "4_STORY_SHIRO_69"
+        else:
+            return "4_STORY_SHIRO_68"
     
     def _4_story_shiro_69(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,140), duration=3.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_70"
         return "4_STORY_SHIRO_69"
     
     def _4_story_shiro_70(self):
+        if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_71"
         return "4_STORY_SHIRO_70"
     
     def _4_story_shiro_71(self):
-        return "4_STORY_SHIRO_71"
+        if self.markerdir("EVENT"):
+            return "4_STORY_SHIRO_72"
+        else:
+            return "4_STORY_SHIRO_71"
     
+    def _4_story_shiro_72(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,130), duration=3.5, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "4_STORY_SHIRO_73"
+        return "4_STORY_SHIRO_72"
+    
+    def _4_story_shiro_73(self):
+        if self.image_check("TEXT_WHITE_COMMENT") or self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_74"
+        return "4_STORY_SHIRO_73"
+    
+    def _4_story_shiro_74(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,50), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_75"
+        return "4_STORY_SHIRO_74"
+    
+    def _4_story_shiro_75(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_76"
+        return "4_STORY_SHIRO_75"
+    
+    def _4_story_shiro_76(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,180), duration=5.7, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            return "4_STORY_SHIRO_77"
+        return "4_STORY_SHIRO_76"
+    
+    def _4_story_shiro_77(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="4_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_78"
+        return "4_STORY_SHIRO_77"
+    
+    def _4_story_shiro_78(self):
+        if self.image_check("4_SELECT"):
+            self.wait(0.5)
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
+            return "4_STORY_SHIRO_79"
+        return "4_STORY_SHIRO_78"
+    
+    def _4_story_shiro_79(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="4_SELECT",sub5_button="A",sub5_picture="1_SELECT",sleeptime=0.3):
+                return "4_STORY_SHIRO_80"
+        return "4_STORY_SHIRO_79"
+    
+    def _4_story_shiro_80(self):
+        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_81",green_check=0)
 
+    def _4_story_shiro_81(self):
+        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
+    def _4_story_shiro_82(self):
+        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
+ 
+    def _4_story_shiro_83(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "4_STORY_SHIRO_84"
+        else:
+            return "4_STORY_SHIRO_83"
+ 
+    def _4_story_shiro_84(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(1,0,-1)#ジャスティス会道場に移動で位置確定
+        if ret == "START":
+            return "4_STORY_SHIRO_85"
+        else:
+            return "4_STORY_SHIRO_84"
+ 
+    def _4_story_shiro_85(self):
+        #AUTOSAVE
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
+            return "4_STORY_SHIRO_86"
+        return "4_STORY_SHIRO_85"
+ 
+    def _4_story_shiro_86(self):
+        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_87",green_check=0)
 
-    
+    def _4_story_shiro_87(self):
+        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_88",noprg_ret="4_STORY_SHIRO_87",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    def _4_story_shiro_88(self):
+        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_87",prg_ret= "4_STORY_END")
+
     def _4_story_end(self):
         return "4_STORY_START_CHECK" 
+    ######################################################
+    # MAIN_5_D_LANK SUB FUNCTION
+    ######################################################
+    def _5_story_start_check(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "5_STORY_MAPPING_1"
+        return "5_STORY_START_CHECK"
+
+
+    def _5_story_mapping_1(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "5_STORY_MAPPING_2"
+        else:
+            return "5_STORY_MAPPING_1"
+    
+    def _5_story_mapping_2(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
+        if ret == "START":
+            return "5_STORY_MAPPING_3"
+        else:
+            return "5_STORY_MAPPING_2"
+
+    def _5_story_mapping_3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=10.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,95), duration=7.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_MAPPING_4"
+        return "5_STORY_MAPPING_3"
+        
+    def _5_story_mapping_4(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE14"):
+                print("MOVEPOINT_TARGET_W_ZONE14")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE14"):
+                print("MOVEPOINT_PIC_W_ZONE14")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE14",pic2="MOVEPOINT_PIC_W_ZONE14") == True:
+                    self.Common_goto_jump()
+                    return "5_STORY_MAPPING_5"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "5_STORY_MAPPING_1"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "5_STORY_MAPPING_4"
+            else:
+                return "5_STORY_MAPPING_4"
+        return "5_STORY_MAPPING_4"
+
+    def _5_story_mapping_5(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(3,0,-4)#カフェアルティメットに移動で位置確定
+        if ret == "START":
+            return "5_STORY_MAPPING_6"
+        else:
+            return "5_STORY_MAPPING_5"
+        
+    #バトル対策が必要？
+    def _5_story_mapping_6(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE15"):
+                print("MOVEPOINT_TARGET_W_ZONE15")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE15"):
+                print("MOVEPOINT_PIC_W_ZONE15")
+            
+        else:
+            if self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,mode=1)
+                return "5_STORY_MAPPING_6"
+            else:
+                ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン15が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE15",pic2="MOVEPOINT_PIC_W_ZONE15") == True:
+                    #ゾーンから抜けたいのでずらす
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                    self.Common_goto_jump()
+                    return "5_STORY_D_LANK_BATTLE_ZONE"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "5_STORY_MAPPING_5"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "5_STORY_MAPPING_6"
+            else:
+                return "5_STORY_MAPPING_6"
+        return "5_STORY_MAPPING_6"
+    
+    def _5_story_d_lank_battle_zone(self):
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=0
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "5_STORY_KARASUBA_1"
+        else: 
+            return "5_STORY_D_LANK_BATTLE_ZONE"
+        
+    def _5_story_karasuba_1(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "5_STORY_KARASUBA_2"
+        else:
+            return "5_STORY_KARASUBA_1"
+    
+    def _5_story_karasuba_2(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(4,0,4)#Wゾーン5に移動で位置確定
+        if ret == "START":
+            return "5_STORY_KARASUBA_3"
+        else:
+            return "5_STORY_KARASUBA_2"
+    
+    def _5_story_karasuba_3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,220), duration=10.0, wait=0.5)
+            self.wait(1.0)
+            return "5_STORY_KARASUBA_4"
+        return "5_STORY_KARASUBA_3"
+
+    def _5_story_karasuba_4(self):
+        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_5",green_check=0)
+            
+    def _5_story_karasuba_5(self):
+        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_6",noprg_ret="5_STORY_KARASUBA_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    def _5_story_karasuba_6(self):
+        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_5",prg_ret= "5_STORY_KARASUBA_7")
+
+    def _5_story_karasuba_7(self):
+
+        return "5_STORY_KARASUBA_7"
+    
+    def _5_story_karasuba_8(self):
+
+        return "5_STORY_KARASUBA_8"
+    
+    def _5_story_karasuba_9(self):
+
+        return "5_STORY_KARASUBA_9"
+    
+    def _5_story_karasuba_10(self):
+
+        return "5_STORY_KARASUBA_10"
+    
+    def _5_story_karasuba_11(self):
+
+        return "5_STORY_KARASUBA_11"
+    
+    def _5_story_karasuba_12(self):
+ 
+        return "5_STORY_KARASUBA_12"
+    
+    def _5_story_karasuba_13(self):
+
+        return "5_STORY_KARASUBA_13"
+    
+    def _5_story_karasuba_14(self):
+
+        return "5_STORY_KARASUBA_14"
+    
+    def _5_story_karasuba_15(self):
+
+        return "5_STORY_KARASUBA_15"
+    
+    def _5_story_karasuba_16(self):
+
+        return "5_STORY_KARASUBA_16"
+    
+    def _5_story_karasuba_17(self):
+
+        return "5_STORY_KARASUBA_17"
+    
+    def _5_story_karasuba_18(self):
+
+        return "5_STORY_KARASUBA_18"
+    
+    def _5_story_karasuba_19(self):
+
+        return "5_STORY_KARASUBA_19"
+    
+    def _5_story_karasuba_20(self):
+
+        return "5_STORY_KARASUBA_20"
+    
+    def _5_story_karasuba_21(self):
+        return "4_STORY_SHIRO_21"
+        
+    def _5_story_karasuba_21_1(self):
+
+        return "5_STORY_KARASUBA_21_1"
+    
+    def _5_story_karasuba_21_2(self):
+
+        return "5_STORY_KARASUBA_21_2"
+    
+    def _5_story_karasuba_22(self):
+
+        return "5_STORY_KARASUBA_22"
+    
+    def _5_story_karasuba_23(self):
+
+        return "5_STORY_KARASUBA_23"
+    
+    def _5_story_karasuba_24(self):
+
+        return "5_STORY_KARASUBA_24"
+    
+    def _5_story_karasuba_25(self):
+
+        return "5_STORY_KARASUBA_25"
+    
+    def _5_story_karasuba_26(self):
+
+        return "5_STORY_KARASUBA_26"
+    
+    def _5_story_karasuba_27(self):
+
+        return "5_STORY_KARASUBA_27"
+    
+    def _5_story_karasuba_28(self):
+
+        return "5_STORY_KARASUBA_28"
+    
+    def _5_story_karasuba_29(self):
+
+        return "5_STORY_KARASUBA_29"
+    
+    def _5_story_karasuba_30(self):
+
+        return "5_STORY_KARASUBA_30"
+    
+    def _5_story_karasuba_31(self):
+
+        return "5_STORY_KARASUBA_31"
+    
+    def _5_story_karasuba_32(self):
+
+        return "5_STORY_KARASUBA_32"
+    
+    def _5_story_karasuba_33(self):
+
+        return "5_STORY_KARASUBA_33"
+
+    def _5_story_karasuba_34(self):
+
+        return "5_STORY_KARASUBA_34"
+    
+    def _5_story_karasuba_35(self):
+        return "5_STORY_KARASUBA_34"
+    def _5_story_karasuba_36(self):
+        return "5_STORY_KARASUBA_34"
+    def _5_story_karasuba_37(self):
+        return "5_STORY_KARASUBA_34"
+    def _5_story_karasuba_38(self):
+
+        return "5_STORY_KARASUBA_38"
+    
+    def _5_story_karasuba_39(self):
+
+        return "5_STORY_KARASUBA_39"
+    
+    def _5_story_karasuba_40(self):
+
+        return "5_STORY_KARASUBA_40"
+    
+    def _5_story_karasuba_41(self):
+
+        return "5_STORY_KARASUBA_41"
+    
+    def _5_story_karasuba_42(self):
+ 
+        return "5_STORY_KARASUBA_42"
+    
+    def _5_story_karasuba_43(self):
+
+        return "5_STORY_KARASUBA_43"
+    
+    def _5_story_karasuba_44(self):
+        return "5_STORY_KARASUBA_44"
+    
+    def _5_story_karasuba_45(self):
+        return "5_STORY_KARASUBA_45"
+    
+    def _5_story_karasuba_46(self):
+        return "5_STORY_KARASUBA_46"
+    
+    def _5_story_karasuba_47(self):
+        return "5_STORY_KARASUBA_47"
+    
+    def _5_story_karasuba_48(self):
+        return "5_STORY_KARASUBA_48"
+    
+    def _5_story_karasuba_49(self):
+        return "5_STORY_KARASUBA_49"
+    
+    def _5_story_karasuba_50(self):
+        return "5_STORY_KARASUBA_50"
+    
+    def _5_story_karasuba_51(self):
+        return "5_STORY_KARASUBA_51"
+    
+    def _5_story_karasuba_52(self):
+        return "5_STORY_KARASUBA_52"
+    
+    def _5_story_karasuba_53(self):
+        return "5_STORY_KARASUBA_53"
+    
+    def _5_story_karasuba_54(self):
+        return "5_STORY_KARASUBA_54"
+    
+    def _5_story_karasuba_55(self):
+        return "5_STORY_KARASUBA_55"
+    
+    def _5_story_karasuba_56(self):
+        return "5_STORY_KARASUBA_34"
+    def _5_story_karasuba_57(self):
+        return "5_STORY_KARASUBA_57"
+    
+    def _5_story_karasuba_58(self):
+        return "5_STORY_KARASUBA_58"
+    
+    def _5_story_karasuba_59(self):
+        return "5_STORY_KARASUBA_59"
+    
+    def _5_story_karasuba_60(self):
+        return "5_STORY_KARASUBA_60"
+    
+    def _5_story_end(self):
+        return "5_STORY_START_CHECK"
+    
+    
+    
+    
     
     # #TODO
 
