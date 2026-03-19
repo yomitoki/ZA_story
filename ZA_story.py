@@ -574,7 +574,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_TOWER_39"
+        self._2_story_current_state_init= "2_STORY_TOWER_61"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -6284,17 +6284,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,45), duration=0.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,45), duration=0.9, wait=0.5)
             self.wait(1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_TOWER_63"
         return "2_STORY_TOWER_62"
     
     def _2_story_tower_63(self): 
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
-                return "2_STORY_TOWER_64"
-        return "2_STORY_TOWER_63"
+        if self.story_Template_Comment_Out():
+            return "2_STORY_TOWER_64"
+        return "2_STORY_TOWER_61"
     
     def _2_story_tower_64(self): 
         ### AUTO_SAVE_POINT
