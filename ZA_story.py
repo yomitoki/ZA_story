@@ -572,7 +572,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_RESTAURANT_DOHUTSU_LOOP"
+        self._2_story_current_state_init="2_STORY_TOWER_72"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -1839,8 +1839,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.keys.inputEnd(Button.ZL)
             self.ZL_state = 0
             
-    def battle_coCp_noloop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0):
-        if self.image_check("SELECT"):
+    def battle_coCp_noloop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,battle_mode=0):
+        if battle_mode==0 and self.image_check("SELECT"):
+            self.etc_sendCommand("Lbutton_up")
+        if battle_mode==1 and self.image_check("FIELD_W"):
             self.etc_sendCommand("Lbutton_up")
         self.ZL_ACTION("")
         for i in range(3):
@@ -1855,11 +1857,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0):
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0):
         noCp_count=0
         while True:
             self.checkIfAlive()
-            if self.image_check("SELECT"):
+            if battle_mode==0 and self.image_check("SELECT"):
+                self.etc_sendCommand("Lbutton_up")
+            elif battle_mode==1 and self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
                 
             self.ZL_ACTION("")
@@ -1935,12 +1939,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return prg_ret
         return noprg_ret
 
-    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,sleeptime=0.5):
+    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=0,battle_mode=0,sleeptime=0.5):
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
             if noCp==0:
-                self.battle_Cp_loop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction)
+                self.battle_Cp_loop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,get_chanceicon4=get_chanceicon4,battle_mode=battle_mode)
             else:
-                self.battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction)
+                if get_chanceicon4==1 and self.image_check("GETCHANCE_ICON4"):
+                    self.get_pokemon()
+                self.battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,battle_mode=battle_mode)
     
         elif self.image_check("CHAT_MARKER"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -1962,12 +1968,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("COIN_ICON"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return noprg_ret
-        elif not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+        
+        if not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
             if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                if self.markerdir("EVENT"):
-                    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
-                    return noprg_ret
+                if markertype==0:
+                    if self.markerdir("EVENT"):
+                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                        return noprg_ret
+                elif markertype==1:
+                    if self.markerdir("SIDE_MARKER"):
+                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                        return noprg_ret
                 else:
+                    print("w3er")
                     return noprg_ret
             elif self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="COIN_ICON",endpicture3="BATTLE_BALL_CHECK",endpicture4="ESCAPE",endpicture5="TEXT_WHITE_COMMENT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
                 return noprg_ret
@@ -2051,6 +2064,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             center_wide = "PIN_MARKER_CENTER_WIDE"
             left = "PIN_MARKER_LEFT_WIDE"
             right = "PIN_MARKER_RIGHT_WIDE"
+        elif type == "SIDE_MARKER":
+            center = "SIDE_MARKER_CENTER"
+            center_wide = "SIDE_MARKER_CENTER_WIDE"
+            left = "SIDE_MARKER_LEFT_WIDE"
+            right = "SIDE_MARKER_RIGHT_WIDE"
         else:
             return False
         
@@ -6163,6 +6181,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_69"
     
     def _2_story_tower_72(self):
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_TOWER_71",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+
         #親分ホルビーが必要な場合はゲットマーカー4でゲット処理を追加
         #敗戦対応が必要なはず
         #移動なしでも行けるので一旦プレイヤー移動なしで実施
@@ -6186,6 +6206,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_72"
     
     def _2_story_tower_73(self): 
+        return self.story_Template_battle_after(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
+
         if self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
                 return "2_STORY_TOWER_74"
@@ -6746,7 +6768,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
     def _2_story_absol_move7(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
 
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -12857,6 +12879,49 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False 
+        elif targetimage=="SIDE_MARKER_LEFT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\side_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [250,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="SIDE_MARKER_RIGHT_WIDE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\side_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,1100,600]
+                                    ):
+                return True
+            else:
+                return False 
+        elif targetimage=="SIDE_MARKER_CENTER":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\side_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [640,0,680,600]
+                                    ):
+                return True
+            else:
+                return False 
+
         elif targetimage=="BATTLE":
             if self.isContainTemplateUltra_get_max_val(                
                                         template_path ='ZA_Story\Common\\battle.png',
