@@ -433,6 +433,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             "2_STORY_Y_LANK_BATTLE_ZONE": self._2_story_y_lank_battle_zone,
             
+            "2_STORY_Y_LANK_MOVE0": self._2_story_y_lank_move0,
             "2_STORY_Y_LANK_MOVE1": self._2_story_y_lank_move1,
             "2_STORY_Y_LANK_MOVE2": self._2_story_y_lank_move2,
             "2_STORY_Y_LANK_MOVE3": self._2_story_y_lank_move3,
@@ -573,7 +574,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init="2_STORY_TOWER_72"
+        self._2_story_current_state_init= "2_STORY_TOWER_39"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -1439,7 +1440,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",event_picture="",sleeptime=0.5):
+    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",event_picture="",sleeptime=0.5):
         while True:
             self.checkIfAlive()
             
@@ -1463,7 +1464,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if endpicture5 != "":
                         if self.image_check(endpicture5):
                             return True
-                    
+                    if endpicture6 != "":
+                        if self.image_check(endpicture6):
+                            return True
+                        
                 if sub_picture != "":
                     if self.image_check(sub_picture):
                         if sub_button == "A":
@@ -1494,6 +1498,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                             checkerflg=1
                             self.wait(sleeptime)
+
                 if event_picture != "":
                     if self.image_check(event_picture):
                         self.EventSkip_plus()
@@ -1537,8 +1542,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     self.MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
+                
+            if self.image_check("HELP_MARKER"):
+                self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                
             self.ZL_ACTION("")
-
+ 
             if count==0 and Aaction==1 and self.image_check("C+"):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
@@ -1779,7 +1788,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(0.1)
                 
                 if not self.image_check("C+"):
-                    print("wer2")
                     self.ZL_ACTION("END")
                     self.wait(0.1)
                     self.ZL_ACTION("")
@@ -2035,6 +2043,77 @@ class ZA_story_Base(ImageProcPythonCommand):
                         return prg_ret
             return prg_ret
     
+    def story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,selected_pic="RETURN FALSE",selected_target=0,sleeptime=0.5):
+        selected_out_check=0
+        #基本的にフィールドは以下でチェックするが、場所によって誤検知する場合がある。
+        endpicture4="FIELD_W"
+        endpicture5="FIELD_BACK_W"
+        endpicture6="RETURN FALSE"
+        #コメントチェックができるまでループ
+        for i in range(10):
+            if (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))):
+                break
+            self.wait(0.5)
+            
+        #コメントチェック待ちをおこなっても検知ができなかった場合は、False判定とする。
+        if (not (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT"))))):
+            return False
+            
+        while True:
+            self.checkIfAlive()
+            if self.renda_button(rendabutton="B",
+                                 endpicture="BATTLE_BALL_CHECK",
+                                 endpicture2="ESCAPE",
+                                 endpicture3=selected_pic,
+                                 endpicture4=endpicture4,
+                                 endpicture5=endpicture5,
+                                 endpicture6=endpicture6,
+                                 sub_button="A",sub_picture="TEXT_BLACK_COMMENT",
+                                 sub2_button="A",sub2_picture="3_SELECT",
+                                 sub3_button="A",sub3_picture="2_SELECT",
+                                 sub4_button="A",sub4_picture="HELP_MARKER",
+                                 sub5_button="A",sub5_picture="4_SELECT",
+                                 sleeptime=sleeptime):
+                selected_out_check=0
+                for i in range(10):
+                    self.wait(0.5)
+                    if self.image_check(selected_pic):
+                        selected_out_check=1
+                        self.wait(1.0)
+                        for i in range(selected_target):
+                            self.etc_sendCommand("Lbutton_down")
+                            self.wait(0.5)
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                        break
+                    
+                    elif ((self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))) and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+                        self.wait(0.5)
+                        #選択肢チェックのタイミングがずれたようにフォローする
+                        if self.image_check(selected_pic):
+                            selected_out_check=1
+                            self.wait(1.0)
+                            for i in range(selected_target):
+                                self.etc_sendCommand("Lbutton_down")
+                                self.wait(0.5)
+                            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                            break
+                        else:
+                            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            #選択肢処理を行っている場合は再度ボタン連打を再開する。
+            if selected_out_check==1:
+                selected_out_check=0
+                continue
+            self.wait(0.5)
+            if (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))):
+                # 下記処理は戦闘不能となっている場合に実施すると抜けられなくなるため、回復などが前提にある場合でなければ使用しないこと
+                if substitute==1:
+                    endpicture4="WANINOKO_ICON"
+                    endpicture5="ODAIRU_ICON"
+                    endpicture6="ABSOL_ICON"
+            else:
+                break
+        return True
+        
     ######################################################
     # story_Template
     ###################################################### 
@@ -4116,10 +4195,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_40"
     
     def _2_story_tower_41(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                return "2_STORY_TOWER_42"
-
+        if self.story_Template_Comment_Out():
+            return "2_STORY_TOWER_42"
         return "2_STORY_TOWER_41"
     
     def _2_story_tower_42(self):
@@ -6337,6 +6414,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         else: 
             return "2_STORY_Y_LANK_BATTLE_ZONE"
     
+    def _2_story_y_lank_move0(self):
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "2_STORY_Y_LANK_MOVE1"
+        else:
+            return "2_STORY_Y_LANK_MOVE0"
+    
     def _2_story_y_lank_move1(self):
         ret = self.Common_goto(4,0,-2)#Wゾーン5側から
         if ret == "START":
@@ -6369,7 +6453,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("TEXT_WHITE_COMMENT"):
                 if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="3_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER"):
                     return "2_STORY_Y_LANK_MOVE4"
-        return "2_STORY_Y_LANK_MOVE1"
+        return "2_STORY_Y_LANK_MOVE0"
 
     #Yランク
     def _2_story_y_lank_move4(self):
@@ -6535,7 +6619,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_x_lank_move13(self):
         if self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="MORNING"):
                 return "2_STORY_W_LANK_MOVE1"
         return "2_STORY_X_LANK_MOVE13"
     
