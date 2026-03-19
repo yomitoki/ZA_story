@@ -856,13 +856,73 @@ class ZA_story_Base(ImageProcPythonCommand):
             "5_STORY_KARASUBA_68": self._5_story_karasuba_68,   
             "5_STORY_KARASUBA_69": self._5_story_karasuba_69,   
             "5_STORY_KARASUBA_70": self._5_story_karasuba_70,   
+            "5_STORY_KARASUBA_71": self._5_story_karasuba_71,   
+            "5_STORY_KARASUBA_72": self._5_story_karasuba_72,   
+            "5_STORY_KARASUBA_73": self._5_story_karasuba_73,   
+            "5_STORY_KARASUBA_74": self._5_story_karasuba_74,   
+            "5_STORY_KARASUBA_75": self._5_story_karasuba_75,   
+            "5_STORY_KARASUBA_76": self._5_story_karasuba_76,   
+            "5_STORY_KARASUBA_77": self._5_story_karasuba_77,   
+            "5_STORY_KARASUBA_78": self._5_story_karasuba_78,   
+            "5_STORY_KARASUBA_79": self._5_story_karasuba_79,   
+            "5_STORY_KARASUBA_80": self._5_story_karasuba_80,   
+            "5_STORY_KARASUBA_81": self._5_story_karasuba_81,   
+            "5_STORY_KARASUBA_82": self._5_story_karasuba_82,    
+            "5_STORY_KARASUBA_83": self._5_story_karasuba_83,    
+            "5_STORY_KARASUBA_84": self._5_story_karasuba_84,    
+            "5_STORY_KARASUBA_85": self._5_story_karasuba_85,    
+            "5_STORY_KARASUBA_86": self._5_story_karasuba_86,    
+            "5_STORY_KARASUBA_87": self._5_story_karasuba_87,    
+            "5_STORY_KARASUBA_88": self._5_story_karasuba_88,    
+            "5_STORY_KARASUBA_89": self._5_story_karasuba_89,    
+            "5_STORY_KARASUBA_90": self._5_story_karasuba_90,    
+            "5_STORY_KARASUBA_91": self._5_story_karasuba_91,    
+            "5_STORY_KARASUBA_92": self._5_story_karasuba_92,    
+            "5_STORY_KARASUBA_93": self._5_story_karasuba_93,    
+            "5_STORY_KARASUBA_94": self._5_story_karasuba_94,    
+            "5_STORY_KARASUBA_95": self._5_story_karasuba_95,    
+            "5_STORY_KARASUBA_96": self._5_story_karasuba_96,    
+            "5_STORY_KARASUBA_97": self._5_story_karasuba_97,    
+            "5_STORY_KARASUBA_98": self._5_story_karasuba_98,    
+            "5_STORY_KARASUBA_99": self._5_story_karasuba_99,    
+            "5_STORY_KARASUBA_100": self._5_story_karasuba_100,    
+            "5_STORY_KARASUBA_101": self._5_story_karasuba_101,    
+            "5_STORY_KARASUBA_102": self._5_story_karasuba_102,     
+            "5_STORY_KARASUBA_103": self._5_story_karasuba_103,     
+            "5_STORY_KARASUBA_104": self._5_story_karasuba_104,     
+            "5_STORY_KARASUBA_105": self._5_story_karasuba_105,     
+            "5_STORY_KARASUBA_106": self._5_story_karasuba_106,     
+            "5_STORY_KARASUBA_107": self._5_story_karasuba_107,     
+            "5_STORY_KARASUBA_108": self._5_story_karasuba_108,     
+            "5_STORY_KARASUBA_109": self._5_story_karasuba_109,     
+            "5_STORY_KARASUBA_110": self._5_story_karasuba_110,     
+            "5_STORY_KARASUBA_111": self._5_story_karasuba_111,     
+            "5_STORY_KARASUBA_112": self._5_story_karasuba_112,     
+            "5_STORY_KARASUBA_113": self._5_story_karasuba_113,     
+            "5_STORY_KARASUBA_114": self._5_story_karasuba_114,     
+            "5_STORY_KARASUBA_115": self._5_story_karasuba_115,     
+            "5_STORY_KARASUBA_116": self._5_story_karasuba_116,     
+            "5_STORY_KARASUBA_117": self._5_story_karasuba_117,     
+            "5_STORY_KARASUBA_118": self._5_story_karasuba_118,     
+            "5_STORY_KARASUBA_119": self._5_story_karasuba_119,     
+            "5_STORY_KARASUBA_120": self._5_story_karasuba_120,     
+            "5_STORY_KARASUBA_121": self._5_story_karasuba_121,      
+            "5_STORY_KARASUBA_122": self._5_story_karasuba_122,      
+            "5_STORY_KARASUBA_123": self._5_story_karasuba_123,      
+            "5_STORY_KARASUBA_124": self._5_story_karasuba_124,      
+            "5_STORY_KARASUBA_125": self._5_story_karasuba_125,      
+            "5_STORY_KARASUBA_126": self._5_story_karasuba_126,      
+            "5_STORY_KARASUBA_127": self._5_story_karasuba_127,      
+            "5_STORY_KARASUBA_128": self._5_story_karasuba_128,      
+            "5_STORY_KARASUBA_129": self._5_story_karasuba_129,      
+            "5_STORY_KARASUBA_130": self._5_story_karasuba_130,      
     
             
             
             "5_STORY_END": self._5_story_end,
         }
         self._5_story_current_state="5_STORY_START_CHECK" 
-        self._5_story_current_state_init= "5_STORY_KARASUBA_63"
+        self._5_story_current_state_init= "5_STORY_KARASUBA_123"
             
     ######################################################
     # Commonfunction
@@ -1888,9 +1948,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0):
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0):
         noCp_count=0
-        target_marker=3
+        target_marker=1
         while True:
             print(f'noCp_count = {noCp_count} mode = {mode} battle_mode = {battle_mode}')
             self.checkIfAlive()
@@ -1919,20 +1979,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         self.MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
-                        if target_marker>=3:
+                        if target_marker>=1:
                             self.MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            if noCp_count>=3:
+                                self.MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
-                            noCp_count+=1#ロックオンはできていないためカウントは行う
+                            if self.image_check("ESCAPE"):
+                                noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 6')
                             self.MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 2')
-                        noCp_count+=1
+                        if self.image_check("ESCAPE"):
+                            noCp_count+=1
                 elif mode==1 and (self.image_check("EYE_CHECK_HIGH_POKE") or self.image_check("C+")):
                     if self.image_check("FIELD_W"):
                         self.etc_sendCommand("Lbutton_up")
@@ -1951,20 +2014,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         self.MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
-                        if target_marker>=3:
+                        if target_marker>=1:
                             self.MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            if noCp_count>=3:
+                                self.MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
-                            noCp_count+=1#ロックオンはできていないためカウントは行う
+                            if self.image_check("ESCAPE"):
+                                noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 5')
                             self.MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 4')
-                        noCp_count+=1
+                        if self.image_check("ESCAPE"):
+                            noCp_count+=1
                 else:
                     self.MOVE_SEE(action = "END",in_see_r=0.6)
                     if lockon_endskip==0:
@@ -2059,6 +2125,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
                         return prg_ret
             return prg_ret
+        
     
     ######################################################
     # story_Template
@@ -9629,22 +9696,466 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_66"
     
     def _5_story_karasuba_67(self):
+        if self.image_check("IN_ICON"):
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_68"
         return "5_STORY_KARASUBA_67"
     
     def _5_story_karasuba_68(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "5_STORY_KARASUBA_69"
         return "5_STORY_KARASUBA_68"
     
     def _5_story_karasuba_69(self):
-        return "5_STORY_KARASUBA_69"
+        #失敗時に戻れるように
+        ret = self.Common_goto(0,0,0,othermap="UG_SEWER_MAP")#地下水道入口へ移動
+        if ret == "START":
+            return "5_STORY_KARASUBA_70"
+        else:
+            return "5_STORY_KARASUBA_69"
     
     def _5_story_karasuba_70(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.image_check("FIELD2") or self.image_check("FIELD_BACK2"):
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(1.0)
+                if self.image_check("FIELD_BACK_W"):
+                    return "5_STORY_KARASUBA_71"                
+            else:
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(1.0)
         return "5_STORY_KARASUBA_70"
     
     def _5_story_karasuba_71(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_72"
         return "5_STORY_KARASUBA_71"
     
     def _5_story_karasuba_72(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_73"
         return "5_STORY_KARASUBA_72"
+    
+    def _5_story_karasuba_73(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,250), duration=2.0, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_74" 
+        return "5_STORY_KARASUBA_73"
+    
+    def _5_story_karasuba_74(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_75"
+        return "5_STORY_KARASUBA_74"
+    
+    def _5_story_karasuba_75(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,290), duration=3.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,330), duration=1.0, wait=1.0)#?
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_76" 
+        return "5_STORY_KARASUBA_75"
+    
+    def _5_story_karasuba_76(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_77"
+        return "5_STORY_KARASUBA_76"
+    
+    def _5_story_karasuba_77(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,20), duration=1.0, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_78" 
+        return "5_STORY_KARASUBA_77"
+    
+    def _5_story_karasuba_78(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_79"
+        return "5_STORY_KARASUBA_78"
+    
+    def _5_story_karasuba_79(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,290), duration=2.5, wait=1.0)
+                self.press(Direction(Stick.LEFT,330), duration=0.1, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_80" 
+        return "5_STORY_KARASUBA_79"
+    
+    def _5_story_karasuba_80(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_81"
+        return "5_STORY_KARASUBA_80"
+    
+    def _5_story_karasuba_81(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,130), duration=4.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,230), duration=4.0, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_82" 
+        return "5_STORY_KARASUBA_81"
+    
+    def _5_story_karasuba_82(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_83"
+        return "5_STORY_KARASUBA_82"
+    
+    def _5_story_karasuba_83(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,330), duration=0.1, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_84" 
+        return "5_STORY_KARASUBA_83"
+    
+    def _5_story_karasuba_84(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_85"
+        return "5_STORY_KARASUBA_84"
+    
+    def _5_story_karasuba_85(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,270), duration=1.5, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_86" 
+        return "5_STORY_KARASUBA_85"
+    
+    def _5_story_karasuba_86(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_87"
+        return "5_STORY_KARASUBA_86"
+    
+    def _5_story_karasuba_87(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,270), duration=1.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,0), duration=4.5, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_88" 
+        return "5_STORY_KARASUBA_87"
+    
+    def _5_story_karasuba_88(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_89"
+        return "5_STORY_KARASUBA_88"
+    
+    def _5_story_karasuba_89(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,70), duration=0.1, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_90" 
+        return "5_STORY_KARASUBA_89"
+    
+    def _5_story_karasuba_90(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_91"
+        return "5_STORY_KARASUBA_90"
+    
+    def _5_story_karasuba_91(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,0), duration=0.5, wait=1.0)
+                self.press(Direction(Stick.LEFT,260), duration=4.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,30), duration=0.1, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "5_STORY_KARASUBA_92" 
+        return "5_STORY_KARASUBA_91"
+    
+    def _5_story_karasuba_92(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_93"
+        return "5_STORY_KARASUBA_92"
+    
+    def _5_story_karasuba_93(self):
+        if self.markerdir("EVENT"):
+            if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                self.press(Direction(Stick.LEFT,235), duration=1.8, wait=1.0)
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                self.wait(2.0)
+                self.press(Direction(Stick.RIGHT,90), duration=0.3, wait=1.0)
+                return "5_STORY_KARASUBA_94" 
+        return "5_STORY_KARASUBA_93"
+    
+    def _5_story_karasuba_94(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                self.wait(2.0)
+                return "5_STORY_KARASUBA_95"
+        return "5_STORY_KARASUBA_94"
+    
+    def _5_story_karasuba_95(self):
+        if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "5_STORY_KARASUBA_96"
+        return "5_STORY_KARASUBA_95"
+    
+    def _5_story_karasuba_96(self):
+        ret = self.Common_goto(0,0,0,othermap="UG_SEWER_MAP")#地下水道入口へ移動
+        if ret == "START":
+            return "5_STORY_KARASUBA_97"
+        else:
+            return "5_STORY_KARASUBA_96"
+    
+    def _5_story_karasuba_97(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,70), duration=0.8, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+            return "5_STORY_KARASUBA_98" 
+        return "5_STORY_KARASUBA_97"
+    
+    def _5_story_karasuba_98(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "5_STORY_KARASUBA_99"
+        return "5_STORY_KARASUBA_98"
+    
+    def _5_story_karasuba_99(self):
+        ret = self.Common_change_time_set(check_timing="NIGHT")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "5_STORY_KARASUBA_100"
+        else:
+            return "5_STORY_KARASUBA_99"
+    
+    def _5_story_karasuba_100(self):
+        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "5_STORY_KARASUBA_101"
+        else:
+            return "5_STORY_KARASUBA_100"
+    
+    def _5_story_karasuba_101(self):
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "5_STORY_KARASUBA_102"
+        else:
+            return "5_STORY_KARASUBA_101"
+    
+    def _5_story_karasuba_102(self):
+        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "5_STORY_KARASUBA_103"
+        else:
+            return "5_STORY_KARASUBA_102"
+    
+    def _5_story_karasuba_103(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,260), duration=9.0, wait=1.0)
+            return "5_STORY_KARASUBA_104"
+        return "5_STORY_KARASUBA_103"
+    
+    def _5_story_karasuba_104(self):
+        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_105",green_check=0)
+    
+    def _5_story_karasuba_105(self):
+        # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
+        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_106",noprg_ret="5_STORY_KARASUBA_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _5_story_karasuba_106(self):
+        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_105",prg_ret= "5_STORY_KARASUBA_107")
+    
+    def _5_story_karasuba_107(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            #バックアップから戻る場合に角度が変わるため
+            if self.markerdir("EVENT"):
+                self.press(Direction(Stick.LEFT,135), duration=5.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,60), duration=8.0, wait=1.0)
+                return "5_STORY_KARASUBA_108"
+        return "5_STORY_KARASUBA_107"
+    
+    def _5_story_karasuba_108(self):
+        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_109",green_check=0)
+
+    
+    def _5_story_karasuba_109(self):
+        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_110",noprg_ret="5_STORY_KARASUBA_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    
+    def _5_story_karasuba_110(self):
+        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_109",prg_ret= "5_STORY_KARASUBA_111")
+
+    def _5_story_karasuba_111(self):
+        ret = self.Common_change_time_set(check_timing="NIGHT")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "5_STORY_KARASUBA_112"
+        else:
+            return "5_STORY_KARASUBA_111"
+
+    def _5_story_karasuba_112(self):
+        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "5_STORY_KARASUBA_113"
+        else:
+            return "5_STORY_KARASUBA_112"
+
+    def _5_story_karasuba_113(self):
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "5_STORY_KARASUBA_114"
+        else:
+            return "5_STORY_KARASUBA_113"
+
+    def _5_story_karasuba_114(self):
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "5_STORY_KARASUBA_115"
+        else:
+            return "5_STORY_KARASUBA_114"
+
+    def _5_story_karasuba_115(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_116"
+        return "5_STORY_KARASUBA_115"
+
+    def _5_story_karasuba_116(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "5_STORY_KARASUBA_117"
+        return "5_STORY_KARASUBA_116"
+
+    def _5_story_karasuba_117(self):
+        ret = self.Common_goto(1,1,0)#サビ組事務所へ移動
+        if ret == "START":
+            return "5_STORY_KARASUBA_118"
+        else:
+            return "5_STORY_KARASUBA_117"
+
+    def _5_story_karasuba_118(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=7.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_119"
+        return "5_STORY_KARASUBA_118"
+
+    def _5_story_karasuba_119(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_120"
+        return "5_STORY_KARASUBA_119"
+
+    def _5_story_karasuba_120(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "5_STORY_KARASUBA_121"
+        return "5_STORY_KARASUBA_120"
+
+    def _5_story_karasuba_121(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "5_STORY_KARASUBA_122"
+        return "5_STORY_KARASUBA_121"
+
+    def _5_story_karasuba_122(self):
+        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
+
+
+    def _5_story_karasuba_123(self):
+        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+
+    def _5_story_karasuba_124(self):
+        ret = self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_KARASUBA_125")
+        if ret == "5_STORY_KARASUBA_125":
+            #誤判定用のガード
+            if self.image_check("ODAIRU_ICON") or self.image_check("ABSOL_ICON"):
+                return "5_STORY_KARASUBA_125"
+        elif ret == "5_STORY_KARASUBA_123":
+            return "5_STORY_KARASUBA_123"    
+        return "5_STORY_KARASUBA_124"
+
+
+    def _5_story_karasuba_125(self):
+        return "5_STORY_KARASUBA_125"
+
+    def _5_story_karasuba_126(self):
+        return "5_STORY_KARASUBA_126"
+
+    def _5_story_karasuba_127(self):
+        return "5_STORY_KARASUBA_127"
+
+    def _5_story_karasuba_128(self):
+        return "5_STORY_KARASUBA_128"
+
+    def _5_story_karasuba_129(self):
+        return "5_STORY_KARASUBA_129"
+
+    def _5_story_karasuba_130(self):
+        return "5_STORY_KARASUBA_130"
+
+
     
     def _5_story_end(self):
         return "5_STORY_START_CHECK"
@@ -10084,7 +10595,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #dummy
         return "COMMON_MAP_OPEN"
 
-    def Common_map_open(self,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN"):
+    def Common_map_open(self,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN",othermap="FALSE_RETURN"):
         self.map_cursor_reset=0
         self.ZL_ACTION("END")
         self.wait(0.1)#self.wait(self.SLEEPLIST[8][2])
@@ -10102,7 +10613,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # ステップ遷移ミス用
         elif self.image_check("MAP"):
             return "COMMON_GOTO_SELECT1"
-        elif self.image_check("MAP2"):
+        elif self.image_check("MAP2") or self.image_check(othermap):
             return "COMMON_GOTO_SELECT1"
         #elif self.image_check("MORNING"):  
         #    return "CHECK_TIME"
@@ -10111,7 +10622,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return "COMMON_MAP_OPEN"
     
-    def Common_goto_select1(self,position):
+    def Common_goto_select1(self,position,othermap="FALSE_RETURN"):
         # position:0 すべて
         # position:1 施設
         # position:2 ポケセン
@@ -10119,7 +10630,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # position:4 ゾーン
         # position:5 やめる
         self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
-        if self.image_check("MAP2"):      
+        if self.image_check("MAP2") or self.image_check(othermap):      
             self.wait(0.1)
             if self.image_check("MOVESPOT_TAB"):
                 if self.map_cursor_reset==0:
@@ -10151,7 +10662,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #    return "CHECK_TIME"
         elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W") or self.image_check("DEAD"):
             for i in range(5):
-                if self.image_check("MAP2"):
+                if self.image_check("MAP2") or self.image_check(othermap):
                     return "COMMON_GOTO_SELECT1"
                 self.wait(0.1)
             print("W_select1")
@@ -10169,9 +10680,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_GOTO_SELECT1"
         return "COMMON_GOTO_SELECT1"
     
-    def Common_goto_select2(self,positionright,positiondown,movepoint_check):
+    def Common_goto_select2(self,positionright,positiondown,movepoint_check,othermap="FALSE_RETURN"):
         self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
-        if self.image_check("MAP2"):        
+        if self.image_check("MAP2") or self.image_check(othermap):        
             if self.image_check("MOVESPOT_TAB"):         
                 if self.image_check("TAB_FILTER"):
                     # FILTER
@@ -10322,14 +10833,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "EXEC"
 
 
-    def Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN"):
+    def Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN",othermap="FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
         if self.Common_current_state == "COMMON_MAP_OPEN":
-            self.Common_current_state = self.Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2)
+            self.Common_current_state = self.Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2,othermap=othermap)
         elif self.Common_current_state == "COMMON_GOTO_SELECT1":
-            self.Common_current_state = self.Common_goto_select1(position1)
+            self.Common_current_state = self.Common_goto_select1(position1,othermap=othermap)
         elif self.Common_current_state == "COMMON_GOTO_SELECT2":
-            self.Common_current_state = self.Common_goto_select2(position2left,position2down,movepoint_check)
+            self.Common_current_state = self.Common_goto_select2(position2left,position2down,movepoint_check,othermap=othermap)
         else:
             self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state]()
             
@@ -10346,8 +10857,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
-            self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.2, interval=0.2)
-            return True
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="HELP_MARKER"):
+                return True
         else:
             return False
     
@@ -12590,6 +13101,36 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False
+        elif targetimage=="FIELD2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                template_path ='ZA_Story\Common\\field.png',
+                                threshold = 0.80,
+                                use_gray = True,
+                                show_value = False,
+                                show_position = True,
+                                show_only_true_rect  = False,
+                                ms  = 2000,
+                                crop = [100,680,150,720],
+                                crop_template  = []
+                                ):
+                return True
+            else:
+                return False
+        elif targetimage=="FIELD_BACK2":
+            if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\field_back.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [100,680,150,720],
+                                        crop_template  = []
+                                        ):
+                return True
+            else:
+                return False
         elif targetimage=="FIELD4":
             if self.isContainTemplateUltra_get_max_val(                
                                 template_path ='ZA_Story\Common\\field.png',
@@ -12936,7 +13477,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(                
                                     template_path ='ZA_Story\Common\\C+.png',
                                     threshold = 0.75,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -12945,6 +13486,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     crop_template  = []):
                 return True
             else:
+                #カラスバ戦の白背景で検知できないため白背景用
+                if self.isContainTemplateUltra_get_max_val(                
+                                        template_path ='ZA_Story\Common\\C+2.png',
+                                        threshold = 0.75,
+                                        use_gray = False,
+                                        show_value = self.show_value_bool,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [1000,565,1280,720],
+                                        crop_template  = []):
+                    return True
+                else:
+                    return False
                 return False
         elif targetimage=="MAP2" or targetimage=="MAP":
             if self.isContainTemplateUltra_get_max_val(                
@@ -12956,6 +13511,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     show_only_true_rect  = False,
                                     ms  = 2000,
                                     crop = [20,0,200,70],
+                                    crop_template  = []
+                                    ):   
+                return True
+            else:
+                return False
+        elif targetimage=="UG_SEWER_MAP":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\underground_sewer_map.png',
+                                    threshold = 0.85,
+                                    use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [20,0,250,70],
                                     crop_template  = []
                                     ):   
                 return True
