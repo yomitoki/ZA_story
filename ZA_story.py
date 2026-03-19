@@ -48,6 +48,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             "MAIN_3_F_LANK": self.main_3_f_lank,
             "MAIN_4_E_LANK": self.main_4_e_lank,
             "MAIN_5_D_LANK": self.main_5_d_lank,
+            "MAIN_6_C_LANK": self.main_6_c_lank,
+            "MAIN_7_B_LANK": self.main_7_b_lank,
+            "MAIN_8_STORY_LAST": self.main_8_story_last,
+            "MAIN_STORY_END": self.main_story_end,
         }
         self.main_current_state="MAIN_STATE_INIT"
         #
@@ -56,7 +60,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.main_current_state_init="MAIN_3_F_LANK"
         self.main_current_state_init="MAIN_4_E_LANK"
         self.main_current_state_init="MAIN_5_D_LANK"
+        self.main_current_state_init="MAIN_6_C_LANK"
+        #self.main_current_state_init="MAIN_7_B_LANK"
+        #self.main_current_state_init="MAIN_8_STORY_LAST"
         #self.main_current_state_init="" 
+        
         self.STATE_1_STORY_FUNCTION = {
             "1_STORY_START_CHECK": self._1_story_start_check,
             "1_STORY_TRAIN_OUT": self._1_story_train_out,
@@ -911,20 +919,49 @@ class ZA_story_Base(ImageProcPythonCommand):
             "5_STORY_KARASUBA_122": self._5_story_karasuba_122,      
             "5_STORY_KARASUBA_123": self._5_story_karasuba_123,      
             "5_STORY_KARASUBA_124": self._5_story_karasuba_124,      
-            "5_STORY_KARASUBA_125": self._5_story_karasuba_125,      
-            "5_STORY_KARASUBA_126": self._5_story_karasuba_126,      
-            "5_STORY_KARASUBA_127": self._5_story_karasuba_127,      
-            "5_STORY_KARASUBA_128": self._5_story_karasuba_128,      
-            "5_STORY_KARASUBA_129": self._5_story_karasuba_129,      
-            "5_STORY_KARASUBA_130": self._5_story_karasuba_130,      
-    
-            
-            
+        
             "5_STORY_END": self._5_story_end,
         }
         self._5_story_current_state="5_STORY_START_CHECK" 
         self._5_story_current_state_init= "5_STORY_KARASUBA_123"
+
+        self.STATE_6_STORY_FUNCTION = {
+            "6_STORY_START_CHECK": self._6_story_start_check,
             
+            "6_STORY_MAPPING_1": self._6_story_mapping_1,
+            "6_STORY_MAPPING_2": self._6_story_mapping_2,
+            "6_STORY_MAPPING_3": self._6_story_mapping_3,
+            "6_STORY_MAPPING_4": self._6_story_mapping_4,            
+            
+            "6_STORY_C_LANK_BATTLE_ZONE": self._6_story_c_lank_battle_zone,
+            
+            #"6_STORY_YUKARI_1"
+            
+            
+            "6_STORY_END": self._6_story_end,
+        }
+        self._6_story_current_state="6_STORY_START_CHECK" 
+        self._6_story_current_state_init= "6_STORY_START_CHECK" 
+        
+        self.STATE_7_STORY_FUNCTION = {
+            "7_STORY_START_CHECK": self._7_story_start_check,
+            
+            
+            "7_STORY_END": self._7_story_end,
+        }
+        self._7_story_current_state="7_STORY_START_CHECK" 
+        self._7_story_current_state_init= "7_STORY_START_CHECK" 
+        
+        self.STATE_8_STORY_FUNCTION = {
+            "8_STORY_START_CHECK": self._8_story_start_check,
+            
+            
+            "8_STORY_END": self._8_story_end,
+        }
+        self._8_story_current_state="8_STORY_START_CHECK" 
+        self._8_story_current_state_init= "8_STORY_START_CHECK" 
+        
+        
     ######################################################
     # Commonfunction
     ######################################################
@@ -2555,6 +2592,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n STATE_3_STORY_FUNCTION   :: {self._3_story_current_state}'
                 f'\n STATE_4_STORY_FUNCTION   :: {self._4_story_current_state}'
                 f'\n STATE_5_STORY_FUNCTION   :: {self._5_story_current_state}'
+                f'\n STATE_6_STORY_FUNCTION   :: {self._6_story_current_state}'
+                f'\n STATE_7_STORY_FUNCTION   :: {self._7_story_current_state}'
+                f'\n STATE_8_STORY_FUNCTION   :: {self._8_story_current_state}'
                 f'\n'
                 f'\n ### STATE_2_VAR ###'
                 f'\n BATTLE_COUNT :: {self._2_story_restaurant_dohutsu_battle_count}'
@@ -2594,6 +2634,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif  self.main_current_state_init=="MAIN_5_D_LANK":
             self._5_story_current_state=self._5_story_current_state_init
             return "MAIN_5_D_LANK"
+        elif  self.main_current_state_init=="MAIN_6_C_LANK":
+            self._6_story_current_state=self._6_story_current_state_init
+            return "MAIN_6_C_LANK"
+        elif  self.main_current_state_init=="MAIN_7_B_LANK":
+            self._7_story_current_state=self._7_story_current_state_init
+            return "MAIN_7_B_LANK"
+        elif  self.main_current_state_init=="MAIN_8_STORY_LAST":
+            self._8_story_current_state=self._8_story_current_state_init
+            return "MAIN_8_STORY_LAST"
         else:
             return self.main_current_state_init
         
@@ -2666,6 +2715,45 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "MAIN_6_C_LANK"
         else:
             return "MAIN_5_D_LANK"
+        
+    ######################################################
+    # MAIN_6_C_LANK FUNCTION
+    ######################################################
+    def main_6_c_lank(self):
+        self._6_story_current_state = self.STATE_6_STORY_FUNCTION[self._6_story_current_state]()
+        if self._6_story_current_state == "6_STORY_END":
+            return "MAIN_7_B_LANK"
+        else:
+            return "MAIN_6_C_LANK"
+        
+    ######################################################
+    # MAIN_7_B_LANK FUNCTION
+    ######################################################
+    def main_7_b_lank(self):
+        self._7_story_current_state = self.STATE_7_STORY_FUNCTION[self._7_story_current_state]()
+        if self._7_story_current_state == "7_STORY_END":
+            return "MAIN_8_STORY_LAST"
+        else:
+            return "MAIN_7_B_LANK"
+        
+    ######################################################
+    # MAIN_8_STORY_LASTFUNCTION
+    ######################################################
+    def main_8_story_last(self):
+        self._8_story_current_state = self.STATE_8_STORY_FUNCTION[self._8_story_current_state]()
+        if self._8_story_current_state == "8_STORY_END":
+            return "MAIN_STORY_END"
+        else:
+            return "MAIN_8_STORY_LAST"
+        
+    ######################################################
+    # MAIN_STORY_END FUNCTION
+    ######################################################
+    def main_story_end(self):
+        #一旦空
+        return "MAIN_STORY_END"
+        
+        
     ######################################################
     # MAIN_1_Z_LANK SUB FUNCTION
     ######################################################
@@ -9144,7 +9232,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "5_STORY_MAPPING_1"
         return "5_STORY_START_CHECK"
 
-
     def _5_story_mapping_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
@@ -9156,7 +9243,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_mapping_2(self):
         ### AUTO_SAVE_POINT
-        #失敗時に再実施できるようにマップ移動から開始する。
         ret = self.Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
         if ret == "START":
             return "5_STORY_MAPPING_3"
@@ -10205,50 +10291,126 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_122(self):
         return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
 
-
     def _5_story_karasuba_123(self):
         return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
-
     def _5_story_karasuba_124(self):
-        ret = self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_KARASUBA_125")
-        if ret == "5_STORY_KARASUBA_125":
+        ret = self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_END")
+        if ret == "5_STORY_END":
             #誤判定用のガード
             if self.image_check("ODAIRU_ICON") or self.image_check("ABSOL_ICON"):
-                return "5_STORY_KARASUBA_125"
+                return "5_STORY_END"
         elif ret == "5_STORY_KARASUBA_123":
             return "5_STORY_KARASUBA_123"    
         return "5_STORY_KARASUBA_124"
-
-
-    def _5_story_karasuba_125(self):
-        return "5_STORY_KARASUBA_125"
-
-    def _5_story_karasuba_126(self):
-        return "5_STORY_KARASUBA_126"
-
-    def _5_story_karasuba_127(self):
-        return "5_STORY_KARASUBA_127"
-
-    def _5_story_karasuba_128(self):
-        return "5_STORY_KARASUBA_128"
-
-    def _5_story_karasuba_129(self):
-        return "5_STORY_KARASUBA_129"
-
-    def _5_story_karasuba_130(self):
-        return "5_STORY_KARASUBA_130"
-
-
     
     def _5_story_end(self):
         return "5_STORY_START_CHECK"
     
+    ######################################################
+    # MAIN_6_C_LANK SUB FUNCTION
+    ######################################################
+    def _6_story_start_check(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "6_STORY_MAPPING_1"
+        return "6_STORY_START_CHECK"
     
+    def _6_story_mapping_1(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_MAPPING_2"
+        else:
+            return "6_STORY_MAPPING_1"
     
+    def _6_story_mapping_2(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
+        if ret == "START":
+            return "6_STORY_MAPPING_3"
+        else:
+            return "6_STORY_MAPPING_2"
     
+    def _6_story_mapping_3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=7.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_MAPPING_4"
+        return "6_STORY_MAPPING_3"
+    
+    def _6_story_mapping_4(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE17"):
+                print("MOVEPOINT_TARGET_W_ZONE17")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE17"):
+                print("MOVEPOINT_PIC_W_ZONE17")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE17",pic2="MOVEPOINT_PIC_W_ZONE17") == True:
+                    self.Common_goto_jump()
+                    return "6_STORY_C_LANK_BATTLE_ZONE"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "6_STORY_MAPPING_1"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "6_STORY_MAPPING_4"
+            else:
+                return "6_STORY_MAPPING_4"
+        return "6_STORY_MAPPING_4"
+    
+    def _6_story_c_lank_battle_zone(self):
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=0
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "6_STORY_YUKARI_1"
+        else: 
+            return "6_STORY_C_LANK_BATTLE_ZONE"
+       
+    
+    def _6_story_end(self):
+        return "6_STORY_START_CHECK"
     
     # #TODO
+    ######################################################
+    # MAIN_7_B_LANK SUB FUNCTION
+    ######################################################
+    def _7_story_start_check(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "5_STORY_MAPPING_1"
+        return "7_STORY_START_CHECK"
+    
+    def _7_story_end(self):
+        return "7_STORY_START_CHECK"
+
+    ######################################################
+    # MAIN_8_STORY_LAST SUB FUNCTION
+    ######################################################
+    def _8_story_start_check(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            return "5_STORY_MAPPING_1"
+        return "8_STORY_START_CHECK"
+    
+    def _8_story_end(self):
+        return "8_STORY_START_CHECK"
 
     ######################################################
     # Commonfunction
