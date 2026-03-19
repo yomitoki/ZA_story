@@ -3157,7 +3157,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "1_STORY_OUT_HOTEL_Z_22"
             for i in range(20):
                 self.press(Direction(Stick.LEFT,280), duration=0.2, wait=1.0)
-                self.press(Direction(Stick.LEFT,180), duration=0.2, wait=1.0)
+                self.press(Direction(Stick.LEFT,180), duration=0.4, wait=1.0)
                 if self.image_check("OUT_MARKER"):
                     self.wait(0.1)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
