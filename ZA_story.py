@@ -1043,7 +1043,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_START_CHECK" 
+        self._6_story_current_state_init= "6_STORY_YUKARI_1"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
@@ -10632,7 +10632,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_mapping_2(self):
         ### AUTO_SAVE_POINT
-        #失敗時に再実施できるようにマップ移動から開始する。
         ret = self.Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
         if ret == "START":
             return "6_STORY_MAPPING_3"
@@ -10692,13 +10691,34 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "6_STORY_C_LANK_BATTLE_ZONE"
        
     def _6_story_yukari_1(self):
-        return "6_STORY_YUKARI_1"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_2"
+        else:
+            return "6_STORY_YUKARI_1"
     
     def _6_story_yukari_2(self):
-        return "6_STORY_YUKARI_2"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,2)#ポケセンターブランタンに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_3"
+        else:
+            return "6_STORY_YUKARI_2"
     
     def _6_story_yukari_3(self):
-
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,270), duration=7.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_4"
         return "6_STORY_YUKARI_3"
 
     def _6_story_yukari_4(self):
