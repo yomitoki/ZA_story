@@ -543,10 +543,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_ABSOL_MOVE33": self._2_story_absol_move33,
             "2_STORY_ABSOL_MOVE34": self._2_story_absol_move34,
             "2_STORY_ABSOL_MOVE35": self._2_story_absol_move35,
+            
+
+            
             "2_STORY_ABSOL_MOVE36": self._2_story_absol_move36,
             "2_STORY_ABSOL_MOVE37": self._2_story_absol_move37,
             "2_STORY_ABSOL_MOVE38": self._2_story_absol_move38,
+            
             "2_STORY_RESTAURANT_DOHUTSU_LOOP": self._2_story_restaurant_dohutsu_loop,
+
+            "2_STORY_ITEM_GIVE2": self._2_story_item_give2,
 
             "2_STORY_MEGA_MOVE1": self._2_story_mega_move1,
             "2_STORY_MEGA_MOVE2": self._2_story_mega_move2,
@@ -582,7 +588,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_BOX_CHANGE1"
+        self._2_story_current_state_init= "2_STORY_ABSOL_MOVE36"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -7956,7 +7962,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE36"
         return "2_STORY_ABSOL_MOVE35"
-    
+           
     def _2_story_absol_move36(self):
         ret = self.Common_goto(1,0,5)#レストランフツーへ移動
         if ret == "START":
@@ -8010,6 +8016,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     ###進化と技設定
+    
+    def _2_story_item_give2(self):
+        self.common_item_give_current_state = self.common_item_give_function(selectnum=1,target1=4,target2=0)
+        if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
+            return "2_STORY_MEGA_MOVE1"
+        else:
+            return "2_STORY_ITEM_GIVE2"
     
     def _2_story_mega_move1(self):
         ret = self.Common_change_time_set(check_timing="MORNING")
