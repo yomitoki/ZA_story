@@ -582,7 +582,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_ABSOL_BATTLE"
+        self._2_story_current_state_init= "2_STORY_BOX_CHANGE1"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -1279,8 +1279,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_BOX_CHANGE_BOX_TARGET1": self.common_box_change_box_target1,
             "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT": self.common_box_change_box_target1_select,
             "COMMON_BOX_CHANGE_BOX_TARGET2": self.common_box_change_box_target2,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
-            "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
+            "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
+            "COMMON_BOX_CHANGE_END": self.common_box_change_end,
             }
         self.common_box_change_current_state="COMMON_BOX_CHANGE_START"
 
@@ -12493,10 +12493,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def common_box_change_box_target1_select(self):
         if self.image_check("BOX_WINDOW"):
+            self.wait(1.0)
             if self.image_check("BOX_MENU"):
                 self.wait(1.0)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "COMMON_BOX_CHANGE_BOX_TARGET2"
+            else:
+                #フォロー
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(1.0)
         return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
     
     def common_box_change_box_target2(self,target_sub,target_sub_high=0):
@@ -12521,17 +12527,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(1.0)
                  
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)   
-            return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+            return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
         return "COMMON_BOX_CHANGE_BOX_TARGET2"
     
     def common_box_change_window_close(self):
         if self.image_check("BOX_WINDOW"):
             self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
-            return "COMMON_SKILL_CHANGE_END"
-        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+            return "COMMON_BOX_CHANGE_END"
+        return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
 
-    def common_skill_change_end(self):
-        return "COMMON_SKILL_CHANGE_START"
+    def common_box_change_end(self):
+        return "COMMON_BOX_CHANGE_START"
     ######################################################
     # Commonitemgive
     ######################################################
