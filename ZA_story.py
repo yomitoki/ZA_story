@@ -935,7 +935,109 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             "6_STORY_C_LANK_BATTLE_ZONE": self._6_story_c_lank_battle_zone,
             
-            #"6_STORY_YUKARI_1"
+            #CPSTART
+            "6_STORY_YUKARI_1": self._6_story_yukari_1, 
+            "6_STORY_YUKARI_2": self._6_story_yukari_2, 
+            "6_STORY_YUKARI_3": self._6_story_yukari_3, 
+            "6_STORY_YUKARI_4": self._6_story_yukari_4, 
+            "6_STORY_YUKARI_5": self._6_story_yukari_5, 
+            "6_STORY_YUKARI_6": self._6_story_yukari_6, 
+            "6_STORY_YUKARI_7": self._6_story_yukari_7, 
+            "6_STORY_YUKARI_8": self._6_story_yukari_8, 
+            "6_STORY_YUKARI_9": self._6_story_yukari_9, 
+            "6_STORY_YUKARI_10": self._6_story_yukari_10, 
+            "6_STORY_YUKARI_11": self._6_story_yukari_11, 
+            "6_STORY_YUKARI_12": self._6_story_yukari_12, 
+            "6_STORY_YUKARI_13": self._6_story_yukari_13, 
+            "6_STORY_YUKARI_14": self._6_story_yukari_14, 
+            "6_STORY_YUKARI_15": self._6_story_yukari_15, 
+            "6_STORY_YUKARI_16": self._6_story_yukari_16, 
+            "6_STORY_YUKARI_17": self._6_story_yukari_17, 
+            "6_STORY_YUKARI_18": self._6_story_yukari_18, 
+            "6_STORY_YUKARI_19": self._6_story_yukari_19, 
+            "6_STORY_YUKARI_20": self._6_story_yukari_20, 
+            "6_STORY_YUKARI_21": self._6_story_yukari_21, 
+            "6_STORY_YUKARI_22": self._6_story_yukari_22, 
+            "6_STORY_YUKARI_23": self._6_story_yukari_23, 
+            "6_STORY_YUKARI_24": self._6_story_yukari_24, 
+            "6_STORY_YUKARI_25": self._6_story_yukari_25, 
+            "6_STORY_YUKARI_26": self._6_story_yukari_26, 
+            "6_STORY_YUKARI_27": self._6_story_yukari_27, 
+            "6_STORY_YUKARI_28": self._6_story_yukari_28, 
+            "6_STORY_YUKARI_29": self._6_story_yukari_29, 
+            "6_STORY_YUKARI_30": self._6_story_yukari_30, 
+            "6_STORY_YUKARI_31": self._6_story_yukari_31, 
+            "6_STORY_YUKARI_32": self._6_story_yukari_32, 
+            "6_STORY_YUKARI_33": self._6_story_yukari_33, 
+            "6_STORY_YUKARI_34": self._6_story_yukari_34, 
+            "6_STORY_YUKARI_35": self._6_story_yukari_35, 
+            "6_STORY_YUKARI_36": self._6_story_yukari_36, 
+            "6_STORY_YUKARI_37": self._6_story_yukari_37, 
+            "6_STORY_YUKARI_38": self._6_story_yukari_38, 
+            "6_STORY_YUKARI_39": self._6_story_yukari_39, 
+            "6_STORY_YUKARI_40": self._6_story_yukari_40, 
+            "6_STORY_YUKARI_41": self._6_story_yukari_41, 
+            "6_STORY_YUKARI_42": self._6_story_yukari_42, 
+            "6_STORY_YUKARI_43": self._6_story_yukari_43,  
+            "6_STORY_YUKARI_44": self._6_story_yukari_44,  
+            "6_STORY_YUKARI_45": self._6_story_yukari_45,  
+            "6_STORY_YUKARI_46": self._6_story_yukari_46,  
+            "6_STORY_YUKARI_47": self._6_story_yukari_47,  
+            "6_STORY_YUKARI_48": self._6_story_yukari_48,  
+            "6_STORY_YUKARI_49": self._6_story_yukari_49,  
+            "6_STORY_YUKARI_50": self._6_story_yukari_50,  
+            "6_STORY_YUKARI_51": self._6_story_yukari_51,   
+            "6_STORY_YUKARI_52": self._6_story_yukari_52,   
+            "6_STORY_YUKARI_53": self._6_story_yukari_53,   
+            "6_STORY_YUKARI_54": self._6_story_yukari_54,   
+            "6_STORY_YUKARI_55": self._6_story_yukari_55,   
+            "6_STORY_YUKARI_56": self._6_story_yukari_56,   
+            "6_STORY_YUKARI_57": self._6_story_yukari_57,   
+            "6_STORY_YUKARI_58": self._6_story_yukari_58,   
+            "6_STORY_YUKARI_59": self._6_story_yukari_59,   
+            "6_STORY_YUKARI_60": self._6_story_yukari_60,   
+            "6_STORY_YUKARI_61": self._6_story_yukari_61,   
+            "6_STORY_YUKARI_62": self._6_story_yukari_62,   
+            "6_STORY_YUKARI_63": self._6_story_yukari_63,   
+            "6_STORY_YUKARI_64": self._6_story_yukari_64,   
+            "6_STORY_YUKARI_65": self._6_story_yukari_65,   
+            "6_STORY_YUKARI_66": self._6_story_yukari_66,   
+            "6_STORY_YUKARI_67": self._6_story_yukari_67,   
+            "6_STORY_YUKARI_68": self._6_story_yukari_68,   
+            "6_STORY_YUKARI_69": self._6_story_yukari_69,   
+            "6_STORY_YUKARI_70": self._6_story_yukari_70,   
+            "6_STORY_YUKARI_71": self._6_story_yukari_71,   
+            "6_STORY_YUKARI_72": self._6_story_yukari_72,   
+            "6_STORY_YUKARI_73": self._6_story_yukari_73,   
+            "6_STORY_YUKARI_74": self._6_story_yukari_74,   
+            "6_STORY_YUKARI_75": self._6_story_yukari_75,   
+            "6_STORY_YUKARI_76": self._6_story_yukari_76,   
+            "6_STORY_YUKARI_77": self._6_story_yukari_77,   
+            "6_STORY_YUKARI_78": self._6_story_yukari_78,   
+            "6_STORY_YUKARI_79": self._6_story_yukari_79,   
+            "6_STORY_YUKARI_80": self._6_story_yukari_80,   
+            "6_STORY_YUKARI_81": self._6_story_yukari_81,   
+            "6_STORY_YUKARI_82": self._6_story_yukari_82,    
+            "6_STORY_YUKARI_83": self._6_story_yukari_83,    
+            "6_STORY_YUKARI_84": self._6_story_yukari_84,    
+            "6_STORY_YUKARI_85": self._6_story_yukari_85,    
+            "6_STORY_YUKARI_86": self._6_story_yukari_86,    
+            "6_STORY_YUKARI_87": self._6_story_yukari_87,    
+            "6_STORY_YUKARI_88": self._6_story_yukari_88,    
+            "6_STORY_YUKARI_89": self._6_story_yukari_89,    
+            "6_STORY_YUKARI_90": self._6_story_yukari_90,    
+            "6_STORY_YUKARI_91": self._6_story_yukari_91,    
+            "6_STORY_YUKARI_92": self._6_story_yukari_92,    
+            "6_STORY_YUKARI_93": self._6_story_yukari_93,    
+            "6_STORY_YUKARI_94": self._6_story_yukari_94,    
+            "6_STORY_YUKARI_95": self._6_story_yukari_95,    
+            "6_STORY_YUKARI_96": self._6_story_yukari_96,    
+            "6_STORY_YUKARI_97": self._6_story_yukari_97,    
+            "6_STORY_YUKARI_98": self._6_story_yukari_98,    
+            "6_STORY_YUKARI_99": self._6_story_yukari_99,    
+            "6_STORY_YUKARI_100": self._6_story_yukari_100,    
+
+            #CPEND
             
             
             "6_STORY_END": self._6_story_end,
@@ -945,8 +1047,110 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
-            
-            
+            #CPSTART
+            "7_STORY_GURI_1": self._7_story_guri_1, 
+            "7_STORY_GURI_2": self._7_story_guri_2, 
+            "7_STORY_GURI_3": self._7_story_guri_3, 
+            "7_STORY_GURI_4": self._7_story_guri_4, 
+            "7_STORY_GURI_5": self._7_story_guri_5, 
+            "7_STORY_GURI_6": self._7_story_guri_6, 
+            "7_STORY_GURI_7": self._7_story_guri_7, 
+            "7_STORY_GURI_8": self._7_story_guri_8, 
+            "7_STORY_GURI_9": self._7_story_guri_9, 
+            "7_STORY_GURI_10": self._7_story_guri_10, 
+            "7_STORY_GURI_11": self._7_story_guri_11, 
+            "7_STORY_GURI_12": self._7_story_guri_12, 
+            "7_STORY_GURI_13": self._7_story_guri_13, 
+            "7_STORY_GURI_14": self._7_story_guri_14, 
+            "7_STORY_GURI_15": self._7_story_guri_15, 
+            "7_STORY_GURI_16": self._7_story_guri_16, 
+            "7_STORY_GURI_17": self._7_story_guri_17, 
+            "7_STORY_GURI_18": self._7_story_guri_18, 
+            "7_STORY_GURI_19": self._7_story_guri_19, 
+            "7_STORY_GURI_20": self._7_story_guri_20, 
+            "7_STORY_GURI_21": self._7_story_guri_21, 
+            "7_STORY_GURI_22": self._7_story_guri_22, 
+            "7_STORY_GURI_23": self._7_story_guri_23, 
+            "7_STORY_GURI_24": self._7_story_guri_24, 
+            "7_STORY_GURI_25": self._7_story_guri_25, 
+            "7_STORY_GURI_26": self._7_story_guri_26, 
+            "7_STORY_GURI_27": self._7_story_guri_27, 
+            "7_STORY_GURI_28": self._7_story_guri_28, 
+            "7_STORY_GURI_29": self._7_story_guri_29, 
+            "7_STORY_GURI_30": self._7_story_guri_30, 
+            "7_STORY_GURI_31": self._7_story_guri_31, 
+            "7_STORY_GURI_32": self._7_story_guri_32, 
+            "7_STORY_GURI_33": self._7_story_guri_33, 
+            "7_STORY_GURI_34": self._7_story_guri_34, 
+            "7_STORY_GURI_35": self._7_story_guri_35, 
+            "7_STORY_GURI_36": self._7_story_guri_36, 
+            "7_STORY_GURI_37": self._7_story_guri_37, 
+            "7_STORY_GURI_38": self._7_story_guri_38, 
+            "7_STORY_GURI_39": self._7_story_guri_39, 
+            "7_STORY_GURI_40": self._7_story_guri_40, 
+            "7_STORY_GURI_41": self._7_story_guri_41, 
+            "7_STORY_GURI_42": self._7_story_guri_42, 
+            "7_STORY_GURI_43": self._7_story_guri_43,  
+            "7_STORY_GURI_44": self._7_story_guri_44,  
+            "7_STORY_GURI_45": self._7_story_guri_45,  
+            "7_STORY_GURI_46": self._7_story_guri_46,  
+            "7_STORY_GURI_47": self._7_story_guri_47,  
+            "7_STORY_GURI_48": self._7_story_guri_48,  
+            "7_STORY_GURI_49": self._7_story_guri_49,  
+            "7_STORY_GURI_50": self._7_story_guri_50,  
+            "7_STORY_GURI_51": self._7_story_guri_51,   
+            "7_STORY_GURI_52": self._7_story_guri_52,   
+            "7_STORY_GURI_53": self._7_story_guri_53,   
+            "7_STORY_GURI_54": self._7_story_guri_54,   
+            "7_STORY_GURI_55": self._7_story_guri_55,   
+            "7_STORY_GURI_56": self._7_story_guri_56,   
+            "7_STORY_GURI_57": self._7_story_guri_57,   
+            "7_STORY_GURI_58": self._7_story_guri_58,   
+            "7_STORY_GURI_59": self._7_story_guri_59,   
+            "7_STORY_GURI_60": self._7_story_guri_60,   
+            "7_STORY_GURI_61": self._7_story_guri_61,   
+            "7_STORY_GURI_62": self._7_story_guri_62,   
+            "7_STORY_GURI_63": self._7_story_guri_63,   
+            "7_STORY_GURI_64": self._7_story_guri_64,   
+            "7_STORY_GURI_65": self._7_story_guri_65,   
+            "7_STORY_GURI_66": self._7_story_guri_66,   
+            "7_STORY_GURI_67": self._7_story_guri_67,   
+            "7_STORY_GURI_68": self._7_story_guri_68,   
+            "7_STORY_GURI_69": self._7_story_guri_69,   
+            "7_STORY_GURI_70": self._7_story_guri_70,   
+            "7_STORY_GURI_71": self._7_story_guri_71,   
+            "7_STORY_GURI_72": self._7_story_guri_72,   
+            "7_STORY_GURI_73": self._7_story_guri_73,   
+            "7_STORY_GURI_74": self._7_story_guri_74,   
+            "7_STORY_GURI_75": self._7_story_guri_75,   
+            "7_STORY_GURI_76": self._7_story_guri_76,   
+            "7_STORY_GURI_77": self._7_story_guri_77,   
+            "7_STORY_GURI_78": self._7_story_guri_78,   
+            "7_STORY_GURI_79": self._7_story_guri_79,   
+            "7_STORY_GURI_80": self._7_story_guri_80,   
+            "7_STORY_GURI_81": self._7_story_guri_81,   
+            "7_STORY_GURI_82": self._7_story_guri_82,    
+            "7_STORY_GURI_83": self._7_story_guri_83,    
+            "7_STORY_GURI_84": self._7_story_guri_84,    
+            "7_STORY_GURI_85": self._7_story_guri_85,    
+            "7_STORY_GURI_86": self._7_story_guri_86,    
+            "7_STORY_GURI_87": self._7_story_guri_87,    
+            "7_STORY_GURI_88": self._7_story_guri_88,    
+            "7_STORY_GURI_89": self._7_story_guri_89,    
+            "7_STORY_GURI_90": self._7_story_guri_90,    
+            "7_STORY_GURI_91": self._7_story_guri_91,    
+            "7_STORY_GURI_92": self._7_story_guri_92,    
+            "7_STORY_GURI_93": self._7_story_guri_93,    
+            "7_STORY_GURI_94": self._7_story_guri_94,    
+            "7_STORY_GURI_95": self._7_story_guri_95,    
+            "7_STORY_GURI_96": self._7_story_guri_96,    
+            "7_STORY_GURI_97": self._7_story_guri_97,    
+            "7_STORY_GURI_98": self._7_story_guri_98,    
+            "7_STORY_GURI_99": self._7_story_guri_99,    
+            "7_STORY_GURI_100": self._7_story_guri_100,    
+
+            #CPEND
+
             "7_STORY_END": self._7_story_end,
         }
         self._7_story_current_state="7_STORY_START_CHECK" 
@@ -954,7 +1158,110 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         self.STATE_8_STORY_FUNCTION = {
             "8_STORY_START_CHECK": self._8_story_start_check,
-            
+            #CPSTART
+            "8_STORY_STORY_LAST_1": self._8_story_story_last_1, 
+            "8_STORY_STORY_LAST_2": self._8_story_story_last_2, 
+            "8_STORY_STORY_LAST_3": self._8_story_story_last_3, 
+            "8_STORY_STORY_LAST_4": self._8_story_story_last_4, 
+            "8_STORY_STORY_LAST_5": self._8_story_story_last_5, 
+            "8_STORY_STORY_LAST_6": self._8_story_story_last_6, 
+            "8_STORY_STORY_LAST_7": self._8_story_story_last_7, 
+            "8_STORY_STORY_LAST_8": self._8_story_story_last_8, 
+            "8_STORY_STORY_LAST_9": self._8_story_story_last_9, 
+            "8_STORY_STORY_LAST_10": self._8_story_story_last_10, 
+            "8_STORY_STORY_LAST_11": self._8_story_story_last_11, 
+            "8_STORY_STORY_LAST_12": self._8_story_story_last_12, 
+            "8_STORY_STORY_LAST_13": self._8_story_story_last_13, 
+            "8_STORY_STORY_LAST_14": self._8_story_story_last_14, 
+            "8_STORY_STORY_LAST_15": self._8_story_story_last_15, 
+            "8_STORY_STORY_LAST_16": self._8_story_story_last_16, 
+            "8_STORY_STORY_LAST_17": self._8_story_story_last_17, 
+            "8_STORY_STORY_LAST_18": self._8_story_story_last_18, 
+            "8_STORY_STORY_LAST_19": self._8_story_story_last_19, 
+            "8_STORY_STORY_LAST_20": self._8_story_story_last_20, 
+            "8_STORY_STORY_LAST_21": self._8_story_story_last_21, 
+            "8_STORY_STORY_LAST_22": self._8_story_story_last_22, 
+            "8_STORY_STORY_LAST_23": self._8_story_story_last_23, 
+            "8_STORY_STORY_LAST_24": self._8_story_story_last_24, 
+            "8_STORY_STORY_LAST_25": self._8_story_story_last_25, 
+            "8_STORY_STORY_LAST_26": self._8_story_story_last_26, 
+            "8_STORY_STORY_LAST_27": self._8_story_story_last_27, 
+            "8_STORY_STORY_LAST_28": self._8_story_story_last_28, 
+            "8_STORY_STORY_LAST_29": self._8_story_story_last_29, 
+            "8_STORY_STORY_LAST_30": self._8_story_story_last_30, 
+            "8_STORY_STORY_LAST_31": self._8_story_story_last_31, 
+            "8_STORY_STORY_LAST_32": self._8_story_story_last_32, 
+            "8_STORY_STORY_LAST_33": self._8_story_story_last_33, 
+            "8_STORY_STORY_LAST_34": self._8_story_story_last_34, 
+            "8_STORY_STORY_LAST_35": self._8_story_story_last_35, 
+            "8_STORY_STORY_LAST_36": self._8_story_story_last_36, 
+            "8_STORY_STORY_LAST_37": self._8_story_story_last_37, 
+            "8_STORY_STORY_LAST_38": self._8_story_story_last_38, 
+            "8_STORY_STORY_LAST_39": self._8_story_story_last_39, 
+            "8_STORY_STORY_LAST_40": self._8_story_story_last_40, 
+            "8_STORY_STORY_LAST_41": self._8_story_story_last_41, 
+            "8_STORY_STORY_LAST_42": self._8_story_story_last_42, 
+            "8_STORY_STORY_LAST_43": self._8_story_story_last_43,  
+            "8_STORY_STORY_LAST_44": self._8_story_story_last_44,  
+            "8_STORY_STORY_LAST_45": self._8_story_story_last_45,  
+            "8_STORY_STORY_LAST_46": self._8_story_story_last_46,  
+            "8_STORY_STORY_LAST_47": self._8_story_story_last_47,  
+            "8_STORY_STORY_LAST_48": self._8_story_story_last_48,  
+            "8_STORY_STORY_LAST_49": self._8_story_story_last_49,  
+            "8_STORY_STORY_LAST_50": self._8_story_story_last_50,  
+            "8_STORY_STORY_LAST_51": self._8_story_story_last_51,   
+            "8_STORY_STORY_LAST_52": self._8_story_story_last_52,   
+            "8_STORY_STORY_LAST_53": self._8_story_story_last_53,   
+            "8_STORY_STORY_LAST_54": self._8_story_story_last_54,   
+            "8_STORY_STORY_LAST_55": self._8_story_story_last_55,   
+            "8_STORY_STORY_LAST_56": self._8_story_story_last_56,   
+            "8_STORY_STORY_LAST_57": self._8_story_story_last_57,   
+            "8_STORY_STORY_LAST_58": self._8_story_story_last_58,   
+            "8_STORY_STORY_LAST_59": self._8_story_story_last_59,   
+            "8_STORY_STORY_LAST_60": self._8_story_story_last_60,   
+            "8_STORY_STORY_LAST_61": self._8_story_story_last_61,   
+            "8_STORY_STORY_LAST_62": self._8_story_story_last_62,   
+            "8_STORY_STORY_LAST_63": self._8_story_story_last_63,   
+            "8_STORY_STORY_LAST_64": self._8_story_story_last_64,   
+            "8_STORY_STORY_LAST_65": self._8_story_story_last_65,   
+            "8_STORY_STORY_LAST_66": self._8_story_story_last_66,   
+            "8_STORY_STORY_LAST_67": self._8_story_story_last_67,   
+            "8_STORY_STORY_LAST_68": self._8_story_story_last_68,   
+            "8_STORY_STORY_LAST_69": self._8_story_story_last_69,   
+            "8_STORY_STORY_LAST_70": self._8_story_story_last_70,   
+            "8_STORY_STORY_LAST_71": self._8_story_story_last_71,   
+            "8_STORY_STORY_LAST_72": self._8_story_story_last_72,   
+            "8_STORY_STORY_LAST_73": self._8_story_story_last_73,   
+            "8_STORY_STORY_LAST_74": self._8_story_story_last_74,   
+            "8_STORY_STORY_LAST_75": self._8_story_story_last_75,   
+            "8_STORY_STORY_LAST_76": self._8_story_story_last_76,   
+            "8_STORY_STORY_LAST_77": self._8_story_story_last_77,   
+            "8_STORY_STORY_LAST_78": self._8_story_story_last_78,   
+            "8_STORY_STORY_LAST_79": self._8_story_story_last_79,   
+            "8_STORY_STORY_LAST_80": self._8_story_story_last_80,   
+            "8_STORY_STORY_LAST_81": self._8_story_story_last_81,   
+            "8_STORY_STORY_LAST_82": self._8_story_story_last_82,    
+            "8_STORY_STORY_LAST_83": self._8_story_story_last_83,    
+            "8_STORY_STORY_LAST_84": self._8_story_story_last_84,    
+            "8_STORY_STORY_LAST_85": self._8_story_story_last_85,    
+            "8_STORY_STORY_LAST_86": self._8_story_story_last_86,    
+            "8_STORY_STORY_LAST_87": self._8_story_story_last_87,    
+            "8_STORY_STORY_LAST_88": self._8_story_story_last_88,    
+            "8_STORY_STORY_LAST_89": self._8_story_story_last_89,    
+            "8_STORY_STORY_LAST_90": self._8_story_story_last_90,    
+            "8_STORY_STORY_LAST_91": self._8_story_story_last_91,    
+            "8_STORY_STORY_LAST_92": self._8_story_story_last_92,    
+            "8_STORY_STORY_LAST_93": self._8_story_story_last_93,    
+            "8_STORY_STORY_LAST_94": self._8_story_story_last_94,    
+            "8_STORY_STORY_LAST_95": self._8_story_story_last_95,    
+            "8_STORY_STORY_LAST_96": self._8_story_story_last_96,    
+            "8_STORY_STORY_LAST_97": self._8_story_story_last_97,    
+            "8_STORY_STORY_LAST_98": self._8_story_story_last_98,    
+            "8_STORY_STORY_LAST_99": self._8_story_story_last_99,    
+            "8_STORY_STORY_LAST_100": self._8_story_story_last_100,    
+
+            #CPEND
+
             
             "8_STORY_END": self._8_story_end,
         }
@@ -10384,6 +10691,410 @@ class ZA_story_Base(ImageProcPythonCommand):
         else: 
             return "6_STORY_C_LANK_BATTLE_ZONE"
        
+    def _6_story_yukari_1(self):
+        return "6_STORY_YUKARI_1"
+    
+    def _6_story_yukari_2(self):
+        return "6_STORY_YUKARI_2"
+    
+    def _6_story_yukari_3(self):
+
+        return "6_STORY_YUKARI_3"
+
+    def _6_story_yukari_4(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_5",green_check=0)
+            
+    def _6_story_yukari_5(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_6",noprg_ret="6_STORY_YUKARI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    def _6_story_yukari_6(self):
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
+
+    def _6_story_yukari_7(self):
+
+        return "6_STORY_YUKARI_7"
+    
+    def _6_story_yukari_8(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_9",green_check=0)
+
+    
+    def _6_story_yukari_9(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_10",noprg_ret="6_STORY_YUKARI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    
+    def _6_story_yukari_10(self):
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_9",prg_ret= "6_STORY_YUKARI_11")
+
+    
+    def _6_story_yukari_11(self):
+        return "6_STORY_YUKARI_11"
+    
+    def _6_story_yukari_12(self):
+        return "6_STORY_YUKARI_12"
+    
+    def _6_story_yukari_13(self):
+        return "6_STORY_YUKARI_13"
+    
+    def _6_story_yukari_14(self):
+        return "6_STORY_YUKARI_14"
+    
+    def _6_story_yukari_15(self):
+        return "6_STORY_YUKARI_15"
+    
+    def _6_story_yukari_16(self):
+        return "6_STORY_YUKARI_16"
+    
+    def _6_story_yukari_17(self):
+        return "6_STORY_YUKARI_17"
+    
+    def _6_story_yukari_18(self):
+        return "6_STORY_YUKARI_18"
+    
+    def _6_story_yukari_19(self):
+        return "6_STORY_YUKARI_19"
+    
+    def _6_story_yukari_20(self):
+        return "6_STORY_YUKARI_20"
+    
+    def _6_story_yukari_21(self):
+        return "6_STORY_YUKARI_21"
+            
+    def _6_story_yukari_22(self):
+        return "6_STORY_YUKARI_22"
+    
+    def _6_story_yukari_23(self):
+        return "6_STORY_YUKARI_23"
+    
+    def _6_story_yukari_24(self):
+        return "6_STORY_YUKARI_24"
+    
+    def _6_story_yukari_25(self):
+        return "6_STORY_YUKARI_25"
+    
+    def _6_story_yukari_26(self):
+        return "6_STORY_YUKARI_26"
+    
+    def _6_story_yukari_27(self):
+        return "6_STORY_YUKARI_27"
+    
+    def _6_story_yukari_28(self):
+        return "6_STORY_YUKARI_28"
+    
+    def _6_story_yukari_29(self):
+        return "6_STORY_YUKARI_29"
+    
+    def _6_story_yukari_30(self):
+        return "6_STORY_YUKARI_30"
+    
+    def _6_story_yukari_31(self):
+        return "6_STORY_YUKARI_31"
+    
+    def _6_story_yukari_32(self):
+        return "6_STORY_YUKARI_32"
+    
+    def _6_story_yukari_33(self):
+        return "6_STORY_YUKARI_33"
+
+    def _6_story_yukari_34(self):
+        return "6_STORY_YUKARI_34"
+    
+    def _6_story_yukari_35(self):
+        return "6_STORY_YUKARI_35"
+        
+    def _6_story_yukari_36(self):
+        return "6_STORY_YUKARI_36"
+    
+    def _6_story_yukari_37(self):
+        return "6_STORY_YUKARI_37"
+
+    def _6_story_yukari_38(self):
+        return "6_STORY_YUKARI_38"
+    
+    def _6_story_yukari_39(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_40",green_check=0)
+    
+    def _6_story_yukari_40(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_41",noprg_ret="6_STORY_YUKARI_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _6_story_yukari_41(self):
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_40",prg_ret= "6_STORY_YUKARI_42")
+    
+    def _6_story_yukari_42(self):
+        return "6_STORY_YUKARI_42"
+    
+    def _6_story_yukari_43(self):
+        return "6_STORY_YUKARI_43"
+    
+    def _6_story_yukari_44(self):
+        return "6_STORY_YUKARI_44"
+    
+    def _6_story_yukari_45(self):
+        return "6_STORY_YUKARI_45"
+    
+    def _6_story_yukari_46(self):
+        return "6_STORY_YUKARI_46"
+
+    def _6_story_yukari_47(self):
+        return "6_STORY_YUKARI_47"
+    
+    def _6_story_yukari_48(self):
+        return "6_STORY_YUKARI_48"
+    
+    def _6_story_yukari_49(self):
+        return "6_STORY_YUKARI_49"
+    
+    def _6_story_yukari_50(self):
+        return "6_STORY_YUKARI_50"
+    
+    def _6_story_yukari_51(self):
+
+        return "6_STORY_YUKARI_51"
+    
+    def _6_story_yukari_52(self):
+        return "6_STORY_YUKARI_52"
+    
+    def _6_story_yukari_53(self):
+        return "6_STORY_YUKARI_53"
+    
+    def _6_story_yukari_54(self):
+        return "6_STORY_YUKARI_54"
+    
+    def _6_story_yukari_55(self):
+        return "6_STORY_YUKARI_55"
+    
+    def _6_story_yukari_56(self):
+        return "6_STORY_YUKARI_56"
+
+    def _6_story_yukari_57(self):
+        return "6_STORY_YUKARI_57"
+    
+    def _6_story_yukari_58(self):
+        return "6_STORY_YUKARI_58"
+    
+    def _6_story_yukari_59(self):
+        return "6_STORY_YUKARI_59"
+    
+    def _6_story_yukari_60(self):
+        return "6_STORY_YUKARI_60"
+    
+    def _6_story_yukari_61(self):
+        return "6_STORY_YUKARI_61"
+    
+    def _6_story_yukari_62(self):
+
+        return "6_STORY_YUKARI_62"
+    
+    def _6_story_yukari_63(self):
+        return "6_STORY_YUKARI_63"
+    
+    def _6_story_yukari_64(self):
+        return "6_STORY_YUKARI_64"
+    
+    def _6_story_yukari_65(self):
+
+        return "6_STORY_YUKARI_65"
+    
+    def _6_story_yukari_66(self):
+
+        return "6_STORY_YUKARI_66"
+    
+    def _6_story_yukari_67(self):
+
+        return "6_STORY_YUKARI_67"
+    
+    def _6_story_yukari_68(self):
+
+        return "6_STORY_YUKARI_68"
+    
+    def _6_story_yukari_69(self):
+        return "6_STORY_YUKARI_69"
+    
+    def _6_story_yukari_70(self):
+
+        return "6_STORY_YUKARI_70"
+    
+    def _6_story_yukari_71(self):
+
+        return "6_STORY_YUKARI_71"
+    
+    def _6_story_yukari_72(self):
+
+        return "6_STORY_YUKARI_72"
+    
+    def _6_story_yukari_73(self):
+
+        return "6_STORY_YUKARI_73"
+    
+    def _6_story_yukari_74(self):
+
+        return "6_STORY_YUKARI_74"
+    
+    def _6_story_yukari_75(self):
+
+        return "6_STORY_YUKARI_75"
+    
+    def _6_story_yukari_76(self):
+
+        return "6_STORY_YUKARI_76"
+    
+    def _6_story_yukari_77(self):
+
+        return "6_STORY_YUKARI_77"
+    
+    def _6_story_yukari_78(self):
+
+        return "6_STORY_YUKARI_78"
+    
+    def _6_story_yukari_79(self):
+
+        return "6_STORY_YUKARI_79"
+    
+    def _6_story_yukari_80(self):
+
+        return "6_STORY_YUKARI_80"
+    
+    def _6_story_yukari_81(self):
+
+        return "6_STORY_YUKARI_81"
+    
+    def _6_story_yukari_82(self):
+
+        return "6_STORY_YUKARI_82"
+    
+    def _6_story_yukari_83(self):
+        return "6_STORY_YUKARI_83"
+    
+    def _6_story_yukari_84(self):
+
+        return "6_STORY_YUKARI_84"
+    
+    def _6_story_yukari_85(self):
+
+        return "6_STORY_YUKARI_85"
+    
+    def _6_story_yukari_86(self):
+
+        return "6_STORY_YUKARI_86"
+    
+    def _6_story_yukari_87(self):
+
+        return "6_STORY_YUKARI_87"
+    
+    def _6_story_yukari_88(self):
+
+        return "6_STORY_YUKARI_88"
+    
+    def _6_story_yukari_89(self):
+
+        return "6_STORY_YUKARI_89"
+    
+    def _6_story_yukari_90(self):
+
+        return "6_STORY_YUKARI_90"
+    
+    def _6_story_yukari_91(self):
+
+        return "6_STORY_YUKARI_91"
+    
+    def _6_story_yukari_92(self):
+
+        return "6_STORY_YUKARI_92"
+    
+    def _6_story_yukari_93(self):
+
+        return "6_STORY_YUKARI_93"
+    
+    def _6_story_yukari_94(self):
+
+        return "6_STORY_YUKARI_94"
+    
+    def _6_story_yukari_95(self):
+
+        return "6_STORY_YUKARI_95"
+    
+    def _6_story_yukari_96(self):
+        return "6_STORY_YUKARI_96"
+    
+    def _6_story_yukari_97(self):
+        return "6_STORY_YUKARI_97"
+    
+    def _6_story_yukari_98(self):
+        return "6_STORY_YUKARI_98"
+    
+    def _6_story_yukari_99(self):
+        return "6_STORY_YUKARI_99"
+    
+    def _6_story_yukari_100(self):
+        return "6_STORY_YUKARI_100"
+    
+    def _6_story_yukari_101(self):
+        return "6_STORY_YUKARI_101"
+    
+    def _6_story_yukari_102(self):
+        return "6_STORY_YUKARI_102"
+    
+    def _6_story_yukari_103(self):
+        return "6_STORY_YUKARI_103"
+    
+    def _6_story_yukari_104(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_104",prg_ret="6_STORY_YUKARI_105",green_check=0)
+    
+    def _6_story_yukari_105(self):
+        # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_104",prg_ret="6_STORY_YUKARI_106",noprg_ret="6_STORY_YUKARI_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _6_story_yukari_106(self):
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_105",prg_ret= "6_STORY_YUKARI_107")
+    
+    def _6_story_yukari_107(self):
+        return "6_STORY_YUKARI_107"
+    
+    def _6_story_yukari_108(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_108",prg_ret="6_STORY_YUKARI_109",green_check=0)
+
+    
+    def _6_story_yukari_109(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_108",prg_ret="6_STORY_YUKARI_110",noprg_ret="6_STORY_YUKARI_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    
+    def _6_story_yukari_110(self):
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_109",prg_ret= "6_STORY_YUKARI_111")
+
+    def _6_story_yukari_111(self):
+       return "6_STORY_YUKARI_111"
+
+    def _6_story_yukari_112(self):
+        return "6_STORY_YUKARI_112"
+
+    def _6_story_yukari_113(self):
+        return "6_STORY_YUKARI_113"
+
+    def _6_story_yukari_114(self):
+        return "6_STORY_YUKARI_114"
+
+    def _6_story_yukari_115(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_116"
+        return "6_STORY_YUKARI_115"
+
+    def _6_story_yukari_116(self):
+        if self.image_check("TEXT_WHITE_COMMENT"):
+            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+                return "6_STORY_YUKARI_117"
+        return "6_STORY_YUKARI_116"
+
+    def _6_story_yukari_117(self):
+        ret = self.Common_goto(1,1,0)#サビ組事務所へ移動
+        if ret == "START":
+            return "6_STORY_YUKARI_118"
+        else:
+            return "6_STORY_YUKARI_117"
+
+       
+       
     
     def _6_story_end(self):
         return "6_STORY_START_CHECK"
@@ -10397,6 +11108,366 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "5_STORY_MAPPING_1"
         return "7_STORY_START_CHECK"
     
+    
+    ###CPSTART
+       
+    def _7_story_guri_1(self):
+        return "7_STORY_GURI_1"
+    
+    def _7_story_guri_2(self):
+        return "7_STORY_GURI_2"
+    
+    def _7_story_guri_3(self):
+
+        return "7_STORY_GURI_3"
+
+    def _7_story_guri_4(self):
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_4",prg_ret="7_STORY_GURI_5",green_check=0)
+            
+    def _7_story_guri_5(self):
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_4",prg_ret="7_STORY_GURI_6",noprg_ret="7_STORY_GURI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    def _7_story_guri_6(self):
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_5",prg_ret= "7_STORY_GURI_7")
+
+    def _7_story_guri_7(self):
+
+        return "7_STORY_GURI_7"
+    
+    def _7_story_guri_8(self):
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_8",prg_ret="7_STORY_GURI_9",green_check=0)
+
+    
+    def _7_story_guri_9(self):
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_8",prg_ret="7_STORY_GURI_10",noprg_ret="7_STORY_GURI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    
+    def _7_story_guri_10(self):
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_9",prg_ret= "7_STORY_GURI_11")
+
+    
+    def _7_story_guri_11(self):
+        return "7_STORY_GURI_11"
+    
+    def _7_story_guri_12(self):
+        return "7_STORY_GURI_12"
+    
+    def _7_story_guri_13(self):
+        return "7_STORY_GURI_13"
+    
+    def _7_story_guri_14(self):
+        return "7_STORY_GURI_14"
+    
+    def _7_story_guri_15(self):
+        return "7_STORY_GURI_15"
+    
+    def _7_story_guri_16(self):
+        return "7_STORY_GURI_16"
+    
+    def _7_story_guri_17(self):
+        return "7_STORY_GURI_17"
+    
+    def _7_story_guri_18(self):
+        return "7_STORY_GURI_18"
+    
+    def _7_story_guri_19(self):
+        return "7_STORY_GURI_19"
+    
+    def _7_story_guri_20(self):
+        return "7_STORY_GURI_20"
+    
+    def _7_story_guri_21(self):
+        return "7_STORY_GURI_21"
+            
+    def _7_story_guri_22(self):
+        return "7_STORY_GURI_22"
+    
+    def _7_story_guri_23(self):
+        return "7_STORY_GURI_23"
+    
+    def _7_story_guri_24(self):
+        return "7_STORY_GURI_24"
+    
+    def _7_story_guri_25(self):
+        return "7_STORY_GURI_25"
+    
+    def _7_story_guri_26(self):
+        return "7_STORY_GURI_26"
+    
+    def _7_story_guri_27(self):
+        return "7_STORY_GURI_27"
+    
+    def _7_story_guri_28(self):
+        return "7_STORY_GURI_28"
+    
+    def _7_story_guri_29(self):
+        return "7_STORY_GURI_29"
+    
+    def _7_story_guri_30(self):
+        return "7_STORY_GURI_30"
+    
+    def _7_story_guri_31(self):
+        return "7_STORY_GURI_31"
+    
+    def _7_story_guri_32(self):
+        return "7_STORY_GURI_32"
+    
+    def _7_story_guri_33(self):
+        return "7_STORY_GURI_33"
+
+    def _7_story_guri_34(self):
+        return "7_STORY_GURI_34"
+    
+    def _7_story_guri_35(self):
+        return "7_STORY_GURI_35"
+        
+    def _7_story_guri_36(self):
+        return "7_STORY_GURI_36"
+    
+    def _7_story_guri_37(self):
+        return "7_STORY_GURI_37"
+
+    def _7_story_guri_38(self):
+        return "7_STORY_GURI_38"
+    
+    def _7_story_guri_39(self):
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_39",prg_ret="7_STORY_GURI_40",green_check=0)
+    
+    def _7_story_guri_40(self):
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_39",prg_ret="7_STORY_GURI_41",noprg_ret="7_STORY_GURI_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _7_story_guri_41(self):
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_40",prg_ret= "7_STORY_GURI_42")
+    
+    def _7_story_guri_42(self):
+        return "7_STORY_GURI_42"
+    
+    def _7_story_guri_43(self):
+        return "7_STORY_GURI_43"
+    
+    def _7_story_guri_44(self):
+        return "7_STORY_GURI_44"
+    
+    def _7_story_guri_45(self):
+        return "7_STORY_GURI_45"
+    
+    def _7_story_guri_46(self):
+        return "7_STORY_GURI_46"
+
+    def _7_story_guri_47(self):
+        return "7_STORY_GURI_47"
+    
+    def _7_story_guri_48(self):
+        return "7_STORY_GURI_48"
+    
+    def _7_story_guri_49(self):
+        return "7_STORY_GURI_49"
+    
+    def _7_story_guri_50(self):
+        return "7_STORY_GURI_50"
+    
+    def _7_story_guri_51(self):
+
+        return "7_STORY_GURI_51"
+    
+    def _7_story_guri_52(self):
+        return "7_STORY_GURI_52"
+    
+    def _7_story_guri_53(self):
+        return "7_STORY_GURI_53"
+    
+    def _7_story_guri_54(self):
+        return "7_STORY_GURI_54"
+    
+    def _7_story_guri_55(self):
+        return "7_STORY_GURI_55"
+    
+    def _7_story_guri_56(self):
+        return "7_STORY_GURI_56"
+
+    def _7_story_guri_57(self):
+        return "7_STORY_GURI_57"
+    
+    def _7_story_guri_58(self):
+        return "7_STORY_GURI_58"
+    
+    def _7_story_guri_59(self):
+        return "7_STORY_GURI_59"
+    
+    def _7_story_guri_60(self):
+        return "7_STORY_GURI_60"
+    
+    def _7_story_guri_61(self):
+        return "7_STORY_GURI_61"
+    
+    def _7_story_guri_62(self):
+
+        return "7_STORY_GURI_62"
+    
+    def _7_story_guri_63(self):
+        return "7_STORY_GURI_63"
+    
+    def _7_story_guri_64(self):
+        return "7_STORY_GURI_64"
+    
+    def _7_story_guri_65(self):
+
+        return "7_STORY_GURI_65"
+    
+    def _7_story_guri_66(self):
+
+        return "7_STORY_GURI_66"
+    
+    def _7_story_guri_67(self):
+
+        return "7_STORY_GURI_67"
+    
+    def _7_story_guri_68(self):
+
+        return "7_STORY_GURI_68"
+    
+    def _7_story_guri_69(self):
+        return "7_STORY_GURI_69"
+    
+    def _7_story_guri_70(self):
+
+        return "7_STORY_GURI_70"
+    
+    def _7_story_guri_71(self):
+
+        return "7_STORY_GURI_71"
+    
+    def _7_story_guri_72(self):
+
+        return "7_STORY_GURI_72"
+    
+    def _7_story_guri_73(self):
+
+        return "7_STORY_GURI_73"
+    
+    def _7_story_guri_74(self):
+
+        return "7_STORY_GURI_74"
+    
+    def _7_story_guri_75(self):
+
+        return "7_STORY_GURI_75"
+    
+    def _7_story_guri_76(self):
+
+        return "7_STORY_GURI_76"
+    
+    def _7_story_guri_77(self):
+
+        return "7_STORY_GURI_77"
+    
+    def _7_story_guri_78(self):
+
+        return "7_STORY_GURI_78"
+    
+    def _7_story_guri_79(self):
+
+        return "7_STORY_GURI_79"
+    
+    def _7_story_guri_80(self):
+
+        return "7_STORY_GURI_80"
+    
+    def _7_story_guri_81(self):
+
+        return "7_STORY_GURI_81"
+    
+    def _7_story_guri_82(self):
+
+        return "7_STORY_GURI_82"
+    
+    def _7_story_guri_83(self):
+        return "7_STORY_GURI_83"
+    
+    def _7_story_guri_84(self):
+
+        return "7_STORY_GURI_84"
+    
+    def _7_story_guri_85(self):
+
+        return "7_STORY_GURI_85"
+    
+    def _7_story_guri_86(self):
+
+        return "7_STORY_GURI_86"
+    
+    def _7_story_guri_87(self):
+
+        return "7_STORY_GURI_87"
+    
+    def _7_story_guri_88(self):
+
+        return "7_STORY_GURI_88"
+    
+    def _7_story_guri_89(self):
+
+        return "7_STORY_GURI_89"
+    
+    def _7_story_guri_90(self):
+
+        return "7_STORY_GURI_90"
+    
+    def _7_story_guri_91(self):
+
+        return "7_STORY_GURI_91"
+    
+    def _7_story_guri_92(self):
+
+        return "7_STORY_GURI_92"
+    
+    def _7_story_guri_93(self):
+
+        return "7_STORY_GURI_93"
+    
+    def _7_story_guri_94(self):
+
+        return "7_STORY_GURI_94"
+    
+    def _7_story_guri_95(self):
+
+        return "7_STORY_GURI_95"
+    
+    def _7_story_guri_96(self):
+        return "7_STORY_GURI_96"
+    
+    def _7_story_guri_97(self):
+        return "7_STORY_GURI_97"
+    
+    def _7_story_guri_98(self):
+        return "7_STORY_GURI_98"
+    
+    def _7_story_guri_99(self):
+        return "7_STORY_GURI_99"
+    
+    def _7_story_guri_100(self):
+        return "7_STORY_GURI_100"
+    
+    def _7_story_guri_101(self):
+        return "7_STORY_GURI_101"
+    
+    def _7_story_guri_102(self):
+        return "7_STORY_GURI_102"
+    
+    def _7_story_guri_103(self):
+        return "7_STORY_GURI_103"
+    
+    def _7_story_guri_104(self):
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_104",prg_ret="7_STORY_GURI_105",green_check=0)
+    
+    def _7_story_guri_105(self):
+        # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_104",prg_ret="7_STORY_GURI_106",noprg_ret="7_STORY_GURI_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _7_story_guri_106(self):
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_105",prg_ret= "7_STORY_GURI_107")
+    
+    ####CPEND
+    
     def _7_story_end(self):
         return "7_STORY_START_CHECK"
 
@@ -10407,7 +11478,365 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             return "5_STORY_MAPPING_1"
         return "8_STORY_START_CHECK"
+    ###CPSTART
+
+       
+    def _8_story_story_last_1(self):
+        return "8_STORY_STORY_LAST_1"
     
+    def _8_story_story_last_2(self):
+        return "8_STORY_STORY_LAST_2"
+    
+    def _8_story_story_last_3(self):
+
+        return "8_STORY_STORY_LAST_3"
+
+    def _8_story_story_last_4(self):
+        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_4",prg_ret="8_STORY_STORY_LAST_5",green_check=0)
+            
+    def _8_story_story_last_5(self):
+        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_4",prg_ret="8_STORY_STORY_LAST_6",noprg_ret="8_STORY_STORY_LAST_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    def _8_story_story_last_6(self):
+        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_5",prg_ret= "8_STORY_STORY_LAST_7")
+
+    def _8_story_story_last_7(self):
+
+        return "8_STORY_STORY_LAST_7"
+    
+    def _8_story_story_last_8(self):
+        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_8",prg_ret="8_STORY_STORY_LAST_9",green_check=0)
+
+    
+    def _8_story_story_last_9(self):
+        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_8",prg_ret="8_STORY_STORY_LAST_10",noprg_ret="8_STORY_STORY_LAST_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+
+    
+    def _8_story_story_last_10(self):
+        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_9",prg_ret= "8_STORY_STORY_LAST_11")
+
+    
+    def _8_story_story_last_11(self):
+        return "8_STORY_STORY_LAST_11"
+    
+    def _8_story_story_last_12(self):
+        return "8_STORY_STORY_LAST_12"
+    
+    def _8_story_story_last_13(self):
+        return "8_STORY_STORY_LAST_13"
+    
+    def _8_story_story_last_14(self):
+        return "8_STORY_STORY_LAST_14"
+    
+    def _8_story_story_last_15(self):
+        return "8_STORY_STORY_LAST_15"
+    
+    def _8_story_story_last_16(self):
+        return "8_STORY_STORY_LAST_16"
+    
+    def _8_story_story_last_17(self):
+        return "8_STORY_STORY_LAST_17"
+    
+    def _8_story_story_last_18(self):
+        return "8_STORY_STORY_LAST_18"
+    
+    def _8_story_story_last_19(self):
+        return "8_STORY_STORY_LAST_19"
+    
+    def _8_story_story_last_20(self):
+        return "8_STORY_STORY_LAST_20"
+    
+    def _8_story_story_last_21(self):
+        return "8_STORY_STORY_LAST_21"
+            
+    def _8_story_story_last_22(self):
+        return "8_STORY_STORY_LAST_22"
+    
+    def _8_story_story_last_23(self):
+        return "8_STORY_STORY_LAST_23"
+    
+    def _8_story_story_last_24(self):
+        return "8_STORY_STORY_LAST_24"
+    
+    def _8_story_story_last_25(self):
+        return "8_STORY_STORY_LAST_25"
+    
+    def _8_story_story_last_26(self):
+        return "8_STORY_STORY_LAST_26"
+    
+    def _8_story_story_last_27(self):
+        return "8_STORY_STORY_LAST_27"
+    
+    def _8_story_story_last_28(self):
+        return "8_STORY_STORY_LAST_28"
+    
+    def _8_story_story_last_29(self):
+        return "8_STORY_STORY_LAST_29"
+    
+    def _8_story_story_last_30(self):
+        return "8_STORY_STORY_LAST_30"
+    
+    def _8_story_story_last_31(self):
+        return "8_STORY_STORY_LAST_31"
+    
+    def _8_story_story_last_32(self):
+        return "8_STORY_STORY_LAST_32"
+    
+    def _8_story_story_last_33(self):
+        return "8_STORY_STORY_LAST_33"
+
+    def _8_story_story_last_34(self):
+        return "8_STORY_STORY_LAST_34"
+    
+    def _8_story_story_last_35(self):
+        return "8_STORY_STORY_LAST_35"
+        
+    def _8_story_story_last_36(self):
+        return "8_STORY_STORY_LAST_36"
+    
+    def _8_story_story_last_37(self):
+        return "8_STORY_STORY_LAST_37"
+
+    def _8_story_story_last_38(self):
+        return "8_STORY_STORY_LAST_38"
+    
+    def _8_story_story_last_39(self):
+        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_39",prg_ret="8_STORY_STORY_LAST_40",green_check=0)
+    
+    def _8_story_story_last_40(self):
+        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_39",prg_ret="8_STORY_STORY_LAST_41",noprg_ret="8_STORY_STORY_LAST_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _8_story_story_last_41(self):
+        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_40",prg_ret= "8_STORY_STORY_LAST_42")
+    
+    def _8_story_story_last_42(self):
+        return "8_STORY_STORY_LAST_42"
+    
+    def _8_story_story_last_43(self):
+        return "8_STORY_STORY_LAST_43"
+    
+    def _8_story_story_last_44(self):
+        return "8_STORY_STORY_LAST_44"
+    
+    def _8_story_story_last_45(self):
+        return "8_STORY_STORY_LAST_45"
+    
+    def _8_story_story_last_46(self):
+        return "8_STORY_STORY_LAST_46"
+
+    def _8_story_story_last_47(self):
+        return "8_STORY_STORY_LAST_47"
+    
+    def _8_story_story_last_48(self):
+        return "8_STORY_STORY_LAST_48"
+    
+    def _8_story_story_last_49(self):
+        return "8_STORY_STORY_LAST_49"
+    
+    def _8_story_story_last_50(self):
+        return "8_STORY_STORY_LAST_50"
+    
+    def _8_story_story_last_51(self):
+
+        return "8_STORY_STORY_LAST_51"
+    
+    def _8_story_story_last_52(self):
+        return "8_STORY_STORY_LAST_52"
+    
+    def _8_story_story_last_53(self):
+        return "8_STORY_STORY_LAST_53"
+    
+    def _8_story_story_last_54(self):
+        return "8_STORY_STORY_LAST_54"
+    
+    def _8_story_story_last_55(self):
+        return "8_STORY_STORY_LAST_55"
+    
+    def _8_story_story_last_56(self):
+        return "8_STORY_STORY_LAST_56"
+
+    def _8_story_story_last_57(self):
+        return "8_STORY_STORY_LAST_57"
+    
+    def _8_story_story_last_58(self):
+        return "8_STORY_STORY_LAST_58"
+    
+    def _8_story_story_last_59(self):
+        return "8_STORY_STORY_LAST_59"
+    
+    def _8_story_story_last_60(self):
+        return "8_STORY_STORY_LAST_60"
+    
+    def _8_story_story_last_61(self):
+        return "8_STORY_STORY_LAST_61"
+    
+    def _8_story_story_last_62(self):
+
+        return "8_STORY_STORY_LAST_62"
+    
+    def _8_story_story_last_63(self):
+        return "8_STORY_STORY_LAST_63"
+    
+    def _8_story_story_last_64(self):
+        return "8_STORY_STORY_LAST_64"
+    
+    def _8_story_story_last_65(self):
+
+        return "8_STORY_STORY_LAST_65"
+    
+    def _8_story_story_last_66(self):
+
+        return "8_STORY_STORY_LAST_66"
+    
+    def _8_story_story_last_67(self):
+
+        return "8_STORY_STORY_LAST_67"
+    
+    def _8_story_story_last_68(self):
+
+        return "8_STORY_STORY_LAST_68"
+    
+    def _8_story_story_last_69(self):
+        return "8_STORY_STORY_LAST_69"
+    
+    def _8_story_story_last_70(self):
+
+        return "8_STORY_STORY_LAST_70"
+    
+    def _8_story_story_last_71(self):
+
+        return "8_STORY_STORY_LAST_71"
+    
+    def _8_story_story_last_72(self):
+
+        return "8_STORY_STORY_LAST_72"
+    
+    def _8_story_story_last_73(self):
+
+        return "8_STORY_STORY_LAST_73"
+    
+    def _8_story_story_last_74(self):
+
+        return "8_STORY_STORY_LAST_74"
+    
+    def _8_story_story_last_75(self):
+
+        return "8_STORY_STORY_LAST_75"
+    
+    def _8_story_story_last_76(self):
+
+        return "8_STORY_STORY_LAST_76"
+    
+    def _8_story_story_last_77(self):
+
+        return "8_STORY_STORY_LAST_77"
+    
+    def _8_story_story_last_78(self):
+
+        return "8_STORY_STORY_LAST_78"
+    
+    def _8_story_story_last_79(self):
+
+        return "8_STORY_STORY_LAST_79"
+    
+    def _8_story_story_last_80(self):
+
+        return "8_STORY_STORY_LAST_80"
+    
+    def _8_story_story_last_81(self):
+
+        return "8_STORY_STORY_LAST_81"
+    
+    def _8_story_story_last_82(self):
+
+        return "8_STORY_STORY_LAST_82"
+    
+    def _8_story_story_last_83(self):
+        return "8_STORY_STORY_LAST_83"
+    
+    def _8_story_story_last_84(self):
+
+        return "8_STORY_STORY_LAST_84"
+    
+    def _8_story_story_last_85(self):
+
+        return "8_STORY_STORY_LAST_85"
+    
+    def _8_story_story_last_86(self):
+
+        return "8_STORY_STORY_LAST_86"
+    
+    def _8_story_story_last_87(self):
+
+        return "8_STORY_STORY_LAST_87"
+    
+    def _8_story_story_last_88(self):
+
+        return "8_STORY_STORY_LAST_88"
+    
+    def _8_story_story_last_89(self):
+
+        return "8_STORY_STORY_LAST_89"
+    
+    def _8_story_story_last_90(self):
+
+        return "8_STORY_STORY_LAST_90"
+    
+    def _8_story_story_last_91(self):
+
+        return "8_STORY_STORY_LAST_91"
+    
+    def _8_story_story_last_92(self):
+
+        return "8_STORY_STORY_LAST_92"
+    
+    def _8_story_story_last_93(self):
+
+        return "8_STORY_STORY_LAST_93"
+    
+    def _8_story_story_last_94(self):
+
+        return "8_STORY_STORY_LAST_94"
+    
+    def _8_story_story_last_95(self):
+
+        return "8_STORY_STORY_LAST_95"
+    
+    def _8_story_story_last_96(self):
+        return "8_STORY_STORY_LAST_96"
+    
+    def _8_story_story_last_97(self):
+        return "8_STORY_STORY_LAST_97"
+    
+    def _8_story_story_last_98(self):
+        return "8_STORY_STORY_LAST_98"
+    
+    def _8_story_story_last_99(self):
+        return "8_STORY_STORY_LAST_99"
+    
+    def _8_story_story_last_100(self):
+        return "8_STORY_STORY_LAST_100"
+    
+    def _8_story_story_last_101(self):
+        return "8_STORY_STORY_LAST_101"
+    
+    def _8_story_story_last_102(self):
+        return "8_STORY_STORY_LAST_102"
+    
+    def _8_story_story_last_103(self):
+        return "8_STORY_STORY_LAST_103"
+    
+    def _8_story_story_last_104(self):
+        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_105",green_check=0)
+    
+    def _8_story_story_last_105(self):
+        # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
+        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_106",noprg_ret="8_STORY_STORY_LAST_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+    
+    def _8_story_story_last_106(self):
+        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_105",prg_ret= "8_STORY_STORY_LAST_107")
+
+    ###CPEND
     def _8_story_end(self):
         return "8_STORY_START_CHECK"
 
