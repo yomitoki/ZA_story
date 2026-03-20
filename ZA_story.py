@@ -1044,7 +1044,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_YUKARI_1"
+        self._6_story_current_state_init= "6_STORY_YUKARI_11"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
@@ -2313,16 +2313,51 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0):
+    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
         noCp_count=0
         target_marker=1
+        nofiled=1
         while True:
             print(f'noCp_count = {noCp_count} mode = {mode} battle_mode = {battle_mode}')
             self.checkIfAlive()
-            if battle_mode==0 and self.image_check("SELECT"):
+            
+            if nofiled==1 and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+                if (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                elif (usenum==2 and (self.image_check("FIELD2") or self.image_check("FIELD_BACK2"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                elif (usenum==3 and (self.image_check("FIELD3") or self.image_check("FIELD_BACK3"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                elif (usenum==4 and (self.image_check("FIELD4") or self.image_check("FIELD_BACK4"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                elif (usenum==5 and (self.image_check("FIELD5") or self.image_check("FIELD_BACK5"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                elif (usenum==5 and (self.image_check("FIELD6") or self.image_check("FIELD_BACK6"))):
+                    self.wait(0.5)
+                    self.etc_sendCommand("Lbutton_up")
+                    nofiled=0
+                else:
+                    self.etc_sendCommand("Lbutton_left")
+                    self.wait(0.5)
+                    continue
+            
+            elif battle_mode==0 and self.image_check("SELECT"):
                 self.etc_sendCommand("Lbutton_up")
             elif battle_mode==1 and self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
+                
+            if self.image_check("R_push"):
+                self.press(Button.RCLICK,0.05,0.1) 
                 
             self.ZL_ACTION("")
             
@@ -10772,11 +10807,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=5.5, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,270), duration=7.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,270), duration=9.5, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,0), duration=2.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5)
             self.wait(1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "6_STORY_YUKARI_4"
@@ -10792,7 +10827,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
 
     def _6_story_yukari_7(self):
-
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_8"
         return "6_STORY_YUKARI_7"
     
     def _6_story_yukari_8(self):
@@ -10808,12 +10849,34 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     
     def _6_story_yukari_11(self):
-        return "6_STORY_YUKARI_11"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_12"
+        else:
+            return "6_STORY_YUKARI_11"
     
     def _6_story_yukari_12(self):
-        return "6_STORY_YUKARI_12"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_13"
+        else:
+            return "6_STORY_YUKARI_12"
     
     def _6_story_yukari_13(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=5.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,270), duration=9.5, wait=0.5)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=0.5)
+            self.wait(1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_14"
         return "6_STORY_YUKARI_13"
     
     def _6_story_yukari_14(self):
