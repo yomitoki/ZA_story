@@ -60,7 +60,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #self.main_current_state_init="MAIN_3_F_LANK"
         #self.main_current_state_init="MAIN_4_E_LANK"
         #self.main_current_state_init="MAIN_5_D_LANK"
-        #self.main_current_state_init="MAIN_6_C_LANK"
+        self.main_current_state_init="MAIN_6_C_LANK"
         #self.main_current_state_init="MAIN_7_B_LANK"
         #self.main_current_state_init="MAIN_8_STORY_LAST"
         #self.main_current_state_init="" 
@@ -1049,7 +1049,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_YUKARI_29"
+        self._6_story_current_state_init= "6_STORY_YUKARI_35"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
@@ -11115,25 +11115,62 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_34"
     
     def _6_story_yukari_35(self):
-        return "6_STORY_YUKARI_35"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_36"
+        else:
+            return "6_STORY_YUKARI_35"
         
     def _6_story_yukari_36(self):
-        return "6_STORY_YUKARI_36"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(4,0,6)#Wゾーン7に移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_37"
+        else:
+            return "6_STORY_YUKARI_36"
     
     def _6_story_yukari_37(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,10), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,75), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,40), duration=2.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,160), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,300), duration=1.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,50), duration=0.7, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_38"
         return "6_STORY_YUKARI_37"
 
     def _6_story_yukari_38(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,350), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,310), duration=6.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.ROTOM_GLIDE(dir=180,a_count=30)
+
+            return "6_STORY_YUKARI_39"
         return "6_STORY_YUKARI_38"
     
     def _6_story_yukari_39(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_40",green_check=0)
-    
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_40"
+        return "6_STORY_YUKARI_39"
+        
     def _6_story_yukari_40(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_41",noprg_ret="6_STORY_YUKARI_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "6_STORY_YUKARI_41"
+        return "6_STORY_YUKARI_40"
     
     def _6_story_yukari_41(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_40",prg_ret= "6_STORY_YUKARI_42")
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_42"
+        return "6_STORY_YUKARI_41"
     
     def _6_story_yukari_42(self):
         return "6_STORY_YUKARI_42"
