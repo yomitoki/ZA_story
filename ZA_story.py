@@ -467,7 +467,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_X_LANK_MOVE12": self._2_story_x_lank_move12,
             "2_STORY_X_LANK_MOVE13": self._2_story_x_lank_move13,
             
-            "2_STORY_W_LANK_MOVE0": self._2_story_w_lank_move0,
             "2_STORY_W_LANK_MOVE1": self._2_story_w_lank_move1,
             "2_STORY_W_LANK_MOVE2": self._2_story_w_lank_move2,
             "2_STORY_W_LANK_MOVE3": self._2_story_w_lank_move3,
@@ -583,7 +582,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_X_LANK_MOVE9"
+        self._2_story_current_state_init= "2_STORY_W_LANK_BATTLE_ZONE"
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -2520,10 +2519,25 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.story_Template_Comment_Out(selected_pic=selected_pic,selected_target=selected_target):
             self.wait(0.5)
             if (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+                print("after1")
+                return bkprg_ret
+            elif self.image_check("TEXT_BLACK_COMMENT"):
+                print("after2")
                 return bkprg_ret
             else:
+                print("after3")
+                exit
                 return prg_ret
-        return prg_ret
+        elif (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")):
+            print("after1_")
+            return bkprg_ret
+        elif self.image_check("TEXT_BLACK_COMMENT"):
+            print("after2_")
+            return bkprg_ret
+        else:
+            print("after3_")
+            exit
+            return prg_ret
         
         if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="BATTLE_BALL_CHECK",endpicture3="ESCAPE",endpicture4=selected_pic,not_endpicture="ZA_ROYALE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="3_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=sleeptime):
             for i in range(10):
@@ -2546,18 +2560,30 @@ class ZA_story_Base(ImageProcPythonCommand):
         endpicture4="FIELD_W"
         endpicture5="FIELD_BACK_W"
         endpicture6="RETURN FALSE"
+        filed_check_count=0
         #コメントチェックができるまでループ
         for i in range(10):
             if (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))):
                 break
+            elif self.image_check("COIN_ICON"):
+                break
+            elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
+                return True
+            elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                if filed_check_count > 5:
+                    break
+                filed_check_count+=1
+            elif i == 9:
+                return False
             self.wait(0.5)
             
         #コメントチェック待ちをおこなっても検知ができなかった場合は、False判定とする。
-        if (not (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT"))))):
-            return False
+        #if (not (self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT"))))):
+        #    return False
             
         while True:
             self.checkIfAlive()
+            selected_out_check=0
             if self.renda_button(rendabutton="B",
                                  endpicture="BATTLE_BALL_CHECK",
                                  endpicture2="ESCAPE",
@@ -2574,7 +2600,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  sub6_button="A",sub6_picture="MORNING",
                                  sub7_button="A",sub7_picture="NIGHT",
                                  sleeptime=sleeptime):
+                
                 selected_out_check=0
+                filed_check_count=0
                 for i in range(10):
                     self.wait(0.5)
                     if self.image_check(selected_pic):
@@ -2599,6 +2627,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                             break
                         else:
                             self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                            
+                    elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
+                        break
+                    elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                        if filed_check_count > 5:
+                            break
+                        filed_check_count+=1
+                            
             #選択肢処理を行っている場合は再度ボタン連打を再開する。
             if selected_out_check==1:
                 selected_out_check=0
@@ -2610,9 +2646,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                     endpicture4="WANINOKO_ICON"
                     endpicture5="ODAIRU_ICON"
                     endpicture6="ABSOL_ICON"
+            elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
+                break
             elif self.image_check("ZA_ROYALE"):
                 self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            else:
+            elif self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):#フィールドチェックできる場合のみ終了
                 break
         return True
         
@@ -7191,13 +7229,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "2_STORY_W_LANK_MOVE1"
         return "2_STORY_X_LANK_MOVE13"
 
-    def _2_story_w_lank_move0(self):
-        ret = self.Common_change_time_set(check_timing="MORNING")
-        if ret == "START":
-            return "2_STORY_W_LANK_MOVE1"
-        else:
-            return "2_STORY_W_LANK_MOVE0"
-
     def _2_story_w_lank_move1(self):
         ret = self.Common_goto(4,0,1)#Wゾーン2へ移動
         if ret == "START":
@@ -7236,7 +7267,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE3"
     
     def _2_story_w_lank_move4(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE") or self.image_check("TEXT_WHITE_COMMENT"):
             self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -7263,8 +7294,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move5(self):
         return self.story_Template_battle_after(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE6")
-
-        
+ 
         if self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT"):
             if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="2_SELECT",sub2_button="A",sub2_picture="HELP_MARKER"):
                 return "2_STORY_W_LANK_MOVE6"
