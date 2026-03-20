@@ -1043,7 +1043,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_YUKARI_11"
+        self._6_story_current_state_init= "6_STORY_YUKARI_29"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
@@ -10899,77 +10899,154 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,0), duration=5.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,0), duration=5.0, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,270), duration=9.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,265), duration=17.0, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,170), duration=1.0, wait=0.5)
             self.wait(1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "6_STORY_YUKARI_14"
         return "6_STORY_YUKARI_13"
     
     def _6_story_yukari_14(self):
-        return "6_STORY_YUKARI_14"
+        return  self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
     
     def _6_story_yukari_15(self):
-        return "6_STORY_YUKARI_15"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_16(self):
-        return "6_STORY_YUKARI_16"
-    
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
+
     def _6_story_yukari_17(self):
-        return "6_STORY_YUKARI_17"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_18"
+        else:
+            return "6_STORY_YUKARI_17"
     
     def _6_story_yukari_18(self):
-        return "6_STORY_YUKARI_18"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,1,2)#シューリッシュに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_19"
+        else:
+            return "6_STORY_YUKARI_18"
     
     def _6_story_yukari_19(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.8, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_20"
         return "6_STORY_YUKARI_19"
     
     def _6_story_yukari_20(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_21"
         return "6_STORY_YUKARI_20"
     
     def _6_story_yukari_21(self):
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,90), duration=3.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_22"
         return "6_STORY_YUKARI_21"
             
     def _6_story_yukari_22(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_23"
         return "6_STORY_YUKARI_22"
     
     def _6_story_yukari_23(self):
-        return "6_STORY_YUKARI_23"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_24"
+        else:
+            return "6_STORY_YUKARI_23"
     
     def _6_story_yukari_24(self):
-        return "6_STORY_YUKARI_24"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,0,3)#ホテルZに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_25"
+        else:
+            return "6_STORY_YUKARI_24"
     
     def _6_story_yukari_25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_26"
         return "6_STORY_YUKARI_25"
     
     def _6_story_yukari_26(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
     def _6_story_yukari_27(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,92), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_28"
         return "6_STORY_YUKARI_27"
     
     def _6_story_yukari_28(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_29"
         return "6_STORY_YUKARI_28"
     
     def _6_story_yukari_29(self):
-        return "6_STORY_YUKARI_29"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_30"
+        else:
+            return "6_STORY_YUKARI_29"
     
     def _6_story_yukari_30(self):
-        return "6_STORY_YUKARI_30"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_31"
+        else:
+            return "6_STORY_YUKARI_30"
     
     def _6_story_yukari_31(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,300), duration=3.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=9.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=9.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            return "6_STORY_YUKARI_32"
         return "6_STORY_YUKARI_31"
     
     def _6_story_yukari_32(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
     
     def _6_story_yukari_33(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "6_STORY_YUKARI_34"
         return "6_STORY_YUKARI_33"
 
     def _6_story_yukari_34(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_35"
         return "6_STORY_YUKARI_34"
     
     def _6_story_yukari_35(self):
