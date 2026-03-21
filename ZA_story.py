@@ -60,7 +60,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #self.main_current_state_init="MAIN_3_F_LANK"
         #self.main_current_state_init="MAIN_4_E_LANK"
         #self.main_current_state_init="MAIN_5_D_LANK"
-        #self.main_current_state_init="MAIN_6_C_LANK"
+        self.main_current_state_init="MAIN_6_C_LANK"
         #self.main_current_state_init="MAIN_7_B_LANK"
         #self.main_current_state_init="MAIN_8_STORY_LAST"
         #self.main_current_state_init="" 
@@ -543,10 +543,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_ABSOL_MOVE33": self._2_story_absol_move33,
             "2_STORY_ABSOL_MOVE34": self._2_story_absol_move34,
             "2_STORY_ABSOL_MOVE35": self._2_story_absol_move35,
+            
+
+            
             "2_STORY_ABSOL_MOVE36": self._2_story_absol_move36,
             "2_STORY_ABSOL_MOVE37": self._2_story_absol_move37,
             "2_STORY_ABSOL_MOVE38": self._2_story_absol_move38,
+            
             "2_STORY_RESTAURANT_DOHUTSU_LOOP": self._2_story_restaurant_dohutsu_loop,
+
+            "2_STORY_ITEM_GIVE2": self._2_story_item_give2,
 
             "2_STORY_MEGA_MOVE1": self._2_story_mega_move1,
             "2_STORY_MEGA_MOVE2": self._2_story_mega_move2,
@@ -583,6 +589,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         self._2_story_current_state="2_STORY_START_CHECK" 
         self._2_story_current_state_init= "2_STORY_X_LANK_MOVE13"
+
 
         self._2_story_restaurant_dohutsu_loop_count=0
         self._2_story_restaurant_dohutsu_loop_threshold=400
@@ -1043,7 +1050,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_YUKARI_11"
+        self._6_story_current_state_init= "6_STORY_YUKARI_35"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
@@ -1279,8 +1286,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_BOX_CHANGE_BOX_TARGET1": self.common_box_change_box_target1,
             "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT": self.common_box_change_box_target1_select,
             "COMMON_BOX_CHANGE_BOX_TARGET2": self.common_box_change_box_target2,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
-            "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
+            "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
+            "COMMON_BOX_CHANGE_END": self.common_box_change_end,
             }
         self.common_box_change_current_state="COMMON_BOX_CHANGE_START"
 
@@ -1963,26 +1970,27 @@ class ZA_story_Base(ImageProcPythonCommand):
     def mega_evolution_battle_mode_select(self,mode=0,usenum=1):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=60,dir4=300,see_r=0.24, endpicture="TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1, endpicture="TEXT_WHITE_COMMENT"):
 
             return True
         
-    def mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, endpicture="",end2picture=""):
+    def mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture=""):
         count=0
         self.no_Cplus=0
         no_target_count=0
-        no_target_count_threshold=0
+        no_target_count_threshold=no_target_count_threshold_arg
         target_count=0
-        target_count_threshold=0#10
-        target_count_threshold2=3#10
+        target_count_threshold=target_count_threshold_arg
         target_marker_count=0
         
         nofiled=1
         battle_count=0
         
         Cp_mode=0
+        targetmode=0
         
         while True:
+            print(f'targetcount = {target_count} :: notarget_count = {no_target_count}')
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
                     self.ZL_ACTION("END")
@@ -2002,6 +2010,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Button.RCLICK,0.05,0.1) 
                 
             if nofiled==1 and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
+                self.ZL_ACTION("")
                 if (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1"))):
                     self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
@@ -2031,35 +2040,26 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(0.5)
                     continue
           
-            self.ZL_ACTION("")
-            if count==0 and Cp_mode==1:
-                self.etc_sendCommand("plusbutton")
-            for i in range(5):  
+            for i in range(5): 
+                if count==0 and Cp_mode==1:
+                    self.etc_sendCommand("plusbutton")
+                if self.image_check("TEXT_BLACK_COMMENT"): 
+                    break
                 if count==0 and Aaction==1 and self.image_check("C+"):
                     self.MOVE_SEE(action = "END")
                     self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     
-                    #回避行動用
-                    if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
-                        if self.image_check("C+"):
-                            self.ZL_ACTION("END")
-                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                            self.ZL_ACTION("")
-                            self.wait(0.3)
-                            if not self.image_check("C+"):
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check0_0")
-                            if not self.image_check("C+"):
-                                self.wait(0.3)
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-2,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check0")
+                    if escape_flag==1:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")
         
-                        self.MOVE_SEE(action = "")
+                            #self.MOVE_SEE(action = "")
                         
-                    self.ZL_ACTION("")
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2068,27 +2068,18 @@ class ZA_story_Base(ImageProcPythonCommand):
                 elif count==1 and Baction==1 and self.image_check("C+"):
                     self.MOVE_SEE(action = "END")
                     self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                    if escape_flag==1:
                     #回避行動用
-                    if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
-                        if self.image_check("C+"):
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
 
-                            self.ZL_ACTION("END")
-                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                            self.ZL_ACTION("")
-                            self.wait(0.3)
-                            if not self.image_check("C+"):
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check1_0")
-                            if not self.image_check("C+"):
-                                self.wait(0.3)
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-2,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check1")
-                        self.MOVE_SEE(action = "")
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")
 
-                    self.ZL_ACTION("")
+                            #self.MOVE_SEE(action = "")
+
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2097,26 +2088,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 elif count==2 and Xaction==1 and self.image_check("C+"):
                     self.MOVE_SEE(action = "END")
                     self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                    #回避行動用
-                    if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
-                        if self.image_check("C+"):
-                            self.ZL_ACTION("END")
-                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                            self.ZL_ACTION("")
-                            self.wait(0.3)
-                            if not self.image_check("C+"):
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check2_0")
-                            if not self.image_check("C+"):
-                                self.wait(0.3)
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-2,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check2")
-                        self.MOVE_SEE(action = "")
+                    if escape_flag==1:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")
 
-                    self.ZL_ACTION("")
+                            #self.MOVE_SEE(action = "")
+
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2125,26 +2107,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 elif count==3 and Yaction==1 and self.image_check("C+"):
                     self.MOVE_SEE(action = "END")
                     self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                    if escape_flag==1:
                     #回避行動用
-                    if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
-                        if self.image_check("C+"):
-                            self.ZL_ACTION("END")
-                            self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                            self.ZL_ACTION("")
-                            self.wait(0.3)
-                            if not self.image_check("C+"):
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check3_0")
-                            if not self.image_check("C+"):
-                                self.wait(0.3)
-                                self.MOVE_LStick(dir1,dir2,dir3,dir4,-2,"RELOAD")
-                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                print("check3")
-                        self.MOVE_SEE(action = "")
-                        
-                    self.ZL_ACTION("")
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")
+
+                            #self.MOVE_SEE(action = "")
+                            
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2154,25 +2127,27 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZL_ACTION("END")
                     self.wait(0.1)
                     self.ZL_ACTION("")
-
-                    no_target_count+=1
-                    target_count=0
+                    if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                        no_target_count+=1
+                        target_count=0
+                    else:
+                        continue
                     break
                 
             #回避行動中にターゲットマーカーチェックの移動を行えないと別方向に視点が行ってしまうため
             self.wait(1.0)   
             if not (self.image_check("TEXT_GREEN_COMMENT") or self.image_check("TEXT_BLACK_COMMENT")):    
-                if (self.image_check("TARGET_LEFT_MID") or self.image_check("TARGET_RIGHT_MID") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("TARGET_LEFT_RIHGT_CHECK_MID")):
+                if (self.image_check("TARGET_LEFT_LOW") or self.image_check("TARGET_RIGHT_LOW") or self.image_check("TARGET_RIGHT_RIHGT_CHECK_LOW") or self.image_check("TARGET_LEFT_RIHGT_CHECK_LOW")):
 
                     if target_marker_count==2:
                         if not self.image_check("C+"):
                             self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
                             self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            print("LS")
                         self.MOVE_SEE(action = "",in_see_r=see_r)
                         for i in range(5):
-                            self.ZL_ACTION("END")
-                            self.wait(0.1)
-                            self.ZL_ACTION("")
+                            if self.image_check("TEXT_BLACK_COMMENT"): 
+                                break
                             if count==0 and Aaction==1 and self.image_check("C+"):
                                 self.MOVE_SEE(action = "END")
                                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -2180,9 +2155,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.wait(0.3)
                                 if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
+                                        targetmode=0
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
-                                    elif target_count>target_count_threshold2:
+                                    elif target_count>target_count_threshold:
+                                        targetmode=1
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    else:
+                                        if targetmode==0:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                        else:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
                             elif count==1 and Baction==1 and self.image_check("C+"):
@@ -2192,9 +2174,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.wait(0.3)
                                 if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
+                                        targetmode=0
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
-                                    elif target_count>target_count_threshold2:
+                                    elif target_count>target_count_threshold:
+                                        targetmode=1
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    else:
+                                        if targetmode==0:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                        else:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
                             elif count==2 and Xaction==1 and self.image_check("C+"):
@@ -2204,9 +2193,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.wait(0.3)
                                 if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
+                                        targetmode=0
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
-                                    elif target_count>target_count_threshold2:
+                                    elif target_count>target_count_threshold:
+                                        targetmode=1
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    else:
+                                        if targetmode==0:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                        else:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
                                 count=(count + 1) % 4
                                 break
                             elif count==3 and Yaction==1 and self.image_check("C+"):
@@ -2216,18 +2212,31 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.wait(0.3)
                                 if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
+                                        targetmode=0
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
-                                    elif target_count>target_count_threshold2:
+                                    elif target_count>target_count_threshold:
+                                        targetmode=1
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                    else:
+                                        if targetmode==0:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                        else:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
                                 count=(count + 1) % 4
                                 break
                             else:
                                 if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
+                                        targetmode=0
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
-                                    elif target_count>target_count_threshold2:
+                                    elif target_count>target_count_threshold:
+                                        targetmode=1
                                         self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
-                                    break
+                                    else:
+                                        if targetmode==0:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                        else:
+                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                         target_marker_count+=1
                     elif target_marker_count>2:
                         target_marker_count=0
@@ -2236,20 +2245,27 @@ class ZA_story_Base(ImageProcPythonCommand):
                 else:
                     target_marker_count=0
                     self.MOVE_SEE(action = "",in_see_r=see_r)
-            self.ZL_ACTION("")
             count=(count + 1) % 4
             
             if not self.image_check("TEXT_BLACK_COMMENT"):
-                if no_target_count>no_target_count_threshold:
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
-                elif target_count>target_count_threshold2:
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")
+                if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                    if no_target_count>no_target_count_threshold:
+                        targetmode=0
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    elif target_count>target_count_threshold:
+                        targetmode=1
+                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    else:
+                        if targetmode==0:
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                        else:
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")  
                 #self.MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(0.1)
 
             elif self.image_check("TEXT_BLACK_COMMENT"):
                 no_target_count=0
-                no_target_count=target_count_threshold2
+                target_count=target_count_threshold
                 self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     
             if self.image_check("FIELD_W"):
@@ -2262,7 +2278,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     Cp_mode=(Cp_mode+1)%2#Cpのモード切替
                     print(f'BATTLE_COUNT::{battle_count}')
                 no_target_count=0
-                no_target_count=target_count_threshold2
+                target_count=target_count_threshold
                 self.MOVE_LStick(dir1,dir2,1,dir3,dir4,"END")
                 self.wait(1.0)
                 if self.image_check("2_SELECT"):
@@ -7886,7 +7902,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE36"
         return "2_STORY_ABSOL_MOVE35"
-    
+           
     def _2_story_absol_move36(self):
         ret = self.Common_goto(1,0,5)#レストランフツーへ移動
         if ret == "START":
@@ -7940,6 +7956,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     ###進化と技設定
+    
+    def _2_story_item_give2(self):
+        self.common_item_give_current_state = self.common_item_give_function(selectnum=1,target1=4,target2=0)
+        if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
+            return "2_STORY_MEGA_MOVE1"
+        else:
+            return "2_STORY_ITEM_GIVE2"
     
     def _2_story_mega_move1(self):
         ret = self.Common_change_time_set(check_timing="MORNING")
@@ -10881,99 +10904,213 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,0), duration=5.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,0), duration=5.0, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,270), duration=9.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,265), duration=17.0, wait=0.5)
             self.wait(1.0)
-            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,170), duration=1.0, wait=0.5)
             self.wait(1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "6_STORY_YUKARI_14"
         return "6_STORY_YUKARI_13"
     
     def _6_story_yukari_14(self):
-        return "6_STORY_YUKARI_14"
+        return  self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
     
     def _6_story_yukari_15(self):
-        return "6_STORY_YUKARI_15"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_16(self):
-        return "6_STORY_YUKARI_16"
-    
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
+
     def _6_story_yukari_17(self):
-        return "6_STORY_YUKARI_17"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_18"
+        else:
+            return "6_STORY_YUKARI_17"
     
     def _6_story_yukari_18(self):
-        return "6_STORY_YUKARI_18"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,1,2)#シューリッシュに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_19"
+        else:
+            return "6_STORY_YUKARI_18"
     
     def _6_story_yukari_19(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.8, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_20"
         return "6_STORY_YUKARI_19"
     
     def _6_story_yukari_20(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_21"
         return "6_STORY_YUKARI_20"
     
     def _6_story_yukari_21(self):
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,90), duration=3.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_22"
         return "6_STORY_YUKARI_21"
             
     def _6_story_yukari_22(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_23"
         return "6_STORY_YUKARI_22"
     
     def _6_story_yukari_23(self):
-        return "6_STORY_YUKARI_23"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_24"
+        else:
+            return "6_STORY_YUKARI_23"
     
     def _6_story_yukari_24(self):
-        return "6_STORY_YUKARI_24"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,0,3)#ホテルZに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_25"
+        else:
+            return "6_STORY_YUKARI_24"
     
     def _6_story_yukari_25(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_26"
         return "6_STORY_YUKARI_25"
     
     def _6_story_yukari_26(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
     def _6_story_yukari_27(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,92), duration=1.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_28"
         return "6_STORY_YUKARI_27"
     
     def _6_story_yukari_28(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_29"
         return "6_STORY_YUKARI_28"
     
     def _6_story_yukari_29(self):
-        return "6_STORY_YUKARI_29"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_30"
+        else:
+            return "6_STORY_YUKARI_29"
     
     def _6_story_yukari_30(self):
-        return "6_STORY_YUKARI_30"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_31"
+        else:
+            return "6_STORY_YUKARI_30"
     
     def _6_story_yukari_31(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,300), duration=3.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=9.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=9.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+            return "6_STORY_YUKARI_32"
         return "6_STORY_YUKARI_31"
     
     def _6_story_yukari_32(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
     
     def _6_story_yukari_33(self):
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "6_STORY_YUKARI_34"
         return "6_STORY_YUKARI_33"
 
     def _6_story_yukari_34(self):
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_35"
         return "6_STORY_YUKARI_34"
     
     def _6_story_yukari_35(self):
-        return "6_STORY_YUKARI_35"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_36"
+        else:
+            return "6_STORY_YUKARI_35"
         
     def _6_story_yukari_36(self):
-        return "6_STORY_YUKARI_36"
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(4,0,6)#Wゾーン7に移動で位置確定
+        if ret == "START":
+            return "6_STORY_YUKARI_37"
+        else:
+            return "6_STORY_YUKARI_36"
     
     def _6_story_yukari_37(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,10), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,75), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,40), duration=2.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,160), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,300), duration=1.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,50), duration=0.7, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_38"
         return "6_STORY_YUKARI_37"
 
     def _6_story_yukari_38(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,350), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,310), duration=6.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.ROTOM_GLIDE(dir=180,a_count=30)
+
+            return "6_STORY_YUKARI_39"
         return "6_STORY_YUKARI_38"
     
     def _6_story_yukari_39(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_40",green_check=0)
-    
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_40"
+        return "6_STORY_YUKARI_39"
+        
     def _6_story_yukari_40(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_39",prg_ret="6_STORY_YUKARI_41",noprg_ret="6_STORY_YUKARI_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        if self.mega_evolution_battle_mode_select(mode=0):
+            return "6_STORY_YUKARI_41"
+        return "6_STORY_YUKARI_40"
     
     def _6_story_yukari_41(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_40",prg_ret= "6_STORY_YUKARI_42")
+        if self.story_Template_Comment_Out():
+            return "6_STORY_YUKARI_42"
+        return "6_STORY_YUKARI_41"
     
     def _6_story_yukari_42(self):
         return "6_STORY_YUKARI_42"
@@ -12309,10 +12446,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def common_box_change_box_target1_select(self):
         if self.image_check("BOX_WINDOW"):
+            self.wait(1.0)
             if self.image_check("BOX_MENU"):
                 self.wait(1.0)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "COMMON_BOX_CHANGE_BOX_TARGET2"
+            else:
+                #フォロー
+                self.wait(1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(1.0)
         return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
     
     def common_box_change_box_target2(self,target_sub,target_sub_high=0):
@@ -12337,17 +12480,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(1.0)
                  
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)   
-            return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+            return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
         return "COMMON_BOX_CHANGE_BOX_TARGET2"
     
     def common_box_change_window_close(self):
         if self.image_check("BOX_WINDOW"):
             self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
-            return "COMMON_SKILL_CHANGE_END"
-        return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+            return "COMMON_BOX_CHANGE_END"
+        return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
 
-    def common_skill_change_end(self):
-        return "COMMON_SKILL_CHANGE_START"
+    def common_box_change_end(self):
+        return "COMMON_BOX_CHANGE_START"
     ######################################################
     # Commonitemgive
     ######################################################
@@ -17756,7 +17899,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TARGET_LEFT_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
-                                    threshold = 0.55,#0.72,#0.75,
+                                    threshold = 0.50,#0.72,#0.75,
                                     use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
@@ -17772,7 +17915,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TARGET_RIGHT_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
-                                    threshold = 0.55,#0.72,#0.75,
+                                    threshold = 0.50,#0.72,#0.75,
                                     use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
@@ -17852,7 +17995,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TARGET_LEFT_RIHGT_CHECK_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_left.png',
-                                    threshold = 0.55,#0.72,#0.75,
+                                    threshold = 0.50,#0.72,#0.75,
                                     use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
@@ -17868,7 +18011,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif targetimage=="TARGET_RIGHT_RIHGT_CHECK_LOW":
             ret ,max_val = self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\\ZA_infi\\target_marker_right.png',
-                                    threshold = 0.55,#0.72,#0.75,
+                                    threshold = 0.50,#0.72,#0.75,
                                     use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
