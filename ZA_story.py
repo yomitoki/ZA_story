@@ -60,7 +60,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #self.main_current_state_init="MAIN_3_F_LANK"
         #self.main_current_state_init="MAIN_4_E_LANK"
         #self.main_current_state_init="MAIN_5_D_LANK"
-        self.main_current_state_init="MAIN_6_C_LANK"
+        #self.main_current_state_init="MAIN_6_C_LANK"
         #self.main_current_state_init="MAIN_7_B_LANK"
         #self.main_current_state_init="MAIN_8_STORY_LAST"
         #self.main_current_state_init="" 
@@ -588,7 +588,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_X_LANK_MOVE13"
+        self._2_story_current_state_init= "2_STORY_ABSOL_MOVE1"
 
 
         self._2_story_restaurant_dohutsu_loop_count=0
@@ -1970,7 +1970,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def mega_evolution_battle_mode_select(self,mode=0,usenum=1):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1, endpicture="TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1,target_count_threshold_arg=6,no_target_count_threshold_arg=6, endpicture="TEXT_WHITE_COMMENT"):
 
             return True
         
@@ -1990,7 +1990,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         targetmode=0
         
         while True:
-            print(f'targetcount = {target_count} :: notarget_count = {no_target_count}')
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
                     self.ZL_ACTION("END")
@@ -2007,33 +2006,24 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
             if self.image_check("R_push"):
+                self.MOVE_SEE(action = "END",in_see_r=see_r)
                 self.press(Button.RCLICK,0.05,0.1) 
+                self.wait(1.0)
+                self.MOVE_SEE(action = "",in_see_r=see_r)
                 
             if nofiled==1 and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
                 self.ZL_ACTION("")
-                if (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1"))):
+                if (
+                    (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1")))
+                    or (usenum==2 and (self.image_check("FIELD2") or self.image_check("FIELD_BACK2")))
+                    or (usenum==3 and (self.image_check("FIELD3") or self.image_check("FIELD_BACK3")))
+                    or (usenum==4 and (self.image_check("FIELD4") or self.image_check("FIELD_BACK4")))
+                    or (usenum==5 and (self.image_check("FIELD5") or self.image_check("FIELD_BACK5")))
+                    or (usenum==5 and (self.image_check("FIELD6") or self.image_check("FIELD_BACK6")))
+                ):
                     self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==2 and (self.image_check("FIELD2") or self.image_check("FIELD_BACK2"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==3 and (self.image_check("FIELD3") or self.image_check("FIELD_BACK3"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==4 and (self.image_check("FIELD4") or self.image_check("FIELD_BACK4"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==5 and (self.image_check("FIELD5") or self.image_check("FIELD_BACK5"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==5 and (self.image_check("FIELD6") or self.image_check("FIELD_BACK6"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                     nofiled=0
                 else:
                     self.etc_sendCommand("Lbutton_left")
@@ -2271,7 +2261,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
 
-            if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.image_check("TEXT_BLACK_COMMENT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 if nofiled==0:
                     nofiled=1
                     battle_count+=1
@@ -2279,7 +2269,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     print(f'BATTLE_COUNT::{battle_count}')
                 no_target_count=0
                 target_count=target_count_threshold
-                self.MOVE_LStick(dir1,dir2,1,dir3,dir4,"END")
+                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("2_SELECT"):
                     self.wait(1.0)
@@ -2305,7 +2295,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif self.image_check("TEXT_GREEN_COMMENT"):
                 self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER")
 
-            elif self.image_check("2_SELECT"):
+            elif self.image_check("2_SELECT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("2_SELECT_TUTORIAL"):
@@ -2316,7 +2306,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.wait(1.0)
                     self.wait(1.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
-            elif self.image_check("3_SELECT"):
+            elif self.image_check("3_SELECT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("3_SELECT_SELECT"):
