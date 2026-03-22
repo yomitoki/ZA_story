@@ -544,14 +544,48 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_ABSOL_MOVE34": self._2_story_absol_move34,
             "2_STORY_ABSOL_MOVE35": self._2_story_absol_move35,
             
-
-            
             "2_STORY_ABSOL_MOVE36": self._2_story_absol_move36,
             "2_STORY_ABSOL_MOVE37": self._2_story_absol_move37,
             "2_STORY_ABSOL_MOVE38": self._2_story_absol_move38,
             
             "2_STORY_RESTAURANT_DOHUTSU_LOOP": self._2_story_restaurant_dohutsu_loop,
 
+            "2_STORY_EVO1": self._2_story_evo1,
+            "2_STORY_EVO2": self._2_story_evo2,
+            "2_STORY_EVO3": self._2_story_evo3,
+            "2_STORY_EVO4": self._2_story_evo4, 
+            "2_STORY_EVO5": self._2_story_evo5, 
+            "2_STORY_EVO6": self._2_story_evo6, 
+            "2_STORY_EVO7": self._2_story_evo7,
+            
+            "2_STORY_AME1": self._2_story_ame1,      
+            "2_STORY_AME2": self._2_story_ame2,   
+              
+            "2_STORY_SKILL_CHANGE1": self._2_story_skill_change1,
+            "2_STORY_SKILL_CHANGE2": self._2_story_skill_change2,
+            "2_STORY_SKILL_CHANGE3": self._2_story_skill_change3,
+            "2_STORY_SKILL_CHANGE4": self._2_story_skill_change4,
+            "2_STORY_SKILL_CHANGE5": self._2_story_skill_change5,
+            "2_STORY_SKILL_CHANGE6": self._2_story_skill_change6,
+            "2_STORY_SKILL_CHANGE7": self._2_story_skill_change7,
+            "2_STORY_SKILL_CHANGE8": self._2_story_skill_change8,
+            "2_STORY_SKILL_CHANGE9": self._2_story_skill_change9,
+            "2_STORY_SKILL_CHANGE10": self._2_story_skill_change10,
+            "2_STORY_SKILL_CHANGE11": self._2_story_skill_change11,
+            "2_STORY_SKILL_CHANGE12": self._2_story_skill_change12,
+            "2_STORY_SKILL_CHANGE13": self._2_story_skill_change13,
+            "2_STORY_SKILL_CHANGE14": self._2_story_skill_change14,
+            "2_STORY_SKILL_CHANGE15": self._2_story_skill_change15,
+            "2_STORY_SKILL_CHANGE16": self._2_story_skill_change16,
+            "2_STORY_SKILL_CHANGE17": self._2_story_skill_change17,
+            "2_STORY_SKILL_CHANGE18": self._2_story_skill_change18,
+            "2_STORY_SKILL_CHANGE19": self._2_story_skill_change19,
+            "2_STORY_SKILL_CHANGE20": self._2_story_skill_change20,
+            "2_STORY_SKILL_CHANGE21": self._2_story_skill_change21,
+            "2_STORY_SKILL_CHANGE22": self._2_story_skill_change22,
+            "2_STORY_SKILL_CHANGE23": self._2_story_skill_change23,
+            "2_STORY_SKILL_CHANGE24": self._2_story_skill_change24,
+            
             "2_STORY_ITEM_GIVE2": self._2_story_item_give2,
 
             "2_STORY_MEGA_MOVE1": self._2_story_mega_move1,
@@ -588,7 +622,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
-        self._2_story_current_state_init= "2_STORY_X_LANK_MOVE13"
+        self._2_story_current_state_init= "2_STORY_AME1"
 
 
         self._2_story_restaurant_dohutsu_loop_count=0
@@ -1306,6 +1340,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             }
         self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
 
+        self.STATE_COMMON_EVOLUTION_FUNCTION = {
+            "COMMON_EVOLUTION_START": self.common_skill_change_start,
+            "COMMON_EVOLUTION_START_CHECK": self.common_skill_change_start_check,
+            "COMMON_EVOLUTION_POKEMON_SELECT": self.common_skill_change_pokemon_select,
+            "COMMON_EVOLUTION_EXEC": self.common_evolution_exec,
+            "COMMON_EVOLUTION_LOOP": self.common_evolution_loop,
+            "COMMON_EVOLUTION_END": self.common_evolution_end,
+            }
+        self.common_evolution_current_state="COMMON_EVOLUTION_START"
+        
         self.STATE_COMMON_ITEM_GIVE_FUNCTION = {
             "COMMON_ITEM_GIVE_START": self.common_skill_change_start,
             "COMMON_ITEM_GIVE_START_CHECK": self.common_skill_change_start_check,
@@ -1317,6 +1361,17 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_ITEM_GIVE_END": self.common_item_give_end,
             }
         self.common_item_give_current_state="COMMON_ITEM_GIVE_START"
+
+        self.STATE_COMMON_ITEM_USE_FUNCTION = {
+            "COMMON_ITEM_USE_START": self.common_skill_change_start,
+            "COMMON_ITEM_USE_START_CHECK": self.common_skill_change_start_check,
+            "COMMON_ITEM_USE_WINDOW_OPEN": self.common_item_use_window_open,
+            "COMMON_ITEM_USE_TARGET_SIDE": self.common_item_use_target_side,
+            "COMMON_ITEM_USE_TARGET_HIGH": self.common_item_use_target_high,
+            "COMMON_ITEM_USE_WINDOW_CLOSE": self.common_item_use_window_close,
+            "COMMON_ITEM_USE_END": self.common_evolution_end,
+            }
+        self.common_item_use_current_state="COMMON_ITEM_USE_START"
 
 
         self.STATE_COMMON_FUNCTION = {
@@ -1993,7 +2048,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     def mega_evolution_battle_mode_select(self,mode=0,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=0):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1, endpicture="TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1,target_count_threshold_arg=6,no_target_count_threshold_arg=6, endpicture="TEXT_WHITE_COMMENT"):
+
+
             return True
         elif mode == 1 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="TEXT_WHITE_COMMENT"):
             return True
@@ -2017,7 +2074,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         targetmode=0
         
         while True:
-            print(f'targetcount = {target_count} :: notarget_count = {no_target_count}')
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
                     self.ZL_ACTION("END")
@@ -2034,33 +2090,24 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
             if self.image_check("R_push"):
+                self.MOVE_SEE(action = "END",in_see_r=see_r)
                 self.press(Button.RCLICK,0.05,0.1) 
+                self.wait(1.0)
+                self.MOVE_SEE(action = "",in_see_r=see_r)
                 
             if nofiled==1 and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W")):
                 self.ZL_ACTION("")
-                if (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1"))):
+                if (
+                    (usenum==1 and (self.image_check("FIELD1") or self.image_check("FIELD_BACK1")))
+                    or (usenum==2 and (self.image_check("FIELD2") or self.image_check("FIELD_BACK2")))
+                    or (usenum==3 and (self.image_check("FIELD3") or self.image_check("FIELD_BACK3")))
+                    or (usenum==4 and (self.image_check("FIELD4") or self.image_check("FIELD_BACK4")))
+                    or (usenum==5 and (self.image_check("FIELD5") or self.image_check("FIELD_BACK5")))
+                    or (usenum==5 and (self.image_check("FIELD6") or self.image_check("FIELD_BACK6")))
+                ):
                     self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==2 and (self.image_check("FIELD2") or self.image_check("FIELD_BACK2"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==3 and (self.image_check("FIELD3") or self.image_check("FIELD_BACK3"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==4 and (self.image_check("FIELD4") or self.image_check("FIELD_BACK4"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==5 and (self.image_check("FIELD5") or self.image_check("FIELD_BACK5"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
-                    nofiled=0
-                elif (usenum==5 and (self.image_check("FIELD6") or self.image_check("FIELD_BACK6"))):
-                    self.wait(0.5)
-                    self.etc_sendCommand("Lbutton_up")
+                    self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                     nofiled=0
                 else:
                     self.etc_sendCommand("Lbutton_left")
@@ -2350,7 +2397,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
 
-            if self.image_check("TEXT_BLACK_COMMENT"):
+            if self.image_check("TEXT_BLACK_COMMENT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 if nofiled==0:
                     nofiled=1
                     battle_count+=1
@@ -2384,7 +2431,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif self.image_check("TEXT_GREEN_COMMENT"):
                 self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="1_SELECT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="HELP_MARKER")
 
-            elif self.image_check("2_SELECT"):
+            elif self.image_check("2_SELECT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("2_SELECT_TUTORIAL"):
@@ -2395,7 +2442,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.wait(1.0)
                     self.wait(1.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
-            elif self.image_check("3_SELECT"):
+            elif self.image_check("3_SELECT") and (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
                 self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("3_SELECT_SELECT"):
@@ -3208,6 +3255,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n STATE_COMMON_SKILL_CHANGE_FUNCTION   :: {self.common_skill_change_current_state}'
                 f'\n STATE_COMMON_BOX_CHANGE_FUNCTION   :: {self.common_box_change_current_state}'
                 f'\n STATE_COMMON_ITEM_GIVE_FUNCTION   :: {self.common_item_give_current_state}'
+                f'\n STATE_COMMON_EVOLUTION_FUNCTION   :: {self.common_evolution_current_state}'
                 f'\n----------------------------'
                 )
             
@@ -8073,7 +8121,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self._2_story_restaurant_dohutsu_battle_count+=1
                     if self._2_story_restaurant_dohutsu_battle_count >= self._2_story_restaurant_dohutsu_loop_threshold:
                         self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.5, interval=0.1)
-                        return "2_STORY_MEGA_MOVE1"
+                        return "2_STORY_EVO1"
                 else:
                     self._2_story_restaurant_dohutsu_black_check=0
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
@@ -8086,7 +8134,285 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     ###進化と技設定
+    def _2_story_evo1(self):
+        ret = self.common_evolution_function(selectnum=1)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO2"
+        else:
+            return "2_STORY_EVO1"
+
+    def _2_story_evo2(self):
+        ret = self.common_evolution_function(selectnum=1)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO3"
+        else:
+            return "2_STORY_EVO2"
+        
+    def _2_story_evo3(self):
+        ret = self.common_evolution_function(selectnum=2)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO4"
+        else:
+            return "2_STORY_EVO3"
+        
+    def _2_story_evo4(self):
+        ret = self.common_evolution_function(selectnum=2)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO5"
+        else:
+            return "2_STORY_EVO4"
+        
+    def _2_story_evo5(self):
+        ret = self.common_evolution_function(selectnum=3)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO6"
+        else:
+            return "2_STORY_EVO5"
+        
+    def _2_story_evo6(self):
+        ret = self.common_evolution_function(selectnum=5)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_EVO7"
+        else:
+            return "2_STORY_EVO6"
+        
+    def _2_story_evo7(self):
+        ret = self.common_evolution_function(selectnum=5)
+        if ret == "COMMON_EVOLUTION_START":
+            return "2_STORY_AME1"
+        else:
+            return "2_STORY_EVO7"
+        
+    def _2_story_ame1(self):
+        ret =self.common_item_use_function(target1=3,target2=-1,item_pic="AME_S",use_target=1,up10=50,up1=0)
+        if ret == "COMMON_ITEM_USE_START":
+            return "2_STORY_AME2"
+        else:
+            return "2_STORY_AME1"
+
+    def _2_story_ame2(self):
+        ret =self.common_item_use_function(target1=3,target2=-1,item_pic="AME_S",use_target=4,up10=0,up1=-1)
+        if ret == "COMMON_ITEM_USE_START":
+            return "2_STORY_SKILL_CHANGE1"
+        else:
+            return "2_STORY_AME2"
     
+    def _2_story_skill_change1(self):
+        #オーダイル アクアブレイク
+        ret = self.common_skill_change_function(1,3,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE2"
+        else: 
+            return "2_STORY_SKILL_CHANGE1"
+        
+    def _2_story_skill_change2(self):
+        #オーダイル バブルこうせん(プクリン道場用)
+        ret = self.common_skill_change_function(1,7,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE3"
+        else: 
+            return "2_STORY_SKILL_CHANGE2"
+        
+    def _2_story_skill_change3(self):
+        #オーダイル かみくだく
+        ret = self.common_skill_change_function(1,0,"B",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE4"
+        else: 
+            return "2_STORY_SKILL_CHANGE3"
+        
+    def _2_story_skill_change4(self):
+        #オーダイル げきりん(後でれいとうビームに)
+        ret = self.common_skill_change_function(1,1,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE5"
+        else: 
+            return "2_STORY_SKILL_CHANGE4" 
+        
+    def _2_story_skill_change5(self):
+        #ファイアロー ブレイブバード
+        ret = self.common_skill_change_function(2,0,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE6"
+        else: 
+            return "2_STORY_SKILL_CHANGE5" 
+        
+    def _2_story_skill_change6(self):
+        #ファイアロー フレアドライブ
+        ret = self.common_skill_change_function(2,1,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE7"
+        else: 
+            return "2_STORY_SKILL_CHANGE6" 
+        
+    def _2_story_skill_change7(self):
+        #ファイアロー フレアドライブ
+        ret = self.common_skill_change_function(2,1,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE8"
+        else: 
+            return "2_STORY_SKILL_CHANGE7" 
+        
+    def _2_story_skill_change8(self):
+        #ファイアロー はがねのつばさ
+        ret = self.common_skill_change_function(2,4,"B",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE9"
+        else: 
+            return "2_STORY_SKILL_CHANGE8" 
+        
+    def _2_story_skill_change9(self):
+        #ファイアロー エアスラッシュ
+        ret = self.common_skill_change_function(2,3,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE10"
+        else: 
+            return "2_STORY_SKILL_CHANGE9" 
+          
+    def _2_story_skill_change10(self):
+        #ホルード
+        ret = self.common_skill_change_function(3,2,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE11"
+        else: 
+            return "2_STORY_SKILL_CHANGE10" 
+        
+    def _2_story_skill_change11(self):
+        #ホルード ぶんまわす
+        ret = self.common_skill_change_function(3,6,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE12"
+        else: 
+            return "2_STORY_SKILL_CHANGE11"   
+        
+    def _2_story_skill_change12(self):
+        #ホルード じしん
+        ret = self.common_skill_change_function(3,1,"B",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE13"
+        else: 
+            return "2_STORY_SKILL_CHANGE12"    
+        
+    def _2_story_skill_change13(self):
+        #アブソル エアスラッシュ
+        ret = self.common_skill_change_function(4,2,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE14"
+        else: 
+            return "2_STORY_SKILL_CHANGE13"    
+        
+    def _2_story_skill_change14(self):
+        #アブソル シャドークロー
+        ret = self.common_skill_change_function(4,4,"B",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE15"
+        else: 
+            return "2_STORY_SKILL_CHANGE14"    
+        
+    def _2_story_skill_change15(self):
+        #アブソル つじぎり
+        ret = self.common_skill_change_function(4,"X","A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE16"
+        else: 
+            return "2_STORY_SKILL_CHANGE15"       
+        
+    def _2_story_skill_change16(self):
+        #アブソル はたきおとす
+        ret = self.common_skill_change_function(4,11,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE17"
+        else: 
+            return "2_STORY_SKILL_CHANGE16"       
+        
+    def _2_story_skill_change17(self):
+        #デンリュウ かみなり
+        ret = self.common_skill_change_function(5,2,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE18"
+        else: 
+            return "2_STORY_SKILL_CHANGE17"     
+
+    def _2_story_skill_change18(self):
+        #デンリュウ 10まんボルト
+        ret = self.common_skill_change_function(5,5,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE19"
+        else: 
+            return "2_STORY_SKILL_CHANGE18" 
+         
+    def _2_story_skill_change19(self):
+        #デンリュウ じゅうでん
+        ret = self.common_skill_change_function(5,9,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE20"
+        else: 
+            return "2_STORY_SKILL_CHANGE19"  
+        
+    def _2_story_skill_change20(self):
+        #デンリュウ パワージェム
+        ret = self.common_skill_change_function(5,6,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE21"
+        else: 
+            return "2_STORY_SKILL_CHANGE20"  
+        
+    def _2_story_skill_change21(self):
+        #ヘラクレス メガホーン
+        ret = self.common_skill_change_function(6,1,"B",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE22"
+        else: 
+            return "2_STORY_SKILL_CHANGE21"  
+        
+    def _2_story_skill_change22(self):
+        #ヘラクレス つばめがえし
+        ret = self.common_skill_change_function(6,8,"Y",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE23"
+        else: 
+            return "2_STORY_SKILL_CHANGE22"  
+        
+    def _2_story_skill_change23(self):
+        #ヘラクレス ロックブラスト
+        ret = self.common_skill_change_function(6,5,"X",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE24"
+        else: 
+            return "2_STORY_SKILL_CHANGE23"  
+        
+    def _2_story_skill_change24(self):
+        #ヘラクレス かわらわり
+        ret = self.common_skill_change_function(6,6,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_ITEM_GIVE2"
+        else: 
+            return "2_STORY_SKILL_CHANGE24"  
+        
     def _2_story_item_give2(self):
         self.common_item_give_current_state = self.common_item_give_function(selectnum=1,target1=4,target2=0)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
@@ -13134,13 +13460,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_ITEM_GIVE_TARGET_HIGH"
         return "COMMON_ITEM_GIVE_TARGET_SIDE"
     
-    def common_item_give_target_high(self,target2):
+    def common_item_give_target_high(self,target2,use=1):
         if self.image_check("ITEM_WINDOW"):
             for i in range(target2):
                 self.etc_sendCommand("Lbutton_down")
                 self.wait(0.5)
-                
-            self.pressRep(Button.A, repeat=3, duration=0.15, wait=1.0, interval=1.0)
+            if use==1:
+                self.pressRep(Button.A, repeat=3, duration=0.15, wait=1.0, interval=1.0)
             return "COMMON_ITEM_GIVE_WINDOW_CLOSE" 
         return "COMMON_ITEM_GIVE_TARGET_HIGH"
     
@@ -13150,6 +13476,167 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def common_item_give_end(self):
         return "COMMON_ITEM_GIVE_START"
+
+    ######################################################
+    # Commonevolution
+    ######################################################
+    def common_evolution_function(self,selectnum):
+        if self.common_evolution_current_state == "COMMON_EVOLUTION_START":
+            ret = self.common_skill_change_start()
+            if ret == "COMMON_SKILL_CHANGE_START_CHECK":
+                self.common_evolution_current_state = "COMMON_EVOLUTION_START_CHECK"
+            else:
+                self.common_evolution_current_state = "COMMON_EVOLUTION_START"
+        elif self.common_evolution_current_state == "COMMON_EVOLUTION_START_CHECK":
+            ret = self.common_skill_change_start_check()
+            if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+                self.common_evolution_current_state = "COMMON_EVOLUTION_POKEMON_SELECT"
+            else:
+                self.common_evolution_current_state = "COMMON_EVOLUTION_START_CHECK" 
+        elif self.common_evolution_current_state == "COMMON_EVOLUTION_POKEMON_SELECT":
+            ret = self.common_skill_change_pokemon_select(selectnum)
+            if ret == "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN":
+                self.common_evolution_current_state = "COMMON_EVOLUTION_EXEC"
+            else:
+                self.common_evolution_current_state = "COMMON_EVOLUTION_POKEMON_SELECT"        
+
+        else:
+            self.common_evolution_current_state = self.STATE_COMMON_EVOLUTION_FUNCTION[self.common_evolution_current_state]()
+
+        return self.common_evolution_current_state
+    
+    def common_evolution_exec(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.renda_button(rendabutton="B",
+                                 endpicture="TEXT_BLACK_COMMENT",
+                                 not_endpicture="ZA_ROYALE",
+                                 sub_button="A",sub_picture="TEXT_BLACK_COMMENT",
+                                 sub2_button="A",sub2_picture="2_SELECT",
+                                 sub3_button="A",sub3_picture="3_SELECT",
+                                 sub4_button="A",sub4_picture="4_SELECT",
+                                 sub5_button="A",sub5_picture="HELP_MARKER",
+                                 sub6_button="A",sub6_picture="MORNING",
+                                 sub7_button="A",sub7_picture="NIGHT"):
+                return "COMMON_EVOLUTION_LOOP"
+        return "COMMON_EVOLUTION_EXEC"
+    
+    def common_evolution_loop(self):
+        if self.renda_button(rendabutton="B",
+                            endpicture="FIELD_W",
+                            endpicture2="FIELD_BACK_W",
+                            not_endpicture="ZA_ROYALE"):
+            return "COMMON_EVOLUTION_END"
+        return "COMMON_EVOLUTION_LOOP"
+    
+    def common_evolution_end(self,target1):
+        return "COMMON_EVOLUTION_START"
+    
+    ######################################################
+    # Common item_use
+    ######################################################
+    def common_item_use_function(self,target1,target2=-1,item_pic="RETURN_TRUE",use_target=1,up10=0,up1=-1):
+        if self.common_item_use_current_state == "COMMON_ITEM_USE_START":
+            ret = self.common_skill_change_start()
+            if ret == "COMMON_SKILL_CHANGE_START_CHECK":
+                self.common_item_use_current_state = "COMMON_ITEM_USE_START_CHECK"
+            else:
+                self.common_item_use_current_state = "COMMON_ITEM_USE_START"
+        elif self.common_item_use_current_state == "COMMON_ITEM_USE_START_CHECK":
+            ret = self.common_skill_change_start_check()
+            if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+                self.common_item_use_current_state = "COMMON_ITEM_USE_WINDOW_OPEN"
+            else:
+                self.common_item_use_current_state = "COMMON_ITEM_USE_START_CHECK"
+
+        elif self.common_item_use_current_state == "COMMON_ITEM_USE_TARGET_SIDE":
+            self.common_item_use_current_state = self.common_item_use_target_side(target1=target1) 
+        elif self.common_item_use_current_state == "COMMON_ITEM_USE_TARGET_HIGH":
+            self.common_item_use_current_state = self.common_item_use_target_high(target2=target2,item_pic=item_pic,use_target=use_target,up10=up10,up1=up1) 
+        else:
+            self.common_item_use_current_state = self.STATE_COMMON_ITEM_USE_FUNCTION[self.common_item_use_current_state]()
+
+        return self.common_item_use_current_state
+    
+    def common_item_use_window_open(self):
+        if self.image_check("X_MENU_OPEN"):
+            if self.image_check("SIDE_SELECT_X_MENU_W"):
+                self.wait(0.5)
+                self.etc_sendCommand("Lbutton_down")
+                self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+                return "COMMON_ITEM_USE_TARGET_SIDE"
+            elif self.image_check("POKEMON_MENU_X_MENU_W"):
+                for i in range(7):
+                    self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+        return "COMMON_ITEM_USE_WINDOW_OPEN"
+    
+    def common_item_use_target_side(self,target1):
+        ret = self.common_item_give_target_side(target1=target1)
+        if ret == "COMMON_ITEM_GIVE_TARGET_SIDE":
+            self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_SIDE"
+        else:
+            self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_HIGH"
+        return self.common_item_use_current_state
+    
+    def common_item_use_target_high(self,target2,item_pic="RETURN_TRUE",use_target=1,up10=0,up1=-1):
+        if target2 >=0:
+            ret = self.common_item_give_target_high(target2=target2)
+            if (ret == "COMMON_ITEM_GIVE_WINDOW_CLOSE"):
+                self.common_item_use_current_state = "COMMON_ITEM_USE_WINDOW_CLOSE"
+            else:
+                self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_SIDE"
+        else:
+            for i in range(30):
+                if i == 0:
+                    ret = self.common_item_give_target_high(target2=0,use=0)
+                else:
+                    ret = self.common_item_give_target_high(target2=1,use=0)
+                    
+                self.wait(1.0)
+                if self.image_check(item_pic) and (ret == "COMMON_ITEM_GIVE_WINDOW_CLOSE"):
+                    self.common_item_use_current_state = "COMMON_ITEM_USE_WINDOW_CLOSE"
+                    self.wait(2.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(2.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(2.0)
+                    for i in range(use_target-1):
+                        self.etc_sendCommand("Lbutton_right")
+                        self.wait(2.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(2.0)
+
+                    for i in range(up10):
+                        self.etc_sendCommand("Lbutton_right")
+                        self.wait(1.0)
+                    if up1 < 0:
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(1.0)
+                    else:
+                        for i in range(up1):
+                            self.etc_sendCommand("Lbutton_up")
+                            self.wait(1.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(2.0)
+                    break
+                else:
+                    self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_SIDE"
+
+        return self.common_item_use_current_state
+    
+    def common_item_use_window_close(self):
+        if self.renda_button(rendabutton="B",
+                            endpicture="FIELD_W",
+                            endpicture2="FIELD_BACK_W",
+                            not_endpicture="ZA_ROYALE",
+                            sub_button="A",sub_picture="TEXT_BLACK_COMMENT",):
+            return "COMMON_ITEM_USE_END"
+        return "COMMON_ITEM_GIVE_WINDOW_CLOSE"
+
+    def common_evolution_end(self):
+        return "COMMON_ITEM_USE_START"
     
     ######################################################
     # Common Map
@@ -16651,6 +17138,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     template_path ='ZA_Story\Common\\boxmenu.png',
                                     threshold = 0.88,
                                     use_gray = True,
+                                    show_value = self.show_value_bool,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [20,40,850,700],
+                                    crop_template  = []
+                                    ):
+                return True
+            else:
+                return False
+        elif targetimage=="AME_S":
+            if self.isContainTemplateUltra_get_max_val(                
+                                    template_path ='ZA_Story\Common\\ame_s.png',
+                                    threshold = 0.95,
+                                    use_gray = False,
                                     show_value = self.show_value_bool,
                                     show_position = True,
                                     show_only_true_rect  = False,
