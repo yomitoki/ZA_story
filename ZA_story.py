@@ -61,7 +61,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #self.main_current_state_init="MAIN_4_E_LANK"
         #self.main_current_state_init="MAIN_5_D_LANK"
         self.main_current_state_init="MAIN_6_C_LANK"
-        #self.main_current_state_init="MAIN_7_B_LANK"
+        self.main_current_state_init="MAIN_7_B_LANK"
         #self.main_current_state_init="MAIN_8_STORY_LAST"
         #self.main_current_state_init="" 
         
@@ -1038,23 +1038,25 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_YUKARI_93": self._6_story_yukari_93,    
             "6_STORY_YUKARI_94": self._6_story_yukari_94,    
             "6_STORY_YUKARI_95": self._6_story_yukari_95,    
-            "6_STORY_YUKARI_96": self._6_story_yukari_96,    
-            "6_STORY_YUKARI_97": self._6_story_yukari_97,    
-            "6_STORY_YUKARI_98": self._6_story_yukari_98,    
-            "6_STORY_YUKARI_99": self._6_story_yukari_99,    
-            "6_STORY_YUKARI_100": self._6_story_yukari_100,    
-
-            #CPEND
-            
             
             "6_STORY_END": self._6_story_end,
         }
         self._6_story_current_state="6_STORY_START_CHECK" 
-        self._6_story_current_state_init= "6_STORY_YUKARI_50"
+        self._6_story_current_state_init= "6_STORY_YUKARI_92"
         
         self.STATE_7_STORY_FUNCTION = {
             "7_STORY_START_CHECK": self._7_story_start_check,
-            #CPSTART
+
+            "7_STORY_MAPPING_1": self._7_story_mapping_1,
+            "7_STORY_MAPPING_2": self._7_story_mapping_2,
+            "7_STORY_MAPPING_3": self._7_story_mapping_3,
+            "7_STORY_MAPPING_4": self._7_story_mapping_4,    
+            "7_STORY_MAPPING_5": self._7_story_mapping_5,
+            "7_STORY_MAPPING_6": self._7_story_mapping_6,
+            "7_STORY_MAPPING_7": self._7_story_mapping_7,
+            "7_STORY_MAPPING_8_0": self._7_story_mapping_8_0, 
+            "7_STORY_MAPPING_8": self._7_story_mapping_8,   
+
             "7_STORY_GURI_1": self._7_story_guri_1, 
             "7_STORY_GURI_2": self._7_story_guri_2, 
             "7_STORY_GURI_3": self._7_story_guri_3, 
@@ -1161,7 +1163,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "7_STORY_END": self._7_story_end,
         }
         self._7_story_current_state="7_STORY_START_CHECK" 
-        self._7_story_current_state_init= "7_STORY_START_CHECK" 
+        self._7_story_current_state_init= "7_STORY_GURI_87"
         
         self.STATE_8_STORY_FUNCTION = {
             "8_STORY_START_CHECK": self._8_story_start_check,
@@ -1324,12 +1326,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_GOTO_SELECT2": self.Common_goto_select2,
             "COMMON_CHANGE_TIME": self.Common_change_time,
             "COMMON_CHECK_TIME": self.Common_check_time,
-            "COMMON_GOTO_JUMP" : self.Common_goto_jump#dummy
+            "COMMON_GOTO_JUMP" : self.Common_goto_jump,#dummy
+            
+            "COMMON_EVENT_MARKER_CHECK": self.Common_event_marker_check,
             
             #"COMMON_BATTLE_RETURN" : self.Common_battle_return,
+            "COMMON_FALSE_RETURN":self.Common_false_return,
         }
         self.Common_current_state="COMMON_START"
         self.map_cursor_reset=0
+        
+
+        
         
     ######################################################
     # Commonfunction
@@ -1881,7 +1889,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",event_picture="",sleeptime=0.5):
+    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5):
         while True:
             self.checkIfAlive()
             
@@ -1960,6 +1968,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                             checkerflg=1
                             self.wait(sleeptime)
+                if sub9_picture != "":
+                    if self.image_check(sub9_picture):
+                        if sub9_button == "A":
+                            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
                               
                 if event_picture != "":
                     if self.image_check(event_picture):
@@ -1983,6 +1997,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         elif mode == 1 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="TEXT_WHITE_COMMENT"):
             return True
+        elif mode == 2 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="TEXT_WHITE_COMMENT"):
+            return True
+
+        
     def mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture=""):
         count=0
         self.no_Cplus=0
@@ -2074,7 +2092,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZL_ACTION("")
-                        
+                    elif escape_flag==3:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2100,7 +2125,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZL_ACTION("")
-
+                    elif escape_flag==3:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2125,7 +2157,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZL_ACTION("")
-
+                    elif escape_flag==3:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2150,7 +2189,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZL_ACTION("")
-                            
+                    elif escape_flag==3:
+                        #回避行動用
+                        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            if self.image_check("C+"):
+                                self.ZL_ACTION("END")
+                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
@@ -2561,6 +2607,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,battle_mode=battle_mode)
     
         elif self.image_check("CHAT_MARKER"):
+            while True:
+                self.checkIfAlive()
+                ret = self.Common_Event_check(markertype=markertype)
+                if ret == "START":
+                    break
+                elif ret == "FALSE":
+                    return prg_ret
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return bkprg_ret
         elif self.image_check("TEXT_BLACK_COMMENT"):
@@ -2585,11 +2638,40 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
                 if markertype==0:
                     if self.markerdir("EVENT"):
-                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                        
+                        while True:
+                            self.checkIfAlive()
+                            ret = self.Common_Event_check(markertype=markertype)
+                            if ret == "START":
+                                break
+                            elif ret == "FALSE":
+                                return prg_ret
+                        for i in range(10):
+                            self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                            
+                            if self.image_check("CHAT_MARKER"):
+                                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                            elif self.image_check("TEXT_WHITE_COMMENT"):
+                                return prg_ret
                         return noprg_ret
                 elif markertype==1:
                     if self.markerdir("SIDE_MARKER"):
-                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                        
+                        while True:
+                            self.checkIfAlive()
+                            ret = self.Common_Event_check(markertype=markertype)
+                            if ret == "START":
+                                break
+                            elif ret == "FALSE":
+                                return prg_ret
+
+                        for i in range(10):
+                            self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                            
+                            if self.image_check("CHAT_MARKER"):
+                                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                            elif self.image_check("TEXT_WHITE_COMMENT"):
+                                return prg_ret
                         return noprg_ret
                 else:
                     print("w3er")
@@ -2649,13 +2731,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             return prg_ret
         
     
-    def story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub8_button="A",sub8_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,sleeptime=0.5):
+    def story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub9_button="A",sub9_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,mode=0,sleeptime=0.5):
         selected_out_check=0
-        #基本的にフィールドは以下でチェックするが、場所によって誤検知する場合がある。
-        endpicture4="FIELD_W"
-        endpicture5="FIELD_BACK_W"
-        endpicture6="RETURN FALSE"
+
+        if mode == 0:
+            endpicture4="Filed_Hard_Check_0"
+        else:
+            endpicture4="Filed_Hard_Check_1"
         filed_check_count=0
+        nofiled_check=0
         #コメントチェックができるまでループ
         for i in range(30):
             if (self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))):
@@ -2664,7 +2748,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 break
             elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
                 return True
-            elif ((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            elif (not (self.image_check("Filed_Hard_Check_0"))):
+                nofiled_check=1
+            elif (nofiled_check==1 and((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("Filed_Hard_Check_0")))):
                 if filed_check_count > 5:
                     break
                 filed_check_count+=1
@@ -2684,18 +2770,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  endpicture2="ESCAPE",
                                  endpicture3=selected_pic,
                                  endpicture4=endpicture4,
-                                 endpicture5=endpicture5,
-                                 endpicture6=endpicture6,
                                  endpicture7=endpicture7,
                                  not_endpicture="ZA_ROYALE",
                                  sub_button="A",sub_picture="TEXT_BLACK_COMMENT",
-                                 sub2_button="A",sub2_picture="2_SELECT",
-                                 sub3_button="A",sub3_picture="3_SELECT",
-                                 sub4_button="A",sub4_picture="4_SELECT",
-                                 sub5_button="A",sub5_picture="HELP_MARKER",
-                                 sub6_button="A",sub6_picture="MORNING",
-                                 sub7_button="A",sub7_picture="NIGHT",
-                                 sub8_button=sub8_button,sub8_picture=sub8_picture,
+                                 sub2_button="A",sub2_picture="1_SELECT",
+                                 sub3_button="A",sub3_picture="2_SELECT",
+                                 sub4_button="A",sub4_picture="3_SELECT",
+                                 sub5_button="A",sub5_picture="4_SELECT",
+                                 sub6_button="A",sub6_picture="HELP_MARKER",
+                                 sub7_button="A",sub7_picture="MORNING",
+                                 sub8_button="A",sub8_picture="NIGHT",
+                                 sub9_button=sub9_button,sub9_picture=sub9_picture,
                                  sleeptime=sleeptime):
                 
                 selected_out_check=0
@@ -2712,7 +2797,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         break
                     elif self.image_check(endpicture7):
                         break
-                    elif ((self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))) and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+                    elif ((self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT")))) ):
                         self.wait(0.5)
                         #選択肢チェックのタイミングがずれたようにフォローする
                         if self.image_check(selected_pic):
@@ -2728,7 +2813,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             
                     elif self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE"):
                         break
-                    elif ((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+                    elif ((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("Filed_Hard_Check_0"))):
                         if filed_check_count > 5:
                             break
                         filed_check_count+=1
@@ -2750,10 +2835,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 break
             elif self.image_check("ZA_ROYALE"):
                 self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            elif ((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            elif ((not (self.image_check("BATTLE_BALL_CHECK") or self.image_check("ESCAPE")))and (self.image_check("Filed_Hard_Check_0"))):
                 break
         return True
-        
+       
+    def story_Template_Field_HardGaurd(self,mode=0):
+        if ( ((mode==0 and (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))) or mode==1)
+            and (self.image_check("WANINOKO_ICON") or self.image_check("ODAIRU_ICON") or self.image_check("ABSOL_ICON") or self.image_check("DEAD"))):
+            return True
+        else:
+            return False
+
     ######################################################
     # story_Template
     ###################################################### 
@@ -7453,8 +7545,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE1"
     
     def _2_story_absol_move2(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "2_STORY_ABSOL_BATTLE"
         return "2_STORY_ABSOL_MOVE2"
 
@@ -8036,8 +8128,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE3"
     
     def _2_story_mega_move4(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE5"
         return "2_STORY_MEGA_MOVE4"
     
@@ -8141,8 +8233,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE13"
     
     def _2_story_mega_move14(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
     
@@ -8185,8 +8277,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE19"
     
     def _2_story_mega_move20(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="BATTLE_BALL_CHECK",endpicture2="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
     
@@ -8836,8 +8928,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE9"
     
     def _3_story_mega_move10(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
     
@@ -8890,8 +8982,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE15"
     
     def _3_story_mega_move16(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE17"
         return "3_STORY_MEGA_MOVE16"
     
@@ -8972,8 +9064,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE24"
     
     def _3_story_mega_move25(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",endpicture3="ESCAPE",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE26"
         return "3_STORY_MEGA_MOVE25"
     
@@ -10001,8 +10093,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_23"
     
     def _5_story_karasuba_24(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_25"
         return "5_STORY_KARASUBA_24"
     
@@ -10053,8 +10145,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_29"
     
     def _5_story_karasuba_30(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_31"
         elif self.markerdir("EVENT"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
@@ -10196,8 +10288,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_45"
     
     def _5_story_karasuba_46(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():                
                 return "5_STORY_KARASUBA_47"
         return "5_STORY_KARASUBA_46"
 
@@ -11078,8 +11170,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_31"
     
     def _6_story_yukari_32(self):
-        if self.story_Template_Comment_Out():
-            return "6_STORY_YUKARI_33"
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
+                return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
     
     def _6_story_yukari_33(self):
@@ -11136,8 +11229,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_38"
     
     def _6_story_yukari_39(self):
-        if self.story_Template_Comment_Out():
-            return "6_STORY_YUKARI_40"
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
+                return "6_STORY_YUKARI_40"
         return "6_STORY_YUKARI_39"
         
     def _6_story_yukari_40(self):
@@ -11242,8 +11336,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_51"
     
     def _6_story_yukari_52(self):
-        if self.story_Template_Comment_Out():
-            return "6_STORY_YUKARI_53"
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
+                return "6_STORY_YUKARI_53"
         return "6_STORY_YUKARI_52"
     
     def _6_story_yukari_53(self):
@@ -11257,252 +11352,191 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_54"
     
     def _6_story_yukari_55(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_56"
         else:
             return "6_STORY_YUKARI_55"
     
     def _6_story_yukari_56(self):
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "6_STORY_YUKARI_57"
+        else:
+            return "6_STORY_YUKARI_56"
+
+    def _6_story_yukari_57(self):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "2_STORY_ABSOL_MOVE57"
-        return "6_STORY_YUKARI_56"
-
-    def _6_story_yukari_57(self):
-        if self.story_Template_Comment_Out():
             return "6_STORY_YUKARI_58"
         return "6_STORY_YUKARI_57"
     
     def _6_story_yukari_58(self):
-        return "6_STORY_YUKARI_58"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_59",green_check=0)
     
     def _6_story_yukari_59(self):
-        return "6_STORY_YUKARI_59"
+        #連戦をまとめて処理する
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_60",noprg_ret="6_STORY_YUKARI_58",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _6_story_yukari_60(self):
-        return "6_STORY_YUKARI_60"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_59",prg_ret= "6_STORY_YUKARI_61")
     
     def _6_story_yukari_61(self):
-        return "6_STORY_YUKARI_61"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "6_STORY_YUKARI_62"
+        else:
+            return "6_STORY_YUKARI_61"
     
     def _6_story_yukari_62(self):
-
-        return "6_STORY_YUKARI_62"
+        ret = self.Common_goto(1,1,2)#ホテルシューリッシュへ移動
+        if ret == "START":
+            return "6_STORY_YUKARI_63"
+        else:
+            return "6_STORY_YUKARI_62"
     
     def _6_story_yukari_63(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=1.8, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_64"
         return "6_STORY_YUKARI_63"
     
     def _6_story_yukari_64(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=3.5, wait=0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_65"
         return "6_STORY_YUKARI_64"
     
     def _6_story_yukari_65(self):
-
-        return "6_STORY_YUKARI_65"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_65",prg_ret= "6_STORY_YUKARI_66")
     
     def _6_story_yukari_66(self):
-
-        return "6_STORY_YUKARI_66"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_65",prg_ret="6_STORY_YUKARI_67",noprg_ret="6_STORY_YUKARI_66",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_67(self):
-
-        return "6_STORY_YUKARI_67"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_66",prg_ret="6_STORY_YUKARI_68")
     
     def _6_story_yukari_68(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=3.4, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_69"
         return "6_STORY_YUKARI_68"
     
     def _6_story_yukari_69(self):
-        return "6_STORY_YUKARI_69"
-    
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_69",prg_ret= "6_STORY_YUKARI_70")
+
     def _6_story_yukari_70(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_69",prg_ret="6_STORY_YUKARI_71",noprg_ret="6_STORY_YUKARI_70",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
-        return "6_STORY_YUKARI_70"
-    
     def _6_story_yukari_71(self):
-
-        return "6_STORY_YUKARI_71"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_70",prg_ret="6_STORY_YUKARI_72")
     
     def _6_story_yukari_72(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=3.4, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_73"
         return "6_STORY_YUKARI_72"
     
     def _6_story_yukari_73(self):
-
-        return "6_STORY_YUKARI_73"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_73",prg_ret= "6_STORY_YUKARI_74")
     
     def _6_story_yukari_74(self):
-
-        return "6_STORY_YUKARI_74"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_73",prg_ret="6_STORY_YUKARI_75",noprg_ret="6_STORY_YUKARI_74",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_75(self):
-
-        return "6_STORY_YUKARI_75"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_74",prg_ret="6_STORY_YUKARI_76")
     
     def _6_story_yukari_76(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=3.4, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_77"
         return "6_STORY_YUKARI_76"
-    
+        
     def _6_story_yukari_77(self):
-
-        return "6_STORY_YUKARI_77"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_77",prg_ret= "6_STORY_YUKARI_78")
     
     def _6_story_yukari_78(self):
-
-        return "6_STORY_YUKARI_78"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_77",prg_ret="6_STORY_YUKARI_79",noprg_ret="6_STORY_YUKARI_78",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_79(self):
-
-        return "6_STORY_YUKARI_79"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_78",prg_ret="6_STORY_YUKARI_80")
     
     def _6_story_yukari_80(self):
-
-        return "6_STORY_YUKARI_80"
-    
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=1.9, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_81"
+        return "6_STORY_YUKARI_80"   
+        
     def _6_story_yukari_81(self):
-
-        return "6_STORY_YUKARI_81"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_81",prg_ret= "6_STORY_YUKARI_82")
     
     def _6_story_yukari_82(self):
-
-        return "6_STORY_YUKARI_82"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_81",prg_ret="6_STORY_YUKARI_83",noprg_ret="6_STORY_YUKARI_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_83(self):
-        return "6_STORY_YUKARI_83"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_82",prg_ret="6_STORY_YUKARI_84")
     
     def _6_story_yukari_84(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=1.9, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_85"
         return "6_STORY_YUKARI_84"
     
+    #ジガルデの対戦文ではない？
     def _6_story_yukari_85(self):
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_85",prg_ret= "6_STORY_YUKARI_86")
 
-        return "6_STORY_YUKARI_85"
-    
     def _6_story_yukari_86(self):
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_85",prg_ret="6_STORY_YUKARI_87",noprg_ret="6_STORY_YUKARI_86",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
-        return "6_STORY_YUKARI_86"
-    
     def _6_story_yukari_87(self):
-
-        return "6_STORY_YUKARI_87"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_86",prg_ret="6_STORY_YUKARI_88")
     
     def _6_story_yukari_88(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=0.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_89"
         return "6_STORY_YUKARI_88"
     
     def _6_story_yukari_89(self):
-
-        return "6_STORY_YUKARI_89"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_89",prg_ret= "6_STORY_YUKARI_90")
     
     def _6_story_yukari_90(self):
-
-        return "6_STORY_YUKARI_90"
-    
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_89",prg_ret="6_STORY_YUKARI_91",noprg_ret="6_STORY_YUKARI_90",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+   
     def _6_story_yukari_91(self):
-
-        return "6_STORY_YUKARI_91"
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_90",prg_ret="6_STORY_YUKARI_92")
     
     def _6_story_yukari_92(self):
-
+        if self.markerdir("EVENT"):
+            self.press(Direction(Stick.LEFT,88), duration=1.9, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "6_STORY_YUKARI_93"
         return "6_STORY_YUKARI_92"
     
     def _6_story_yukari_93(self):
-
-        return "6_STORY_YUKARI_93"
+        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_93",prg_ret= "6_STORY_YUKARI_94")
     
     def _6_story_yukari_94(self):
-
-        return "6_STORY_YUKARI_94"
+        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_93",prg_ret="6_STORY_YUKARI_95",noprg_ret="6_STORY_YUKARI_94",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_95(self):
-
-        return "6_STORY_YUKARI_95"
-    
-    def _6_story_yukari_96(self):
-        return "6_STORY_YUKARI_96"
-    
-    def _6_story_yukari_97(self):
-        return "6_STORY_YUKARI_97"
-    
-    def _6_story_yukari_98(self):
-        return "6_STORY_YUKARI_98"
-    
-    def _6_story_yukari_99(self):
-        return "6_STORY_YUKARI_99"
-    
-    def _6_story_yukari_100(self):
-        return "6_STORY_YUKARI_100"
-    
-    def _6_story_yukari_101(self):
-        return "6_STORY_YUKARI_101"
-    
-    def _6_story_yukari_102(self):
-        return "6_STORY_YUKARI_102"
-    
-    def _6_story_yukari_103(self):
-        return "6_STORY_YUKARI_103"
-    
-    def _6_story_yukari_104(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_104",prg_ret="6_STORY_YUKARI_105",green_check=0)
-    
-    def _6_story_yukari_105(self):
-        # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_104",prg_ret="6_STORY_YUKARI_106",noprg_ret="6_STORY_YUKARI_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
-    
-    def _6_story_yukari_106(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_105",prg_ret= "6_STORY_YUKARI_107")
-    
-    def _6_story_yukari_107(self):
-        return "6_STORY_YUKARI_107"
-    
-    def _6_story_yukari_108(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_108",prg_ret="6_STORY_YUKARI_109",green_check=0)
-
-    
-    def _6_story_yukari_109(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_108",prg_ret="6_STORY_YUKARI_110",noprg_ret="6_STORY_YUKARI_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
-
-    
-    def _6_story_yukari_110(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_109",prg_ret= "6_STORY_YUKARI_111")
-
-    def _6_story_yukari_111(self):
-       return "6_STORY_YUKARI_111"
-
-    def _6_story_yukari_112(self):
-        return "6_STORY_YUKARI_112"
-
-    def _6_story_yukari_113(self):
-        return "6_STORY_YUKARI_113"
-
-    def _6_story_yukari_114(self):
-        return "6_STORY_YUKARI_114"
-
-    def _6_story_yukari_115(self):
-        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
-            self.wait(0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            return "6_STORY_YUKARI_116"
-        return "6_STORY_YUKARI_115"
-
-    def _6_story_yukari_116(self):
-        if self.image_check("TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="2_SELECT",sub3_button="A",sub3_picture="3_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-                return "6_STORY_YUKARI_117"
-        return "6_STORY_YUKARI_116"
-
-    def _6_story_yukari_117(self):
-        ret = self.Common_goto(1,1,0)#サビ組事務所へ移動
-        if ret == "START":
-            return "6_STORY_YUKARI_118"
-        else:
-            return "6_STORY_YUKARI_117"
-
-       
-       
+        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_94",prg_ret="6_STORY_END")
     
     def _6_story_end(self):
         return "6_STORY_START_CHECK"
@@ -11513,307 +11547,748 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     def _7_story_start_check(self):
         if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
-            return "5_STORY_MAPPING_1"
+            return "7_STORY_MAPPING_1"
         return "7_STORY_START_CHECK"
     
     
-    ###CPSTART
+    def _7_story_mapping_1(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_MAPPING_2"
+        else:
+            return "7_STORY_MAPPING_1"
+    
+    def _7_story_mapping_2(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(1,1,0)#クェーサー社移動で位置確定
+        if ret == "START":
+            return "7_STORY_MAPPING_3"
+        else:
+            return "7_STORY_MAPPING_2"
+
+    def _7_story_mapping_3(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,350), duration=9.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,0), duration=13.3, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_MAPPING_4"
+        return "7_STORY_MAPPING_3"
+        
+    def _7_story_mapping_4(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE18"):
+                print("MOVEPOINT_TARGET_W_ZONE18")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE18"):
+                print("MOVEPOINT_PIC_W_ZONE18")
+            
+        else:
+            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE18",pic2="MOVEPOINT_PIC_W_ZONE18") == True:
+                    self.Common_goto_jump()
+                    return "7_STORY_MAPPING_5"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "7_STORY_MAPPING_1"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "7_STORY_MAPPING_4"
+            else:
+                return "7_STORY_MAPPING_4"
+        return "7_STORY_MAPPING_4"
+       
+    def _7_story_mapping_5(self):
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_MAPPING_6"
+        else:
+            return "7_STORY_MAPPING_5"
+    
+    def _7_story_mapping_6(self):
+        ### AUTO_SAVE_POINT
+        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌ移動で位置確定
+        if ret == "START":
+            return "7_STORY_MAPPING_7"
+        else:
+            return "7_STORY_MAPPING_6"
+
+    def _7_story_mapping_7(self):
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,340), duration=3.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,90), duration=10.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=9.0, wait=0.5)
+            self.press(Direction(Stick.LEFT,90), duration=9.5, wait=0.5)
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=0.5)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_MAPPING_8_0"
+        return "7_STORY_MAPPING_7"
+    
+    def _7_story_mapping_8_0(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.wait(0.5)
+            self.battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,battle_mode=1,mode=1)
+            if not self.image_check("EYE_CHECK_HIGH_POKE"):
+                return "7_STORY_MAPPING_8"
+        return "7_STORY_MAPPING_8_0"
+            
+    def _7_story_mapping_8(self):
+        if self.check_picture==1:
+            if self.image_check("MOVEPOINT_TARGET_W_ZONE19"):
+                print("MOVEPOINT_TARGET_W_ZONE19")
+            if self.image_check("MOVEPOINT_PIC_W_ZONE19"):
+                print("MOVEPOINT_PIC_W_ZONE19")
+            
+        else:
+            if self.image_check("EYE_CHECK_HIGH_POKE"):
+                return "7_STORY_MAPPING_8_0"
+            else:
+                ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
+            
+            if ret == "MOVEPOINT_PIC":
+                self.wait(1.0)
+                if self.Common_mappic_check(pic1="MOVEPOINT_TARGET_W_ZONE19",pic2="MOVEPOINT_PIC_W_ZONE19") == True:
+                    self.Common_goto_jump()
+                    return "7_STORY_GURI_1"
+                else:
+                    #登録できていない場合、移動元からやり直し
+                    self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    return "7_STORY_MAPPING_5"
+            elif ret == "START":
+                #想定外にこちらに来た場合は開きなおし
+                self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                return "7_STORY_MAPPING_8"
+            else:
+                return "7_STORY_MAPPING_8"
+        return "7_STORY_MAPPING_8"
+       
        
     def _7_story_guri_1(self):
-        return "7_STORY_GURI_1"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_GURI_2"
+        else:
+            return "7_STORY_GURI_1"
     
     def _7_story_guri_2(self):
-        return "7_STORY_GURI_2"
+        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        if ret == "START":
+            return "7_STORY_GURI_3"
+        else:
+            return "7_STORY_GURI_2"
     
     def _7_story_guri_3(self):
-
+        ### AUTO_SAVE_POINT
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=8.0, wait=1.0)
+            return "7_STORY_GURI_4"
         return "7_STORY_GURI_3"
 
     def _7_story_guri_4(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_4",prg_ret="7_STORY_GURI_5",green_check=0)
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_5"
+        return "7_STORY_GURI_4"
             
     def _7_story_guri_5(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_4",prg_ret="7_STORY_GURI_6",noprg_ret="7_STORY_GURI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
-
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_6"
+        return "7_STORY_GURI_5"
+    
     def _7_story_guri_6(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_5",prg_ret= "7_STORY_GURI_7")
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_7"
+        return "7_STORY_GURI_6"
 
     def _7_story_guri_7(self):
-
-        return "7_STORY_GURI_7"
+        self.battle_zone_loop_num = 1
+        self.no_Cplus=0
+        self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
+        self.wait(self.SLEEPLIST[9][2])
+        if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+            return "7_STORY_GURI_8"
+        else: 
+            return "7_STORY_GURI_7"
     
     def _7_story_guri_8(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_8",prg_ret="7_STORY_GURI_9",green_check=0)
-
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_GURI_9"
+        else:
+            return "7_STORY_GURI_8"
     
     def _7_story_guri_9(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_8",prg_ret="7_STORY_GURI_10",noprg_ret="7_STORY_GURI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
-
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "7_STORY_GURI_10"
+        else:
+            return "7_STORY_GURI_9"
     
     def _7_story_guri_10(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_9",prg_ret= "7_STORY_GURI_11")
-
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_11"
+        return "7_STORY_GURI_10"
     
     def _7_story_guri_11(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_12"
         return "7_STORY_GURI_11"
     
     def _7_story_guri_12(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            if self.markerdir("EVENT"):
+                self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "7_STORY_GURI_13"
         return "7_STORY_GURI_12"
     
     def _7_story_guri_13(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_14"
         return "7_STORY_GURI_13"
     
     def _7_story_guri_14(self):
-        return "7_STORY_GURI_14"
-    
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_GURI_15"
+        else:
+            return "7_STORY_GURI_14"
+        
     def _7_story_guri_15(self):
-        return "7_STORY_GURI_15"
+        ret = self.Common_goto(2,0,-1)#ポケセンターイーベルへ移動
+        if ret == "START":
+            return "7_STORY_GURI_16"
+        else:
+            return "7_STORY_GURI_15"
     
     def _7_story_guri_16(self):
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,180), duration=1.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,150), duration=8.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,60), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,50), duration=2.0, wait=1.0)
+            return "7_STORY_GURI_17"
         return "7_STORY_GURI_16"
     
     def _7_story_guri_17(self):
+        if (not (self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"))):
+            if self.story_Template_Comment_Out():
+                return "7_STORY_GURI_18"
         return "7_STORY_GURI_17"
     
     def _7_story_guri_18(self):
+        if self.mega_evolution_battle_mode_select(mode=2,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+            return "7_STORY_GURI_19"
         return "7_STORY_GURI_18"
     
     def _7_story_guri_19(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_20"
         return "7_STORY_GURI_19"
     
     def _7_story_guri_20(self):
-        return "7_STORY_GURI_20"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_GURI_21"
+        else:
+            return "7_STORY_GURI_20"
     
     def _7_story_guri_21(self):
-        return "7_STORY_GURI_21"
+        ret = self.Common_goto(3,0,5)#カフェソレイユへ移動
+        if ret == "START":
+            return "7_STORY_GURI_22"
+        else:
+            return "7_STORY_GURI_21"
             
     def _7_story_guri_22(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,0), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=1.0, wait=1.0)
+            return "7_STORY_GURI_23"
         return "7_STORY_GURI_22"
     
     def _7_story_guri_23(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_24"
         return "7_STORY_GURI_23"
     
     def _7_story_guri_24(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            return "7_STORY_GURI_25"
         return "7_STORY_GURI_24"
     
     def _7_story_guri_25(self):
-        return "7_STORY_GURI_25"
-    
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_26",green_check=0)
+
     def _7_story_guri_26(self):
-        return "7_STORY_GURI_26"
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_27",noprg_ret="7_STORY_GURI_26",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
     
     def _7_story_guri_27(self):
-        return "7_STORY_GURI_27"
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_26",prg_ret= "7_STORY_GURI_28")
     
     def _7_story_guri_28(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,150), duration=1.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_29"
         return "7_STORY_GURI_28"
     
     def _7_story_guri_29(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,140), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,0), duration=2.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            return "7_STORY_GURI_30"
         return "7_STORY_GURI_29"
     
     def _7_story_guri_30(self):
-        return "7_STORY_GURI_30"
-    
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_31",green_check=0)
+
     def _7_story_guri_31(self):
-        return "7_STORY_GURI_31"
-    
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_32",noprg_ret="7_STORY_GURI_31",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
+
     def _7_story_guri_32(self):
-        return "7_STORY_GURI_32"
-    
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
+
     def _7_story_guri_33(self):
+        #AUTOSAVE
+        if self.image_check("Filed_Hard_Check_0"):
+            self.ROTOM_GLIDE(dir=110,a_count=40)
+            return "7_STORY_GURI_34"
         return "7_STORY_GURI_33"
 
     def _7_story_guri_34(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_35"
         return "7_STORY_GURI_34"
     
     def _7_story_guri_35(self):
+        if self.mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+            return "7_STORY_GURI_36"
         return "7_STORY_GURI_35"
         
     def _7_story_guri_36(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_37"
         return "7_STORY_GURI_36"
     
     def _7_story_guri_37(self):
-        return "7_STORY_GURI_37"
+        ### AUTO_SAVE_POINT
+        #失敗時に再実施できるようにマップ移動から開始する。
+        ret = self.Common_change_time_set(check_timing="MORNING")
+        if ret == "START":
+            return "7_STORY_GURI_38"
+        else:
+            return "7_STORY_GURI_37"
 
     def _7_story_guri_38(self):
-        return "7_STORY_GURI_38"
+        ret = self.Common_goto(3,0,0)#カフェソレイユへ移動
+        if ret == "START":
+            return "7_STORY_GURI_39"
+        else:
+            return "7_STORY_GURI_38"
     
     def _7_story_guri_39(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_39",prg_ret="7_STORY_GURI_40",green_check=0)
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,180), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=8.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,10), duration=0.3, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_40"
+        return "7_STORY_GURI_39"
     
     def _7_story_guri_40(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_39",prg_ret="7_STORY_GURI_41",noprg_ret="7_STORY_GURI_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        if self.image_check("Filed_Hard_Check_0"):
+            if self.image_check("FIELD1"):
+                self.wait(0.5)
+                self.etc_sendCommand("Lbutton_up")
+            elif self.image_check("FIELD_BACK1"):
+                return "7_STORY_GURI_41"
+            else:
+                self.etc_sendCommand("Lbutton_left")
+                self.wait(0.5)
+                return "7_STORY_GURI_40"
+        return "7_STORY_GURI_40"
     
     def _7_story_guri_41(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_40",prg_ret= "7_STORY_GURI_42")
+        if self.image_check("Filed_Hard_Check_0"):
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.wait(3.0)
+            self.press(Direction(Stick.LEFT,100), duration=0.1, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.wait(1.0)
+            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            return "7_STORY_GURI_42"
+        return "7_STORY_GURI_41"
     
     def _7_story_guri_42(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            if self.markerdir("EVENT"):
+                self.press(Direction(Stick.LEFT,0), duration=4.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,270), duration=10.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,190), duration=1.0, wait=1.0)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "7_STORY_GURI_43"
         return "7_STORY_GURI_42"
+
     
     def _7_story_guri_43(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,30), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,280), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,300), duration=3.0, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,180), duration=0.7, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=1.0, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,0), duration=1.2, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.wait(2.0)
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.press(Direction(Stick.LEFT,0), duration=1.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.wait(2.0)
+            self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+            self.wait(2.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
+            self.ROTOM_GLIDE(dir=110,a_count=19)
+            self.wait(2.0)
+            self.press(Direction(Stick.LEFT,180), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=10.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,0), duration=4.0, wait=1.0)
+            return "7_STORY_GURI_44"
         return "7_STORY_GURI_43"
+
     
     def _7_story_guri_44(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_45"
         return "7_STORY_GURI_44"
     
     def _7_story_guri_45(self):
+        if self.mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+            return "7_STORY_GURI_46"
         return "7_STORY_GURI_45"
     
     def _7_story_guri_46(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_47"
         return "7_STORY_GURI_46"
 
     def _7_story_guri_47(self):
-        return "7_STORY_GURI_47"
+        ret = self.Common_change_time_set(check_timing="MORNING")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_48"
+        else:
+            return "7_STORY_GURI_47"
     
     def _7_story_guri_48(self):
-        return "7_STORY_GURI_48"
+        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "7_STORY_GURI_49"
+        else:
+            return "7_STORY_GURI_48"
     
     def _7_story_guri_49(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_50"
         return "7_STORY_GURI_49"
     
     def _7_story_guri_50(self):
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_51"
         return "7_STORY_GURI_50"
     
     def _7_story_guri_51(self):
-
-        return "7_STORY_GURI_51"
+        ret = self.Common_change_time_set(check_timing="MORNING")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_52"
+        else:
+            return "7_STORY_GURI_51"
     
     def _7_story_guri_52(self):
-        return "7_STORY_GURI_52"
+        ret = self.Common_goto(1,1,3)#ハンサムハウスへ移動
+        if ret == "START":
+            return "7_STORY_GURI_53"
+        else:
+            return "7_STORY_GURI_52"
     
     def _7_story_guri_53(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_54"
         return "7_STORY_GURI_53"
     
     def _7_story_guri_54(self):
+        if self.story_Template_Comment_Out(mode=1):
+            return "7_STORY_GURI_55"
         return "7_STORY_GURI_54"
     
     def _7_story_guri_55(self):
+        ret = self.Common_change_time_set(check_timing="MORNING",check_pic1="Filed_Hard_Check_1")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_56"
         return "7_STORY_GURI_55"
     
     def _7_story_guri_56(self):
-        return "7_STORY_GURI_56"
+        ret = self.Common_goto(1,1,3)#ハンサムハウスへ移動
+        if ret == "START":
+            return "7_STORY_GURI_57"
+        else:
+            return "7_STORY_GURI_56"
 
     def _7_story_guri_57(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,350), duration=2.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,300), duration=1.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_58"
         return "7_STORY_GURI_57"
     
     def _7_story_guri_58(self):
-        return "7_STORY_GURI_58"
-    
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_59",green_check=0)
+
     def _7_story_guri_59(self):
-        return "7_STORY_GURI_59"
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_60",noprg_ret="7_STORY_GURI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_60(self):
-        return "7_STORY_GURI_60"
-    
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_59",prg_ret= "7_STORY_GURI_61")
+
     def _7_story_guri_61(self):
-        return "7_STORY_GURI_61"
+        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        if ret == "START":
+            return "7_STORY_GURI_62"
+        else:
+            return "7_STORY_GURI_61"
     
     def _7_story_guri_62(self):
-
-        return "7_STORY_GURI_62"
+        ### AUTO_SAVE_POINT
+        if self.Common_pokemon_recovery():
+            return "7_STORY_GURI_63"
+        else:
+            return "7_STORY_GURI_62"
     
     def _7_story_guri_63(self):
-        return "7_STORY_GURI_63"
-    
+        ret = self.Common_change_time_set(check_timing="MORNING")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_64"
+        else:
+            return "7_STORY_GURI_63"
+        
     def _7_story_guri_64(self):
-        return "7_STORY_GURI_64"
+        ret = self.Common_goto(1,0,2)#ポケモン研究所へ移動
+        if ret == "START":
+            return "7_STORY_GURI_65"
+        else:
+            return "7_STORY_GURI_64"
     
     def _7_story_guri_65(self):
-
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_66"
         return "7_STORY_GURI_65"
     
     def _7_story_guri_66(self):
-
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_67"
         return "7_STORY_GURI_66"
     
     def _7_story_guri_67(self):
-
+        if self.renda_button(rendabutton="B",endpicture="3_SELECT",sub_button="A",sub_picture="TEXT_BLACK_COMMENT"):
+            self.wait(0.3)
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.3)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)            
+            self.wait(1.0)
+            return "7_STORY_GURI_68"
         return "7_STORY_GURI_67"
     
     def _7_story_guri_68(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_69"
         return "7_STORY_GURI_68"
     
     def _7_story_guri_69(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            if self.markerdir("EVENT"):
+                self.press(Direction(Stick.LEFT,140), duration=1.5, wait=1.0)
+                self.press(Direction(Stick.LEFT,30), duration=2.0, wait=1.0)
+                return "7_STORY_GURI_70"
         return "7_STORY_GURI_69"
     
     def _7_story_guri_70(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_71"
         return "7_STORY_GURI_70"
     
     def _7_story_guri_71(self):
-
-        return "7_STORY_GURI_71"
+        ret = self.Common_change_time_set(check_timing="MORNING")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_72"
+        else:
+            return "7_STORY_GURI_71"
     
     def _7_story_guri_72(self):
-
-        return "7_STORY_GURI_72"
+        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        if ret == "START":
+            return "7_STORY_GURI_73"
+        else:
+            return "7_STORY_GURI_72"
     
     def _7_story_guri_73(self):
-
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_74"
         return "7_STORY_GURI_73"
     
     def _7_story_guri_74(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_75"
         return "7_STORY_GURI_74"
     
     def _7_story_guri_75(self):
-
-        return "7_STORY_GURI_75"
+        ret = self.Common_change_time_set(check_timing="MORNING")#時間変更前のためとりあえず時間変更とする
+        if ret == "START":
+            return "7_STORY_GURI_76"
+        else:
+            return "7_STORY_GURI_75"
     
     def _7_story_guri_76(self):
-
-        return "7_STORY_GURI_76"
+        ret = self.Common_goto(4,0,6)#Wゾーン7へ移動
+        if ret == "START":
+            return "7_STORY_GURI_77"
+        else:
+            return "7_STORY_GURI_76"
     
     def _7_story_guri_77(self):
-
+        if self.image_check("FIELD_W") or self.image_check("FIELD_BACK_W"):
+            self.press(Direction(Stick.LEFT,10), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,40), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,340), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,280), duration=4.0, wait=1.0)
+            return "7_STORY_GURI_78"
         return "7_STORY_GURI_77"
     
     def _7_story_guri_78(self):
-
-        return "7_STORY_GURI_78"
-    
+        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_79",green_check=0)
+   
     def _7_story_guri_79(self):
-
-        return "7_STORY_GURI_79"
+        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_80",noprg_ret="7_STORY_GURI_79",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_80(self):
+        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_79",prg_ret= "7_STORY_GURI_81")
 
-        return "7_STORY_GURI_80"
-    
     def _7_story_guri_81(self):
-
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_82"
         return "7_STORY_GURI_81"
     
     def _7_story_guri_82(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_83"
         return "7_STORY_GURI_82"
     
     def _7_story_guri_83(self):
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_84"
         return "7_STORY_GURI_83"
     
     def _7_story_guri_84(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_85"
         return "7_STORY_GURI_84"
     
     def _7_story_guri_85(self):
-
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+            return "7_STORY_GURI_86"
         return "7_STORY_GURI_85"
     
     def _7_story_guri_86(self):
-
+        if self.story_Template_Comment_Out():
+            return "7_STORY_GURI_87"
         return "7_STORY_GURI_86"
     
     def _7_story_guri_87(self):
-
+        #ラボカードキーA
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,60), duration=7.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,0), duration=8.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,220), duration=0.5, wait=1.0)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_88"
         return "7_STORY_GURI_87"
     
     def _7_story_guri_88(self):
-
+        #ラボカードキーA_オープン1
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,90), duration=6.0, wait=1.0)
+            self.ROTOM_GLIDE(dir=180,a_count=20)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "7_STORY_GURI_89"
         return "7_STORY_GURI_88"
     
     def _7_story_guri_89(self):
-
+        #ラボカードキーA_オープン1
+        if self.image_check("Filed_Hard_Check_0"):
+            self.press(Direction(Stick.LEFT,0), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
+            self.ROTOM_GLIDE(dir=0,a_count=50)
+            return "7_STORY_GURI_90"
         return "7_STORY_GURI_89"
     
     def _7_story_guri_90(self):
@@ -12903,14 +13378,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.timecount+=1
         return "COMMON_CHECK_TIME"
     
-    def Common_change_time_set(self,check_timing,type=0):
+    def Common_change_time_set(self,check_timing,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
         if self.Common_current_state == "COMMON_CHECK_TIME":  
             self.Common_current_state = self.Common_check_time(check_timing)
         elif self.Common_current_state == "COMMON_CHANGE_TIME":  
             self.Common_current_state = self.Common_change_time()
         else:
-            ret = self.Common_goto(2,0,1)
+            ret = self.Common_goto(2,0,1,check_pic1=check_pic1,check_pic2=check_pic2)
             
             if ret == "START":
                 self.Common_current_state = "COMMON_CHANGE_TIME"
@@ -12920,6 +13395,24 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "EXEC"
 
+    def Common_event_marker_check(self,othermap="FALSE_RETURN",markertype=0):
+        self.wait(1.0)#self.wait(self.SLEEPLIST[7][2])
+        if self.image_check("MAP2") or self.image_check(othermap):      
+            self.wait(1.0)
+            for i in range(5):
+                self.press(Direction(Stick.RIGHT,270,2.0), duration=0.01, wait=0.0)
+            
+            self.wait(1.0)
+            #EVENTMARKER_CHECK
+            if markertype==0 and self.image_check("EVENT_MARKER_RANGE"):
+                self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W")
+                return "COMMON_START"
+            
+        self.renda_button(rendabutton="B",endpicture="FIELD_W",endpicture2="FIELD_BACK_W")
+        return "COMMON_FALSE_RETURN"
+                
+    def Common_false_return(self,othermap="FALSE_RETURN"):#dummy
+        return "COMMON_FALSE_RETURN"
 
     def Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="FALSE_RETURN",check_pic2="FALSE_RETURN",othermap="FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
@@ -12956,6 +13449,26 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             self.wait(0.1)
         return False
+    
+    def Common_Event_check(self,othermap="FALSE_RETURN",markertype=0):
+        if self.Common_current_state == "COMMON_EVENT_MARKER_CHECK":
+            self.Common_current_state = self.Common_event_marker_check(othermap=othermap,markertype=markertype)
+        elif self.Common_current_state == "COMMON_START":   
+            self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state]()
+        else:
+            self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state](othermap=othermap)
+
+        if self.Common_current_state == "COMMON_GOTO_SELECT1":
+            self.Common_current_state = "COMMON_EVENT_MARKER_CHECK"
+        
+        if self.Common_current_state == "COMMON_START":
+            return "START"
+        elif self.Common_current_state == "COMMON_FALSE_RETURN":
+            self.Common_current_state = "COMMON_START"
+            return "FALSE"
+        else:
+            return "EXEC"
+    
     
 ######################################################
 # ZA_battle_infi_Base
@@ -15573,7 +16086,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\event_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15587,7 +16100,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\event_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15601,7 +16114,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\event_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15615,7 +16128,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\event_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15625,6 +16138,35 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             else:
                 return False 
+        elif targetimage=="EVENT_MARKER_RANGE":
+            if self.isContainTemplateUltra_get_max_val(          
+                                    template_path ='ZA_Story\Common\\event_marker.png',
+                                    threshold = 0.85,
+                                    use_gray = False,
+                                    show_value = False,
+                                    show_position = True,
+                                    show_only_true_rect  = False,
+                                    ms  = 2000,
+                                    crop = [300,200,900,500]
+                                    ):
+                return True
+            else:
+
+                if self.isContainTemplateUltra_get_max_val(          
+                                        template_path ='ZA_Story\Common\\eventflag.png',
+                                        threshold = 0.80,
+                                        use_gray = True,
+                                        show_value = False,
+                                        show_position = True,
+                                        show_only_true_rect  = False,
+                                        ms  = 2000,
+                                        crop = [300,200,900,500]
+                                        ):
+                    return True
+                else:
+                    return False
+                return False 
+            
         elif targetimage=="HASHIGO_ICON":
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\hashigomarker.png',
@@ -15963,7 +16505,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\side_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15977,7 +16519,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\side_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -15991,7 +16533,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\side_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -16005,7 +16547,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.isContainTemplateUltra_get_max_val(          
                                     template_path ='ZA_Story\Common\\side_marker.png',
                                     threshold = 0.85,
-                                    use_gray = True,
+                                    use_gray = False,
                                     show_value = False,
                                     show_position = True,
                                     show_only_true_rect  = False,
@@ -16140,6 +16682,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         #デフォルトFalseReturnで画像チェックする用
         elif targetimage=="FALSE_RETURN":
             return False
+        
+        #FiledCheckの多段回チェック
+        elif targetimage=="Filed_Hard_Check_0":
+            return self.story_Template_Field_HardGaurd()
+        
+        elif targetimage=="Filed_Hard_Check_1":
+            return self.story_Template_Field_HardGaurd(mode=1)
         ######################################################
         # COMMON MOVEPOINT_TARGET
         ######################################################
