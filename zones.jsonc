@@ -1,15 +1,15 @@
 {
     // Key : ZONE番号,エリア区分,実行対象,移動ステップ数,ロックオン未実行数(-1はロックオン実行),[条件(テキスト化したので不要？),移動角度,移動時間,EYECHECKの有無,EYE_CHECK時の遅延時間]...
-    "1":["ZONE1","ベール1・2番地",true,2,-1,[true,88,5.0,true,3.0],[true,230,0.01,true,0.01]],
-    "2":["ZONE2","ベール5・8番地",true,2,-1,[true,90,3.5,false,0.01],[true,350,2.0,false,1.0]],
-    "3":["ZONE3","ベール6番地",true,1,-1,[true,75,6.0,false,4.0],[true,75,0.01,false,0.01]],
-    "4":["ZONE4","ブルー5・7番地",true,2,-1,[true,120,3.5,false,0.01],[true,10,3.0,false,0.01]],
-    "5":["ZONE5","ローズ3番地・ブルー4番地",true,1,-1,[true,90,8.0,true,1.2]],
-    "6":["ZONE6","ローズ4・7番地",true,2,-1,[true,90,7.0,false,3.0],[true,150,2.0,true,1.0]],
-    "7":["ZONE7","ローズ6番地",true,1,-1,[true,94,4.5,true,0.8]],
-    "8":["ZONE8","ルージュ3・4番地",true,3,-1,[true,95,13.0,false,0.01],[true,340,3.0,false,0.1],[true,60,3.0,true,0.01]],
-    "9":["ZONE9","ルージュ6・8番地",true,2,-1,[true,98,6.5,true,4.0],[true,350,3.3,true,2.8]],
-    "10":["ZONE10","ジョーヌ3・4・5番地",true,5,3,[true,90,3.5,false,2.0],[true,0,4.0,false,2.0],[true,100,3.6,false,0.4],[true,340,0.1,true,0.1],[true,340,1.0,false,1.0]],
-    "11":["ZONE11","ジョーヌ9・11番地",true,2,-1,[true,95,4.5,true,1.0],[true,182,0.1,false,0.01]],
-    "12":["ZONE12","ZONE_CHECK_miss",false,1,-1,[true,90,3.0,true,0.01]]
+    "1":["POKEMON_ZA_ZONE1","ベール1・2番地",true,2,-1,[true,88,5.0,true,3.0],[true,230,0.01,true,0.01]],
+    "2":["POKEMON_ZA_ZONE2","ベール5・8番地",true,2,-1,[true,90,3.5,false,0.01],[true,350,2.0,false,1.0]],
+    "3":["POKEMON_ZA_ZONE3","ベール6番地",true,1,-1,[true,75,6.0,false,4.0],[true,75,0.01,false,0.01]],
+    "4":["POKEMON_ZA_ZONE4","ブルー5・7番地",true,2,-1,[true,120,3.5,false,0.01],[true,10,3.0,false,0.01]],
+    "5":["POKEMON_ZA_ZONE5","ローズ3番地・ブルー4番地",true,1,-1,[true,90,8.0,true,1.2]],
+    "6":["POKEMON_ZA_ZONE6","ローズ4・7番地",true,2,-1,[true,90,7.0,false,3.0],[true,150,2.0,true,1.0]],
+    "7":["POKEMON_ZA_ZONE7","ローズ6番地",true,1,-1,[true,94,4.5,true,0.8]],
+    "8":["POKEMON_ZA_ZONE8","ルージュ3・4番地",true,3,-1,[true,95,13.0,false,0.01],[true,340,3.0,false,0.1],[true,60,3.0,true,0.01]],
+    "9":["POKEMON_ZA_ZONE9","ルージュ6・8番地",true,2,-1,[true,98,6.5,true,4.0],[true,350,3.3,true,2.8]],
+    "10":["POKEMON_ZA_ZONE10","ジョーヌ3・4・5番地",true,5,3,[true,90,3.5,false,2.0],[true,0,4.0,false,2.0],[true,100,3.6,false,0.4],[true,340,0.1,true,0.1],[true,340,1.0,false,1.0]],
+    "11":["POKEMON_ZA_ZONE11","ジョーヌ9・11番地",true,2,-1,[true,95,4.5,true,1.0],[true,182,0.1,false,0.01]],
+    "12":["POKEMON_ZA_ZONE12","ZONE_CHECK_miss",false,1,-1,[true,90,3.0,true,0.01]]
 }
