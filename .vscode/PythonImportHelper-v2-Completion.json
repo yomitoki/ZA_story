@@ -1,0 +1,139 @@
+[
+    {
+        "label": "Button",
+        "importPath": "Commands.Keys",
+        "description": "Commands.Keys",
+        "isExtraImport": true,
+        "detail": "Commands.Keys",
+        "documentation": {}
+    },
+    {
+        "label": "Direction",
+        "importPath": "Commands.Keys",
+        "description": "Commands.Keys",
+        "isExtraImport": true,
+        "detail": "Commands.Keys",
+        "documentation": {}
+    },
+    {
+        "label": "Hat",
+        "importPath": "Commands.Keys",
+        "description": "Commands.Keys",
+        "isExtraImport": true,
+        "detail": "Commands.Keys",
+        "documentation": {}
+    },
+    {
+        "label": "Stick",
+        "importPath": "Commands.Keys",
+        "description": "Commands.Keys",
+        "isExtraImport": true,
+        "detail": "Commands.Keys",
+        "documentation": {}
+    },
+    {
+        "label": "ImageProcPythonCommand",
+        "importPath": "Commands.PythonCommandBase",
+        "description": "Commands.PythonCommandBase",
+        "isExtraImport": true,
+        "detail": "Commands.PythonCommandBase",
+        "documentation": {}
+    },
+    {
+        "label": "SimilarityHistory",
+        "importPath": "LocalFunction.ImageDetection",
+        "description": "LocalFunction.ImageDetection",
+        "isExtraImport": true,
+        "detail": "LocalFunction.ImageDetection",
+        "documentation": {}
+    },
+    {
+        "label": "detect_image",
+        "importPath": "LocalFunction.ImageDetection",
+        "description": "LocalFunction.ImageDetection",
+        "isExtraImport": true,
+        "detail": "LocalFunction.ImageDetection",
+        "documentation": {}
+    },
+    {
+        "label": "enum",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "enum",
+        "description": "enum",
+        "detail": "enum",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "win32gui,win32con",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "win32gui.win32con",
+        "description": "win32gui.win32con",
+        "detail": "win32gui.win32con",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "ZA_story_Base",
+        "kind": 6,
+        "importPath": "ZA_story",
+        "description": "ZA_story",
+        "peekOfCode": "class ZA_story_Base(ImageProcPythonCommand):\n    COMMAND_RUN_SETTINGS = True\n    def __init__(self, cam):\n        super().__init__(cam)\n        self.isDebug = True\n        self.showNoMatchTemplate = True\n        self.showTemplateMatchVal = False\n        self.commandWaitTime = 0.02\n        self.frameWaitTime = 1.0/30.0\n        self.testcode=0",
+        "detail": "ZA_story",
+        "documentation": {}
+    },
+    {
+        "label": "ZA_story",
+        "kind": 6,
+        "importPath": "ZA_story",
+        "description": "ZA_story",
+        "peekOfCode": "class ZA_story(ZA_story_Base):\n    version_major = 0\n    version_minor = 0\n    version_patch = 0\n    ZA_infimode=0\n    if ZA_infimode==1:\n        ZA_infi_custom_name = \"_ZA_infi_custom_name\"\n    else:\n        ZA_infi_custom_name = \"\"\n    NAME = f'ZA_story_v{version_major}.{version_minor}.{version_patch}{ZA_infi_custom_name}'",
+        "detail": "ZA_story",
+        "documentation": {}
+    }
+]

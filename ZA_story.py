@@ -20,7 +20,9 @@ import os
 # これを継承し、組み合わせて実際のコマンドを作る
 #
 ######################################################
-class ZA_story_Base(ImageProcPythonCommand):    
+class ZA_story_Base(ImageProcPythonCommand):
+    COMMAND_RUN_SETTINGS = True
+
     def __init__(self, cam):
         super().__init__(cam)
         self.isDebug = True
@@ -1349,77 +1351,77 @@ class ZA_story_Base(ImageProcPythonCommand):
     # Commonfunction
     ######################################################
         self.STATE_COMMON_BOX_CHANGE_FUNCTION = {
-            "COMMON_BOX_CHANGE_START": self.common_skill_change_start,
-            "COMMON_BOX_CHANGE_START_CHECK": self.common_skill_change_start_check,
-            "COMMON_BOX_CHANGE_BOX_OPEN": self.common_box_change_box_open,
-            "COMMON_BOX_CHANGE_BOX_TARGET1": self.common_box_change_box_target1,
-            "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT": self.common_box_change_box_target1_select,
-            "COMMON_BOX_CHANGE_BOX_TARGET2": self.common_box_change_box_target2,
-            "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE": self.common_box_change_window_close,
-            "COMMON_BOX_CHANGE_END": self.common_box_change_end,
+            "COMMON_BOX_CHANGE_START": self.ZA_common_skill_change_start,
+            "COMMON_BOX_CHANGE_START_CHECK": self.ZA_common_skill_change_start_check,
+            "COMMON_BOX_CHANGE_BOX_OPEN": self.ZA_common_box_change_box_open,
+            "COMMON_BOX_CHANGE_BOX_TARGET1": self.ZA_common_box_change_box_target1,
+            "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT": self.ZA_common_box_change_box_target1_select,
+            "COMMON_BOX_CHANGE_BOX_TARGET2": self.ZA_common_box_change_box_target2,
+            "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE": self.ZA_common_box_change_window_close,
+            "COMMON_BOX_CHANGE_END": self.ZA_common_box_change_end,
             }
         self.common_box_change_current_state="COMMON_BOX_CHANGE_START"
 
         self.STATE_COMMON_SKILL_CHANGE_FUNCTION = {
-            "COMMON_SKILL_CHANGE_START": self.common_skill_change_start,
-            "COMMON_SKILL_CHANGE_START_CHECK": self.common_skill_change_start_check,
-            "COMMON_SKILL_CHANGE_POKEMON_SELECT": self.common_skill_change_pokemon_select,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN": self.common_skill_change_skill_window_open,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1": self.common_skill_change_skill_window_chtarget1,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2": self.common_skill_change_skill_window_chtarget2,
-            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.common_skill_change_skill_window_close,
-            "COMMON_SKILL_CHANGE_END": self.common_skill_change_end,
-            "COMMON_SKILL_CHANGE_FALSE": self.common_skill_change_false,
+            "COMMON_SKILL_CHANGE_START": self.ZA_common_skill_change_start,
+            "COMMON_SKILL_CHANGE_START_CHECK": self.ZA_common_skill_change_start_check,
+            "COMMON_SKILL_CHANGE_POKEMON_SELECT": self.ZA_common_skill_change_pokemon_select,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN": self.ZA_common_skill_change_skill_window_open,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1": self.ZA_common_skill_change_skill_window_chtarget1,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2": self.ZA_common_skill_change_skill_window_chtarget2,
+            "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE": self.ZA_common_skill_change_skill_window_close,
+            "COMMON_SKILL_CHANGE_END": self.ZA_common_skill_change_end,
+            "COMMON_SKILL_CHANGE_FALSE": self.ZA_common_skill_change_false,
             }
         self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
 
         self.STATE_COMMON_EVOLUTION_FUNCTION = {
-            "COMMON_EVOLUTION_START": self.common_skill_change_start,
-            "COMMON_EVOLUTION_START_CHECK": self.common_skill_change_start_check,
-            "COMMON_EVOLUTION_POKEMON_SELECT": self.common_skill_change_pokemon_select,
-            "COMMON_EVOLUTION_EXEC": self.common_evolution_exec,
-            "COMMON_EVOLUTION_LOOP": self.common_evolution_loop,
-            "COMMON_EVOLUTION_END": self.common_evolution_end,
+            "COMMON_EVOLUTION_START": self.ZA_common_skill_change_start,
+            "COMMON_EVOLUTION_START_CHECK": self.ZA_common_skill_change_start_check,
+            "COMMON_EVOLUTION_POKEMON_SELECT": self.ZA_common_skill_change_pokemon_select,
+            "COMMON_EVOLUTION_EXEC": self.ZA_common_evolution_exec,
+            "COMMON_EVOLUTION_LOOP": self.ZA_common_evolution_loop,
+            "COMMON_EVOLUTION_END": self.ZA_common_evolution_end,
             }
         self.common_evolution_current_state="COMMON_EVOLUTION_START"
         
         self.STATE_COMMON_ITEM_GIVE_FUNCTION = {
-            "COMMON_ITEM_GIVE_START": self.common_skill_change_start,
-            "COMMON_ITEM_GIVE_START_CHECK": self.common_skill_change_start_check,
-            "COMMON_ITEM_GIVE_POKEMON_SELECT": self.common_skill_change_pokemon_select,
-            "COMMON_ITEM_GIVE_WINDOW_OPEN": self.common_item_give_window_open,
-            "COMMON_ITEM_GIVE_TARGET_SIDE": self.common_item_give_target_side,
-            "COMMON_ITEM_GIVE_TARGET_HIGH": self.common_item_give_target_high,
-            "COMMON_ITEM_GIVE_WINDOW_CLOSE": self.common_item_give_window_close,
-            "COMMON_ITEM_GIVE_END": self.common_item_give_end,
+            "COMMON_ITEM_GIVE_START": self.ZA_common_skill_change_start,
+            "COMMON_ITEM_GIVE_START_CHECK": self.ZA_common_skill_change_start_check,
+            "COMMON_ITEM_GIVE_POKEMON_SELECT": self.ZA_common_skill_change_pokemon_select,
+            "COMMON_ITEM_GIVE_WINDOW_OPEN": self.ZA_common_item_give_window_open,
+            "COMMON_ITEM_GIVE_TARGET_SIDE": self.ZA_common_item_give_target_side,
+            "COMMON_ITEM_GIVE_TARGET_HIGH": self.ZA_common_item_give_target_high,
+            "COMMON_ITEM_GIVE_WINDOW_CLOSE": self.ZA_common_item_give_window_close,
+            "COMMON_ITEM_GIVE_END": self.ZA_common_item_give_end,
             }
         self.common_item_give_current_state="COMMON_ITEM_GIVE_START"
 
         self.STATE_COMMON_ITEM_USE_FUNCTION = {
-            "COMMON_ITEM_USE_START": self.common_skill_change_start,
-            "COMMON_ITEM_USE_START_CHECK": self.common_skill_change_start_check,
-            "COMMON_ITEM_USE_WINDOW_OPEN": self.common_item_use_window_open,
-            "COMMON_ITEM_USE_TARGET_SIDE": self.common_item_use_target_side,
-            "COMMON_ITEM_USE_TARGET_HIGH": self.common_item_use_target_high,
-            "COMMON_ITEM_USE_WINDOW_CLOSE": self.common_item_use_window_close,
-            "COMMON_ITEM_USE_END": self.common_item_use_end,
+            "COMMON_ITEM_USE_START": self.ZA_common_skill_change_start,
+            "COMMON_ITEM_USE_START_CHECK": self.ZA_common_skill_change_start_check,
+            "COMMON_ITEM_USE_WINDOW_OPEN": self.ZA_common_item_use_window_open,
+            "COMMON_ITEM_USE_TARGET_SIDE": self.ZA_common_item_use_target_side,
+            "COMMON_ITEM_USE_TARGET_HIGH": self.ZA_common_item_use_target_high,
+            "COMMON_ITEM_USE_WINDOW_CLOSE": self.ZA_common_item_use_window_close,
+            "COMMON_ITEM_USE_END": self.ZA_common_item_use_end,
             }
         self.common_item_use_current_state="COMMON_ITEM_USE_START"
 
 
         self.STATE_COMMON_FUNCTION = {
-            "COMMON_START": self.Common_start,
-            "COMMON_MAP_OPEN": self.Common_map_open,
-            "COMMON_GOTO_SELECT1": self.Common_goto_select1,
-            "COMMON_GOTO_SELECT2": self.Common_goto_select2,
-            "COMMON_CHANGE_TIME": self.Common_change_time,
-            "COMMON_CHECK_TIME": self.Common_check_time,
-            "COMMON_GOTO_JUMP" : self.Common_goto_jump,#dummy
+            "COMMON_START": self.ZA_Common_start,
+            "COMMON_MAP_OPEN": self.ZA_Common_map_open,
+            "COMMON_GOTO_SELECT1": self.ZA_Common_goto_select1,
+            "COMMON_GOTO_SELECT2": self.ZA_Common_goto_select2,
+            "COMMON_CHANGE_TIME": self.ZA_Common_change_time,
+            "COMMON_CHECK_TIME": self.ZA_Common_check_time,
+            "COMMON_GOTO_JUMP" : self.ZA_Common_goto_jump,#dummy
             
-            "COMMON_EVENT_MARKER_CHECK": self.Common_event_marker_check,
+            "COMMON_EVENT_MARKER_CHECK": self.ZA_Common_event_marker_check,
             
             #"COMMON_BATTLE_RETURN" : self.Common_battle_return,
-            "COMMON_FALSE_RETURN":self.Common_false_return,
+            "COMMON_FALSE_RETURN":self.ZA_Common_false_return,
         }
         self.Common_current_state="COMMON_START"
         self.map_cursor_reset=0
@@ -1486,45 +1488,45 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.config_path2 = os.path.join(command_dir, "sleeps.jsonc")
         
         self.STATE_ZA_INFI_MAIN_FUNCTION = {
-            "ZA_INFI_MAIN_START": self.za_infi_main_start,
-            "ZA_INFI_MAIN_BENCH": self.za_infi_main_bench,
-            "ZA_INFI_MAIN_BATTLE_LOOP": self.za_infi_main_battle_loop,
-            "ZA_INFI_MAIN_END": self.za_infi_main_end,
-            "ZA_INFI_QUASAR_LOOP": self.za_infi_quasar_loop,
+            "ZA_INFI_MAIN_START": self.ZA_za_infi_main_start,
+            "ZA_INFI_MAIN_BENCH": self.ZA_za_infi_main_bench,
+            "ZA_INFI_MAIN_BATTLE_LOOP": self.ZA_za_infi_main_battle_loop,
+            "ZA_INFI_MAIN_END": self.ZA_za_infi_main_end,
+            "ZA_INFI_QUASAR_LOOP": self.ZA_za_infi_quasar_loop,
         }
         self.za_infi_main_current_state="ZA_INFI_MAIN_START"
         
         self.STATE_BENCH_FUNCTION = {
-            "BENCH_START": self.bench_start,
-            "BENCH_MAP_OPEN": self.bench_map_open,
-            "BENCH_POKECENTER_SELECT1": self.bench_goto_pokecenter1,
-            "BENCH_POKECENTER_SELECT2": self.bench_goto_pokecenter2,
-            "BENCH_CHANGE_TIME": self.bench_change_time,
-            "BENCH_CHECK_TIME": self.bench_check_time,
-            "BENCH_CHANGE_TIME2": self.bench_change_time,
+            "BENCH_START": self.ZA_bench_start,
+            "BENCH_MAP_OPEN": self.ZA_bench_map_open,
+            "BENCH_POKECENTER_SELECT1": self.ZA_bench_goto_pokecenter1,
+            "BENCH_POKECENTER_SELECT2": self.ZA_bench_goto_pokecenter2,
+            "BENCH_CHANGE_TIME": self.ZA_bench_change_time,
+            "BENCH_CHECK_TIME": self.ZA_bench_check_time,
+            "BENCH_CHANGE_TIME2": self.ZA_bench_change_time,
             
-            "QUASAR_MAP_OPEN" : self.quasar_map_open,
-            "QUASAR_SELECT1": self.goto_quasar1,
-            "QUASAR_SELECT2": self.goto_quasar2,
+            "QUASAR_MAP_OPEN" : self.ZA_quasar_map_open,
+            "QUASAR_SELECT1": self.ZA_goto_quasar1,
+            "QUASAR_SELECT2": self.ZA_goto_quasar2,
             
-            "BATTLE_RETURN": self.battle_return
+            "BATTLE_RETURN": self.ZA_battle_return
         }
         self.bench_current_state="BENCH_START"
         
         self.STATE_BATTLE_FUNCTION = {
-            "BATTLE_START": self.battle_start,
-            "BATTLE_MAP_OPEN": self.battle_map_open,
-            "BATTLE_GOTO_BATTLE_ZONE1": self.battle_goto_battle_zone1,
-            "BATTLE_GOTO_BATTLE_ZONE2": self.battle_goto_battle_zone2,
-            "BATTLE_MOVE": self.battle_move
+            "BATTLE_START": self.ZA_battle_start,
+            "BATTLE_MAP_OPEN": self.ZA_battle_map_open,
+            "BATTLE_GOTO_BATTLE_ZONE1": self.ZA_battle_goto_battle_zone1,
+            "BATTLE_GOTO_BATTLE_ZONE2": self.ZA_battle_goto_battle_zone2,
+            "BATTLE_MOVE": self.ZA_battle_move
         }
         self.battle_current_state="BATTLE_START"
 
         self.STATE_QUASAR_FUNCTION = {
-            "QUASAR_START": self.quasar_start,
-            "QUASAR_MOVE_DOOR": self.quasar_move_door,
-            "QUASAR_MOVE_ENTRANCE": self.quasar_move_entrance,
-            "QUASAR_BATTLE_LOOP": self.quasar_battle_loop,
+            "QUASAR_START": self.ZA_quasar_start,
+            "QUASAR_MOVE_DOOR": self.ZA_quasar_move_door,
+            "QUASAR_MOVE_ENTRANCE": self.ZA_quasar_move_entrance,
+            "QUASAR_BATTLE_LOOP": self.ZA_quasar_battle_loop,
         }
         self.quasar_current_state="QUASAR_START"
                 
@@ -1534,7 +1536,24 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.zonemisscount = [0,0,0,0,0,0,0,0,0,0,0,0]
         self.targetzone = 1
         
-        self.SLEEPLIST = {}
+        # 開始Stepから途中起動した場合は ZA_za_infi_main_start を通らないことが
+        # あるため、設定読込前でも参照可能な既定値を持たせる。
+        # sleeps.jsonc はこの既定値へ上書きで反映し、一部キーが欠けていても
+        # Commands全体を KeyError で停止させない。
+        self.SLEEPLIST = {
+            0: ["ポケモン選択間隔", True, 0.25, 0.02, 1.0, 14],
+            1: ["マップ選択間隔", True, 0.2, 0.02, 1.0, 9],
+            2: ["ZL間隔", False, 0.01, 0.01, 1.0, 14],
+            3: ["バトルゾーン判断開始までの猶予期間", True, 1.0, 0.02, 1.0, 9],
+            4: ["RIGHT_Stick間隔", False, 0.13, 0.02, 1.0, 14],
+            5: ["移動Bダッシュ間隔", False, 0.10, 0.02, 0.1, 0.2],
+            6: ["時間切り替え間隔", False, 0.10, 0.02, 0.1, 0.2],
+            7: ["マップ操作間隔", False, 0.0, 0.02, 0.1, 0.2],
+            8: ["マップオープン間隔", False, 0.0, 0.02, 0.1, 0.2],
+            9: ["全体間隔", False, 0.0, 0.02, 0.1, 0.2],
+            10: ["マップ移動間隔", False, 0.1, 0.02, 0.1, 0.2],
+        }
+        self.ZA_load_sleeps()
         
         # 50以下,55以下,60以下,65以下,70以下,75以下,80以下,85以下,90以下,95以下,100以下
         self.target_left_max_val_list = [0,0,0,0,0,0,0,0,0,0,0]
@@ -1571,7 +1590,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     # ZA_battle_infi_Base_End
     ######################################################
     
-    def load_json_with_comments(self, filename):
+    def ZA_load_json_with_comments(self, filename):
         """コメント付きJSONを読み込む関数（// や # 行を無視）"""
         with open(filename, "r", encoding="utf-8") as f:
             lines = []
@@ -1584,7 +1603,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             json_text = "".join(lines)
             return json.loads(json_text)
 
-    def save_sleeps(self):
+    def ZA_save_sleeps(self):
         """SLEEPLISTをJSONファイルに保存（整形付き）"""
         try:
             # キーを文字列に変換して保存（JSONでは数値キーが文字列化されるため）
@@ -1597,11 +1616,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         except Exception as e:
             print(f"SLEEPLISTの保存エラー: {e}")
 
-    def load_zones(self):
+    def ZA_load_zones(self):
         added, changed = [], []
         """ファイルからZONELISTを更新"""
         try:
-            data = self.load_json_with_comments(self.config_path)
+            data = self.ZA_load_json_with_comments(self.config_path)
             # JSONではキーが文字列になるのでintキーに変換
             self.ZONELIST = {int(k): v for k, v in data.items()}
             print("ZONELISTを更新しました。")
@@ -1615,12 +1634,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         except Exception as e:
             print(f"ZONELISTの読み込みエラー: {e}")
             
-    def load_sleeps(self):
+    def ZA_load_sleeps(self):
         added, changed = [], []  
         try:
-            data = self.load_json_with_comments(self.config_path2)
+            data = self.ZA_load_json_with_comments(self.config_path2)
             # JSONではキーが文字列になるのでintキーに変換
-            self.SLEEPLIST = {int(k): v for k, v in data.items()}
+            loaded_sleeps = {int(k): v for k, v in data.items()}
+            # 途中開始用の既定値は残し、ファイルにある項目だけを上書きする。
+            # これにより古い設定ファイルに新しいキーがなくても停止しない。
+            merged_sleeps = dict(self.SLEEPLIST)
+            merged_sleeps.update(loaded_sleeps)
+            self.SLEEPLIST = merged_sleeps
             print("SLEEPLISTを更新しました。")
             if not added and not changed:
                 print("（変更はありません）")
@@ -1641,7 +1665,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 mtime = os.path.getmtime(self.config_path)
                 if mtime != last_mtime:
                     last_mtime = mtime
-                    self.load_zones()
+                    self.ZA_load_zones()
             except FileNotFoundError:
                 print("zones.jsonc が見つかりません。")
                 
@@ -1649,7 +1673,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 mtime2 = os.path.getmtime(self.config_path2)
                 if mtime2 != last_mtime2:
                     last_mtime2 = mtime2
-                    self.load_sleeps()
+                    self.ZA_load_sleeps()
             except FileNotFoundError:
                 pass
             self.checkIfAlive()
@@ -1663,46 +1687,47 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(wait)
         self.checkIfAlive()
 
-    def etc_sendCommand(self,str, wait: float = 0.04):
-        Lbutton_down1  = "0x0000 4"
-        Lbutton_down2  = "0x0000 8"
+    def etc_sendCommand(self, command_name, wait: float = 0.04):
+        Lbutton_down1 = "0x0000 4"
+        Lbutton_down2 = "0x0000 8"
+        Lbutton_up1 = "0x0000 0"
+        Lbutton_up2 = "0x0000 8"
+        Lbutton_left1 = "0x0000 6"
+        Lbutton_left2 = "0x0000 8"
+        Lbutton_right1 = "0x0000 2"
+        Lbutton_right2 = "0x0000 8"
+        plusbutton1 = "0x0800 8"
+        plusbutton2 = "0x0000 8"
         Bbutton1  = "0x0008 8"
         Bbutton2  = "0x0000 8"
-        Lbutton_up1  = "0x0000 0"
-        Lbutton_up2  = "0x0000 8"
-        Lbutton_left1  = "0x0000 6"
-        Lbutton_left2  = "0x0000 8"
-        Lbutton_right1  = "0x0000 2"
-        Lbutton_right2  = "0x0000 8"
-        plusbutton1  = "0x0800 8"
-        plusbutton2  = "0x0000 8"
         Lbutton_rab1  = "0x0018 6"
         Lbutton_rb1  = "0x0008 6"
 
-        if str == "Lbutton_down":
-            self.sendCommand(Lbutton_down1,wait)
-            self.sendCommand(Lbutton_down2,wait)
-        elif str == "Lbutton_up":
-            self.sendCommand(Lbutton_up1,wait)
-            self.sendCommand(Lbutton_up2,wait)
-        elif str == "Lbutton_up_push":
-            self.sendCommand(Lbutton_up1,wait)
-        elif str == "Lbutton_up_pull":
-            self.sendCommand(Lbutton_up2,wait)
-            
-        elif str == "Lbutton_left":
-            self.sendCommand(Lbutton_left1,wait)
-            self.sendCommand(Lbutton_left2,wait)              
-        elif str == "Lbutton_right":
-            self.sendCommand(Lbutton_right1,wait)
-            self.sendCommand(Lbutton_right2,wait)
-        elif str == "plusbutton":
-            self.sendCommand(plusbutton1,wait)
-            self.sendCommand(plusbutton2,wait)
-        elif str == "plusbutton_push":
-            self.sendCommand(plusbutton1,wait)
-        elif str == "plusbutton_release":
-            self.sendCommand(plusbutton2,wait)
+        if command_name == "Lbutton_down":
+            self.sendCommand(Lbutton_down1, wait)
+            self.sendCommand(Lbutton_down2, wait)
+        elif command_name == "Lbutton_up":
+            self.sendCommand(Lbutton_up1, wait)
+            self.sendCommand(Lbutton_up2, wait)
+        elif command_name == "Lbutton_up_push":
+            self.sendCommand(Lbutton_up1, wait)
+        elif command_name == "Lbutton_up_pull":
+            self.sendCommand(Lbutton_up2, wait)
+        elif command_name == "Lbutton_left":
+            self.sendCommand(Lbutton_left1, wait)
+            self.sendCommand(Lbutton_left2, wait)
+        elif command_name == "Lbutton_right":
+            self.sendCommand(Lbutton_right1, wait)
+            self.sendCommand(Lbutton_right2, wait)
+        elif command_name == "plusbutton":
+            self.sendCommand(plusbutton1, wait)
+            self.sendCommand(plusbutton2, wait)
+        elif command_name == "plusbutton_push":
+            self.sendCommand(plusbutton1, wait)
+        elif command_name == "plusbutton_release":
+            self.sendCommand(plusbutton2, wait)
+        else:
+            raise ValueError("Unknown Switch command: " + str(command_name))
 
     # ウインドウ取得関数 (win32gui仕様)
     def window_acquire(self, Window_name:str, log=False, front_win=False):
@@ -1760,7 +1785,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base
     ######################################################
-    def zone_check(self):
+    def ZA_zone_check(self):
         self.wait(self.SLEEPLIST[3][2])
         for i in range(1,13):
             if self.image_check(self.ZONELIST[i][0],1):
@@ -1768,7 +1793,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return i
         return 12
     
-    def MOVE_ACTION(self,movestep,lockonflg=1):
+    def ZA_MOVE_ACTION(self,movestep,lockonflg=1):
         start = time.perf_counter()  # 計測開始
         count= 0
         waitflg=0
@@ -1785,7 +1810,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             while True:
 
                 if count % 30 == 0:
-                    self.ZL_ACTION(lockonflg=lockonflg)
+                    self.ZA_ZL_ACTION(lockonflg=lockonflg)
                 if self.ZL_state == 1:
                     self.press(Button.A, wait=0.0)
                     if (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")):
@@ -1836,7 +1861,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.holdEnd(Direction(Stick.LEFT, self.ZONELIST[self.targetzone][5 + movestep][1]))          
         return movestep
 
-    def MOVE_SEE2(self,action1 = "RELOAD",action2 = "RELOAD",in_see_r1=0.0,in_see_r2=0.0,dirnum=1,action = "RELOAD"):
+    def ZA_MOVE_SEE2(self,action1 = "RELOAD",action2 = "RELOAD",in_see_r1=0.0,in_see_r2=0.0,dirnum=1,action = "RELOAD"):
         if action != "END":
             if self.Rstick_state == 0:
                 self.hold(Direction(Stick.RIGHT, 180,local_see_r))
@@ -1849,7 +1874,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif action == "END" and self.Rstick_state == 1:
             self.holdEnd(Direction(Stick.RIGHT, 180))
             self.Rstick_state = 0
-    def MOVE_SEE(self,action = "RELOAD",in_see_r=0.0):
+    def ZA_MOVE_SEE(self,action = "RELOAD",in_see_r=0.0):
         if in_see_r==0.0:
             local_see_r = self.see_r
         else:
@@ -1883,7 +1908,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #else:
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
-    def MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD"):
+    def ZA_MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD"):
             
         if action != "END":
             if self.Lstick_state == 0 and self.Lstick_state2 == 0 and self.Lstick_state3 == 0 and self.Lstick_state4 == 0 and self.Lstick_state_m1 == 0 and self.Lstick_state_m2 == 0:
@@ -1969,14 +1994,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.holdEnd(Direction(Stick.LEFT, 140))
                 self.Lstick_state_m2 = 0
                 
-    def ROTOM_GLIDE(self,dir,a_count,a_duration=0.15,a_wait=0.5,a_interval=0.1,move_r=1.0):
+    def ZA_ROTOM_GLIDE(self,dir,a_count,a_duration=0.15,a_wait=0.5,a_interval=0.1,move_r=1.0):
         self.hold(Direction(Stick.LEFT, dir,move_r))
         self.pressRep(Button.A, repeat=a_count, duration=a_duration, wait=a_wait, interval=a_interval)
         self.holdEnd(Direction(Stick.LEFT, dir))
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5):
+    def ZA_renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5):
         while True:
             self.checkIfAlive()
             
@@ -2100,7 +2125,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                               
                 if event_picture != "":
                     if self.image_check(event_picture):
-                        self.EventSkip_plus()
+                        self.ZA_EventSkip_plus()
                         checkerflg=1
                         self.wait(sleeptime)
                      
@@ -2113,20 +2138,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(sleeptime)
         return False
     
-    def mega_evolution_battle_mode_select(self,mode=0,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=0):
+    def ZA_mega_evolution_battle_mode_select(self,mode=0,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=0):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
-        if mode == 0 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1,target_count_threshold_arg=6,no_target_count_threshold_arg=6, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        if mode == 0 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=1,target_count_threshold_arg=6,no_target_count_threshold_arg=6, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
 
 
             return True
-        elif mode == 1 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        elif mode == 1 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
             return True
-        elif mode == 2 and self.mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
             return True
 
         
-    def mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture=""):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture=""):
         count=0
         self.no_Cplus=0
         no_target_count=0
@@ -2144,27 +2169,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         while True:
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
-                    self.ZL_ACTION("END")
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-                    self.MOVE_SEE(action = "END",in_see_r=see_r)
+                    self.ZA_ZL_ACTION("END")
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
                 if self.image_check(end2picture):
-                    self.ZL_ACTION("END")
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-                    self.MOVE_SEE(action = "END",in_see_r=see_r)
+                    self.ZA_ZL_ACTION("END")
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
                 
             if self.image_check("POKEMON_ZA_HELP_MARKER"):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
             if self.image_check("POKEMON_ZA_R_push"):
-                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                 self.press(Button.RCLICK,0.05,0.1) 
                 self.wait(1.0)
-                self.MOVE_SEE(action = "",in_see_r=see_r)
+                self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 
             if nofiled==1 and (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W")):
-                self.ZL_ACTION("")
+                self.ZA_ZL_ACTION("")
                 if (
                     (usenum==1 and (self.image_check("POKEMON_ZA_FIELD1") or self.image_check("POKEMON_ZA_FIELD_BACK1")))
                     or (usenum==2 and (self.image_check("POKEMON_ZA_FIELD2") or self.image_check("POKEMON_ZA_FIELD_BACK2")))
@@ -2175,7 +2200,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 ):
                     self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
-                    self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                     nofiled=0
                 else:
                     self.etc_sendCommand("Lbutton_left")
@@ -2188,139 +2213,139 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"): 
                     break
                 if count==0 and Aaction==1 and self.image_check("POKEMON_ZA_C+"):
-                    self.MOVE_SEE(action = "END")
+                    self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     
                     if escape_flag==1:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")  
+                                self.ZA_ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
                 elif count==1 and Baction==1 and self.image_check("POKEMON_ZA_C+"):
-                    self.MOVE_SEE(action = "END")
+                    self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
                     #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
 
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")  
+                                self.ZA_ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
                 elif count==2 and Xaction==1 and self.image_check("POKEMON_ZA_C+"):
-                    self.MOVE_SEE(action = "END")
+                    self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")  
+                                self.ZA_ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
                 elif count==3 and Yaction==1 and self.image_check("POKEMON_ZA_C+"):
-                    self.MOVE_SEE(action = "END")
+                    self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
                     #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")
+                                self.ZA_ZL_ACTION("")
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZL_ACTION("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZL_ACTION("")  
+                                self.ZA_ZL_ACTION("")  
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
                 elif not self.image_check("POKEMON_ZA_C+"):
-                    self.ZL_ACTION("END")
+                    self.ZA_ZL_ACTION("END")
                     self.wait(0.1)
-                    self.ZL_ACTION("")
+                    self.ZA_ZL_ACTION("")
                     if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                         no_target_count+=1
                         target_count=0
@@ -2335,132 +2360,132 @@ class ZA_story_Base(ImageProcPythonCommand):
 
                     if target_marker_count==2:
                         if not self.image_check("POKEMON_ZA_C+"):
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
                             self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                             print("LS")
-                        self.MOVE_SEE(action = "",in_see_r=see_r)
+                        self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                         for i in range(5):
                             if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"): 
                                 break
                             if count==0 and Aaction==1 and self.image_check("POKEMON_ZA_C+"):
-                                self.MOVE_SEE(action = "END")
+                                self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                                 self.wait(0.3)
                                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
                                         targetmode=0
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                                     elif target_count>target_count_threshold:
                                         targetmode=1
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                                     else:
                                         if targetmode==0:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                                         else:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
                             elif count==1 and Baction==1 and self.image_check("POKEMON_ZA_C+"):
-                                self.MOVE_SEE(action = "END")
+                                self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                                 self.wait(0.3)
                                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
                                         targetmode=0
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                                     elif target_count>target_count_threshold:
                                         targetmode=1
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                                     else:
                                         if targetmode==0:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                                         else:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
                             elif count==2 and Xaction==1 and self.image_check("POKEMON_ZA_C+"):
-                                self.MOVE_SEE(action = "END")
+                                self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                                 self.wait(0.3)
                                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
                                         targetmode=0
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                                     elif target_count>target_count_threshold:
                                         targetmode=1
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                                     else:
                                         if targetmode==0:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                                         else:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
                                 count=(count + 1) % 4
                                 break
                             elif count==3 and Yaction==1 and self.image_check("POKEMON_ZA_C+"):
-                                self.MOVE_SEE(action = "END")
+                                self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                                 self.wait(0.3)
                                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
                                         targetmode=0
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                                     elif target_count>target_count_threshold:
                                         targetmode=1
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                                     else:
                                         if targetmode==0:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                                         else:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
                                 count=(count + 1) % 4
                                 break
                             else:
                                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                                     if no_target_count>no_target_count_threshold:
                                         targetmode=0
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                                     elif target_count>target_count_threshold:
                                         targetmode=1
-                                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                                     else:
                                         if targetmode==0:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                                         else:
-                                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
+                                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                         target_marker_count+=1
                     elif target_marker_count>2:
                         target_marker_count=0
                     else:
-                        self.MOVE_SEE(action = "",in_see_r=see_r)
+                        self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 else:
                     target_marker_count=0
-                    self.MOVE_SEE(action = "",in_see_r=see_r)
+                    self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
             count=(count + 1) % 4
             
             if not self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                     if no_target_count>no_target_count_threshold:
                         targetmode=0
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                     elif target_count>target_count_threshold:
                         targetmode=1
-                        self.MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                     else:
                         if targetmode==0:
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,2,"RELOAD")
                         else:
-                            self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")  
+                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")  
                 #self.MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(0.1)
 
             elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 no_target_count=0
                 target_count=target_count_threshold
-                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
@@ -2473,7 +2498,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     print(f'BATTLE_COUNT::{battle_count}')
                 no_target_count=0
                 target_count=target_count_threshold
-                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_2_SELECT"):
                     self.wait(1.0)
@@ -2497,10 +2522,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                      
             elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-                self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER")
+                self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER")
 
             elif self.image_check("POKEMON_ZA_2_SELECT") and (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_2_SELECT_TUTORIAL"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
@@ -2511,7 +2536,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(1.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
             elif self.image_check("POKEMON_ZA_3_SELECT") and (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-                self.MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_3_SELECT_SELECT"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -2523,7 +2548,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             self.wait(0.5)
 
-    def ZL_ACTION(self,action = "RELOAD",lockonflg=1):
+    def ZA_ZL_ACTION(self,action = "RELOAD",lockonflg=1):
         if action != "END":
             if lockonflg == 0:
                 if self.ZL_state == 1:
@@ -2543,12 +2568,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.keys.inputEnd(Button.ZL)
             self.ZL_state = 0
             
-    def battle_coCp_noloop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,battle_mode=0):
+    def ZA_battle_coCp_noloop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,battle_mode=0):
         if battle_mode==0 and self.image_check("POKEMON_ZA_SELECT"):
             self.etc_sendCommand("Lbutton_up")
         if battle_mode==1 and self.image_check("POKEMON_ZA_FIELD_W"):
             self.etc_sendCommand("Lbutton_up")
-        self.ZL_ACTION("")
+        self.ZA_ZL_ACTION("")
         self.wait(0.05)#TODO
         for i in range(3):
             if Xaction==1:
@@ -2560,9 +2585,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             if Baction==1:
                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
         if lockon_endskip==0:
-            self.ZL_ACTION("END")
+            self.ZA_ZL_ACTION("END")
             
-    def battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
+    def ZA_battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
         noCp_count=0
         target_marker=1
         nofiled=1
@@ -2608,14 +2633,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_R_push"):
                 self.press(Button.RCLICK,0.05,0.1) 
                 
-            self.ZL_ACTION("")
+            self.ZA_ZL_ACTION("")
             
             for i in range(5):
                 #バトル中チェック チェックできない場合は、一旦抜ける
                 if mode==0 and (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_C+")):
                     
                     if get_chanceicon4==1 and self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                        self.get_pokemon()
+                        self.ZA_get_pokemon()
                     if self.image_check("POKEMON_ZA_C+"):
                         noCp_count=0
                         if Xaction==1:
@@ -2626,22 +2651,22 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         if Baction==1:
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                        self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("POKEMON_ZA_TARGET_LEFT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID")):
                         if target_marker>=1:
-                            self.MOVE_SEE(action = "END",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
                             if noCp_count>=3:
-                                self.MOVE_SEE(action = "",in_see_r=0.6)
+                                self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
                             if self.image_check("POKEMON_ZA_ESCAPE"):
                                 noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 6')
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 2')
                         if self.image_check("POKEMON_ZA_ESCAPE"):
                             noCp_count+=1
@@ -2650,7 +2675,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.etc_sendCommand("Lbutton_up")
                         
                     if get_chanceicon4==1 and self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                        self.get_pokemon()
+                        self.ZA_get_pokemon()
                     if self.image_check("POKEMON_ZA_C+"):
                         noCp_count=0
                         if Xaction==1:
@@ -2661,37 +2686,37 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         if Baction==1:
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                        self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("POKEMON_ZA_TARGET_LEFT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID")):
                         if target_marker>=1:
-                            self.MOVE_SEE(action = "END",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
                             if noCp_count>=3:
-                                self.MOVE_SEE(action = "",in_see_r=0.6)
+                                self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
                             if self.image_check("POKEMON_ZA_ESCAPE"):
                                 noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 5')
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 4')
                         if self.image_check("POKEMON_ZA_ESCAPE"):
                             noCp_count+=1
                 else:
-                    self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     if lockon_endskip==0:
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                     print("return")
                     return True
                 
             if lockon_endskip==0:
-                self.ZL_ACTION("END")
+                self.ZA_ZL_ACTION("END")
         return True
 
-    def battle_Cp_loop_move(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
+    def ZA_battle_Cp_loop_move(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
         noCp_count=0
         target_marker=1
         nofiled=1
@@ -2706,21 +2731,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.etc_sendCommand("Lbutton_up")
                 
             if self.image_check("POKEMON_ZA_R_push"):
-                self.MOVE_SEE(action = "END",in_see_r=see_r)
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                 self.press(Button.RCLICK,0.05,0.1) 
                 self.wait(1.0)
-                self.MOVE_SEE(action = "",in_see_r=see_r)
+                self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 
-            self.ZL_ACTION("")
+            self.ZA_ZL_ACTION("")
             
-            self.MOVE_LStick(350,350,350,350,1,"RELOAD")
+            self.ZA_MOVE_LStick(350,350,350,350,1,"RELOAD")
             
             for i in range(5):
                 #バトル中チェック チェックできない場合は、一旦抜ける
                 if mode==0 and (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_C+")):
                     
                     if get_chanceicon4==1 and self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                        self.get_pokemon()
+                        self.ZA_get_pokemon()
                     if self.image_check("POKEMON_ZA_C+"):
                         noCp_count=0
                         if Xaction==1:
@@ -2731,22 +2756,22 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         if Baction==1:
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                        self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("POKEMON_ZA_TARGET_LEFT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID")):
                         if target_marker>=1:
-                            self.MOVE_SEE(action = "END",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
                             if noCp_count>=3:
-                                self.MOVE_SEE(action = "",in_see_r=0.6)
+                                self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
                             if self.image_check("POKEMON_ZA_ESCAPE"):
                                 noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 6')
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 2')
                         if self.image_check("POKEMON_ZA_ESCAPE"):
                             noCp_count+=1
@@ -2755,7 +2780,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.etc_sendCommand("Lbutton_up")
                         
                     if get_chanceicon4==1 and self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                        self.get_pokemon()
+                        self.ZA_get_pokemon()
                     if self.image_check("POKEMON_ZA_C+"):
                         noCp_count=0
                         if Xaction==1:
@@ -2766,69 +2791,69 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                         if Baction==1:
                             self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                        self.MOVE_SEE(action = "END",in_see_r=0.6)
+                        self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     elif (self.image_check("POKEMON_ZA_TARGET_LEFT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_MID") or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID")):
                         if target_marker>=1:
-                            self.MOVE_SEE(action = "END",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                             target_marker=0
                         else:
                             target_marker+=1
                             if noCp_count>=3:
-                                self.MOVE_SEE(action = "",in_see_r=0.6)
+                                self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                             print(f'noCp_count = {noCp_count} 1')
                             if self.image_check("POKEMON_ZA_ESCAPE"):
                                 noCp_count+=1#ロックオンはできていないためカウントは行う
                     else:
                         if noCp_count>=3:
                             print(f'noCp_count = {noCp_count} 5')
-                            self.MOVE_SEE(action = "",in_see_r=0.6)
+                            self.ZA_MOVE_SEE(action = "",in_see_r=0.6)
                         print(f'noCp_count = {noCp_count} 4')
                         if self.image_check("POKEMON_ZA_ESCAPE"):
                             noCp_count+=1
                 else:
-                    self.MOVE_LStick(350,350,350,350,1,"END")
-                    self.MOVE_SEE(action = "END",in_see_r=0.6)
+                    self.ZA_MOVE_LStick(350,350,350,350,1,"END")
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
                     if lockon_endskip==0:
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                     print("return")
                     return True
                 
             if lockon_endskip==0:
-                self.ZL_ACTION("END")
+                self.ZA_ZL_ACTION("END")
                 
                 
         if lockon_endskip==0:
-            self.ZL_ACTION("END")
-        self.MOVE_LStick(350,350,350,350,1,"END")
-        self.MOVE_SEE(action = "END",in_see_r=0.6)
+            self.ZA_ZL_ACTION("END")
+        self.ZA_MOVE_LStick(350,350,350,350,1,"END")
+        self.ZA_MOVE_SEE(action = "END",in_see_r=0.6)
         return True
 
 
     ######################################################
     # story_Template
     ######################################################
-    def story_Template_battle_before(self,noprg_ret,prg_ret,green_check=0,no_filed=0,sleeptime=0.5):
-        if self.story_Template_Comment_Out():
+    def ZA_story_Template_battle_before(self,noprg_ret,prg_ret,green_check=0,no_filed=0,sleeptime=0.5):
+        if self.ZA_story_Template_Comment_Out():
             return prg_ret
         else:
             return noprg_ret
 
-    def story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=0,battle_mode=0,move=0,sleeptime=0.5):
+    def ZA_story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=0,battle_mode=0,move=0,sleeptime=0.5,rebattle_move_fast=0.1):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
             if noCp==0:
                 if move==0:
-                    self.battle_Cp_loop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,get_chanceicon4=get_chanceicon4,battle_mode=battle_mode)
+                    self.ZA_battle_Cp_loop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,get_chanceicon4=get_chanceicon4,battle_mode=battle_mode)
                 else:
-                    self.battle_Cp_loop_move(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,get_chanceicon4=get_chanceicon4,battle_mode=battle_mode)
+                    self.ZA_battle_Cp_loop_move(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,get_chanceicon4=get_chanceicon4,battle_mode=battle_mode)
             else:
                 if get_chanceicon4==1 and self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                    self.get_pokemon()
-                self.battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,battle_mode=battle_mode)
-    
+                    self.ZA_get_pokemon()
+                self.ZA_battle_coCp_noloop(Xaction=Xaction,Aaction=Aaction,Yaction=Yaction,Baction=Baction,battle_mode=battle_mode)
+
         elif self.image_check("POKEMON_ZA_CHAT_MARKER"):
             while True:
                 self.checkIfAlive()
-                ret = self.Common_Event_check(markertype=markertype)
+                ret = self.ZA_Common_Event_check(markertype=markertype)
                 if ret == "START":
                     break
                 elif ret == "FALSE":
@@ -2852,21 +2877,36 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_COIN_ICON"):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return noprg_ret
-        
+    
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+    
+            #TODO　処理の更新
+            #for i in range(30):
+            #    if i == 0:
+            #        self.press(Direction(Stick.LEFT,90), duration=rebattle_move_fast, wait=0.5)
+            #    else:
+            #        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+            #        
+            #    if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+            #        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            #    elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            #        return prg_ret
+            #return noprg_ret
+            #TODO　以下をいったん破棄
+        
             if markertype==0:
                 if self.ZA_markerdir("EVENT"):
-                    
+                
                     while True:
                         self.checkIfAlive()
-                        ret = self.Common_Event_check(markertype=markertype)
+                        ret = self.ZA_Common_Event_check(markertype=markertype)
                         if ret == "START":
                             break
                         elif ret == "FALSE":
                             return prg_ret
                     for i in range(10):
                         self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
-                        
+                    
                         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
@@ -2874,10 +2914,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return noprg_ret
             elif markertype==1:
                 if self.ZA_markerdir("SIDE_MARKER"):
-                    
+                
                     while True:
                         self.checkIfAlive()
-                        ret = self.Common_Event_check(markertype=markertype)
+                        ret = self.ZA_Common_Event_check(markertype=markertype)
                         if ret == "START":
                             break
                         elif ret == "FALSE":
@@ -2885,13 +2925,13 @@ class ZA_story_Base(ImageProcPythonCommand):
 
                     for i in range(10):
                         self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
-                        
+                    
                         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
                             return prg_ret
                     return noprg_ret
-                
+            
             elif markertype==-1:
                 for i in range(30):
                     if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
@@ -2899,11 +2939,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(1.0)
                 if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
                     return bkprg_ret
-                
+            
             else:
                 print("w3er")
                 return noprg_ret
-        elif self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_COIN_ICON",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",endpicture5="POKEMON_ZA_TEXT_WHITE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=sleeptime):
+        elif self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_COIN_ICON",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",endpicture5="POKEMON_ZA_TEXT_WHITE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=sleeptime):
             return noprg_ret
         #elif self.image_check("EVENT_MARKER_CENTER"):
         #    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
@@ -2912,9 +2952,9 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return noprg_ret
     
-    def story_Template_battle_after(self,bkprg_ret,prg_ret,selected_pic="POKEMON_ZA_FALSE_RETURN",selected_target=0,mode=0,sleeptime=0.5):
+    def ZA_story_Template_battle_after(self,bkprg_ret,prg_ret,selected_pic="POKEMON_ZA_FALSE_RETURN",selected_target=0,mode=0,sleeptime=0.5):
         filed_check_count=0
-        if self.story_Template_Comment_Out(selected_pic=selected_pic,selected_target=selected_target,mode=mode,sleeptime=sleeptime):
+        if self.ZA_story_Template_Comment_Out(selected_pic=selected_pic,selected_target=selected_target,mode=mode,sleeptime=sleeptime):
             for i in range(30):
                 self.wait(0.5)
                 if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -2946,7 +2986,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return prg_ret
                 
     
-    def story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="POKEMON_ZA_FALSE_RETURN",sub9_button="A",sub9_picture="POKEMON_ZA_FALSE_RETURN",selected_pic="POKEMON_ZA_FALSE_RETURN",selected_target=0,mode=0,sleeptime=0.5):
+    def ZA_story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub9_button="A",sub9_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,mode=0,sleeptime=0.5):
         selected_out_check=0
 
         if mode == 0:
@@ -2960,6 +3000,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 nofiled_check=1
             if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return True#ポケモンに見つかった場合は即座にTrue扱いで抜ける
+            elif self.image_check("POKEMON_ZA_MISSION_COMPLETE"):
+                break
             elif (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_COMMENT_MARKER") or ((green_check==1) and (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")))):
                 break
             elif self.image_check("POKEMON_ZA_COIN_ICON"):
@@ -2983,15 +3025,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             #elif i == 9:
             #    return False
             self.wait(0.5)
-            
+
         #コメントチェック待ちをおこなっても検知ができなかった場合は、False判定とする。
         #if (not (self.image_check("COIN_ICON") or self.image_check("TEXT_WHITE_COMMENT") or ((green_check==1) and (self.image_check("TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("TEXT_BLACK_COMMENT"))))):
         #    return False
-            
+
         while True:
             self.checkIfAlive()
             selected_out_check=0
-            if self.renda_button(rendabutton="B",
+            if self.ZA_renda_button(rendabutton="B",
                                  endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",
                                  endpicture2="POKEMON_ZA_ESCAPE",
                                  endpicture3=selected_pic,
@@ -3024,6 +3066,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                         break
                     elif self.image_check(endpicture7):
                         break
+                    elif self.image_check("POKEMON_ZA_MISSION_COMPLETE"):
+                        break
                     elif ((self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_COMMENT_MARKER") or ((green_check==1) and (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")))) ):
                         self.wait(0.5)
                         #選択肢チェックのタイミングがずれたようにフォローする
@@ -3037,7 +3081,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             break
                         else:
                             self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                            
+
                     elif self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
                         if ((self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_COMMENT_MARKER") or ((green_check==1) and (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")))) ):
                             self.wait(0.5)
@@ -3060,18 +3104,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                         break
                     elif (nofiled_check==1 and self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0")):
                         break
-                    
+
                         #if filed_check_count > 5:
                         #    break
                         #filed_check_count+=1
-                            
+
             #選択肢処理を行っている場合は再度ボタン連打を再開する。
             if selected_out_check==1:
                 selected_out_check=0
                 continue
             self.wait(0.5)
             if self.image_check(endpicture7):
-                break    
+                break
+            elif self.image_check("POKEMON_ZA_MISSION_COMPLETE"):
+                break   
             elif (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_COMMENT_MARKER") or ((green_check==1) and (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"))) or ((black_check==1) and (self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")))):
                 # 下記処理は戦闘不能となっている場合に実施すると抜けられなくなるため、回復などが前提にある場合でなければ使用しないこと
                 if substitute==1:
@@ -3091,14 +3137,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return False 
         return True
        
-    def story_Template_Field_HardGaurd(self,mode=0):
+    def ZA_story_Template_Field_HardGaurd(self,mode=0):
         if ( ((mode==0 and (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))) or mode==1)
             and (self.image_check("POKEMON_ZA_WANINOKO_ICON") or self.image_check("POKEMON_ZA_ODAIRU_ICON") or self.image_check("POKEMON_ZA_ABSOL_ICON") or self.image_check("POKEMON_ZA_DEAD"))):
             return True
         else:
             return False
         
-    def no_battle_filed_check_HardGaurd(self):
+    def ZA_no_battle_filed_check_HardGaurd(self):
     #チェックタイミングによってバトル中が非バトル中扱いとなる可能性があるため、sleeptimeなしで連続でチェックを行ってから判断させる。
     
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -3119,16 +3165,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # story_Template
     ###################################################### 
-    def get_pokemon(self):
-        self.ZL_ACTION("")
+    def ZA_get_pokemon(self):
+        self.ZA_ZL_ACTION("")
         self.wait(0.1)
         self.keys.input(Button.ZR)
         self.wait(0.15)
         self.keys.inputEnd(Button.ZR)
         self.wait(0.1)
-        self.ZL_ACTION("END")
+        self.ZA_ZL_ACTION("END")
         
-    def ball_change(self,type=0):
+    def ZA_ball_change(self,type=0):
 
         for i in range(20):
             self.keys.input(Button.ZR)
@@ -3155,7 +3201,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return False
     
-    def EventSkip_plus(self):
+    def ZA_EventSkip_plus(self):
         for i in range(3):
             self.etc_sendCommand("plusbutton")
             self.wait(0.1)
@@ -3280,16 +3326,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # MAIN FUNCTION
     ######################################################  
-    def za_infi_main_start(self):
-        self.load_zones()
+    def ZA_za_infi_main_start(self):
+        self.ZA_load_zones()
         self.no_Cplus=0      
         if self.fastread:
-            self.load_sleeps()
+            self.ZA_load_sleeps()
         self.fastread = False
         #print(f'{self.SLEEPLIST}')
         return "ZA_INFI_MAIN_BENCH"
     
-    def za_infi_main_bench(self):
+    def ZA_za_infi_main_bench(self):
         self.bench_current_state = self.STATE_BENCH_FUNCTION[self.bench_current_state]()
         if self.bench_current_state == "BATTLE_RETURN":
             self.bench_current_state="BENCH_START"
@@ -3303,7 +3349,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "ZA_INFI_MAIN_BENCH"
         
-    def za_infi_main_battle_loop(self):
+    def ZA_za_infi_main_battle_loop(self):
         self.battle_current_state = self.STATE_BATTLE_FUNCTION[self.battle_current_state]()
         
         if self.battle_current_state == "BATTLE_START":
@@ -3311,10 +3357,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "ZA_INFI_MAIN_BATTLE_LOOP"
 
-    def za_infi_main_end(self):
+    def ZA_za_infi_main_end(self):
         return "ZA_INFI_MAIN_START"
     
-    def za_infi_quasar_loop(self):
+    def ZA_za_infi_quasar_loop(self):
         self.quasar_current_state = self.STATE_QUASAR_FUNCTION[self.quasar_current_state]()
         if self.quasar_current_state == "QUASAR_START":
             return "ZA_INFI_MAIN_END"
@@ -3413,7 +3459,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.image_check("POKEMON_ZA_STARTBTN_SELECT"):
                     self.pressRep(Button.A, repeat=20, duration=0.15, wait=0.5, interval=0.1)
                     self.wait(0.1)
-                    self.EventSkip_plus()
+                    self.ZA_EventSkip_plus()
                     return "MAIN_1_Z_LANK"
         return "MAIN_0_START"
     
@@ -3514,7 +3560,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT"):
             return "1_STORY_STATION_OUT"
         else:
-            self.EventSkip_plus()
+            self.ZA_EventSkip_plus()
             return "1_STORY_START_CHECK"
         
     def _1_story_train_out(self):
@@ -3551,7 +3597,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",event_picture="POKEMON_ZA_QUASAR_MOVIE_ICON"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",event_picture="POKEMON_ZA_QUASAR_MOVIE_ICON"):
                     return "1_STORY_STATION_LEAVE_MOVE"
         
         return "1_STORY_STATION_FRONT"
@@ -3579,7 +3625,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT") 
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_CHAT_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_CHAT_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                     return "1_STORY_FARST_POKEMON_SELECT"
         return "1_STORY_BAG_CHASE_END"
     
@@ -3594,7 +3640,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                 self.press(Direction(Stick.LEFT,150), duration=0.7, wait=1.0)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_HELP_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_HELP_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                     return "1_STORY_FARST_BATTLE"
         return "1_STORY_FARST_POKEMON_SELECT"
     
@@ -3604,7 +3650,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_HELP_MARKER") 
         else:
             if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
-                self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=0)
+                self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=0)
             elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
                 return "1_STORY_FARST_BATTLE_END"
             elif self.image_check("POKEMON_ZA_HELP_MARKER"):
@@ -3617,7 +3663,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_TEXT_WHITE_COMMENT") 
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                     return "1_STORY_FARST_BATTLE_ZONE_MOVE1"
         return "1_STORY_FARST_BATTLE_END"
     
@@ -3632,14 +3678,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_second_battle_start(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_SECOND_BATTLE"
         return "1_STORY_SECOND_BATTLE_START"
     
     def _1_story_second_battle(self):
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             return "1_STORY_SECOND_BATTLE_END"  
         return "1_STORY_SECOND_BATTLE"  
@@ -3647,7 +3693,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_second_battle_end(self):
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_FARST_BATTLE_ZONE_MOVE2" 
         return "1_STORY_SECOND_BATTLE_END" 
 
@@ -3658,13 +3704,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,180), duration=4.2, wait=1.0)
             self.press(Direction(Stick.LEFT,90), duration=2.5, wait=1.0)
             self.wait(3.0)
-            self.EventSkip_plus()
+            self.ZA_EventSkip_plus()
             return "1_STORY_FARST_MOVIE_END"
         return "1_STORY_FARST_BATTLE_ZONE_MOVE2"
 
     def _1_story_farst_movie_end(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_FARST_BATTLE_ZONE_MOVE3" 
         return "1_STORY_FARST_MOVIE_END"
         
@@ -3681,7 +3727,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_farst_battle_zone_out(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_FARST_BATTLE_ZONE_MOVE4" 
         return "1_STORY_FARST_BATTLE_ZONE_OUT"
 
@@ -3693,7 +3739,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_arrival(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_HOTEL_Z_MOVE1"
 
         return "1_STORY_HOTEL_Z_ARRIVAL"
@@ -3714,7 +3760,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_fast_in(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_HOTEL_Z_MOVE3"
         return "1_STORY_HOTEL_Z_FAST_IN"
     
@@ -3729,7 +3775,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_az_chat(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 return "1_STORY_HOTEL_Z_MOVE4"
         return "1_STORY_AZ_CHAT"
     
@@ -3742,7 +3788,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_HOTEL_Z_MOVE4"
 
     def _1_story_fast_elevator(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
             return "1_STORY_HOTEL_Z_MOVE5"
         return "1_STORY_FAST_ELEVATOR"
     
@@ -3756,7 +3802,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_hote_z_move6(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE7"
 
         return "1_STORY_HOTEL_Z_MOVE6"   
@@ -3773,7 +3819,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE9"
 
         return "1_STORY_HOTEL_Z_MOVE8"  
@@ -3789,7 +3835,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move10(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE11"
 
         return "1_STORY_HOTEL_Z_MOVE10"
@@ -3811,7 +3857,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             # ロワイヤル画面でFILED判定してしまう場合があるため一旦代用でWANINOKO_ICONで判断
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
 
         return "1_STORY_HOTEL_Z_MOVE12" 
@@ -3820,7 +3866,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
@@ -3831,7 +3877,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_hote_z_move14(self):
         # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT,90), duration=2.9, wait=1.0)
@@ -3841,27 +3887,27 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move15(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "1_STORY_THIRD_BATTLE"
         return "1_STORY_HOTEL_Z_MOVE15"
     
     def _1_story_third_battle(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 for i in range(20):
                     if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
                         return "1_STORY_THIRD_BATTLE"
                     elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                        self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER")
+                        self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER")
                 return "1_STORY_THIRD_BATTLE_END"
         return "1_STORY_THIRD_BATTLE"
     
     def _1_story_third_battle_end(self):
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_OUT_HOTEL_Z_1"
         else:
             self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)    
@@ -3883,7 +3929,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_3(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_OUT_HOTEL_Z_4"
         return "1_STORY_OUT_HOTEL_Z_3"
     
@@ -3894,7 +3940,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "1_STORY_OUT_HOTEL_Z_6"
         return "1_STORY_OUT_HOTEL_Z_5"
     
@@ -3915,7 +3961,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_out_hotel_z_7(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_8"
 
         return "1_STORY_OUT_HOTEL_Z_7"
@@ -3927,13 +3973,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_9(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_WANINOKO_SKILL_CHANGE1"
         return "1_STORY_OUT_HOTEL_Z_9"
     
     def _1_story_waninoko_skill_change1(self):
         #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(1,"Y","B")
+        ret = self.ZA_common_skill_change_function(1,"Y","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE2"
@@ -3942,7 +3988,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_waninoko_skill_change2(self):
         #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(1,"X","A")
+        ret = self.ZA_common_skill_change_function(1,"X","A")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_OUT_HOTEL_Z_10"
@@ -3958,28 +4004,28 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_11(self):  
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_OUT_HOTEL_Z_12"
         return "1_STORY_OUT_HOTEL_Z_11"
     
     def _1_story_out_hotel_z_12(self):
-        self.get_pokemon()
+        self.ZA_get_pokemon()
         return "1_STORY_OUT_HOTEL_Z_13"
     
     def _1_story_out_hotel_z_13(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "1_STORY_OUT_HOTEL_Z_14"
 
         return "1_STORY_OUT_HOTEL_Z_13"
     
     def _1_story_out_hotel_z_14(self):  
-        self.get_pokemon()
+        self.ZA_get_pokemon()
         return "1_STORY_OUT_HOTEL_Z_15"
     
     def _1_story_out_hotel_z_15(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self._1_story_2nd_get_comment=0
                 return "1_STORY_OUT_HOTEL_Z_16"
 
@@ -3989,23 +4035,23 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self._1_story_2nd_get_comment==1:
             # ゲットチャンスコメントに妨害されるためコメントがでるまで以下で行わない。
             if self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-                self.get_pokemon()
+                self.ZA_get_pokemon()
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.wait(0.1)
             if self.image_check("POKEMON_ZA_TEXT_2_GETCHANCE"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                     self.wait(0.1)
-                    self.get_pokemon()
+                    self.ZA_get_pokemon()
             elif self.image_check("POKEMON_ZA_TEXT_2_GET_SUCCESS"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
-                    self.ZL_ACTION("END")
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+                    self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_17" 
             else:
-                self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER")
+                self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER")
             self._1_story_2nd_get_comment=1
  
         return "1_STORY_OUT_HOTEL_Z_16"
@@ -4022,26 +4068,26 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_18(self):
         if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
-            self.ZL_ACTION("END")
+            self.ZA_ZL_ACTION("END")
             
             #コフキムシは1体
             return "1_STORY_OUT_HOTEL_Z_19"
             #return "1_STORY_OUT_HOTEL_Z_18_1"
         elif self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-            self.get_pokemon()
+            self.ZA_get_pokemon()
             self.wait(3.0)
             for i in range(6):
                 if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
-                    self.ZL_ACTION("END")
+                    self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_19"
                 elif self.image_check("POKEMON_ZA_EYE_CHECK"):
-                    self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+                    self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
                 self.wait(1.0)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
         return "1_STORY_OUT_HOTEL_Z_18" 
 
     def _1_story_out_hotel_z_18_1(self):
@@ -4055,16 +4101,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_18_2(self):
         if (self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4")
                 and self.image_check("POKEMON_ZA_KOHUKI_ICON_GET5")):
-            self.ZL_ACTION("END")
+            self.ZA_ZL_ACTION("END")
             return "1_STORY_OUT_HOTEL_Z_19"
         elif self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-            self.get_pokemon()
+            self.ZA_get_pokemon()
             self.wait(2.0)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
         return "1_STORY_OUT_HOTEL_Z_18_2" 
 
     def _1_story_out_hotel_z_19(self):
@@ -4089,21 +4135,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_20(self):
         if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
-            self.ZL_ACTION("END")
+            self.ZA_ZL_ACTION("END")
             return "1_STORY_OUT_HOTEL_Z_20_1"
         elif self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
             self.wait(0.25)
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
             self.wait(0.25)
-            self.get_pokemon()
+            self.ZA_get_pokemon()
             self.wait(0.25)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
             for i in range(6):
                 if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
-                    self.ZL_ACTION("END")
+                    self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_20_1"
                 elif self.image_check("POKEMON_ZA_EYE_CHECK"):
-                    self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+                    self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
                 self.wait(1.0)
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
@@ -4115,7 +4161,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             else:
                 self._1_story_out_hotel_z_20_not_eyecheck_count+=1
                 
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
         return "1_STORY_OUT_HOTEL_Z_20" 
     
     def _1_story_out_hotel_z_20_1(self):
@@ -4165,7 +4211,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_24(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_25" 
         return "1_STORY_OUT_HOTEL_Z_24" 
     
@@ -4179,7 +4225,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_27" 
 
         return "1_STORY_OUT_HOTEL_Z_26" 
@@ -4193,7 +4239,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_27" 
     
     def _1_story_out_hotel_z_28(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.wait(0.3)
             self.etc_sendCommand("Lbutton_down")
             self.wait(0.3)
@@ -4204,7 +4250,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_29(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT2"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_30" 
 
         return "1_STORY_OUT_HOTEL_Z_29" 
@@ -4219,13 +4265,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_31(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_32" 
 
         return "1_STORY_OUT_HOTEL_Z_31" 
     
     def _1_story_out_hotel_z_32(self):
-        if self.common_skill_change_start_check() == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+        if self.ZA_common_skill_change_start_check() == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
             return "1_STORY_OUT_HOTEL_Z_33" 
 
         return "1_STORY_OUT_HOTEL_Z_32" 
@@ -4250,7 +4296,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_34(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 #ネットワーク開放
                 return "1_STORY_OUT_HOTEL_Z_35"  
         return "1_STORY_OUT_HOTEL_Z_34" 
@@ -4266,7 +4312,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_35" 
     
     def _1_story_out_hotel_z_36(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.wait(0.3)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)            
             self.wait(1.0)
@@ -4282,13 +4328,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_38(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_WANINOKO_SKILL_CHANGE3"
         return "1_STORY_OUT_HOTEL_Z_38"
     
     def _1_story_waninoko_skill_change3(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(2,"X","A")
+        ret = self.ZA_common_skill_change_function(2,"X","A")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE4"
@@ -4297,7 +4343,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _1_story_waninoko_skill_change4(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(2,"X","B")
+        ret = self.ZA_common_skill_change_function(2,"X","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE5"
@@ -4306,7 +4352,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_waninoko_skill_change5(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(3,"A","B")
+        ret = self.ZA_common_skill_change_function(3,"A","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE6"
@@ -4315,7 +4361,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _1_story_waninoko_skill_change6(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(3,0,"A",1)
+        ret = self.ZA_common_skill_change_function(3,0,"A",1)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE7"
@@ -4324,7 +4370,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _1_story_waninoko_skill_change7(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(4,"X","B")
+        ret = self.ZA_common_skill_change_function(4,"X","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_WANINOKO_SKILL_CHANGE8"
@@ -4333,7 +4379,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _1_story_waninoko_skill_change8(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(5,"X","B")
+        ret = self.ZA_common_skill_change_function(5,"X","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "1_STORY_OUT_HOTEL_Z_39_0"
@@ -4343,7 +4389,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     #6体目のゲットをなくしたため破棄
     def _1_story_waninoko_skill_change9(self):
         #C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
-        ret = self.common_skill_change_function(6,"X","B")
+        ret = self.ZA_common_skill_change_function(6,"X","B")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             self.wait(1.0)
@@ -4423,7 +4469,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_44(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             for i in range(3):
-                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
             return "1_STORY_OUT_HOTEL_Z_45" 
         return "1_STORY_OUT_HOTEL_Z_44" 
     
@@ -4451,7 +4497,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_47(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_48"  
         return "1_STORY_OUT_HOTEL_Z_47" 
     
@@ -4472,7 +4518,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_50(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_51"  
         return "1_STORY_OUT_HOTEL_Z_50"
     
@@ -4486,7 +4532,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_52(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_53"  
 
         return "1_STORY_OUT_HOTEL_Z_52"
@@ -4494,7 +4540,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_53(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_map_open()
+        ret = self.ZA_Common_map_open()
         if  ret == "COMMON_GOTO_SELECT1":
             return "1_STORY_OUT_HOTEL_Z_54"
         return "1_STORY_OUT_HOTEL_Z_53"
@@ -4525,14 +4571,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_57(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_58"
         return "1_STORY_OUT_HOTEL_Z_57"
     
     def _1_story_out_hotel_z_58(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_59"  
         return "1_STORY_OUT_HOTEL_Z_58"
     
@@ -4578,7 +4624,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_63(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_64" 
         return "1_STORY_OUT_HOTEL_Z_63" 
     
@@ -4592,16 +4638,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_65(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_66"
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         return "1_STORY_OUT_HOTEL_Z_65" 
     
     def _1_story_out_hotel_z_66(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_67"  
 
         return "1_STORY_OUT_HOTEL_Z_66" 
@@ -4630,7 +4676,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_68" 
     
     def _1_story_out_hotel_z_69(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
             return "1_STORY_OUT_HOTEL_Z_70"
         return "1_STORY_OUT_HOTEL_Z_69" 
     
@@ -4668,7 +4714,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_72"
     
     def _1_story_out_hotel_z_73(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
             return "1_STORY_OUT_HOTEL_Z_74"
         return "1_STORY_OUT_HOTEL_Z_73"
     
@@ -4684,23 +4730,23 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_75(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             return "1_STORY_OUT_HOTEL_Z_76"
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
 
         return "1_STORY_OUT_HOTEL_Z_75"
     
     def _1_story_out_hotel_z_76(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_77"  
 
         return "1_STORY_OUT_HOTEL_Z_76"
     
     def _1_story_out_hotel_z_77(self):
-        ret = self.Common_goto(2,0,0)#ポケセンベールで回復
+        ret = self.ZA_Common_goto(2,0,0)#ポケセンベールで回復
         
         if ret == "START":
             return "1_STORY_OUT_HOTEL_Z_78"
@@ -4719,7 +4765,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_78"
     
     def _1_story_out_hotel_z_79(self):
-        ret = self.Common_goto(2,0,0)#ポケセンベールに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,0)#ポケセンベールに移動で位置確定
         
         if ret == "START":
             return "1_STORY_OUT_HOTEL_Z_80"
@@ -4738,7 +4784,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_81(self):
         self.wait(3.0)
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_82" 
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             return "1_STORY_OUT_HOTEL_Z_79"
@@ -4753,14 +4799,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_83(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "1_STORY_OUT_HOTEL_Z_84" 
         return "1_STORY_OUT_HOTEL_Z_83"
     
     #Zランク
     def _1_story_out_hotel_z_84(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             self.wait(1.0)
@@ -4774,7 +4820,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_85(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
                 self.wait(1.0)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "1_STORY_END"
@@ -4816,7 +4862,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_3"
     
     def _2_story_tower_4(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "2_STORY_TOWER_5"
         return "2_STORY_TOWER_4"
     
@@ -4830,7 +4876,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_5"
     
     def _2_story_tower_6(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_6"
     
@@ -4841,32 +4887,32 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             return "2_STORY_TOWER_8"
         else:
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_7"
     
     def _2_story_tower_8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_9"
         return "2_STORY_TOWER_8"
     
     def _2_story_tower_9(self):
-		#return self.story_Template_battle_function(bkprg_ret="2_STORY_TOWER_8",prg_ret="2_STORY_TOWER_10",noprg_ret="2_STORY_TOWER_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        #return self.story_Template_battle_function(bkprg_ret="2_STORY_TOWER_8",prg_ret="2_STORY_TOWER_10",noprg_ret="2_STORY_TOWER_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
 
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             return "2_STORY_TOWER_10"
         return "2_STORY_TOWER_9"
     
     def _2_story_tower_10(self):
-		#return self.story_Template_battle_after(bkprg_ret="2_STORY_TOWER_9",prg_ret="2_STORY_TOWER_11")
+        #return self.story_Template_battle_after(bkprg_ret="2_STORY_TOWER_9",prg_ret="2_STORY_TOWER_11")
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_11"
         return "2_STORY_TOWER_10"
     
@@ -4884,7 +4930,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_13"
         return "2_STORY_TOWER_12"
     
@@ -4899,7 +4945,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_14(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_15_0"
         return "2_STORY_TOWER_14"
     
@@ -4918,7 +4964,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_17"
         return "2_STORY_TOWER_16"
     
@@ -4931,7 +4977,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_18(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_19"
         return "2_STORY_TOWER_18"
     
@@ -4947,7 +4993,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_21"
         return "2_STORY_TOWER_20"
     
@@ -4965,7 +5011,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_23"
         return "2_STORY_TOWER_22"
     
@@ -4979,7 +5025,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_23"
     
     def _2_story_tower_24(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         
         if ret == "START":
             return "2_STORY_TOWER_25"
@@ -5002,13 +5048,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_27(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_28"
         return "2_STORY_TOWER_27"
     
     def _2_story_tower_28(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_2_SELECT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
@@ -5024,12 +5070,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_29(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_30"
         return "2_STORY_TOWER_29"
     
     def _2_story_tower_30(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_31"
         else:
@@ -5037,13 +5083,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_31(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "2_STORY_TOWER_32"
         else:
             return "2_STORY_TOWER_31"
     
     def _2_story_tower_32(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_33"
         else:
@@ -5081,23 +5127,23 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_EYE_CHECK"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
-                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
             else:
-                self.ZL_ACTION("END")
+                self.ZA_ZL_ACTION("END")
                 return "2_STORY_TOWER_37"
         if self.image_check("POKEMON_ZA_GETCHANCE_ICON4"):
-            self.get_pokemon()
+            self.ZA_get_pokemon()
             self.wait(2.0)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
 
         return "2_STORY_TOWER_36"
     
     def _2_story_tower_37(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_38"
         else:
@@ -5105,13 +5151,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_38(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "2_STORY_TOWER_39"
         else:
             return "2_STORY_TOWER_38"
     
     def _2_story_tower_39(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_40"
         else:
@@ -5134,7 +5180,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_40"
     
     def _2_story_tower_41(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "2_STORY_TOWER_42"
         return "2_STORY_TOWER_41"
     
@@ -5152,7 +5198,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             #誤検知するため・上下アイコンが表示されないためワニノコ・メリープアイコンで判定
             #if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_44"
         return "2_STORY_TOWER_43"
     
@@ -5167,7 +5213,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_45(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_TOWER_46"
         return "2_STORY_TOWER_45"
     
@@ -5182,7 +5228,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_mapping_1(self):
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-1)#ハンサムハウスに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-1)#ハンサムハウスに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_2"
         else:
@@ -5214,12 +5260,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ゾーン4が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#ゾーン4が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_5"#再移動となるため5にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5236,7 +5282,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_4(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,-1)#ゾーン4
+        ret = self.ZA_Common_goto(4,0,-1)#ゾーン4
         if ret == "START":
             return "2_STORY_MAPPING_5"
         else:
@@ -5261,12 +5307,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU")
             
         else:
-            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンルージュが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,1,movepoint_check=1)#ポケセンルージュが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_RUDU",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_RUDU",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_7"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5283,7 +5329,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_7(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,-1)#ゾーン4
+        ret = self.ZA_Common_goto(4,0,-1)#ゾーン4
         if ret == "START":
             return "2_STORY_MAPPING_8"
         else:
@@ -5309,12 +5355,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM")
             
         else:
-            ret = self.Common_goto(1,0,-1,movepoint_check=1)#ポケセンルージュが登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-1,movepoint_check=1)#ポケセンルージュが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DREAM",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DREAM",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_10"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5331,7 +5377,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_10(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,0)#プリズムタワー
+        ret = self.ZA_Common_goto(1,0,0)#プリズムタワー
         if ret == "START":
             return "2_STORY_MAPPING_11"
         else:
@@ -5357,12 +5403,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN")
             
         else:
-            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェ・おとこまえが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-1,movepoint_check=1)#カフェ・おとこまえが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_MAN",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_MAN",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_14"#再移動となるため14にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5378,7 +5424,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mapping_13(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(3,0,-1)#カフェ・おとこまえ
+        ret = self.ZA_Common_goto(3,0,-1)#カフェ・おとこまえ
         if ret == "START":
             return "2_STORY_MAPPING_14"
         else:
@@ -5404,12 +5450,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE")
             
         else:
-            ret = self.Common_goto(1,0,4,movepoint_check=1)#ローズ広場が登録されたか確認
+            ret = self.ZA_Common_goto(1,0,4,movepoint_check=1)#ローズ広場が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE",pic2="POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE",pic2="POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_17"#再移動となるため17にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5426,7 +5472,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_16(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,4)#ローズ広場
+        ret = self.ZA_Common_goto(1,0,4)#ローズ広場
         if ret == "START":
             return "2_STORY_MAPPING_17"
         else:
@@ -5451,12 +5497,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S")
             
         else:
-            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンローズ広場が登録されたか確認
+            ret = self.ZA_Common_goto(2,0,1,movepoint_check=1)#ポケセンローズ広場が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE_S",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE_S",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_19"#再移動となるため17にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5473,7 +5519,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_19(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,4)#ローズ広場
+        ret = self.ZA_Common_goto(1,0,4)#ローズ広場
         if ret == "START":
             return "2_STORY_MAPPING_20"
         else:
@@ -5500,12 +5546,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE")
             
         else:
-            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンローズが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,1,movepoint_check=1)#ポケセンローズが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_22"#再移動となるため17にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5522,7 +5568,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_22(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,0)#プリズムタワーに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,0)#プリズムタワーに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_23"
         else:
@@ -5549,12 +5595,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN")
             
         else:
-            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_PRANTAN",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_PRANTAN",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_25"#再移動となるため17にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5571,7 +5617,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_25(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_26"
         else:
@@ -5618,12 +5664,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE")
             
         else:
-            ret = self.Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,1,movepoint_check=1)#ポケセンプランタンが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_BLUE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_BLUE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_28"#再移動となるため17にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5640,7 +5686,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_28(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,1)#ワイルドゾーン3に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,1)#ワイルドゾーン3に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_29"
         else:
@@ -5669,12 +5715,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL")
             
         else:
-            ret = self.Common_goto(2,0,-1,movepoint_check=1)#ポケセンイベールが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,-1,movepoint_check=1)#ポケセンイベールが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_EVEL",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_EVEL",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_32"#再移動となるため32にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5691,7 +5737,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_31(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-1)#ポケセンイベールに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-1)#ポケセンイベールに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_32"
         else:
@@ -5722,12 +5768,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE")
             
         else:
-            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェリテイクが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-1,movepoint_check=1)#カフェリテイクが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_RETAKE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_RETAKE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_35"#再移動となるため35にジャンプ
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5744,7 +5790,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_34(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,-1)##カフェリテイクに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,-1)##カフェリテイクに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_35"
         else:
@@ -5771,12 +5817,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE")
             
         else:
-            ret = self.Common_goto(2,0,-2,movepoint_check=1)#ポケセンジョーヌが登録されたか確認
+            ret = self.ZA_Common_goto(2,0,-2,movepoint_check=1)#ポケセンジョーヌが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_JONE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_JONE",pic2="POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_37"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5793,7 +5839,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_37(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,1)##ヌーヴォカフェに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,1)##ヌーヴォカフェに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_38"
         else:
@@ -5817,12 +5863,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2")
             
         else:
-            ret = self.Common_goto(4,0,1,movepoint_check=1)#ワイルドゾーン2が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,1,movepoint_check=1)#ワイルドゾーン2が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_40"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5839,7 +5885,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_40(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,0)#プリズムタワーに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,0)#プリズムタワーに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_41"
         else:
@@ -5864,12 +5910,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン5が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン5が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_43"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5886,7 +5932,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_43(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_44"
         else:
@@ -5914,12 +5960,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン6が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#ワイルドゾーン6が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_46"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5936,7 +5982,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_46(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,2)#ポケセンタープランタンに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,2)#ポケセンタープランタンに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_47"
         else:
@@ -5958,12 +6004,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE")
             
         else:
-            ret = self.Common_goto(3,0,0,movepoint_check=1)#カフェアラモードが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,0,movepoint_check=1)#カフェアラモードが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ALAMODE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ALAMODE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_49"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -5980,7 +6026,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_49(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,2)#ポケセンタープランタンに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,2)#ポケセンタープランタンに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_50"
         else:
@@ -6002,12 +6048,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO")
             
         else:
-            ret = self.Common_goto(3,0,3,movepoint_check=1)#カフェトウトウが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,3,movepoint_check=1)#カフェトウトウが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_52"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6024,7 +6070,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_52(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,1)#Wゾーン2に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,1)#Wゾーン2に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_53"
         else:
@@ -6052,12 +6098,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER")
             
         else:
-            ret = self.Common_goto(3,0,0,movepoint_check=1)#カフェツイスターが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,0,movepoint_check=1)#カフェツイスターが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_55"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6074,7 +6120,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_55(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,1)#ポケセンターブルーに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンターブルーに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_56"
         else:
@@ -6100,12 +6146,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2")
             
         else:
-            ret = self.Common_goto(3,0,-3,movepoint_check=1)#ヌーヴォカフェ2号が登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-3,movepoint_check=1)#ヌーヴォカフェ2号が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO2",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO2",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_58"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6122,7 +6168,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_58(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,-2)#Wゾーン5に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,-2)#Wゾーン5に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_59"
         else:
@@ -6145,12 +6191,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE")
             
         else:
-            ret = self.Common_goto(1,0,-4,movepoint_check=1)#ブルー広場が登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-4,movepoint_check=1)#ブルー広場が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_BLUE_SQUARE",pic2="POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_BLUE_SQUARE",pic2="POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_61"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6167,7 +6213,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_61(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,1)#ポケセンターブルーに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンターブルーに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_62"
         else:
@@ -6197,12 +6243,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE")
             
         else:
-            ret = self.Common_goto(3,0,-4,movepoint_check=1)#カフェソレイユが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-4,movepoint_check=1)#カフェソレイユが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SOLEIL",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_SOLEIL") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SOLEIL",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_SOLEIL") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_65"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6220,7 +6266,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_64(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,-4)#カフェソレイユに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,-4)#カフェソレイユに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_65"
         else:
@@ -6252,12 +6298,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS")
             
         else:
-            ret = self.Common_goto(3,0,-4,movepoint_check=1)#カフェフォーカスが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-4,movepoint_check=1)#カフェフォーカスが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_FOCUS",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_FOCUS",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_67"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6274,7 +6320,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_67(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,-4)#カフェフォーカスに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,-4)#カフェフォーカスに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_68"
         else:
@@ -6301,12 +6347,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM")
             
         else:
-            ret = self.Common_goto(3,0,-3,movepoint_check=1)#カフェスラロームが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-3,movepoint_check=1)#カフェスラロームが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SLALOM",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SLALOM",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_70"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6323,7 +6369,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_70(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,4)#ポケセンターローズ広場に移動で位置確定
+        ret = self.ZA_Common_goto(2,0,4)#ポケセンターローズ広場に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_71"
         else:
@@ -6346,12 +6392,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3")
             
         else:
-            ret = self.Common_goto(3,0,-2,movepoint_check=1)#ヌーヴォカフェ3登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-2,movepoint_check=1)#ヌーヴォカフェ3登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO3",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO3",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_73"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6368,7 +6414,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_73(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_74"
         else:
@@ -6392,12 +6438,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR")
             
         else:
-            ret = self.Common_goto(3,0,-3,movepoint_check=1)#ヌーヴォカフェ3登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-3,movepoint_check=1)#ヌーヴォカフェ3登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CANCODOR",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CANCODOR",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_76"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6414,7 +6460,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_76(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_77"
         else:
@@ -6442,12 +6488,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU")
             
         else:
-            ret = self.Common_goto(1,0,-2,movepoint_check=1)#リストランテニリューが登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-2,movepoint_check=1)#リストランテニリューが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_2RYU",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_2RYU",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_79"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6464,7 +6510,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_79(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-4)#ポケセンタールージュに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-4)#ポケセンタールージュに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_80"
         else:
@@ -6499,12 +6545,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM")
             
         else:
-            ret = self.Common_goto(1,0,-3,movepoint_check=1)#ミアレ美術館が登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-3,movepoint_check=1)#ミアレ美術館が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_ART_MUSEUM",pic2="POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_ART_MUSEUM",pic2="POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_83"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6521,7 +6567,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_82(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-3)#ミアレ美術館に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-3)#ミアレ美術館に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_83"
         else:
@@ -6547,12 +6593,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH")
             
         else:
-            ret = self.Common_goto(1,0,-5,movepoint_check=1)#ホテルシューリッシュが登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-5,movepoint_check=1)#ホテルシューリッシュが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_HOTEL_SURREALISH",pic2="POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_HOTEL_SURREALISH",pic2="POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_86"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6569,7 +6615,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_85(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-5)#ホテルシューリッシュに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-5)#ホテルシューリッシュに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_86"
         else:
@@ -6593,12 +6639,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT")
             
         else:
-            ret = self.Common_goto(3,0,-2,movepoint_check=1)#カフェアルティメットが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-2,movepoint_check=1)#カフェアルティメットが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ULT",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ULT",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_88"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6615,7 +6661,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_88(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-1)#ポケセンターイベールに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-1)#ポケセンターイベールに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_89"
         else:
@@ -6640,12 +6686,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE")
             
         else:
-            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェパルトネールが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-1,movepoint_check=1)#カフェパルトネールが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_PARTENAIRE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_PARTENAIRE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_91"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6662,7 +6708,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_91(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_92"
         else:
@@ -6699,12 +6745,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE")
             
         else:
-            ret = self.Common_goto(3,0,-1,movepoint_check=1)#カフェバタイユが登録されたか確認
+            ret = self.ZA_Common_goto(3,0,-1,movepoint_check=1)#カフェバタイユが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_BATAILLE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_BATAILLE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_95"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6721,7 +6767,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_95(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_96"
         else:
@@ -6749,12 +6795,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("MOVEPOINT_PIC_CRACINE")
             
         else:
-            ret = self.Common_goto(1,0,4,movepoint_check=1)#ラシーヌ工務店が登録されたか確認
+            ret = self.ZA_Common_goto(1,0,4,movepoint_check=1)#ラシーヌ工務店が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RACINE",pic2="POKEMON_ZA_MOVEPOINT_PIC_RACINE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RACINE",pic2="POKEMON_ZA_MOVEPOINT_PIC_RACINE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_99"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6771,7 +6817,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_98(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,4)#ラシーヌ工務店に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,4)#ラシーヌ工務店に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_99"
         else:
@@ -6803,12 +6849,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU")
             
         else:
-            ret = self.Common_goto(1,0,5,movepoint_check=1)#レストランドフツーが登録されたか確認
+            ret = self.ZA_Common_goto(1,0,5,movepoint_check=1)#レストランドフツーが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DOHUTSU",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DOHUTSU",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_101"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6825,7 +6871,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_101(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_102"
         else:
@@ -6861,12 +6907,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO")
             
         else:
-            ret = self.Common_goto(1,0,-1,movepoint_check=1)#ジャスティス道場が登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-1,movepoint_check=1)#ジャスティス道場が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_JUSTICE_DOJO",pic2="POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_JUSTICE_DOJO",pic2="POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_104"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6883,7 +6929,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_104(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(4,0,2)#Wゾーン2に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,2)#Wゾーン2に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_105"
         else:
@@ -6917,12 +6963,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME")
             
         else:
-            ret = self.Common_goto(1,0,-2,movepoint_check=1)#レストランドキワミが登録されたか確認
+            ret = self.ZA_Common_goto(1,0,-2,movepoint_check=1)#レストランドキワミが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME",pic2="POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_107"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6939,7 +6985,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_107(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-4)#レストランニリューに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-4)#レストランニリューに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_108"
         else:
@@ -6961,12 +7007,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE")
             
         else:
-            ret = self.Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
+            ret = self.ZA_Common_goto(3,1,1,movepoint_check=1)#カフェかわいがりが登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CUTE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CUTE",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_TOWER_47"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -6984,7 +7030,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_tower_47(self):
         #ヘラクロス交換
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_48"
         else:
@@ -7008,7 +7054,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_49(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_50"
         return "2_STORY_TOWER_49"
     
@@ -7027,7 +7073,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_51(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_PIKA_ICON_BOX6",sleeptime=2.0):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_PIKA_ICON_BOX6",sleeptime=2.0):
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_SIDE_MARKER_CENTER_WIDE"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -7037,7 +7083,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_52(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_53"
         else:
@@ -7055,13 +7101,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_54(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_55"
             
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                     return "2_STORY_TOWER_55"
         return "2_STORY_TOWER_52"
     
@@ -7072,7 +7118,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_SIDE_SELECT_TOP_MAP")
             return "2_STORY_TOWER_55"
         else:
-            ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+            ret = self.ZA_Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
             if ret == "START":
                 return "2_STORY_TOWER_56"
             else:
@@ -7098,7 +7144,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_58(self): 
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_59"
         elif self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             return "2_STORY_TOWER_55"
@@ -7109,19 +7155,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             return "2_STORY_TOWER_60"
         return "2_STORY_TOWER_59"
     
     def _2_story_tower_60(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 return "2_STORY_TOWER_61"
         return "2_STORY_TOWER_60"
     
     def _2_story_tower_61(self): 
-        ret = self.Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_62"
         else:
@@ -7138,27 +7184,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_62"
     
     def _2_story_tower_63(self): 
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "2_STORY_TOWER_64"
         return "2_STORY_TOWER_61"
     
     def _2_story_tower_64(self): 
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_65"
         else:
             return "2_STORY_TOWER_64"
     
     def _2_story_tower_65(self):
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "2_STORY_TOWER_66"
         return "2_STORY_TOWER_65"
     
     def _2_story_tower_66(self):
         #親分クエスト
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(4,0,2)#Wゾーン3に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,2)#Wゾーン3に移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_67"
         else:
@@ -7177,13 +7223,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_68(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_69"
         return "2_STORY_TOWER_68"
     
     def _2_story_tower_69(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,-3)#ローリングドリーマーに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-3)#ローリングドリーマーに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_70"
         else:
@@ -7214,18 +7260,18 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_71(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0):
                 return "2_STORY_TOWER_72"
 
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0):
                     return "2_STORY_TOWER_72"
         return "2_STORY_TOWER_69"
     
     def _2_story_tower_72(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_TOWER_71",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_71",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
 
         #親分ホルビーが必要な場合はゲットマーカー4でゲット処理を追加
         #敗戦対応が必要なはず
@@ -7234,7 +7280,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_HELP_MARKER"):
             self.press(Direction(Stick.LEFT,90), duration=0.7, wait=0.5)
             self.wait(1.0)
@@ -7250,29 +7296,29 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_72"
     
     def _2_story_tower_73(self): 
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_74"
         return "2_STORY_TOWER_73"
 
     def _2_story_tower_74(self): 
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,5)#ポケセンルージュに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_75"
         else:
             return "2_STORY_TOWER_74"
     
     def _2_story_tower_75(self):
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "2_STORY_TOWER_76"
         return "2_STORY_TOWER_75"
     
     def _2_story_tower_76(self): 
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,-6)#ハンサムハウスに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-6)#ハンサムハウスに移動で位置確定
         if ret == "START":
             return "2_STORY_TOWER_77"
         else:
@@ -7287,12 +7333,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_TOWER_78"
         return "2_STORY_TOWER_77"
     
-    def _2_story_tower_78(self): 
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
-                return "2_STORY_TOWER_79"
+    def _2_story_tower_78(self):
+        # TODO ホルビー敗戦処理がいるかも
+        for i in range(1, 11):
+            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                    return "2_STORY_TOWER_79"
+            elif i == 10:  # ホルビー敗戦処理
+                if (self.image_check("POKEMON_ZA_WANINOKO_ICON")
+                        or self.image_check("POKEMON_ZA_MERIP_ICON_GET5")):
+                    self.press(Direction(Stick.LEFT, 270), duration=2.0, wait=0.5)
+                    self.wait(1.0)
+                    self.pressRep(
+                        Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(1.0)
+                    return "2_STORY_TOWER_69"
         return "2_STORY_TOWER_78"
-    
     def _2_story_tower_79(self): 
         if self.image_check("POKEMON_ZA_WANINOKO_ICON") or self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
@@ -7313,7 +7369,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_81(self): 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_82"
         return "2_STORY_TOWER_81"
     
@@ -7322,19 +7378,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             return "2_STORY_TOWER_83"
         return "2_STORY_TOWER_82"
     
     def _2_story_tower_83(self): 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_84"
         return "2_STORY_TOWER_83"
     
     def _2_story_tower_84(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "2_STORY_Y_LANK_BATTLE_ZONE"
         else:
@@ -7353,14 +7409,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_Y_LANK_BATTLE_ZONE"
     
     def _2_story_y_lank_move0(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_Y_LANK_MOVE1"
         else:
             return "2_STORY_Y_LANK_MOVE0"
     
     def _2_story_y_lank_move1(self):
-        ret = self.Common_goto(4,0,-2)#Wゾーン5側から
+        ret = self.ZA_Common_goto(4,0,-2)#Wゾーン5側から
         if ret == "START":
             return "2_STORY_Y_LANK_MOVE2"
         else:
@@ -7384,19 +7440,19 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_y_lank_move3(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                 return "2_STORY_Y_LANK_MOVE4"
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
                     return "2_STORY_Y_LANK_MOVE4"
         return "2_STORY_Y_LANK_MOVE0"
 
     #Yランク
     def _2_story_y_lank_move4(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             self.wait(1.0)
@@ -7410,7 +7466,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_y_lank_move5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
                 self.wait(1.0)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "2_STORY_Y_END"
@@ -7437,21 +7493,21 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE2"
     
     def _2_story_x_lank_move3(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "2_STORY_X_LANK_MOVE4"
         #BKUP
         return "2_STORY_X_LANK_MOVE3"
         
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "2_STORY_X_LANK_MOVE4"
         return "2_STORY_X_LANK_MOVE3"
     
     def _2_story_x_lank_move4(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE5",noprg_ret="2_STORY_X_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE5",noprg_ret="2_STORY_X_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -7469,13 +7525,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_x_lank_move5(self):
         
         if self.image_check("POKEMON_ZA_COIN_ICON") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#コインアイコンで抜けた場合はコメント画面まで連打
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                return self.story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")
         return "2_STORY_X_LANK_MOVE5"
 
     def _2_story_x_lank_move6(self):
         #スボミーイベントを想定外に発生しないために処理
-        ret = self.Common_goto(2,0,2)#ポケセンタープランタンへ移動
+        ret = self.ZA_Common_goto(2,0,2)#ポケセンタープランタンへ移動
         if ret == "START":
             return "2_STORY_X_LANK_MOVE7"
         else:
@@ -7491,7 +7547,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_x_lank_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
                 return "2_STORY_X_LANK_BATTLE_ZONE"
         return "2_STORY_X_LANK_MOVE8"
 
@@ -7507,7 +7563,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_X_LANK_BATTLE_ZONE"
 
     def _2_story_x_lank_move9(self):
-        ret = self.Common_goto(1,0,-2)#レストランドキワミへ移動
+        ret = self.ZA_Common_goto(1,0,-2)#レストランドキワミへ移動
         if ret == "START":
             return "2_STORY_X_LANK_MOVE10"
         else:
@@ -7535,16 +7591,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE10"
     
     def _2_story_x_lank_move11(self):
-        return self.story_Template_battle_before(noprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE12",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE12",green_check=1)
 
     def _2_story_x_lank_move12(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE13",noprg_ret="2_STORY_X_LANK_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE13",noprg_ret="2_STORY_X_LANK_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
     
     def _2_story_x_lank_move13(self):
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE13",prg_ret="2_STORY_W_LANK_MOVE1")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE13",prg_ret="2_STORY_W_LANK_MOVE1")
 
     def _2_story_w_lank_move1(self):
-        ret = self.Common_goto(4,0,1)#Wゾーン2へ移動
+        ret = self.ZA_Common_goto(4,0,1)#Wゾーン2へ移動
         if ret == "START":
             return "2_STORY_W_LANK_MOVE2"
         else:
@@ -7573,24 +7629,24 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE2"
     
     def _2_story_w_lank_move3(self):
-        return self.story_Template_battle_before(noprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE4",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE4",green_check=1)
 
     def _2_story_w_lank_move4(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
     def _2_story_w_lank_move5(self):
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE6")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE6")
     
     #ヒトカゲの対策を先にした方がよい？(回復はしないが通る)
     def _2_story_w_lank_move6(self):
-        ret = self.Common_goto(2,0,2)#ポケセンタープランタンへ移動
+        ret = self.ZA_Common_goto(2,0,2)#ポケセンタープランタンへ移動
         if ret == "START":
             return "2_STORY_W_LANK_MOVE7"
         else:
             return "2_STORY_W_LANK_MOVE6"
     
     def _2_story_w_lank_move7(self):
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "2_STORY_W_LANK_BATTLE_ZONE"
         return "2_STORY_W_LANK_MOVE7"
     
@@ -7606,7 +7662,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_W_LANK_BATTLE_ZONE"
     
     def _2_story_w_lank_move8(self):
-        ret = self.Common_goto(1,0,5)#レストランドフツーへ移動
+        ret = self.ZA_Common_goto(1,0,5)#レストランドフツーへ移動
         if ret == "START":
             return "2_STORY_W_LANK_MOVE9"
         else:
@@ -7634,12 +7690,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_w_lank_move11(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "2_STORY_W_LANK_MOVE12"
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                     return "2_STORY_W_LANK_MOVE12"
         return "2_STORY_W_LANK_MOVE8"
     
@@ -7647,7 +7703,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_W_BATTLE_END"):
             return "2_STORY_W_LANK_MOVE13"
         elif self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -7665,7 +7721,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_W_LANK_MOVE13"
         else:#想定外の復帰用
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_COIN_ICON",endpicture4="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture5="POKEMON_ZA_W_BATTLE_END",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_COIN_ICON",endpicture4="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture5="POKEMON_ZA_W_BATTLE_END",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                 if self.image_check("POKEMON_ZA_COIN_ICON"):
                     return "2_STORY_W_LANK_MOVE13"
                 return "2_STORY_W_LANK_MOVE12"
@@ -7675,7 +7731,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_W_BATTLE_END"):
             return "2_STORY_ABSOL_MOVE1"
         elif self.image_check("POKEMON_ZA_COIN_ICON") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                 return "2_STORY_ABSOL_MOVE1"
         return "2_STORY_W_LANK_MOVE13"
     
@@ -7703,26 +7759,26 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move2(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_ABSOL_BATTLE"
         return "2_STORY_ABSOL_MOVE2"
 
     def _2_story_absol_battle(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "2_STORY_ABSOL_MOVE3"   
         return "2_STORY_ABSOL_BATTLE"
     
     def _2_story_absol_move3(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_ABSOL_MOVE4"
         return "2_STORY_ABSOL_MOVE3"
             
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "2_STORY_ABSOL_MOVE4"
         elif self.image_check("POKEMON_ZA_MORNING"):
             self.pressRep(Button.A, repeat=5, duration=0.15, wait=0.5, interval=0.1)
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "2_STORY_ABSOL_MOVE4"
         return "2_STORY_ABSOL_MOVE3" 
     
@@ -7743,7 +7799,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_box_change1(self):
         #アブソルと入れ替え
-        self.common_box_change_current_state = self.common_box_change_function(target1=0,target2=3,target1_high=0,target2_high=-1)
+        self.common_box_change_current_state = self.ZA_common_box_change_function(target1=0,target2=3,target1_high=0,target2_high=-1)
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
             return "2_STORY_ITEM_GIVE1"
             #return "2_STORY_BOX_CHANGE2"
@@ -7751,14 +7807,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_BOX_CHANGE1"
         
     def _2_story_box_change2(self):
-        self.common_box_change_current_state = self.common_box_change_function(target1=4,target2=1,target1_high=-1,target2_high=0)
+        self.common_box_change_current_state = self.ZA_common_box_change_function(target1=4,target2=1,target1_high=-1,target2_high=0)
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
             return "2_STORY_ITEM_GIVE1"
         else:
             return "2_STORY_BOX_CHANGE2"
     
     def _2_story_item_give1(self):
-        self.common_item_give_current_state = self.common_item_give_function(selectnum=4,target1=4,target2=0)
+        self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=0)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
             return "2_STORY_ABSOL_MOVE5"
         else:
@@ -7773,15 +7829,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE5"
     
     def _2_story_absol_move6(self):
-        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE7",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE7",green_check=1)
     
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
     def _2_story_absol_move7(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         #elif self.image_check("TEXT_BLACK_COMMENT"):
         #    self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
         #    for i in range(10):
@@ -7805,10 +7861,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     def _2_story_absol_move8(self):
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_ABSOL_MOVE9")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_ABSOL_MOVE9")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 if not (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
                     return "2_STORY_MAPPING_110"#
@@ -7820,7 +7876,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     #Wゾーン8-10のマッピング
     def _2_story_mapping_110(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MAPPING_111"
         else:
@@ -7829,7 +7885,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_111(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンターメディオに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_112"
         else:
@@ -7859,12 +7915,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン8が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン8が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE8",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE8",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_114_0"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -7881,7 +7937,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_114_0(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MAPPING_114"
         else:
@@ -7890,7 +7946,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_114(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,1,2)#カフェスロラームに移動で位置確定
+        ret = self.ZA_Common_goto(3,1,2)#カフェスロラームに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_114_1"
         else:
@@ -7918,12 +7974,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン9が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン9が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE9",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE9",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_116"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -7940,7 +7996,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_116_0(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MAPPING_116"
         else:
@@ -7949,7 +8005,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_116(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,6)#カフェフォーカスに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,6)#カフェフォーカスに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_116_1"
         else:
@@ -7977,12 +8033,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン10が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン10が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10") == True:
+                    self.ZA_Common_goto_jump()
                     return "2_STORY_ABSOL_MOVE9"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -7998,7 +8054,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
 
     def _2_story_absol_move9(self):
-        ret = self.Common_goto(1,0,-4)#レストランドリニューへ移動
+        ret = self.ZA_Common_goto(1,0,-4)#レストランドリニューへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE10"
         else:
@@ -8014,13 +8070,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE10"
     
     def _2_story_absol_move11(self):
-        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
     
     def _2_story_absol_move12(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
     
     def _2_story_absol_move13(self):
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
     
     def _2_story_absol_move14(self):
         ### AUTO_SAVE_POINT
@@ -8035,7 +8091,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_ABSOL_MOVE14"
     
     def _2_story_absol_move15(self):
-        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        ret = self.ZA_Common_goto(1,1,0)#クェーサー社へ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE16"
         else:
@@ -8053,17 +8109,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE16"
     
     def _2_story_absol_move17(self):
-        return self.story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",green_check=1)
     
     def _2_story_absol_move18(self):
-        return self.story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE19",noprg_ret="2_STORY_ABSOL_MOVE18",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE19",noprg_ret="2_STORY_ABSOL_MOVE18",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
     
     def _2_story_absol_move19(self):
-        return self.story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE18",prg_ret="2_STORY_ABSOL_MOVE20")
+        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE18",prg_ret="2_STORY_ABSOL_MOVE20")
     
     def _2_story_absol_move20(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        ret = self.ZA_Common_goto(1,1,0)#クェーサー社へ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE21"
         else:
@@ -8080,7 +8136,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE23"
         return "2_STORY_ABSOL_MOVE22"
@@ -8096,7 +8152,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move24(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE25"
         return "2_STORY_ABSOL_MOVE24"
@@ -8113,7 +8169,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE27"
         return "2_STORY_ABSOL_MOVE26"
@@ -8132,13 +8188,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move28(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE29"
         return "2_STORY_ABSOL_MOVE28"
     
     def _2_story_absol_move29(self):
-        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        ret = self.ZA_Common_goto(3,0,3)#ヌーヴォカフェへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE30"
         else:
@@ -8153,13 +8209,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move31(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE32"
         return "2_STORY_ABSOL_MOVE31"
     
     def _2_story_absol_move32(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE33"
         else:
@@ -8185,13 +8241,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move35(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE36"
         return "2_STORY_ABSOL_MOVE35"
            
     def _2_story_absol_move36(self):
-        ret = self.Common_goto(1,0,5)#レストランフツーへ移動
+        ret = self.ZA_Common_goto(1,0,5)#レストランフツーへ移動
         if ret == "START":
             return "2_STORY_ABSOL_MOVE37"
         else:
@@ -8217,7 +8273,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_ESCAPE"):
             self._2_story_restaurant_dohutsu_black_check=0
             self._2_story_restaurant_dohutsu_white_check=1
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self._2_story_restaurant_dohutsu_white_check=0
             self._2_story_restaurant_dohutsu_black_check+=1
@@ -8244,63 +8300,63 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     ###進化と技設定
     def _2_story_evo1(self):
-        ret = self.common_evolution_function(selectnum=1)
+        ret = self.ZA_common_evolution_function(selectnum=1)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO2"
         else:
             return "2_STORY_EVO1"
 
     def _2_story_evo2(self):
-        ret = self.common_evolution_function(selectnum=1)
+        ret = self.ZA_common_evolution_function(selectnum=1)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO3"
         else:
             return "2_STORY_EVO2"
         
     def _2_story_evo3(self):
-        ret = self.common_evolution_function(selectnum=2)
+        ret = self.ZA_common_evolution_function(selectnum=2)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO4"
         else:
             return "2_STORY_EVO3"
         
     def _2_story_evo4(self):
-        ret = self.common_evolution_function(selectnum=2)
+        ret = self.ZA_common_evolution_function(selectnum=2)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO5"
         else:
             return "2_STORY_EVO4"
         
     def _2_story_evo5(self):
-        ret = self.common_evolution_function(selectnum=3)
+        ret = self.ZA_common_evolution_function(selectnum=3)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO6"
         else:
             return "2_STORY_EVO5"
         
     def _2_story_evo6(self):
-        ret = self.common_evolution_function(selectnum=5)
+        ret = self.ZA_common_evolution_function(selectnum=5)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_EVO7"
         else:
             return "2_STORY_EVO6"
         
     def _2_story_evo7(self):
-        ret = self.common_evolution_function(selectnum=5)
+        ret = self.ZA_common_evolution_function(selectnum=5)
         if ret == "COMMON_EVOLUTION_START":
             return "2_STORY_AME1"
         else:
             return "2_STORY_EVO7"
         
     def _2_story_ame1(self):
-        ret =self.common_item_use_function(target1=3,target2=-1,item_pic="POKEMON_ZA_AME_S",use_target=1,up10=50,up1=0)
+        ret =self.ZA_common_item_use_function(target1=3,target2=-1,item_pic="POKEMON_ZA_AME_S",use_target=1,up10=50,up1=0)
         if ret == "COMMON_ITEM_USE_START":
             return "2_STORY_AME2"
         else:
             return "2_STORY_AME1"
 
     def _2_story_ame2(self):
-        ret =self.common_item_use_function(target1=3,target2=-1,item_pic="POKEMON_ZA_AME_S",use_target=4,up10=0,up1=-1)
+        ret =self.ZA_common_item_use_function(target1=3,target2=-1,item_pic="POKEMON_ZA_AME_S",use_target=4,up10=0,up1=-1)
         if ret == "COMMON_ITEM_USE_START":
             return "2_STORY_SKILL_CHANGE1"
         else:
@@ -8308,7 +8364,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_skill_change1(self):
         #オーダイル アクアブレイク
-        ret = self.common_skill_change_function(1,3,"A",0)
+        ret = self.ZA_common_skill_change_function(1,3,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE2"
@@ -8317,7 +8373,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change2(self):
         #オーダイル バブルこうせん(プクリン道場用)
-        ret = self.common_skill_change_function(1,7,"Y",0)
+        ret = self.ZA_common_skill_change_function(1,7,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE3"
@@ -8326,7 +8382,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change3(self):
         #オーダイル かみくだく
-        ret = self.common_skill_change_function(1,0,"B",0)
+        ret = self.ZA_common_skill_change_function(1,0,"B",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE4"
@@ -8335,7 +8391,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change4(self):
         #オーダイル げきりん(後でれいとうビームに)
-        ret = self.common_skill_change_function(1,1,"X",0)
+        ret = self.ZA_common_skill_change_function(1,1,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE5"
@@ -8344,7 +8400,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change5(self):
         #ファイアロー ブレイブバード
-        ret = self.common_skill_change_function(2,0,"Y",0)
+        ret = self.ZA_common_skill_change_function(2,0,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE6"
@@ -8353,7 +8409,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change6(self):
         #ファイアロー フレアドライブ
-        ret = self.common_skill_change_function(2,1,"A",0)
+        ret = self.ZA_common_skill_change_function(2,1,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE7"
@@ -8362,7 +8418,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change7(self):
         #ファイアロー フレアドライブ
-        ret = self.common_skill_change_function(2,1,"A",0)
+        ret = self.ZA_common_skill_change_function(2,1,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE8"
@@ -8371,7 +8427,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change8(self):
         #ファイアロー はがねのつばさ
-        ret = self.common_skill_change_function(2,4,"B",0)
+        ret = self.ZA_common_skill_change_function(2,4,"B",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE9"
@@ -8380,7 +8436,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change9(self):
         #ファイアロー エアスラッシュ
-        ret = self.common_skill_change_function(2,3,"X",0)
+        ret = self.ZA_common_skill_change_function(2,3,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE10"
@@ -8389,7 +8445,7 @@ class ZA_story_Base(ImageProcPythonCommand):
           
     def _2_story_skill_change10(self):
         #ホルード
-        ret = self.common_skill_change_function(3,2,"Y",0)
+        ret = self.ZA_common_skill_change_function(3,2,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE11"
@@ -8398,7 +8454,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change11(self):
         #ホルード ぶんまわす
-        ret = self.common_skill_change_function(3,6,"X",0)
+        ret = self.ZA_common_skill_change_function(3,6,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE12"
@@ -8407,7 +8463,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change12(self):
         #ホルード じしん
-        ret = self.common_skill_change_function(3,1,"B",0)
+        ret = self.ZA_common_skill_change_function(3,1,"B",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE13"
@@ -8416,7 +8472,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change13(self):
         #アブソル エアスラッシュ
-        ret = self.common_skill_change_function(4,2,"Y",0)
+        ret = self.ZA_common_skill_change_function(4,2,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE14"
@@ -8425,7 +8481,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change14(self):
         #アブソル シャドークロー
-        ret = self.common_skill_change_function(4,4,"B",0)
+        ret = self.ZA_common_skill_change_function(4,4,"B",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE15"
@@ -8434,7 +8490,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change15(self):
         #アブソル つじぎり
-        ret = self.common_skill_change_function(4,"X","A",0)
+        ret = self.ZA_common_skill_change_function(4,"X","A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE16"
@@ -8443,7 +8499,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change16(self):
         #アブソル はたきおとす
-        ret = self.common_skill_change_function(4,11,"X",0)
+        ret = self.ZA_common_skill_change_function(4,11,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE17"
@@ -8452,7 +8508,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change17(self):
         #デンリュウ かみなり
-        ret = self.common_skill_change_function(5,2,"X",0)
+        ret = self.ZA_common_skill_change_function(5,2,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE18"
@@ -8461,7 +8517,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_skill_change18(self):
         #デンリュウ 10まんボルト
-        ret = self.common_skill_change_function(5,5,"X",0)
+        ret = self.ZA_common_skill_change_function(5,5,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE19"
@@ -8470,7 +8526,7 @@ class ZA_story_Base(ImageProcPythonCommand):
          
     def _2_story_skill_change19(self):
         #デンリュウ じゅうでん
-        ret = self.common_skill_change_function(5,9,"Y",0)
+        ret = self.ZA_common_skill_change_function(5,9,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE20"
@@ -8479,7 +8535,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change20(self):
         #デンリュウ パワージェム
-        ret = self.common_skill_change_function(5,6,"A",0)
+        ret = self.ZA_common_skill_change_function(5,6,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE21"
@@ -8488,7 +8544,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change21(self):
         #ヘラクレス メガホーン
-        ret = self.common_skill_change_function(6,1,"B",0)
+        ret = self.ZA_common_skill_change_function(6,1,"B",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE22"
@@ -8497,7 +8553,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change22(self):
         #ヘラクレス つばめがえし
-        ret = self.common_skill_change_function(6,8,"Y",0)
+        ret = self.ZA_common_skill_change_function(6,8,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE23"
@@ -8506,7 +8562,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change23(self):
         #ヘラクレス ロックブラスト
-        ret = self.common_skill_change_function(6,5,"X",0)
+        ret = self.ZA_common_skill_change_function(6,5,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE24"
@@ -8515,7 +8571,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change24(self):
         #ヘラクレス かわらわり
-        ret = self.common_skill_change_function(6,6,"A",0)
+        ret = self.ZA_common_skill_change_function(6,6,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_ITEM_GIVE2"
@@ -8523,21 +8579,21 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_SKILL_CHANGE24"  
         
     def _2_story_item_give2(self):
-        self.common_item_give_current_state = self.common_item_give_function(selectnum=1,target1=4,target2=0)
+        self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=1,target1=4,target2=0)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
             return "2_STORY_MEGA_MOVE1"
         else:
             return "2_STORY_ITEM_GIVE2"
     
     def _2_story_mega_move1(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MEGA_MOVE2"
         else:
             return "2_STORY_MEGA_MOVE1"
     
     def _2_story_mega_move2(self):
-        ret = self.Common_goto(3,1,0)#ヌーヴォカフェ２号へ移動
+        ret = self.ZA_Common_goto(3,1,0)#ヌーヴォカフェ２号へ移動
         if ret == "START":
             return "2_STORY_MEGA_MOVE3"
         else:
@@ -8564,30 +8620,30 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move4(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE5"
         return "2_STORY_MEGA_MOVE4"
     
     def _2_story_mega_move5(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "2_STORY_MEGA_MOVE6" 
         return "2_STORY_MEGA_MOVE5"
     
     def _2_story_mega_move6(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE7"
         return "2_STORY_MEGA_MOVE6"
     
     def _2_story_mega_move7(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MEGA_MOVE8"
         else:
             return "2_STORY_MEGA_MOVE7"
     
     def _2_story_mega_move8(self):
-        ret = self.Common_goto(1,0,-2)#レストランキワミへ移動
+        ret = self.ZA_Common_goto(1,0,-2)#レストランキワミへ移動
         if ret == "START":
             return "2_STORY_MEGA_MOVE9"
         else:
@@ -8604,13 +8660,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move10(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE11" 
         return "2_STORY_MEGA_MOVE10"
     
     def _2_story_mega_move11(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -8633,7 +8689,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE13" 
         return "2_STORY_MEGA_MOVE12"
     
@@ -8669,30 +8725,30 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move14(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
     
     def _2_story_mega_move15(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "2_STORY_MEGA_MOVE16" 
         return "2_STORY_MEGA_MOVE15"
     
     def _2_story_mega_move16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE17"
         return "2_STORY_MEGA_MOVE16"
     
     def _2_story_mega_move17(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "2_STORY_MEGA_MOVE18"
         else:
             return "2_STORY_MEGA_MOVE17"
     
     def _2_story_mega_move18(self):
-        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        ret = self.ZA_Common_goto(1,1,0)#クェーサー社へ移動
         if ret == "START":
             return "2_STORY_MEGA_MOVE19"
         else:
@@ -8713,18 +8769,18 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move20(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
     
     def _2_story_mega_move21(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "2_STORY_MEGA_MOVE22" 
         return "2_STORY_MEGA_MOVE21"
     
     def _2_story_mega_move22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE23" 
         return "2_STORY_MEGA_MOVE22"
     
@@ -8734,7 +8790,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_ZA_ROYALE")
                 
         else:
-            ret = self.Common_goto(1,0,3)#ホテルZへ移動
+            ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
             if ret == "START":
                 return "2_STORY_MEGA_MOVE24"
             else:
@@ -8750,14 +8806,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move25(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_MEGA_MOVE26" 
 
         return "2_STORY_MEGA_MOVE25"
     
     def _2_story_mega_move26(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -8780,7 +8836,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move27(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",not_endpicture="POKEMON_ZA_ZA_ROYALE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_ESCAPE",not_endpicture="POKEMON_ZA_ZA_ROYALE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "2_STORY_END"
         return "2_STORY_MEGA_MOVE27"
     
@@ -8815,13 +8871,13 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_3(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_CANARI_4"
         return "3_STORY_CANARI_3"
 
     def _3_story_canari_4(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -8845,7 +8901,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 for i in range(10):
                     self.wait(0.5)
                     if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -8869,7 +8925,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "3_STORY_CANARI_6"
 
     def _3_story_canari_7(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "3_STORY_CANARI_8"
         else:
@@ -8895,20 +8951,20 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_10(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_END" 
 
         return "3_STORY_CANARI_10"
     
     def _3_story_canari_11(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#想定外に時間変更があると補足できないため
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#想定外に時間変更があると補足できないため
         if ret == "START":
             return "3_STORY_CANARI_12"
         else:
             return "3_STORY_CANARI_11"
     
     def _3_story_canari_12(self):
-        ret = self.Common_goto(2,0,3)#ポケセンターローズへ移動
+        ret = self.ZA_Common_goto(2,0,3)#ポケセンターローズへ移動
         if ret == "START":
             return "3_STORY_CANARI_13"
         else:
@@ -8929,7 +8985,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_canari_14(self):
         for i in range(10):
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                     return "3_STORY_CANARI_15"
             self.wait(0.5)
         if not self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
@@ -8951,7 +9007,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_17"
         return "3_STORY_CANARI_16"
@@ -8968,7 +9024,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_19"
         return "3_STORY_CANARI_18"
@@ -8981,7 +9037,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 self.wait(0.5)
                 return "3_STORY_CANARI_21"
         return "3_STORY_CANARI_20"
@@ -8995,7 +9051,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_21"
     
     def _3_story_canari_22(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_23"
 
         return "3_STORY_CANARI_22"
@@ -9011,7 +9067,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_23"
     
     def _3_story_canari_24(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_25"
 
         return "3_STORY_CANARI_24"
@@ -9027,7 +9083,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_25"
     
     def _3_story_canari_26(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_27"
 
         return "3_STORY_CANARI_26"
@@ -9043,7 +9099,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_27"
     
     def _3_story_canari_28(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_29"
         return "3_STORY_CANARI_28"
     
@@ -9055,31 +9111,31 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_29"
     
     def _3_story_canari_30(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_31"
         return "3_STORY_CANARI_30"
     
     def _3_story_canari_31(self):
-        ret = self.Common_goto(3,2,0)#カフェおとこまえへ移動
+        ret = self.ZA_Common_goto(3,2,0)#カフェおとこまえへ移動
         if ret == "START":
             return "3_STORY_CANARI_32"
         else:
             return "3_STORY_CANARI_31"
     
     def _3_story_canari_32(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_33"
         return "3_STORY_CANARI_32"
     
     def _3_story_canari_33(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#想定外に時間変更があると補足できないため
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#想定外に時間変更があると補足できないため
         if ret == "START":
             return "3_STORY_CANARI_34"
         else:
             return "3_STORY_CANARI_33"
     
     def _3_story_canari_34(self):
-        ret = self.Common_goto(2,0,3)#ポケセンターローズへ移動
+        ret = self.ZA_Common_goto(2,0,3)#ポケセンターローズへ移動
         if ret == "START":
             return "3_STORY_CANARI_35"
         else:
@@ -9099,13 +9155,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_35"
     
     def _3_story_canari_36(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_37"
         return "3_STORY_CANARI_36"
     
     def _3_story_canari_37(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -9129,7 +9185,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_37"
     
     def _3_story_canari_38(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",endpicture4="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",endpicture4="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -9153,12 +9209,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_39"
     
     def _3_story_canari_40(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_41"
         return "3_STORY_CANARI_40"
     
     def _3_story_canari_41(self):
-        ret = self.Common_goto(1,0,4)#ラシーヌ工務店へ移動
+        ret = self.ZA_Common_goto(1,0,4)#ラシーヌ工務店へ移動
         if ret == "START":
             return "3_STORY_CANARI_42"
         else:
@@ -9181,13 +9237,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_43"
     
     def _3_story_canari_44(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_45"
         return "3_STORY_CANARI_44"
     
     def _3_story_canari_45(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -9210,7 +9266,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_45"
     
     def _3_story_canari_46(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -9232,13 +9288,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_47"
     
     def _3_story_canari_48(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             return "3_STORY_CANARI_49"
         return "3_STORY_CANARI_48"
     
     def _3_story_canari_49(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -9261,7 +9317,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_49"
     
     def _3_story_canari_50(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             for i in range(10):
                 self.wait(0.5)
                 if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -9282,21 +9338,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move2(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE3"
         return "3_STORY_MEGA_MOVE2"
     
     #Wゾーンマッピング 11-13   
 
     def _3_story_mega_move3(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "3_STORY_MEGA_MOVE4"
         else:
             return "3_STORY_MEGA_MOVE3"
     
     def _3_story_mega_move4(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "3_STORY_MEGA_MOVE5"
         else:
@@ -9321,20 +9377,20 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move6(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE7"
         return "3_STORY_MEGA_MOVE6"
     
     def _3_story_mega_move7(self):
         #AUTOSAVE ロトムグライド開放
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.ROTOM_GLIDE(dir=90,a_count=20)
+            self.ZA_ROTOM_GLIDE(dir=90,a_count=20)
             return "3_STORY_MEGA_MOVE8"
         return "3_STORY_MEGA_MOVE7"
     
     def _3_story_mega_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE9"
         return "3_STORY_MEGA_MOVE8"
     
@@ -9364,30 +9420,30 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move10(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
     
     def _3_story_mega_move11(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "3_STORY_MEGA_MOVE12"
         return "3_STORY_MEGA_MOVE11"
     
     def _3_story_mega_move12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE13"
         return "3_STORY_MEGA_MOVE12"
     
     def _3_story_mega_move13(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "3_STORY_MEGA_MOVE14"
         else:
             return "3_STORY_MEGA_MOVE13"
     
     def _3_story_mega_move14(self):
-        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌへ移動
+        ret = self.ZA_Common_goto(2,0,-2)#ポケセンタージョーヌへ移動
         if ret == "START":
             return "3_STORY_MEGA_MOVE15"
         else:
@@ -9418,32 +9474,32 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move16(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE17"
         return "3_STORY_MEGA_MOVE16"
     
     def _3_story_mega_move17(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "3_STORY_MEGA_MOVE18"
 
         return "3_STORY_MEGA_MOVE17"
     
     def _3_story_mega_move18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE19"
 
         return "3_STORY_MEGA_MOVE18"
     
     def _3_story_mega_move19(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "3_STORY_MEGA_MOVE20"
         else:
             return "3_STORY_MEGA_MOVE19"
     
     def _3_story_mega_move20(self):
-        ret = self.Common_goto(3,2,0)#カフェおとこまえへ移動
+        ret = self.ZA_Common_goto(3,2,0)#カフェおとこまえへ移動
         if ret == "START":
             return "3_STORY_MEGA_MOVE21"
         else:
@@ -9476,7 +9532,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move23(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE24"
         return "3_STORY_MEGA_MOVE23"
     
@@ -9500,24 +9556,24 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move25(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE26"
         return "3_STORY_MEGA_MOVE25"
     
     def _3_story_mega_move26(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "3_STORY_MEGA_MOVE27"
         return "3_STORY_MEGA_MOVE26"
         
     
     def _3_story_mega_move27(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "3_STORY_MEGA_MOVE28"
         return "3_STORY_MEGA_MOVE27"
     
     def _3_story_mega_move28(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "3_STORY_MEGA_MOVE29"
         else:
@@ -9533,7 +9589,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move30(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "3_STORY_END"
         return "3_STORY_MEGA_MOVE30"
     
@@ -9561,7 +9617,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "4_STORY_SHIRO_3"
         else:
@@ -9569,7 +9625,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_3(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,-1)#ジャスティス道場へ移動
+        ret = self.ZA_Common_goto(1,0,-1)#ジャスティス道場へ移動
         if ret == "START":
             return "4_STORY_SHIRO_4"
         else:
@@ -9587,13 +9643,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             
     def _4_story_shiro_5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "4_STORY_SHIRO_6"
         return "4_STORY_SHIRO_5"
     
     def _4_story_shiro_6(self):
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
-            self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
+            self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
             for i in range(10):
@@ -9616,7 +9672,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_6"
     
     def _4_story_shiro_7(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
             for i in range(5):
                 self.wait(0.5)
                 if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
@@ -9627,7 +9683,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_7"
     
     def _4_story_shiro_8(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "4_STORY_SHIRO_9"
         else:
@@ -9635,13 +9691,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_9(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "4_STORY_SHIRO_10"
         else:
             return "4_STORY_SHIRO_9"
     
     def _4_story_shiro_10(self):
-        ret = self.Common_goto(1,0,-6)#ハンサムハウスへ移動
+        ret = self.ZA_Common_goto(1,0,-6)#ハンサムハウスへ移動
         if ret == "START":
             return "4_STORY_SHIRO_11"
         else:
@@ -9658,12 +9714,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_13"
         return "4_STORY_SHIRO_12"
     
     def _4_story_shiro_13(self):
-        ret = self.Common_goto(4,0,7)#Wゾーン8へ移動
+        ret = self.ZA_Common_goto(4,0,7)#Wゾーン8へ移動
         if ret == "START":
             return "4_STORY_SHIRO_14"
         else:
@@ -9681,7 +9737,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_15(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_16"
         return "4_STORY_SHIRO_15"
     
@@ -9700,12 +9756,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_17(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_18"
         return "4_STORY_SHIRO_17"
     
     def _4_story_shiro_18(self):
-        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        ret = self.ZA_Common_goto(3,0,3)#ヌーヴォカフェへ移動
         if ret == "START":
             return "4_STORY_SHIRO_19"
         else:
@@ -9721,20 +9777,20 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_20"
     
     def _4_story_shiro_21(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "4_STORY_SHIRO_21_1"
         else:
             return "4_STORY_SHIRO_21"
         
     def _4_story_shiro_21_1(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "4_STORY_SHIRO_21_2"
         else:
@@ -9742,14 +9798,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_21_2(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "4_STORY_SHIRO_22"
         else:
             return "4_STORY_SHIRO_21_2"
     
     def _4_story_shiro_22(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(3,1,0)#ヌーヴォカフェ2号へ移動
+        ret = self.ZA_Common_goto(3,1,0)#ヌーヴォカフェ2号へ移動
         if ret == "START":
             return "4_STORY_SHIRO_23"
         else:
@@ -9808,7 +9864,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_27(self):
         self.wait(1.0)
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "4_STORY_SHIRO_28"
         return "4_STORY_SHIRO_27"
@@ -9831,7 +9887,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_30(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             self.wait(0.5)
-            self.battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
+            self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "4_STORY_SHIRO_31"
         return "4_STORY_SHIRO_30"
@@ -9839,14 +9895,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_31(self):
         if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
             return "4_STORY_SHIRO_30"
-        ret = self.Common_goto(1,0,4)#ラシーヌ工務店へ移動
+        ret = self.ZA_Common_goto(1,0,4)#ラシーヌ工務店へ移動
         if ret == "START":
             return "4_STORY_SHIRO_32"
         else:
             return "4_STORY_SHIRO_31"
     
     def _4_story_shiro_32(self):
-        ret = self.common_skill_change_function(1,1,"X",1,targetskill_pic="POKEMON_ZA_REIBI_SKILL")
+        ret = self.ZA_common_skill_change_function(1,1,"X",1,targetskill_pic="POKEMON_ZA_REIBI_SKILL")
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_FALSE":
             self.common_skill_change_current_state="COMMON_SKILL_CHANGE_START"
@@ -9872,23 +9928,23 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_34"
     
     def _4_story_shiro_35(self):
-        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_36",green_check=1)
+        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_36",green_check=1)
     
     def _4_story_shiro_36(self):
-        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_37",noprg_ret="4_STORY_SHIRO_36")
+        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_37",noprg_ret="4_STORY_SHIRO_36")
     
     def _4_story_shiro_37(self):
-        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_36",prg_ret="4_STORY_SHIRO_38",selected_pic="POKEMON_ZA_4_SELECT",selected_target=1)
+        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_36",prg_ret="4_STORY_SHIRO_38",selected_pic="POKEMON_ZA_4_SELECT",selected_target=1)
     
     def _4_story_shiro_38(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "4_STORY_SHIRO_39"
         else:
             return "4_STORY_SHIRO_38"
     
     def _4_story_shiro_39(self):
-        ret = self.Common_goto(2,0,1)#ポケセンターブルーへ移動
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンターブルーへ移動
         if ret == "START":
             return "4_STORY_SHIRO_40"
         else:
@@ -9905,7 +9961,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_41(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
                 return "4_STORY_SHIRO_42"
         return "4_STORY_SHIRO_41"
     
@@ -9915,7 +9971,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.etc_sendCommand("Lbutton_down")
                 self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=sleeptime):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=sleeptime):
                 return "4_STORY_SHIRO_43"
         return "4_STORY_SHIRO_42"
     
@@ -9926,8 +9982,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.etc_sendCommand("Lbutton_up")
                 self.wait(4.0)
                 #C+チェックをして、battle_Cp_loopでC+チェックを抜けるため
-                self.ZL_ACTION("")
-                self.battle_Cp_loop(Xaction=1,Aaction=0,Yaction=0,Baction=0)
+                self.ZA_ZL_ACTION("")
+                self.ZA_battle_Cp_loop(Xaction=1,Aaction=0,Yaction=0,Baction=0)
                 return "4_STORY_SHIRO_44"
             else:   
                 self.etc_sendCommand("Lbutton_left")
@@ -9936,7 +9992,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_44(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_45"
         return "4_STORY_SHIRO_44"
     
@@ -9958,7 +10014,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_46(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_47"
         return "4_STORY_SHIRO_46"
     
@@ -9979,7 +10035,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_48(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_49"
         return "4_STORY_SHIRO_48"
     
@@ -9993,7 +10049,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_50(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_51"
         return "4_STORY_SHIRO_50"
     
@@ -10012,18 +10068,18 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_53(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_54"
         return "4_STORY_SHIRO_53"
     
     def _4_story_shiro_54(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            if self.ball_change(2):#ハイパーボールチェック
+            if self.ZA_ball_change(2):#ハイパーボールチェック
                 return "4_STORY_SHIRO_55"
         return "4_STORY_SHIRO_54"
     
     def _4_story_shiro_55(self):
-        if self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
+        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
             return "4_STORY_SHIRO_55"
         return "4_STORY_SHIRO_55"
     #todo
@@ -10053,7 +10109,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_62(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_63"
         return "4_STORY_SHIRO_62"
     
@@ -10067,7 +10123,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_64(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_65"
         return "4_STORY_SHIRO_64"
     
@@ -10089,7 +10145,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_67(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_68"
         return "4_STORY_SHIRO_67"
     
@@ -10109,7 +10165,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_70(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_71"
         return "4_STORY_SHIRO_70"
     
@@ -10129,7 +10185,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_73(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_74"
         return "4_STORY_SHIRO_73"
     
@@ -10143,7 +10199,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_75(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_76"
         return "4_STORY_SHIRO_75"
     
@@ -10161,7 +10217,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_77(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_78"
         return "4_STORY_SHIRO_77"
     
@@ -10176,22 +10232,22 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_79(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "4_STORY_SHIRO_80"
         return "4_STORY_SHIRO_79"
     
     def _4_story_shiro_80(self):
-        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_81",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_81",green_check=0)
 
     def _4_story_shiro_81(self):
-        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _4_story_shiro_82(self):
-        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
+        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
  
     def _4_story_shiro_83(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "4_STORY_SHIRO_84"
         else:
@@ -10200,7 +10256,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_84(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(1,0,-1)#ジャスティス会道場に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,-1)#ジャスティス会道場に移動で位置確定
         if ret == "START":
             return "4_STORY_SHIRO_85"
         else:
@@ -10216,13 +10272,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_85"
  
     def _4_story_shiro_86(self):
-        return self.story_Template_battle_before(noprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_87",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_87",green_check=0)
 
     def _4_story_shiro_87(self):
-        return self.story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_88",noprg_ret="4_STORY_SHIRO_87",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_88",noprg_ret="4_STORY_SHIRO_87",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _4_story_shiro_88(self):
-        return self.story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_87",prg_ret= "4_STORY_END")
+        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_87",prg_ret= "4_STORY_END")
 
     def _4_story_end(self):
         return "4_STORY_START_CHECK" 
@@ -10237,7 +10293,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_mapping_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_MAPPING_2"
         else:
@@ -10245,7 +10301,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_mapping_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,3)#ポケセンターローズに移動で位置確定
         if ret == "START":
             return "5_STORY_MAPPING_3"
         else:
@@ -10273,12 +10329,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14") == True:
+                    self.ZA_Common_goto_jump()
                     return "5_STORY_MAPPING_5"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -10295,7 +10351,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_mapping_5(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_goto(3,0,-4)#カフェアルティメットに移動で位置確定
+        ret = self.ZA_Common_goto(3,0,-4)#カフェアルティメットに移動で位置確定
         if ret == "START":
             return "5_STORY_MAPPING_6"
         else:
@@ -10311,18 +10367,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             
         else:
             if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
-                self.battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,mode=1)
+                self.ZA_battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,mode=1)
                 return "5_STORY_MAPPING_6"
             else:
-                ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン15が登録されたか確認
+                ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン15が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15") == True:
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15") == True:
                     #ゾーンから抜けたいのでずらす
                     self.etc_sendCommand("Lbutton_down")
                     self.wait(0.5)
-                    self.Common_goto_jump()
+                    self.ZA_Common_goto_jump()
                     return "5_STORY_D_LANK_BATTLE_ZONE"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -10350,7 +10406,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_2"
         else:
@@ -10358,7 +10414,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(4,0,4)#Wゾーン5に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,4)#Wゾーン5に移動で位置確定
         if ret == "START":
             return "5_STORY_KARASUBA_3"
         else:
@@ -10378,13 +10434,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_3"
 
     def _5_story_karasuba_4(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_5",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_5",green_check=0)
             
     def _5_story_karasuba_5(self):
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_6",noprg_ret="5_STORY_KARASUBA_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_6",noprg_ret="5_STORY_KARASUBA_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _5_story_karasuba_6(self):
-        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_5",prg_ret= "5_STORY_KARASUBA_7")
+        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_5",prg_ret= "5_STORY_KARASUBA_7")
 
     def _5_story_karasuba_7(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
@@ -10396,15 +10452,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_7"
     
     def _5_story_karasuba_8(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_9",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_9",green_check=0)
 
     
     def _5_story_karasuba_9(self):
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_10",noprg_ret="5_STORY_KARASUBA_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_10",noprg_ret="5_STORY_KARASUBA_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _5_story_karasuba_10(self):
-        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_9",prg_ret= "5_STORY_KARASUBA_11")
+        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_9",prg_ret= "5_STORY_KARASUBA_11")
 
     
     def _5_story_karasuba_11(self):
@@ -10418,7 +10474,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_12(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "5_STORY_KARASUBA_13"
         return "5_STORY_KARASUBA_12"
     
@@ -10433,21 +10489,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_14(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
                 return "5_STORY_KARASUBA_15"
         return "5_STORY_KARASUBA_14"
     
     def _5_story_karasuba_15(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_16"
         else:
             return "5_STORY_KARASUBA_15"
     
     def _5_story_karasuba_16(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_17"
         else:
@@ -10463,7 +10519,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "5_STORY_KARASUBA_19"
         return "5_STORY_KARASUBA_18"
@@ -10480,7 +10536,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 self.wait(1.0)
                 return "5_STORY_KARASUBA_21"
         return "5_STORY_KARASUBA_20"
@@ -10489,14 +10545,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         #クチート
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_22"
         else:
             return "5_STORY_KARASUBA_21"
             
     def _5_story_karasuba_22(self):
-        ret = self.Common_goto(4,0,-2)#Wゾーン14へ移動
+        ret = self.ZA_Common_goto(4,0,-2)#Wゾーン14へ移動
         if ret == "START":
             return "5_STORY_KARASUBA_23"
         else:
@@ -10513,7 +10569,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,230), duration=0.3, wait=1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
-            self.ROTOM_GLIDE(dir=90,a_count=20,a_wait=2.0)
+            self.ZA_ROTOM_GLIDE(dir=90,a_count=20,a_wait=2.0)
             self.press(Direction(Stick.LEFT,180), duration=0.4, wait=1.0)
             self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
             self.press(Direction(Stick.LEFT,350), duration=0.4, wait=1.0)
@@ -10529,32 +10585,32 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_24(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_25"
         return "5_STORY_KARASUBA_24"
     
     def _5_story_karasuba_25(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "5_STORY_KARASUBA_26"
         return "5_STORY_KARASUBA_25"
     
     def _5_story_karasuba_26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_27"
         return "5_STORY_KARASUBA_26"
     
     def _5_story_karasuba_27(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_28"
         else:
             return "5_STORY_KARASUBA_27"
     
     def _5_story_karasuba_28(self):
-        ret = self.Common_goto(3,1,0)#ヌーヴォカフェ2号へ移動
+        ret = self.ZA_Common_goto(3,1,0)#ヌーヴォカフェ2号へ移動
         if ret == "START":
             return "5_STORY_KARASUBA_29"
         else:
@@ -10573,7 +10629,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.etc_sendCommand("Lbutton_up")
             self.wait(1.0)
             for i in range(3):
-                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)
             return "5_STORY_KARASUBA_30"
@@ -10581,7 +10637,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_30(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_31"
         elif self.ZA_markerdir("EVENT"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
@@ -10589,33 +10645,33 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_30"
     
     def _5_story_karasuba_31(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "5_STORY_KARASUBA_32"
         return "5_STORY_KARASUBA_31"
     
     def _5_story_karasuba_32(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_33"
         return "5_STORY_KARASUBA_32"
     
     def _5_story_karasuba_33(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_34"
         return "5_STORY_KARASUBA_33"
 
     def _5_story_karasuba_34(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_35"
         else:
             return "5_STORY_KARASUBA_34"
     
     def _5_story_karasuba_35(self):
-        ret = self.Common_goto(3,0,-2)#カフェパルトネールへ移動
+        ret = self.ZA_Common_goto(3,0,-2)#カフェパルトネールへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_36"
         else:
@@ -10631,7 +10687,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_37(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_38"
         return "5_STORY_KARASUBA_37"
 
@@ -10644,13 +10700,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_38"
     
     def _5_story_karasuba_39(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_40",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_40",green_check=0)
     
     def _5_story_karasuba_40(self):
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_41",noprg_ret="5_STORY_KARASUBA_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_41",noprg_ret="5_STORY_KARASUBA_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _5_story_karasuba_41(self):
-        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_40",prg_ret= "5_STORY_KARASUBA_42")
+        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_40",prg_ret= "5_STORY_KARASUBA_42")
     
     def _5_story_karasuba_42(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
@@ -10679,7 +10735,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.etc_sendCommand("Lbutton_up")
             self.wait(1.0)
             for i in range(3):
-                self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
             self.wait(2.0)
             
             return "5_STORY_KARASUBA_44"
@@ -10724,30 +10780,30 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_46(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():                
+            if self.ZA_story_Template_Comment_Out():                
                 return "5_STORY_KARASUBA_47"
         return "5_STORY_KARASUBA_46"
 
     def _5_story_karasuba_47(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "5_STORY_KARASUBA_48"
         return "5_STORY_KARASUBA_47"
     
     def _5_story_karasuba_48(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_49"
         return "5_STORY_KARASUBA_48"
     
     def _5_story_karasuba_49(self):
-        self.common_item_give_current_state = self.common_item_give_function(selectnum=4,target1=4,target2=2)
+        self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=2)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
             return "5_STORY_KARASUBA_50"
         else:
             return "5_STORY_KARASUBA_49"
     
     def _5_story_karasuba_50(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_51"
         else:
@@ -10763,13 +10819,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_52(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_ODAIRU_ICON",endpicture2="POKEMON_ZA_ABSOL_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ODAIRU_ICON",endpicture2="POKEMON_ZA_ABSOL_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_53"
 
         return "5_STORY_KARASUBA_52"
     
     def _5_story_karasuba_53(self):
-        ret = self.Common_goto(3,0,5)#カフェソレイユへ移動
+        ret = self.ZA_Common_goto(3,0,5)#カフェソレイユへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_54"
         else:
@@ -10785,7 +10841,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_55(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_56"
         return "5_STORY_KARASUBA_55"
     
@@ -10798,7 +10854,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_57(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_58"
         return "5_STORY_KARASUBA_57"
     
@@ -10810,7 +10866,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_59(self):
         self.no_Cplus=0
-        if self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,mode=1,battle_mode=1):
+        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,mode=1,battle_mode=1):
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "5_STORY_KARASUBA_60"
         return "5_STORY_KARASUBA_59"
@@ -10832,21 +10888,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_62(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_63"
         return "5_STORY_KARASUBA_62"
     
     def _5_story_karasuba_63(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "5_STORY_KARASUBA_64"
         else:
             return "5_STORY_KARASUBA_63"
     
     def _5_story_karasuba_64(self):
-        ret = self.Common_goto(2,0,3)#ポケセンターローズへ移動
+        ret = self.ZA_Common_goto(2,0,3)#ポケセンターローズへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_65"
         else:
@@ -10863,7 +10919,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_66(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_67"
         return "5_STORY_KARASUBA_66"
     
@@ -10876,13 +10932,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_68(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_69"
         return "5_STORY_KARASUBA_68"
     
     def _5_story_karasuba_69(self):
         #失敗時に戻れるように
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
         if ret == "START":
             return "5_STORY_KARASUBA_70"
         else:
@@ -10909,9 +10965,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_72(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
 
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
@@ -10928,9 +10984,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_74(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_75"
@@ -10947,9 +11003,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_76(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_77"
@@ -10965,9 +11021,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_78(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_79"
@@ -10984,9 +11040,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_80(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_81"
@@ -11003,9 +11059,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_82(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_83"
@@ -11021,9 +11077,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_84(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_85"
@@ -11039,9 +11095,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_86(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_87"
@@ -11058,9 +11114,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_88(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_89"
@@ -11076,9 +11132,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_90(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_91"
@@ -11096,9 +11152,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_92(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_93"
@@ -11116,9 +11172,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_94(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_95"
@@ -11126,12 +11182,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_95(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_96"
         return "5_STORY_KARASUBA_95"
     
     def _5_story_karasuba_96(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
         if ret == "START":
             return "5_STORY_KARASUBA_97"
         else:
@@ -11146,19 +11202,19 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_98(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_99"
         return "5_STORY_KARASUBA_98"
     
     def _5_story_karasuba_99(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "5_STORY_KARASUBA_100"
         else:
             return "5_STORY_KARASUBA_99"
     
     def _5_story_karasuba_100(self):
-        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "5_STORY_KARASUBA_101"
         else:
@@ -11166,13 +11222,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_101(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "5_STORY_KARASUBA_102"
         else:
             return "5_STORY_KARASUBA_101"
     
     def _5_story_karasuba_102(self):
-        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "5_STORY_KARASUBA_103"
         else:
@@ -11185,14 +11241,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_103"
     
     def _5_story_karasuba_104(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_105",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_105",green_check=0)
     
     def _5_story_karasuba_105(self):
         # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_106",noprg_ret="5_STORY_KARASUBA_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_106",noprg_ret="5_STORY_KARASUBA_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _5_story_karasuba_106(self):
-        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_105",prg_ret= "5_STORY_KARASUBA_107")
+        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_105",prg_ret= "5_STORY_KARASUBA_107")
     
     def _5_story_karasuba_107(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
@@ -11204,25 +11260,25 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_107"
     
     def _5_story_karasuba_108(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_109",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_109",green_check=0)
 
     
     def _5_story_karasuba_109(self):
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_110",noprg_ret="5_STORY_KARASUBA_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_110",noprg_ret="5_STORY_KARASUBA_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _5_story_karasuba_110(self):
-        return self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_109",prg_ret= "5_STORY_KARASUBA_111")
+        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_109",prg_ret= "5_STORY_KARASUBA_111")
 
     def _5_story_karasuba_111(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "5_STORY_KARASUBA_112"
         else:
             return "5_STORY_KARASUBA_111"
 
     def _5_story_karasuba_112(self):
-        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "5_STORY_KARASUBA_113"
         else:
@@ -11230,13 +11286,13 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_113(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "5_STORY_KARASUBA_114"
         else:
             return "5_STORY_KARASUBA_113"
 
     def _5_story_karasuba_114(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "5_STORY_KARASUBA_115"
         else:
@@ -11252,12 +11308,12 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_116(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_117"
         return "5_STORY_KARASUBA_116"
 
     def _5_story_karasuba_117(self):
-        ret = self.Common_goto(1,1,0)#サビ組事務所へ移動
+        ret = self.ZA_Common_goto(1,1,0)#サビ組事務所へ移動
         if ret == "START":
             return "5_STORY_KARASUBA_118"
         else:
@@ -11279,7 +11335,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_120(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
                 return "5_STORY_KARASUBA_121"
         return "5_STORY_KARASUBA_120"
 
@@ -11291,13 +11347,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_121"
 
     def _5_story_karasuba_122(self):
-        return self.story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
 
     def _5_story_karasuba_123(self):
-        return self.story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _5_story_karasuba_124(self):
-        ret = self.story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_END")
+        ret = self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_END")
         if ret == "5_STORY_END":
             #誤判定用のガード
             if self.image_check("POKEMON_ZA_ODAIRU_ICON") or self.image_check("POKEMON_ZA_ABSOL_ICON"):
@@ -11320,7 +11376,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_mapping_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_MAPPING_2"
         else:
@@ -11328,7 +11384,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_mapping_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,0)#ポケセンターベールに移動で位置確定
         if ret == "START":
             return "6_STORY_MAPPING_3"
         else:
@@ -11356,12 +11412,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン14が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17") == True:
+                    self.ZA_Common_goto_jump()
                     return "6_STORY_C_LANK_BATTLE_ZONE"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -11389,7 +11445,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_2"
         else:
@@ -11397,7 +11453,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,2)#ポケセンターブランタンに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,2)#ポケセンターブランタンに移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_3"
         else:
@@ -11418,13 +11474,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_3"
 
     def _6_story_yukari_4(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_5",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_5",green_check=0)
             
     def _6_story_yukari_5(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_6",noprg_ret="6_STORY_YUKARI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_6",noprg_ret="6_STORY_YUKARI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _6_story_yukari_6(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
 
     def _6_story_yukari_7(self):
         ### AUTO_SAVE_POINT
@@ -11437,21 +11493,21 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_7"
     
     def _6_story_yukari_8(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_9",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_9",green_check=0)
 
     
     def _6_story_yukari_9(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_10",noprg_ret="6_STORY_YUKARI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_10",noprg_ret="6_STORY_YUKARI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _6_story_yukari_10(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_9",prg_ret= "6_STORY_YUKARI_11")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_9",prg_ret= "6_STORY_YUKARI_11")
 
     
     def _6_story_yukari_11(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_12"
         else:
@@ -11459,7 +11515,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_12(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_13"
         else:
@@ -11480,18 +11536,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_13"
     
     def _6_story_yukari_14(self):
-        return  self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
+        return  self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
     
     def _6_story_yukari_15(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_16(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
 
     def _6_story_yukari_17(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_18"
         else:
@@ -11499,7 +11555,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_18(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,1,2)#シューリッシュに移動で位置確定
+        ret = self.ZA_Common_goto(1,1,2)#シューリッシュに移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_19"
         else:
@@ -11514,7 +11570,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_19"
     
     def _6_story_yukari_20(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_21"
         return "6_STORY_YUKARI_20"
     
@@ -11526,14 +11582,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_21"
             
     def _6_story_yukari_22(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_23"
         return "6_STORY_YUKARI_22"
     
     def _6_story_yukari_23(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_24"
         else:
@@ -11541,7 +11597,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_24(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,3)#ホテルZに移動で位置確定
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZに移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_25"
         else:
@@ -11556,7 +11612,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_25"
     
     def _6_story_yukari_26(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
@@ -11569,14 +11625,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_27"
     
     def _6_story_yukari_28(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_29"
         return "6_STORY_YUKARI_28"
     
     def _6_story_yukari_29(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_30"
         else:
@@ -11584,7 +11640,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_30(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-2)#ポケセンタージョーヌに移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_31"
         else:
@@ -11606,24 +11662,24 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_32(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
     
     def _6_story_yukari_33(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "6_STORY_YUKARI_34"
         return "6_STORY_YUKARI_33"
 
     def _6_story_yukari_34(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_35"
         return "6_STORY_YUKARI_34"
     
     def _6_story_yukari_35(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_36"
         else:
@@ -11631,7 +11687,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _6_story_yukari_36(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(4,0,6)#Wゾーン7に移動で位置確定
+        ret = self.ZA_Common_goto(4,0,6)#Wゾーン7に移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_37"
         else:
@@ -11658,31 +11714,31 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,310), duration=6.0, wait=1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
-            self.ROTOM_GLIDE(dir=180,a_count=30)
+            self.ZA_ROTOM_GLIDE(dir=180,a_count=30)
 
             return "6_STORY_YUKARI_39"
         return "6_STORY_YUKARI_38"
     
     def _6_story_yukari_39(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "6_STORY_YUKARI_40"
         return "6_STORY_YUKARI_39"
         
     def _6_story_yukari_40(self):
-        if self.mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0):
             return "6_STORY_YUKARI_41"
         return "6_STORY_YUKARI_40"
     
     def _6_story_yukari_41(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_42"
         return "6_STORY_YUKARI_41"
     
     def _6_story_yukari_42(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_43"
         else:
@@ -11690,7 +11746,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_43(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
+        ret = self.ZA_Common_goto(1,0,2)#ポケモン研究所に移動で位置確定
         if ret == "START":
             return "6_STORY_YUKARI_44"
         else:    
@@ -11706,7 +11762,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_44"
     
     def _6_story_yukari_45(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_46"
         return "6_STORY_YUKARI_45"
     
@@ -11718,7 +11774,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_46"
 
     def _6_story_yukari_47(self):
-        if self.story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW"):
+        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW"):
             return "6_STORY_YUKARI_48"
         return "6_STORY_YUKARI_47"
     
@@ -11733,7 +11789,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_48"
     
     def _6_story_yukari_49(self):
-        if self.story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW"):
+        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW"):
             return "6_STORY_YUKARI_50"
         return "6_STORY_YUKARI_49"
     
@@ -11756,7 +11812,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,30), duration=1.0, wait=1.0)
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,15), duration=3.0, wait=1.0)
-            self.ROTOM_GLIDE(dir=105,a_count=15)
+            self.ZA_ROTOM_GLIDE(dir=105,a_count=15)
             self.wait(2.0)
             self.press(Direction(Stick.LEFT,15), duration=5.5, wait=1.0)
             self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
@@ -11772,31 +11828,31 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_52(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "6_STORY_YUKARI_53"
         return "6_STORY_YUKARI_52"
     
     def _6_story_yukari_53(self):
-        if self.mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=0,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=0,Baction=1):
             return "6_STORY_YUKARI_54"
         return "6_STORY_YUKARI_53"
 
     def _6_story_yukari_54(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "6_STORY_YUKARI_55"
         return "6_STORY_YUKARI_54"
     
     def _6_story_yukari_55(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_56"
         else:
             return "6_STORY_YUKARI_55"
     
     def _6_story_yukari_56(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "6_STORY_YUKARI_57"
         else:
@@ -11811,26 +11867,26 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_57"
     
     def _6_story_yukari_58(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_59",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_59",green_check=0)
     
     def _6_story_yukari_59(self):
         #連戦をまとめて処理する
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_60",noprg_ret="6_STORY_YUKARI_58",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_60",noprg_ret="6_STORY_YUKARI_58",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _6_story_yukari_60(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_59",prg_ret= "6_STORY_YUKARI_61")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_59",prg_ret= "6_STORY_YUKARI_61")
     
     def _6_story_yukari_61(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "6_STORY_YUKARI_62"
         else:
             return "6_STORY_YUKARI_61"
     
     def _6_story_yukari_62(self):
-        ret = self.Common_goto(1,1,2)#ホテルシューリッシュへ移動
+        ret = self.ZA_Common_goto(1,1,2)#ホテルシューリッシュへ移動
         if ret == "START":
             return "6_STORY_YUKARI_63"
         else:
@@ -11852,13 +11908,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_64"
     
     def _6_story_yukari_65(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_65",prg_ret= "6_STORY_YUKARI_66")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_65",prg_ret= "6_STORY_YUKARI_66")
     
     def _6_story_yukari_66(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_65",prg_ret="6_STORY_YUKARI_67",noprg_ret="6_STORY_YUKARI_66",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_65",prg_ret="6_STORY_YUKARI_67",noprg_ret="6_STORY_YUKARI_66",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_67(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_66",prg_ret="6_STORY_YUKARI_68")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_66",prg_ret="6_STORY_YUKARI_68")
     
     def _6_story_yukari_68(self):
         if self.ZA_markerdir("EVENT"):
@@ -11868,13 +11924,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_68"
     
     def _6_story_yukari_69(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_69",prg_ret= "6_STORY_YUKARI_70")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_69",prg_ret= "6_STORY_YUKARI_70")
 
     def _6_story_yukari_70(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_69",prg_ret="6_STORY_YUKARI_71",noprg_ret="6_STORY_YUKARI_70",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_69",prg_ret="6_STORY_YUKARI_71",noprg_ret="6_STORY_YUKARI_70",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
     def _6_story_yukari_71(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_70",prg_ret="6_STORY_YUKARI_72")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_70",prg_ret="6_STORY_YUKARI_72")
     
     def _6_story_yukari_72(self):
         if self.ZA_markerdir("EVENT"):
@@ -11884,13 +11940,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_72"
     
     def _6_story_yukari_73(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_73",prg_ret= "6_STORY_YUKARI_74")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_73",prg_ret= "6_STORY_YUKARI_74")
     
     def _6_story_yukari_74(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_73",prg_ret="6_STORY_YUKARI_75",noprg_ret="6_STORY_YUKARI_74",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_73",prg_ret="6_STORY_YUKARI_75",noprg_ret="6_STORY_YUKARI_74",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_75(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_74",prg_ret="6_STORY_YUKARI_76")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_74",prg_ret="6_STORY_YUKARI_76")
     
     def _6_story_yukari_76(self):
         if self.ZA_markerdir("EVENT"):
@@ -11900,13 +11956,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_76"
         
     def _6_story_yukari_77(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_77",prg_ret= "6_STORY_YUKARI_78")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_77",prg_ret= "6_STORY_YUKARI_78")
     
     def _6_story_yukari_78(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_77",prg_ret="6_STORY_YUKARI_79",noprg_ret="6_STORY_YUKARI_78",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_77",prg_ret="6_STORY_YUKARI_79",noprg_ret="6_STORY_YUKARI_78",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_79(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_78",prg_ret="6_STORY_YUKARI_80")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_78",prg_ret="6_STORY_YUKARI_80")
     
     def _6_story_yukari_80(self):
         if self.ZA_markerdir("EVENT"):
@@ -11916,13 +11972,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_80"   
         
     def _6_story_yukari_81(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_81",prg_ret= "6_STORY_YUKARI_82")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_81",prg_ret= "6_STORY_YUKARI_82")
     
     def _6_story_yukari_82(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_81",prg_ret="6_STORY_YUKARI_83",noprg_ret="6_STORY_YUKARI_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_81",prg_ret="6_STORY_YUKARI_83",noprg_ret="6_STORY_YUKARI_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_83(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_82",prg_ret="6_STORY_YUKARI_84")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_82",prg_ret="6_STORY_YUKARI_84")
     
     def _6_story_yukari_84(self):
         if self.ZA_markerdir("EVENT"):
@@ -11933,13 +11989,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     #ジガルデの対戦文ではない？
     def _6_story_yukari_85(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_85",prg_ret= "6_STORY_YUKARI_86")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_85",prg_ret= "6_STORY_YUKARI_86")
 
     def _6_story_yukari_86(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_85",prg_ret="6_STORY_YUKARI_87",noprg_ret="6_STORY_YUKARI_86",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_85",prg_ret="6_STORY_YUKARI_87",noprg_ret="6_STORY_YUKARI_86",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
     def _6_story_yukari_87(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_86",prg_ret="6_STORY_YUKARI_88")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_86",prg_ret="6_STORY_YUKARI_88")
     
     def _6_story_yukari_88(self):
         if self.ZA_markerdir("EVENT"):
@@ -11949,13 +12005,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_88"
     
     def _6_story_yukari_89(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_89",prg_ret= "6_STORY_YUKARI_90")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_89",prg_ret= "6_STORY_YUKARI_90")
     
     def _6_story_yukari_90(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_89",prg_ret="6_STORY_YUKARI_91",noprg_ret="6_STORY_YUKARI_90",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_89",prg_ret="6_STORY_YUKARI_91",noprg_ret="6_STORY_YUKARI_90",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
    
     def _6_story_yukari_91(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_90",prg_ret="6_STORY_YUKARI_92")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_90",prg_ret="6_STORY_YUKARI_92")
     
     def _6_story_yukari_92(self):
         if self.ZA_markerdir("EVENT"):
@@ -11965,13 +12021,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_92"
     
     def _6_story_yukari_93(self):
-        return self.story_Template_battle_before(noprg_ret="6_STORY_YUKARI_93",prg_ret= "6_STORY_YUKARI_94")
+        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_93",prg_ret= "6_STORY_YUKARI_94")
     
     def _6_story_yukari_94(self):
-        return self.story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_93",prg_ret="6_STORY_YUKARI_95",noprg_ret="6_STORY_YUKARI_94",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_93",prg_ret="6_STORY_YUKARI_95",noprg_ret="6_STORY_YUKARI_94",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_95(self):
-        return self.story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_94",prg_ret="6_STORY_END")
+        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_94",prg_ret="6_STORY_END")
     
     def _6_story_end(self):
         return "6_STORY_START_CHECK"
@@ -11989,7 +12045,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_mapping_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_MAPPING_2"
         else:
@@ -11997,7 +12053,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_mapping_2(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(1,1,0)#クェーサー社移動で位置確定
+        ret = self.ZA_Common_goto(1,1,0)#クェーサー社移動で位置確定
         if ret == "START":
             return "7_STORY_MAPPING_3"
         else:
@@ -12021,12 +12077,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18")
             
         else:
-            ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
+            ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18") == True:
+                    self.ZA_Common_goto_jump()
                     return "7_STORY_MAPPING_5"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -12043,7 +12099,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_mapping_5(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_MAPPING_6"
         else:
@@ -12051,7 +12107,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_mapping_6(self):
         ### AUTO_SAVE_POINT
-        ret = self.Common_goto(2,0,-2)#ポケセンタージョーヌ移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-2)#ポケセンタージョーヌ移動で位置確定
         if ret == "START":
             return "7_STORY_MAPPING_7"
         else:
@@ -12073,7 +12129,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_mapping_8_0(self):
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             self.wait(0.5)
-            self.battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,battle_mode=1,mode=1)
+            self.ZA_battle_Cp_loop(Xaction=0,Aaction=1,Yaction=0,Baction=1,battle_mode=1,mode=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "7_STORY_MAPPING_8"
         return "7_STORY_MAPPING_8_0"
@@ -12089,12 +12145,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "7_STORY_MAPPING_8_0"
             else:
-                ret = self.Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
+                ret = self.ZA_Common_goto(4,0,-1,movepoint_check=1)#Wゾーン18が登録されたか確認
             
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
-                if self.Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19") == True:
-                    self.Common_goto_jump()
+                if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19") == True:
+                    self.ZA_Common_goto_jump()
                     return "7_STORY_GURI_1"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -12112,14 +12168,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_1(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_GURI_2"
         else:
             return "7_STORY_GURI_1"
     
     def _7_story_guri_2(self):
-        ret = self.Common_goto(1,1,0)#クェーサー社へ移動
+        ret = self.ZA_Common_goto(1,1,0)#クェーサー社へ移動
         if ret == "START":
             return "7_STORY_GURI_3"
         else:
@@ -12133,7 +12189,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_3"
 
     def _7_story_guri_4(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_5"
         return "7_STORY_GURI_4"
             
@@ -12145,7 +12201,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_5"
     
     def _7_story_guri_6(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_7"
         return "7_STORY_GURI_6"
 
@@ -12163,14 +12219,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_8(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_GURI_9"
         else:
             return "7_STORY_GURI_8"
     
     def _7_story_guri_9(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "7_STORY_GURI_10"
         else:
@@ -12185,7 +12241,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_10"
     
     def _7_story_guri_11(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_12"
         return "7_STORY_GURI_11"
     
@@ -12198,21 +12254,21 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_12"
     
     def _7_story_guri_13(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_14"
         return "7_STORY_GURI_13"
     
     def _7_story_guri_14(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_GURI_15"
         else:
             return "7_STORY_GURI_14"
         
     def _7_story_guri_15(self):
-        ret = self.Common_goto(2,0,-1)#ポケセンターイーベルへ移動
+        ret = self.ZA_Common_goto(2,0,-1)#ポケセンターイーベルへ移動
         if ret == "START":
             return "7_STORY_GURI_16"
         else:
@@ -12229,31 +12285,31 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_guri_17(self):
         if (not (self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"))):
-            if self.story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out():
                 return "7_STORY_GURI_18"
         return "7_STORY_GURI_17"
     
     def _7_story_guri_18(self):
-        if self.mega_evolution_battle_mode_select(mode=2,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=2,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=1):
             return "7_STORY_GURI_19"
         return "7_STORY_GURI_18"
     
     def _7_story_guri_19(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_20"
         return "7_STORY_GURI_19"
     
     def _7_story_guri_20(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_GURI_21"
         else:
             return "7_STORY_GURI_20"
     
     def _7_story_guri_21(self):
-        ret = self.Common_goto(3,0,5)#カフェソレイユへ移動
+        ret = self.ZA_Common_goto(3,0,5)#カフェソレイユへ移動
         if ret == "START":
             return "7_STORY_GURI_22"
         else:
@@ -12267,7 +12323,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_22"
     
     def _7_story_guri_23(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_24"
         return "7_STORY_GURI_23"
     
@@ -12278,13 +12334,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_24"
     
     def _7_story_guri_25(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_26",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_26",green_check=0)
 
     def _7_story_guri_26(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_27",noprg_ret="7_STORY_GURI_26",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_27",noprg_ret="7_STORY_GURI_26",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
     
     def _7_story_guri_27(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_26",prg_ret= "7_STORY_GURI_28")
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_26",prg_ret= "7_STORY_GURI_28")
     
     def _7_story_guri_28(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -12306,47 +12362,47 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_29"
     
     def _7_story_guri_30(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_31",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_31",green_check=0)
 
     def _7_story_guri_31(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_32",noprg_ret="7_STORY_GURI_31",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_32",noprg_ret="7_STORY_GURI_31",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
 
     def _7_story_guri_32(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
 
     def _7_story_guri_33(self):
         #AUTOSAVE
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
-            self.ROTOM_GLIDE(dir=110,a_count=40)
+            self.ZA_ROTOM_GLIDE(dir=110,a_count=40)
             return "7_STORY_GURI_34"
         return "7_STORY_GURI_33"
 
     def _7_story_guri_34(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_35"
         return "7_STORY_GURI_34"
     
     def _7_story_guri_35(self):
-        if self.mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
             return "7_STORY_GURI_36"
         return "7_STORY_GURI_35"
         
     def _7_story_guri_36(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_37"
         return "7_STORY_GURI_36"
     
     def _7_story_guri_37(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
         if ret == "START":
             return "7_STORY_GURI_38"
         else:
             return "7_STORY_GURI_37"
 
     def _7_story_guri_38(self):
-        ret = self.Common_goto(3,0,0)#カフェソレイユへ移動
+        ret = self.ZA_Common_goto(3,0,0)#カフェソレイユへ移動
         if ret == "START":
             return "7_STORY_GURI_39"
         else:
@@ -12376,16 +12432,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_guri_41(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
             self.wait(3.0)
             self.press(Direction(Stick.LEFT,100), duration=0.1, wait=1.0)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
             self.wait(1.0)
-            self.battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0,battle_mode=1)
             return "7_STORY_GURI_42"
         return "7_STORY_GURI_41"
     
@@ -12427,7 +12483,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
             self.wait(2.0)
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
-            self.ROTOM_GLIDE(dir=110,a_count=19)
+            self.ZA_ROTOM_GLIDE(dir=110,a_count=19)
             self.wait(2.0)
             self.press(Direction(Stick.LEFT,180), duration=1.0, wait=1.0)
             self.press(Direction(Stick.LEFT,90), duration=10.5, wait=1.0)
@@ -12437,29 +12493,29 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     
     def _7_story_guri_44(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_45"
         return "7_STORY_GURI_44"
     
     def _7_story_guri_45(self):
-        if self.mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=1,Baction=1):
             return "7_STORY_GURI_46"
         return "7_STORY_GURI_45"
     
     def _7_story_guri_46(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_47"
         return "7_STORY_GURI_46"
 
     def _7_story_guri_47(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_48"
         else:
             return "7_STORY_GURI_47"
     
     def _7_story_guri_48(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "7_STORY_GURI_49"
         else:
@@ -12474,19 +12530,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_49"
     
     def _7_story_guri_50(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_51"
         return "7_STORY_GURI_50"
     
     def _7_story_guri_51(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_52"
         else:
             return "7_STORY_GURI_51"
     
     def _7_story_guri_52(self):
-        ret = self.Common_goto(1,1,3)#ハンサムハウスへ移動
+        ret = self.ZA_Common_goto(1,1,3)#ハンサムハウスへ移動
         if ret == "START":
             return "7_STORY_GURI_53"
         else:
@@ -12500,18 +12556,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_53"
     
     def _7_story_guri_54(self):
-        if self.story_Template_Comment_Out(mode=1):
+        if self.ZA_story_Template_Comment_Out(mode=1):
             return "7_STORY_GURI_55"
         return "7_STORY_GURI_54"
     
     def _7_story_guri_55(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING",check_pic1="POKEMON_ZA_FILED_HARD_CHECK_1")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING",check_pic1="POKEMON_ZA_FILED_HARD_CHECK_1")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_56"
         return "7_STORY_GURI_55"
     
     def _7_story_guri_56(self):
-        ret = self.Common_goto(1,1,3)#ハンサムハウスへ移動
+        ret = self.ZA_Common_goto(1,1,3)#ハンサムハウスへ移動
         if ret == "START":
             return "7_STORY_GURI_57"
         else:
@@ -12526,16 +12582,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_57"
     
     def _7_story_guri_58(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_59",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_59",green_check=0)
 
     def _7_story_guri_59(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_60",noprg_ret="7_STORY_GURI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_60",noprg_ret="7_STORY_GURI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_60(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_59",prg_ret= "7_STORY_GURI_61")
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_59",prg_ret= "7_STORY_GURI_61")
 
     def _7_story_guri_61(self):
-        ret = self.Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "7_STORY_GURI_62"
         else:
@@ -12543,20 +12599,20 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_guri_62(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "7_STORY_GURI_63"
         else:
             return "7_STORY_GURI_62"
     
     def _7_story_guri_63(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_64"
         else:
             return "7_STORY_GURI_63"
         
     def _7_story_guri_64(self):
-        ret = self.Common_goto(1,0,2)#ポケモン研究所へ移動
+        ret = self.ZA_Common_goto(1,0,2)#ポケモン研究所へ移動
         if ret == "START":
             return "7_STORY_GURI_65"
         else:
@@ -12577,7 +12633,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_66"
     
     def _7_story_guri_67(self):
-        if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.wait(0.3)
             self.etc_sendCommand("Lbutton_down")
             self.wait(0.3)
@@ -12587,7 +12643,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_67"
     
     def _7_story_guri_68(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_69"
         return "7_STORY_GURI_68"
     
@@ -12600,19 +12656,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_69"
     
     def _7_story_guri_70(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_71"
         return "7_STORY_GURI_70"
     
     def _7_story_guri_71(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_72"
         else:
             return "7_STORY_GURI_71"
     
     def _7_story_guri_72(self):
-        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        ret = self.ZA_Common_goto(3,0,3)#ヌーヴォカフェへ移動
         if ret == "START":
             return "7_STORY_GURI_73"
         else:
@@ -12626,19 +12682,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_73"
     
     def _7_story_guri_74(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_75"
         return "7_STORY_GURI_74"
     
     def _7_story_guri_75(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_76"
         else:
             return "7_STORY_GURI_75"
     
     def _7_story_guri_76(self):
-        ret = self.Common_goto(4,0,6)#Wゾーン7へ移動
+        ret = self.ZA_Common_goto(4,0,6)#Wゾーン7へ移動
         if ret == "START":
             return "7_STORY_GURI_77"
         else:
@@ -12654,13 +12710,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_77"
     
     def _7_story_guri_78(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_79",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_79",green_check=0)
    
     def _7_story_guri_79(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_80",noprg_ret="7_STORY_GURI_79",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_80",noprg_ret="7_STORY_GURI_79",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_80(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_79",prg_ret= "7_STORY_GURI_81")
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_79",prg_ret= "7_STORY_GURI_81")
 
     def _7_story_guri_81(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -12670,7 +12726,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_81"
     
     def _7_story_guri_82(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_83"
         return "7_STORY_GURI_82"
     
@@ -12682,7 +12738,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_83"
     
     def _7_story_guri_84(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_85"
         return "7_STORY_GURI_84"
     
@@ -12693,7 +12749,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_85"
     
     def _7_story_guri_86(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_87"
         return "7_STORY_GURI_86"
     
@@ -12703,12 +12759,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,60), duration=7.5, wait=0.0)
             self.press(Direction(Stick.LEFT,270), duration=4.0, wait=0.0)
             self.press(Direction(Stick.LEFT,0), duration=6.0, wait=0.0)
-            self.ROTOM_GLIDE(dir=240,a_count=10)#移動Aクリック
+            self.ZA_ROTOM_GLIDE(dir=240,a_count=10)#移動Aクリック
             return "7_STORY_GURI_88"
         return "7_STORY_GURI_87"
     
     def _7_story_guri_88(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             #self.press(Direction(Stick.LEFT,0), duration=0.1, wait=0.1)
             #self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.0, interval=0.0)
             return "7_STORY_GURI_89"
@@ -12717,7 +12773,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_89(self):
         #ラボカードキーA_オープン1
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
-            self.ROTOM_GLIDE(dir=290,a_count=20)
+            self.ZA_ROTOM_GLIDE(dir=290,a_count=20)
             return "7_STORY_GURI_90"
         return "7_STORY_GURI_89"
     
@@ -12726,8 +12782,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=1.5, wait=0.0)
-            self.ROTOM_GLIDE(dir=90,a_count=40)
-            self.ROTOM_GLIDE(dir=270,a_count=40)#マップを開くために逃げる
+            self.ZA_ROTOM_GLIDE(dir=90,a_count=40)
+            self.ZA_ROTOM_GLIDE(dir=270,a_count=40)#マップを開くために逃げる
             #self.press(Direction(Stick.LEFT,0), duration=2.0, wait=1.0)
             #self.ROTOM_GLIDE(dir=270,a_count=10)
             return "7_STORY_GURI_91"
@@ -12735,7 +12791,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_guri_91(self):
         #失敗時に戻れるように
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_92"
         else:
@@ -12751,12 +12807,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_92"
     
     def _7_story_guri_93(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_94"
         return "7_STORY_GURI_93"
     
     def _7_story_guri_94(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_95"
         else:
@@ -12775,12 +12831,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_95"
     
     def _7_story_guri_96(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_97"
         return "7_STORY_GURI_96"
     
     def _7_story_guri_97(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_98"
         else:
@@ -12792,7 +12848,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=3.5, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
-            self.ROTOM_GLIDE(dir=180,a_count=15)
+            self.ZA_ROTOM_GLIDE(dir=180,a_count=15)
             return "7_STORY_GURI_99"
         return "7_STORY_GURI_98"
     
@@ -12800,7 +12856,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #ラボカードキーB2
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
-            self.ROTOM_GLIDE(dir=160,a_count=10)
+            self.ZA_ROTOM_GLIDE(dir=160,a_count=10)
             return "7_STORY_GURI_100"
         return "7_STORY_GURI_99"
     
@@ -12808,12 +12864,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         #ラボカードキーB3
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
-            self.ROTOM_GLIDE(dir=0,a_count=5)
+            self.ZA_ROTOM_GLIDE(dir=0,a_count=5)
             return "7_STORY_GURI_101"
         return "7_STORY_GURI_100"
     
     def _7_story_guri_101(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_102"
         else:
@@ -12834,7 +12890,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_102"
     
     def _7_story_guri_103(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_104"
         return "7_STORY_GURI_103"
     
@@ -12846,7 +12902,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_104" 
        
     def _7_story_guri_105(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_106"
         else:
@@ -12871,12 +12927,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_106" 
        
     def _7_story_guri_107(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_108"
         return "7_STORY_GURI_107" 
        
     def _7_story_guri_108(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_109"
         else:
@@ -12896,7 +12952,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=6.0, wait=0.0)
             self.press(Direction(Stick.LEFT,0), duration=5.0, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=1.2, wait=0.0)            
-            self.ROTOM_GLIDE(dir=0,a_count=20)
+            self.ZA_ROTOM_GLIDE(dir=0,a_count=20)
             return "7_STORY_GURI_110"
         return "7_STORY_GURI_109" 
        
@@ -12904,7 +12960,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #ラボのカードキーC_オープン2
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)            
-            self.ROTOM_GLIDE(dir=60,a_count=10)
+            self.ZA_ROTOM_GLIDE(dir=60,a_count=10)
             return "7_STORY_GURI_111" 
         return "7_STORY_GURI_110" 
        
@@ -12913,7 +12969,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=2.5, wait=0.0)
             self.press(Direction(Stick.LEFT,60), duration=2.0, wait=0.0)
-            self.ROTOM_GLIDE(dir=145,a_count=27)
+            self.ZA_ROTOM_GLIDE(dir=145,a_count=27)
             self.press(Direction(Stick.LEFT,330), duration=5.0, wait=0.0)
             self.press(Direction(Stick.LEFT,45), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,135), duration=6.0, wait=0.0)
@@ -12923,7 +12979,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_111" 
        
     def _7_story_guri_112(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_113"
         return "7_STORY_GURI_112" 
        
@@ -12939,26 +12995,26 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_113" 
        
     def _7_story_guri_114(self):
-        if self.story_Template_Comment_Out(sleeptime=0.0):
+        if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_115"
         return "7_STORY_GURI_114" 
        
     def _7_story_guri_115(self):
-        if self.battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
+        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
             return "7_STORY_GURI_116" 
         return "7_STORY_GURI_115" 
        
     def _7_story_guri_116(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_115" ,prg_ret="7_STORY_GURI_117")
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_115" ,prg_ret="7_STORY_GURI_117")
        
     def _7_story_guri_117(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
-            self.ROTOM_GLIDE(dir=90,a_count=50)
+            self.ZA_ROTOM_GLIDE(dir=90,a_count=50)
             return "7_STORY_GURI_118"
         return "7_STORY_GURI_117"
     
     def _7_story_guri_118(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_119" 
         else:
@@ -12972,7 +13028,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_119" 
        
     def _7_story_guri_120(self):
-        if self.story_Template_Comment_Out(selected_pic="POKEMON_ZA_3_SELECT",selected_target=1,sleeptime=1.0):
+        if self.ZA_story_Template_Comment_Out(selected_pic="POKEMON_ZA_3_SELECT",selected_target=1,sleeptime=1.0):
             return "7_STORY_GURI_121"
         return "7_STORY_GURI_120" 
        
@@ -12984,12 +13040,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_121" 
        
     def _7_story_guri_122(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_123"
         return "7_STORY_GURI_122" 
        
     def _7_story_guri_123(self):
-        ret = self.Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
+        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_FURADARI_MAP")#フラダリラボ入口へ移動
         if ret == "START":
             return "7_STORY_GURI_124" 
         else:
@@ -13023,19 +13079,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_127"  
        
     def _7_story_guri_128(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_129"
         return "7_STORY_GURI_128"  
        
     def _7_story_guri_129(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_130"
         else:
             return "7_STORY_GURI_129" 
        
     def _7_story_guri_130(self):
-        ret = self.Common_goto(1,0,3)#ホテルZへ移動
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
         if ret == "START":
             return "7_STORY_GURI_131"
         else:
@@ -13057,12 +13113,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_132"
        
     def _7_story_guri_133(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_134"
         return "7_STORY_GURI_133"  
        
     def _7_story_guri_134(self):
-        ret = self.Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
         if ret == "START":
             return "7_STORY_GURI_135"  
         else:
@@ -13070,20 +13126,20 @@ class ZA_story_Base(ImageProcPythonCommand):
        
     def _7_story_guri_135(self):
         ### AUTO_SAVE_POINT
-        if self.Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery():
             return "7_STORY_GURI_136"  
         else:
             return "7_STORY_GURI_135"  
        
     def _7_story_guri_136(self):
-        ret = self.Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")#時間変更前のためとりあえず時間変更とする
         if ret == "START":
             return "7_STORY_GURI_137"
         else:
             return "7_STORY_GURI_136"  
         
     def _7_story_guri_137(self):
-        ret = self.Common_goto(3,0,3)#ヌーヴォカフェへ移動
+        ret = self.ZA_Common_goto(3,0,3)#ヌーヴォカフェへ移動
         if ret == "START":
             return "7_STORY_GURI_138"
         else:
@@ -13097,13 +13153,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_138"
        
     def _7_story_guri_139(self):
-        return self.story_Template_battle_before(noprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_140",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_140",green_check=0)
        
     def _7_story_guri_140(self):
-        return self.story_Template_battle_function(bkprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_141",noprg_ret="7_STORY_GURI_140",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_141",noprg_ret="7_STORY_GURI_140",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
        
     def _7_story_guri_141(self):
-        return self.story_Template_battle_after(bkprg_ret="7_STORY_GURI_140",prg_ret= "7_STORY_END",mode=1)
+        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_140",prg_ret= "7_STORY_END",mode=1)
     
     def _7_story_end(self):
         return "7_STORY_START_CHECK"
@@ -13124,13 +13180,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_1" 
     
     def _8_story_story_last_2(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_3" 
         else:
             return "8_STORY_STORY_LAST_2"
     
     def _8_story_story_last_3(self):
-        ret = self.Common_goto(1,0,0)#プリズムタワーへ移動
+        ret = self.ZA_Common_goto(1,0,0)#プリズムタワーへ移動
         if ret == "START":
             return "8_STORY_STORY_LAST_4"
         else:
@@ -13144,13 +13200,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_4"    
             
     def _8_story_story_last_5(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_6",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_6",green_check=0)
 
     def _8_story_story_last_6(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_7",noprg_ret="8_STORY_STORY_LAST_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_7",noprg_ret="8_STORY_STORY_LAST_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _8_story_story_last_7(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_6",prg_ret="8_STORY_STORY_LAST_8",mode=1)
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_6",prg_ret="8_STORY_STORY_LAST_8",mode=1)
 
     def _8_story_story_last_8(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -13160,7 +13216,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_8"
     
     def _8_story_story_last_9(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_10" 
         else:
             return "8_STORY_STORY_LAST_9"
@@ -13179,13 +13235,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_10"
     
     def _8_story_story_last_11(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_12",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_12",green_check=0)
     
     def _8_story_story_last_12(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_10",prg_ret="8_STORY_STORY_LAST_13",noprg_ret="8_STORY_STORY_LAST_12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_10",prg_ret="8_STORY_STORY_LAST_13",noprg_ret="8_STORY_STORY_LAST_12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_13(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_12",prg_ret="8_STORY_STORY_LAST_14")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_12",prg_ret="8_STORY_STORY_LAST_14")
 
     
     def _8_story_story_last_14(self):
@@ -13204,13 +13260,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_15"
     
     def _8_story_story_last_16(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_15",prg_ret="8_STORY_STORY_LAST_17",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_15",prg_ret="8_STORY_STORY_LAST_17",green_check=0)
     
     def _8_story_story_last_17(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_16",prg_ret="8_STORY_STORY_LAST_18",noprg_ret="8_STORY_STORY_LAST_17",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_16",prg_ret="8_STORY_STORY_LAST_18",noprg_ret="8_STORY_STORY_LAST_17",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_18(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_17",prg_ret="8_STORY_STORY_LAST_19")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_17",prg_ret="8_STORY_STORY_LAST_19")
 
     
     def _8_story_story_last_19(self):
@@ -13222,7 +13278,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_19"
     
     def _8_story_story_last_20(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_21"
         return "8_STORY_STORY_LAST_20"
     
@@ -13250,15 +13306,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_22"
     
     def _8_story_story_last_23(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_22",prg_ret="8_STORY_STORY_LAST_24",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_22",prg_ret="8_STORY_STORY_LAST_24",green_check=0)
 
     
     def _8_story_story_last_24(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_23",prg_ret="8_STORY_STORY_LAST_25",noprg_ret="8_STORY_STORY_LAST_24",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_23",prg_ret="8_STORY_STORY_LAST_25",noprg_ret="8_STORY_STORY_LAST_24",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
 
     
     def _8_story_story_last_25(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_24",prg_ret="8_STORY_STORY_LAST_26")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_24",prg_ret="8_STORY_STORY_LAST_26")
 
     
     def _8_story_story_last_26(self):
@@ -13299,7 +13355,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             #壁のぼり
             self.press(Direction(Stick.LEFT,0), duration=2.0, wait=1.0)#14
             
-            self.ROTOM_GLIDE(dir=310,a_count=5)
+            self.ZA_ROTOM_GLIDE(dir=310,a_count=5)
             self.wait(5.0)
             #ジャンプ
             #self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
@@ -13339,7 +13395,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_26"
     
     def _8_story_story_last_27(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_28"
         return "8_STORY_STORY_LAST_27"
     
@@ -13354,15 +13410,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_28"
     
     def _8_story_story_last_29(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_28",prg_ret="8_STORY_STORY_LAST_30",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_28",prg_ret="8_STORY_STORY_LAST_30",green_check=0)
 
     
     def _8_story_story_last_30(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_29",prg_ret="8_STORY_STORY_LAST_31",noprg_ret="8_STORY_STORY_LAST_30",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_29",prg_ret="8_STORY_STORY_LAST_31",noprg_ret="8_STORY_STORY_LAST_30",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
 
     
     def _8_story_story_last_31(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_30",prg_ret="8_STORY_STORY_LAST_32")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_30",prg_ret="8_STORY_STORY_LAST_32")
 
     
     def _8_story_story_last_32(self):
@@ -13375,13 +13431,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_32"
     
     def _8_story_story_last_33(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_32",prg_ret="8_STORY_STORY_LAST_34",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_32",prg_ret="8_STORY_STORY_LAST_34",green_check=0)
 
     def _8_story_story_last_34(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_33",prg_ret="8_STORY_STORY_LAST_35",noprg_ret="8_STORY_STORY_LAST_34",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_33",prg_ret="8_STORY_STORY_LAST_35",noprg_ret="8_STORY_STORY_LAST_34",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_35(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_34",prg_ret="8_STORY_STORY_LAST_36")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_34",prg_ret="8_STORY_STORY_LAST_36")
         
     def _8_story_story_last_36(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -13391,7 +13447,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_36"
     
     def _8_story_story_last_37(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_38"
         return "8_STORY_STORY_LAST_37"
 
@@ -13404,7 +13460,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_38"
     
     def _8_story_story_last_39(self):
-        if self.story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():
             return "8_STORY_STORY_LAST_40"
         return "8_STORY_STORY_LAST_39"
     
@@ -13419,14 +13475,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_40"
     
     def _8_story_story_last_41(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_42",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_42",green_check=0)
 
     
     def _8_story_story_last_42(self):
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_43",noprg_ret="8_STORY_STORY_LAST_42",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_43",noprg_ret="8_STORY_STORY_LAST_42",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_43(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_43",prg_ret="8_STORY_STORY_LAST_45")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_43",prg_ret="8_STORY_STORY_LAST_45")
     
     def _8_story_story_last_44(self):
         return "8_STORY_STORY_LAST_44"
@@ -13640,14 +13696,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_103"
     
     def _8_story_story_last_104(self):
-        return self.story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_105",green_check=0)
+        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_105",green_check=0)
     
     def _8_story_story_last_105(self):
         # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
-        return self.story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_106",noprg_ret="8_STORY_STORY_LAST_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_106",noprg_ret="8_STORY_STORY_LAST_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _8_story_story_last_106(self):
-        return self.story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_105",prg_ret= "8_STORY_STORY_LAST_107")
+        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_105",prg_ret= "8_STORY_STORY_LAST_107")
 
     ###CPEND
     def _8_story_end(self):
@@ -13659,22 +13715,22 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # Commonskill
     ######################################################
-    def common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0):
+    def ZA_common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0):
         if self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
-            self.common_skill_change_current_state = self.common_skill_change_pokemon_select(selectnum=selectpokemonnum)
+            self.common_skill_change_current_state = self.ZA_common_skill_change_pokemon_select(selectnum=selectpokemonnum)
         elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1":
-            self.common_skill_change_current_state = self.common_skill_change_skill_window_chtarget1(target1=target1,machine=machine)
+            self.common_skill_change_current_state = self.ZA_common_skill_change_skill_window_chtarget1(target1=target1,machine=machine)
         elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2":
-            self.common_skill_change_current_state = self.common_skill_change_skill_window_chtarget2(target2=target2)
+            self.common_skill_change_current_state = self.ZA_common_skill_change_skill_window_chtarget2(target2=target2)
         else:
             self.common_skill_change_current_state = self.STATE_COMMON_SKILL_CHANGE_FUNCTION[self.common_skill_change_current_state]()
 
         return self.common_skill_change_current_state
 
-    def common_skill_change_start(self):
+    def ZA_common_skill_change_start(self):
         return "COMMON_SKILL_CHANGE_START_CHECK"
             
-    def common_skill_change_start_check(self):
+    def ZA_common_skill_change_start_check(self):
         if self.check_picture==1:
             if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
                 print("POKEMON_ZA_X_MENU_OPEN")
@@ -13710,7 +13766,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return "COMMON_SKILL_CHANGE_START_CHECK"
             
-    def common_skill_change_pokemon_select(self,selectnum):
+    def ZA_common_skill_change_pokemon_select(self,selectnum):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 self.wait(0.5)
@@ -13727,7 +13783,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(0.5)
         return "COMMON_SKILL_CHANGE_POKEMON_SELECT"
     
-    def common_skill_change_skill_window_open(self):
+    def ZA_common_skill_change_skill_window_open(self):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W"):
                 for i in range(2):
@@ -13739,7 +13795,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN"
         
-    def common_skill_change_skill_window_chtarget1(self,target1,machine):
+    def ZA_common_skill_change_skill_window_chtarget1(self,target1,machine):
         if self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 if target1 == "X":
@@ -13821,7 +13877,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(0.3)
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
 
-    def common_skill_change_skill_window_chtarget2(self,target2):
+    def ZA_common_skill_change_skill_window_chtarget2(self,target2):
         if self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 if target2 == "X":
@@ -13884,44 +13940,44 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
         self.wait(0.3)
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
-    def common_skill_change_skill_window_close(self):
+    def ZA_common_skill_change_skill_window_close(self):
         while True:
             self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
                 return "COMMON_SKILL_CHANGE_END"
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
-    def common_skill_change_end(self):
+    def ZA_common_skill_change_end(self):
         return "COMMON_SKILL_CHANGE_START"
     
-    def common_skill_change_false(self):
+    def ZA_common_skill_change_false(self):
         return "COMMON_SKILL_CHANGE_START"
     ######################################################
     # Commonboxchange
     ######################################################
-    def common_box_change_function(self,target1,target2,target1_high=0,target2_high=0):
+    def ZA_common_box_change_function(self,target1,target2,target1_high=0,target2_high=0):
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
-            ret = self.common_skill_change_start()
+            ret = self.ZA_common_skill_change_start()
             if ret == "COMMON_SKILL_CHANGE_START_CHECK":
                 self.common_box_change_current_state = "COMMON_BOX_CHANGE_START_CHECK"
             else:
                 self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
         elif self.common_box_change_current_state == "COMMON_BOX_CHANGE_START_CHECK":
-            ret = self.common_skill_change_start_check()
+            ret = self.ZA_common_skill_change_start_check()
             if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
                 self.common_box_change_current_state = "COMMON_BOX_CHANGE_BOX_OPEN"
             else:
                 self.common_box_change_current_state = "COMMON_BOX_CHANGE_START_CHECK"     
         else:
             if self.common_box_change_current_state == "COMMON_BOX_CHANGE_BOX_TARGET1":
-                self.common_box_change_current_state = self.common_box_change_box_target1(target1,target1_high)   
+                self.common_box_change_current_state = self.ZA_common_box_change_box_target1(target1,target1_high)   
             elif self.common_box_change_current_state == "COMMON_BOX_CHANGE_BOX_TARGET2":
-                self.common_box_change_current_state = self.common_box_change_box_target2(target2-target1,target2_high - target1_high)
+                self.common_box_change_current_state = self.ZA_common_box_change_box_target2(target2-target1,target2_high - target1_high)
             else:
                 self.common_box_change_current_state = self.STATE_COMMON_BOX_CHANGE_FUNCTION[self.common_box_change_current_state]()
 
         return self.common_box_change_current_state
     
-    def common_box_change_box_open(self):
+    def ZA_common_box_change_box_open(self):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 self.wait(0.5)
@@ -13938,7 +13994,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(0.5)
         return "COMMON_BOX_CHANGE_BOX_OPEN"
     
-    def common_box_change_box_target1(self,target1,target1_high=0):
+    def ZA_common_box_change_box_target1(self,target1,target1_high=0):
         #BOX 1:1が開始点と判定させる
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.wait(1.0)
@@ -13964,7 +14020,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"        
         return "COMMON_BOX_CHANGE_BOX_TARGET1"
     
-    def common_box_change_box_target1_select(self):
+    def ZA_common_box_change_box_target1_select(self):
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.wait(1.0)
             if self.image_check("POKEMON_ZA_BOX_MENU"):
@@ -13978,7 +14034,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
         return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
     
-    def common_box_change_box_target2(self,target_sub,target_sub_high=0):
+    def ZA_common_box_change_box_target2(self,target_sub,target_sub_high=0):
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.wait(1.0)
             if target_sub > 0:
@@ -14003,47 +14059,47 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
         return "COMMON_BOX_CHANGE_BOX_TARGET2"
     
-    def common_box_change_window_close(self):
+    def ZA_common_box_change_window_close(self):
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
             return "COMMON_BOX_CHANGE_END"
         return "COMMON_BOX_CHANGE_SKILL_WINDOW_CLOSE"
 
-    def common_box_change_end(self):
+    def ZA_common_box_change_end(self):
         return "COMMON_BOX_CHANGE_START"
     ######################################################
     # Commonitemgive
     ######################################################
-    def common_item_give_function(self,selectnum,target1,target2):
+    def ZA_common_item_give_function(self,selectnum,target1,target2):
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
-            ret = self.common_skill_change_start()
+            ret = self.ZA_common_skill_change_start()
             if ret == "COMMON_SKILL_CHANGE_START_CHECK":
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_START_CHECK"
             else:
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_START"
         elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_START_CHECK":
-            ret = self.common_skill_change_start_check()
+            ret = self.ZA_common_skill_change_start_check()
             if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_POKEMON_SELECT"
             else:
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_START_CHECK" 
         elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_POKEMON_SELECT":
-            ret = self.common_skill_change_pokemon_select(selectnum)
+            ret = self.ZA_common_skill_change_pokemon_select(selectnum)
             if ret == "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN":
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_WINDOW_OPEN"
             else:
                 self.common_item_give_current_state = "COMMON_ITEM_GIVE_POKEMON_SELECT"        
         else:
             if self.common_item_give_current_state == "COMMON_ITEM_GIVE_TARGET_SIDE":
-                self.common_item_give_current_state = self.common_item_give_target_side(target1)   
+                self.common_item_give_current_state = self.ZA_common_item_give_target_side(target1)   
             elif self.common_item_give_current_state == "COMMON_ITEM_GIVE_TARGET_HIGH":
-                self.common_item_give_current_state = self.common_item_give_target_high(target2)
+                self.common_item_give_current_state = self.ZA_common_item_give_target_high(target2)
             else:
                 self.common_item_give_current_state = self.STATE_COMMON_ITEM_GIVE_FUNCTION[self.common_item_give_current_state]()
 
         return self.common_item_give_current_state
     
-    def common_item_give_window_open(self):
+    def ZA_common_item_give_window_open(self):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W"):
                 for i in range(2):
@@ -14054,7 +14110,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "COMMON_ITEM_GIVE_TARGET_SIDE"
         return "COMMON_ITEM_GIVE_WINDOW_OPEN"
     
-    def common_item_give_target_side(self,target1):
+    def ZA_common_item_give_target_side(self,target1):
         if self.image_check("POKEMON_ZA_ITEM_WINDOW"):
             for i in range(target1):
                 self.keys.input(Button.R)
@@ -14064,7 +14120,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_ITEM_GIVE_TARGET_HIGH"
         return "COMMON_ITEM_GIVE_TARGET_SIDE"
     
-    def common_item_give_target_high(self,target2,use=1):
+    def ZA_common_item_give_target_high(self,target2,use=1):
         if self.image_check("POKEMON_ZA_ITEM_WINDOW"):
             for i in range(target2):
                 self.etc_sendCommand("Lbutton_down")
@@ -14074,31 +14130,31 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_ITEM_GIVE_WINDOW_CLOSE" 
         return "COMMON_ITEM_GIVE_TARGET_HIGH"
     
-    def common_item_give_window_close(self):
+    def ZA_common_item_give_window_close(self):
         self.pressRep(Button.B, repeat=50, duration=0.15, wait=0.5, interval=0.1)
         return "COMMON_ITEM_GIVE_END"
     
-    def common_item_give_end(self):
+    def ZA_common_item_give_end(self):
         return "COMMON_ITEM_GIVE_START"
 
     ######################################################
     # Commonevolution
     ######################################################
-    def common_evolution_function(self,selectnum):
+    def ZA_common_evolution_function(self,selectnum):
         if self.common_evolution_current_state == "COMMON_EVOLUTION_START":
-            ret = self.common_skill_change_start()
+            ret = self.ZA_common_skill_change_start()
             if ret == "COMMON_SKILL_CHANGE_START_CHECK":
                 self.common_evolution_current_state = "COMMON_EVOLUTION_START_CHECK"
             else:
                 self.common_evolution_current_state = "COMMON_EVOLUTION_START"
         elif self.common_evolution_current_state == "COMMON_EVOLUTION_START_CHECK":
-            ret = self.common_skill_change_start_check()
+            ret = self.ZA_common_skill_change_start_check()
             if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
                 self.common_evolution_current_state = "COMMON_EVOLUTION_POKEMON_SELECT"
             else:
                 self.common_evolution_current_state = "COMMON_EVOLUTION_START_CHECK" 
         elif self.common_evolution_current_state == "COMMON_EVOLUTION_POKEMON_SELECT":
-            ret = self.common_skill_change_pokemon_select(selectnum)
+            ret = self.ZA_common_skill_change_pokemon_select(selectnum)
             if ret == "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN":
                 self.common_evolution_current_state = "COMMON_EVOLUTION_EXEC"
             else:
@@ -14109,9 +14165,9 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return self.common_evolution_current_state
     
-    def common_evolution_exec(self):
+    def ZA_common_evolution_exec(self):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
-            if self.renda_button(rendabutton="B",
+            if self.ZA_renda_button(rendabutton="B",
                                  endpicture="POKEMON_ZA_TEXT_BLACK_COMMENT",
                                  not_endpicture="POKEMON_ZA_ZA_ROYALE",
                                  sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
@@ -14124,44 +14180,44 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "COMMON_EVOLUTION_LOOP"
         return "COMMON_EVOLUTION_EXEC"
     
-    def common_evolution_loop(self):
-        if self.renda_button(rendabutton="B",
+    def ZA_common_evolution_loop(self):
+        if self.ZA_renda_button(rendabutton="B",
                             endpicture="POKEMON_ZA_FIELD_W",
                             endpicture2="POKEMON_ZA_FIELD_BACK_W",
                             not_endpicture="POKEMON_ZA_ZA_ROYALE"):
             return "COMMON_EVOLUTION_END"
         return "COMMON_EVOLUTION_LOOP"
     
-    def common_evolution_end(self):
+    def ZA_common_evolution_end(self):
         return "COMMON_EVOLUTION_START"
     
     ######################################################
     # Common item_use
     ######################################################
-    def common_item_use_function(self,target1,target2=-1,item_pic="POKEMON_ZA_TRUE_RETURN",use_target=1,up10=0,up1=-1):
+    def ZA_common_item_use_function(self,target1,target2=-1,item_pic="POKEMON_ZA_TRUE_RETURN",use_target=1,up10=0,up1=-1):
         if self.common_item_use_current_state == "COMMON_ITEM_USE_START":
-            ret = self.common_skill_change_start()
+            ret = self.ZA_common_skill_change_start()
             if ret == "COMMON_SKILL_CHANGE_START_CHECK":
                 self.common_item_use_current_state = "COMMON_ITEM_USE_START_CHECK"
             else:
                 self.common_item_use_current_state = "COMMON_ITEM_USE_START"
         elif self.common_item_use_current_state == "COMMON_ITEM_USE_START_CHECK":
-            ret = self.common_skill_change_start_check()
+            ret = self.ZA_common_skill_change_start_check()
             if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
                 self.common_item_use_current_state = "COMMON_ITEM_USE_WINDOW_OPEN"
             else:
                 self.common_item_use_current_state = "COMMON_ITEM_USE_START_CHECK"
 
         elif self.common_item_use_current_state == "COMMON_ITEM_USE_TARGET_SIDE":
-            self.common_item_use_current_state = self.common_item_use_target_side(target1=target1) 
+            self.common_item_use_current_state = self.ZA_common_item_use_target_side(target1=target1) 
         elif self.common_item_use_current_state == "COMMON_ITEM_USE_TARGET_HIGH":
-            self.common_item_use_current_state = self.common_item_use_target_high(target2=target2,item_pic=item_pic,use_target=use_target,up10=up10,up1=up1) 
+            self.common_item_use_current_state = self.ZA_common_item_use_target_high(target2=target2,item_pic=item_pic,use_target=use_target,up10=up10,up1=up1) 
         else:
             self.common_item_use_current_state = self.STATE_COMMON_ITEM_USE_FUNCTION[self.common_item_use_current_state]()
 
         return self.common_item_use_current_state
     
-    def common_item_use_window_open(self):
+    def ZA_common_item_use_window_open(self):
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 self.wait(0.5)
@@ -14176,17 +14232,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(0.5)
         return "COMMON_ITEM_USE_WINDOW_OPEN"
     
-    def common_item_use_target_side(self,target1):
-        ret = self.common_item_give_target_side(target1=target1)
+    def ZA_common_item_use_target_side(self,target1):
+        ret = self.ZA_common_item_give_target_side(target1=target1)
         if ret == "COMMON_ITEM_GIVE_TARGET_SIDE":
             self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_SIDE"
         else:
             self.common_item_use_current_state = "COMMON_ITEM_USE_TARGET_HIGH"
         return self.common_item_use_current_state
     
-    def common_item_use_target_high(self,target2,item_pic="POKEMON_ZA_TRUE_RETURN",use_target=1,up10=0,up1=-1):
+    def ZA_common_item_use_target_high(self,target2,item_pic="POKEMON_ZA_TRUE_RETURN",use_target=1,up10=0,up1=-1):
         if target2 >=0:
-            ret = self.common_item_give_target_high(target2=target2)
+            ret = self.ZA_common_item_give_target_high(target2=target2)
             if (ret == "COMMON_ITEM_GIVE_WINDOW_CLOSE"):
                 self.common_item_use_current_state = "COMMON_ITEM_USE_WINDOW_CLOSE"
             else:
@@ -14194,9 +14250,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             for i in range(30):
                 if i == 0:
-                    ret = self.common_item_give_target_high(target2=0,use=0)
+                    ret = self.ZA_common_item_give_target_high(target2=0,use=0)
                 else:
-                    ret = self.common_item_give_target_high(target2=1,use=0)
+                    ret = self.ZA_common_item_give_target_high(target2=1,use=0)
                     
                 self.wait(1.0)
                 if self.image_check(item_pic) and (ret == "COMMON_ITEM_GIVE_WINDOW_CLOSE"):
@@ -14230,8 +14286,8 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return self.common_item_use_current_state
     
-    def common_item_use_window_close(self):
-        if self.renda_button(rendabutton="B",
+    def ZA_common_item_use_window_close(self):
+        if self.ZA_renda_button(rendabutton="B",
                             endpicture="POKEMON_ZA_FIELD_W",
                             endpicture2="POKEMON_ZA_FIELD_BACK_W",
                             not_endpicture="POKEMON_ZA_ZA_ROYALE",
@@ -14239,19 +14295,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_ITEM_USE_END"
         return "COMMON_ITEM_GIVE_WINDOW_CLOSE"
 
-    def common_item_use_end(self):
+    def ZA_common_item_use_end(self):
         return "COMMON_ITEM_USE_START"
     
     ######################################################
     # Common Map
     ######################################################
-    def Common_start(self):
+    def ZA_Common_start(self):
         #dummy
         return "COMMON_MAP_OPEN"
 
-    def Common_map_open(self,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_map_open(self,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN"):
         self.map_cursor_reset=0
-        self.ZL_ACTION("END")
+        self.ZA_ZL_ACTION("END")
         self.wait(0.1)#self.wait(self.SLEEPLIST[8][2])
         # 想定外の話しかけ用
         if self.image_check("POKEMON_ZA_TEXT_BOX"):
@@ -14276,7 +14332,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return "COMMON_MAP_OPEN"
     
-    def Common_goto_select1(self,position,othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_goto_select1(self,position,othermap="POKEMON_ZA_FALSE_RETURN"):
         # position:0 すべて
         # position:1 施設
         # position:2 ポケセン
@@ -14334,7 +14390,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_GOTO_SELECT1"
         return "COMMON_GOTO_SELECT1"
     
-    def Common_goto_select2(self,positionright,positiondown,movepoint_check,othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_goto_select2(self,positionright,positiondown,movepoint_check,othermap="POKEMON_ZA_FALSE_RETURN"):
         self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2") or self.image_check(othermap):        
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):         
@@ -14352,14 +14408,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.etc_sendCommand("Lbutton_up")
                             self.wait(0.1)#回数が多い場合に移動が足りない場合は必要
                     if movepoint_check == 0:
-                        ret = self.Common_goto_jump()#移動
+                        ret = self.ZA_Common_goto_jump()#移動
                         return ret
                     else:
                         return "COMMON_GOTO_JUMP"
                         
         return "COMMON_GOTO_SELECT2"
 
-    def Common_goto_jump(self):
+    def ZA_Common_goto_jump(self):
         self.wait(0.1)#self.wait(self.SLEEPLIST[7][2])
      
         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
@@ -14393,7 +14449,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "COMMON_CHANGE_TIME"
 
 
-    def Benchi(self):
+    def ZA_Benchi(self):
         if self.sleepcount==0:
             self.press(Direction(Stick.LEFT, 180), duration=0.7, wait=0.1)
             self.press(Direction(Stick.LEFT, 90), duration=0.5, wait=0.1)
@@ -14401,7 +14457,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT, 270), duration=0.5, wait=0.1)
         self.pressRep(Button.A, repeat=12, duration=0.15, wait=0.2, interval=0.3)
         
-    def Common_change_time(self):
+    def ZA_Common_change_time(self):
         
         #マップコメントの捕捉失敗用
         #if self.image_check("ESCAPE"):
@@ -14420,7 +14476,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #        return "BENCH_MAP_OPEN"
         #el
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
-            self.Benchi()
+            self.ZA_Benchi()
             return "COMMON_CHECK_TIME"
 
         else:
@@ -14428,7 +14484,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.1)#self.wait(self.SLEEPLIST[0][2])
         return "COMMON_CHANGE_TIME"
 
-    def Common_check_time(self,check_timing):
+    def ZA_Common_check_time(self,check_timing):
 
         # (時間切り替わりの補足ができない？その場合は朝扱いで一度抜ける(夜だった場合再度、朝・夜の切り替えを行う))
         #必ずMORNING、NIGHT判定できる時間以上のカウント数にしてください。
@@ -14469,14 +14525,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.timecount+=1
         return "COMMON_CHECK_TIME"
     
-    def Common_change_time_set(self,check_timing,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_change_time_set(self,check_timing,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
         if self.Common_current_state == "COMMON_CHECK_TIME":  
-            self.Common_current_state = self.Common_check_time(check_timing)
+            self.Common_current_state = self.ZA_Common_check_time(check_timing)
         elif self.Common_current_state == "COMMON_CHANGE_TIME":  
-            self.Common_current_state = self.Common_change_time()
+            self.Common_current_state = self.ZA_Common_change_time()
         else:
-            ret = self.Common_goto(2,0,1,check_pic1=check_pic1,check_pic2=check_pic2)
+            ret = self.ZA_Common_goto(2,0,1,check_pic1=check_pic1,check_pic2=check_pic2)
             
             if ret == "START":
                 self.Common_current_state = "COMMON_CHANGE_TIME"
@@ -14486,7 +14542,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "EXEC"
 
-    def Common_event_marker_check(self,othermap="POKEMON_ZA_FALSE_RETURN",markertype=0):
+    def ZA_Common_event_marker_check(self,othermap="POKEMON_ZA_FALSE_RETURN",markertype=0):
         self.wait(1.0)#self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2") or self.image_check(othermap):      
             self.wait(1.0)
@@ -14496,23 +14552,23 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             #EVENTMARKER_CHECK
             if markertype==0 and self.image_check("POKEMON_ZA_EVENT_MARKER_RANGE"):
-                self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W")
+                self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W")
                 return "COMMON_START"
             
-        self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W")
+        self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W")
         return "COMMON_FALSE_RETURN"
                 
-    def Common_false_return(self,othermap="POKEMON_ZA_FALSE_RETURN"):#dummy
+    def ZA_Common_false_return(self,othermap="POKEMON_ZA_FALSE_RETURN"):#dummy
         return "COMMON_FALSE_RETURN"
 
-    def Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN"):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
         if self.Common_current_state == "COMMON_MAP_OPEN":
-            self.Common_current_state = self.Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2,othermap=othermap)
+            self.Common_current_state = self.ZA_Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2,othermap=othermap)
         elif self.Common_current_state == "COMMON_GOTO_SELECT1":
-            self.Common_current_state = self.Common_goto_select1(position1,othermap=othermap)
+            self.Common_current_state = self.ZA_Common_goto_select1(position1,othermap=othermap)
         elif self.Common_current_state == "COMMON_GOTO_SELECT2":
-            self.Common_current_state = self.Common_goto_select2(position2left,position2down,movepoint_check,othermap=othermap)
+            self.Common_current_state = self.ZA_Common_goto_select2(position2left,position2down,movepoint_check,othermap=othermap)
         else:
             self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state]()
             
@@ -14525,25 +14581,25 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "EXEC"
         
-    def Common_pokemon_recovery(self):  
+    def ZA_Common_pokemon_recovery(self):  
         if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
             self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
-            if self.renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FIELD_W",endpicture2="POKEMON_ZA_FIELD_BACK_W",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"):
                 return True
         else:
             return False
     
-    def Common_mappic_check(self,pic1="NULL",pic2="NULL"):
+    def ZA_Common_mappic_check(self,pic1="NULL",pic2="NULL"):
         for i in range(1,10):
             if ((pic1=="NULL" or self.image_check(pic1)) and (pic2=="NULL" or self.image_check(pic2))):
                 return True
             self.wait(0.1)
         return False
     
-    def Common_Event_check(self,othermap="POKEMON_ZA_FALSE_RETURN",markertype=0):
+    def ZA_Common_Event_check(self,othermap="POKEMON_ZA_FALSE_RETURN",markertype=0):
         if self.Common_current_state == "COMMON_EVENT_MARKER_CHECK":
-            self.Common_current_state = self.Common_event_marker_check(othermap=othermap,markertype=markertype)
+            self.Common_current_state = self.ZA_Common_event_marker_check(othermap=othermap,markertype=markertype)
         elif self.Common_current_state == "COMMON_START":   
             self.Common_current_state = self.STATE_COMMON_FUNCTION[self.Common_current_state]()
         else:
@@ -14567,11 +14623,11 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # BENCH FUNCTION
     ###################################################### 
-    def bench_start(self):
+    def ZA_bench_start(self):
         return "BENCH_MAP_OPEN"
     
-    def bench_map_open(self):
-        self.ZL_ACTION("END")
+    def ZA_bench_map_open(self):
+        self.ZA_ZL_ACTION("END")
         self.wait(self.SLEEPLIST[8][2])
         
         # 想定外の話しかけ用
@@ -14625,8 +14681,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(0.1)
             
             if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                 self.wait(0.3)
@@ -14652,7 +14708,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             
         return "BENCH_MAP_OPEN"
     
-    def bench_goto_pokecenter1(self):        
+    def ZA_bench_goto_pokecenter1(self):        
         self.wait(self.SLEEPLIST[7][2])
         
         if self.image_check("POKEMON_ZA_MOVE_COMMENT_BATTLE"): 
@@ -14688,7 +14744,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
         return "BENCH_POKECENTER_SELECT1"
     
-    def bench_goto_pokecenter2(self):
+    def ZA_bench_goto_pokecenter2(self):
         self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2"):        
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):         
@@ -14724,7 +14780,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "BENCH_CHANGE_TIME"
         return "BENCH_POKECENTER_SELECT2"
 
-    def bench_change_time(self):
+    def ZA_bench_change_time(self):
         
         #マップコメントの捕捉失敗用
         if self.image_check("POKEMON_ZA_ESCAPE"):
@@ -14754,7 +14810,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             else:
                 return "BENCH_MAP_OPEN"
         elif self.image_check("POKEMON_ZA_FIELD") or self.image_check("POKEMON_ZA_FIELD_BACK"):
-            self.Benchi()
+            self.ZA_Benchi()
             return "BENCH_CHECK_TIME"
 
         else:
@@ -14762,7 +14818,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(self.SLEEPLIST[0][2])
         return "BENCH_CHANGE_TIME"
 
-    def bench_check_time(self):
+    def ZA_bench_check_time(self):
 
         # (時間切り替わりの補足ができない？その場合は朝扱いで一度抜ける(夜だった場合再度、朝・夜の切り替えを行う))
         #必ずMORNING、NIGHT判定できる時間以上のカウント数にしてください。
@@ -14810,15 +14866,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.timecount+=1
         return "BENCH_CHECK_TIME"
 
-    def quasar_map_open(self):
+    def ZA_quasar_map_open(self):
         
-        ret = self.bench_map_open()
+        ret = self.ZA_bench_map_open()
         if ret == "BENCH_POKECENTER_SELECT1":
             return "QUASAR_SELECT1"    
         else:
             return "QUASAR_MAP_OPEN"
 
-    def goto_quasar1(self):
+    def ZA_goto_quasar1(self):
         self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2"):      
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):         
@@ -14841,7 +14897,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
         return "QUASAR_SELECT1"
     
-    def goto_quasar2(self):
+    def ZA_goto_quasar2(self):
         self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2"):        
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):         
@@ -14879,16 +14935,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                             
         return "QUASAR_SELECT2"
     
-    def battle_return(self):
+    def ZA_battle_return(self):
         return "BATTLE_RETURN"
     ######################################################
     # BATTLE FUNCTION
     ###################################################### 
-    def battle_start(self):
+    def ZA_battle_start(self):
         self.battlecount=0
         return "BATTLE_MAP_OPEN"
     
-    def battle_map_open(self):
+    def ZA_battle_map_open(self):
         self.wait(self.SLEEPLIST[8][2])
         
         if self.image_check("POKEMON_ZA_MORNING"):
@@ -14897,8 +14953,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 if self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W") or self.image_check("POKEMON_ZA_DEAD"):
                     break
-            self.MOVE_SEE("END")
-            self.ZL_ACTION("END")
+            self.ZA_MOVE_SEE("END")
+            self.ZA_ZL_ACTION("END")
 
             self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
             self.battlecount=3
@@ -14909,8 +14965,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Button.B, wait=0.0)
             self.quasarcount += 1
             self.quasarlosecount += 1
-            self.MOVE_SEE("END")
-            self.ZL_ACTION("END")
+            self.ZA_MOVE_SEE("END")
+            self.ZA_ZL_ACTION("END")
             if self.quasar_current_state=="QUASAR_BATTLE_LOOP": 
                 return "QUASAR_START"
             else:
@@ -14951,7 +15007,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(self.SLEEPLIST[0][2])
         return "BATTLE_MAP_OPEN"
 
-    def battle_goto_battle_zone1(self):
+    def ZA_battle_goto_battle_zone1(self):
         self.wait(self.SLEEPLIST[7][2])
 
         if self.image_check("POKEMON_ZA_MAP2"):      
@@ -14978,7 +15034,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
         return "BATTLE_GOTO_BATTLE_ZONE1"
     
-    def battle_goto_battle_zone2(self):
+    def ZA_battle_goto_battle_zone2(self):
         self.wait(self.SLEEPLIST[7][2])
         if self.image_check("POKEMON_ZA_MAP2"):        
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):         
@@ -14988,7 +15044,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         
                     for i in range(0,self.battle_zone_loop_num):
                         if not self.battlecount > (self.battle_zone_loop_num - 1):
-                            self.targetzone=self.zone_check()
+                            self.targetzone=self.ZA_zone_check()
                         if self.battlecount > (self.battle_zone_loop_num - 1):
                             break
                         elif (self.testcode==0 and(not self.ZONELIST[self.targetzone][2]) or (self.testcode==2 and (not (self.targetzone == self.testtarget)))):
@@ -15047,12 +15103,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                         return "BATTLE_MOVE"
         return "BATTLE_GOTO_BATTLE_ZONE2"
     
-    def battle_move(self):
+    def ZA_battle_move(self):
         
         if self.battle_step_return == 0:
             self.battle_step=0
         else:
-        	self.battle_step=self.battle_step_return  
+            self.battle_step=self.battle_step_return  
         
         count=0
         if self.battle_step_return == 0:
@@ -15078,12 +15134,12 @@ class ZA_story_Base(ImageProcPythonCommand):
          
   #TEST
         if self.battle_step_return == 0:
-            return self.battle_move_test()
+            return self.ZA_battle_move_test()
         else:
             self.battle_step_return = 0
-            return self.battle_move_test(1)      
+            return self.ZA_battle_move_test(1)      
         
-    def battle_move_test(self,fast=0):
+    def ZA_battle_move_test(self,fast=0):
         self.quasar_battle_lockon=0
         count=0
         movestep=0
@@ -15092,12 +15148,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.notargetcount=0
         self.see_r=self.SEE_DEFAULT
         
-        self.MOVE_SEE("END")
-        self.ZL_ACTION("END")
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
         
         if self.battle_current_state=="BATTLE_MOVE" and self.inactioncount>3 and self.image_check("POKEMON_ZA_ESCAPE"):
-            self.MOVE_SEE("END")
-            self.ZL_ACTION("END")
+            self.ZA_MOVE_SEE("END")
+            self.ZA_ZL_ACTION("END")
 
             self.battleescapecount+=1
             self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
@@ -15128,8 +15184,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
             self.battle_step=1
-            self.ZL_ACTION("END")
-            self.ZL_ACTION("")
+            self.ZA_ZL_ACTION("END")
+            self.ZA_ZL_ACTION("")
         else:
             if fast==0:
                 #ワイルドゾーンIN
@@ -15220,8 +15276,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 #リザルト判定の取得ミスのため、ミスカウントはしない
                 #self.zonemisscount[self.targetzone-1]+=1
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 #マップコメントの捕捉失敗用
                 self.wait(0.3)
                 
@@ -15245,8 +15301,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(0.1)
                 
                 if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                     self.wait(0.3)
@@ -15256,8 +15312,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "BATTLE_START"
             #バトルゾーン話しかけ対応(ひとまずひたすらAで再度話しかけを許容して、その後話しかけをBで終了(アイテムはＡボタンでないと進めないため))
             if self.battle_current_state=="BATTLE_MOVE" and (self.image_check("POKEMON_ZA_TEXT_BOX") or self.image_check("POKEMON_ZA_TEXT_BOX2")):
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 self.pressRep(Button.A, repeat=20, duration=0.15, wait=0.1, interval=0.1)
                 self.pressRep(Button.B, repeat=20, duration=0.15, wait=0.1, interval=0.1)
 
@@ -15276,16 +15332,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
                     self.quasarlosecount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 else:
                     self.wait(1.0)#判定できない場合待機してから再度確認
@@ -15293,16 +15349,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                     elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
                         self.quasarlosecount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                     self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.05, interval=0.1)
                     self.wait(0.1)
@@ -15312,16 +15368,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
                     self.quasarlosecount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 else:
                     self.wait(1.0)#判定できない場合待機してから再度確認
@@ -15329,16 +15385,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                     elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
                         self.quasarlosecount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.05, interval=0.1)
                     self.wait(0.1)        
@@ -15355,8 +15411,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                     if self.image_check("POKEMON_ZA_FIELD") or self.image_check("POKEMON_ZA_FIELD_BACK") or self.image_check("POKEMON_ZA_DEAD"):
                         break
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
 
                 if self.image_check("POKEMON_ZA_ESCAPE"):
                     self.battlecheck=1
@@ -15377,8 +15433,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.wait(0.1)
                     
                     if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                         self.wait(0.3)
@@ -15403,8 +15459,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     print("エスケープマークが30.0秒以上経過しました。強制的に終了します。")
                     #リザルト判定の取得ミスのため、ミスカウントはしない
                     #self.zonemisscount[self.targetzone-1]+=1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     #マップコメントの捕捉失敗用
 
                     if self.image_check("POKEMON_ZA_ESCAPE"):
@@ -15426,8 +15482,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(0.1)
                         
                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                            self.MOVE_SEE("END")
-                            self.ZL_ACTION("END")
+                            self.ZA_MOVE_SEE("END")
+                            self.ZA_ZL_ACTION("END")
                             self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                             self.wait(0.3)
@@ -15449,7 +15505,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.battlecount=self.battlecount+1
                     return "BATTLE_MAP_OPEN"
                     
-            self.ZL_ACTION(lockonflg=lockonflg)
+            self.ZA_ZL_ACTION(lockonflg=lockonflg)
             if self.ZL_state == 1:
                 for i in range(5):
                     # 技使用を判定させるため
@@ -15470,16 +15526,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                     elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                         for i in range(5):
                             self.press(Button.B, wait=0.0)
                         self.quasarcount += 1
                         self.quasarlosecount += 1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         return "QUASAR_START"
                 if self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+"):
                     self.press(Button.A, wait=0.0)
@@ -15495,16 +15551,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
                     self.quasarlosecount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 if self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+"):
                     self.press(Button.X, wait=0.0)
@@ -15519,27 +15575,27 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.battle_current_state=="BATTLE_MOVE" and self.image_check("POKEMON_ZA_EYE_CHECK_HIGH"):
                 Seecheckflg+=1
                 if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
-                    self.MOVE_SEE()
+                    self.ZA_MOVE_SEE()
                     #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
                 elif Seecheckflg>5 and (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")))):
-                    self.MOVE_SEE("END")
+                    self.ZA_MOVE_SEE("END")
                     Seecheckflg2=2
                 elif Seecheckflg>5 and ((self.no_Cplus==0 and (not self.image_check("POKEMON_ZA_C+")))) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and ((self.no_Cplus==0 and (not self.image_check("POKEMON_ZA_C+"))))):
-                    self.MOVE_SEE()
+                    self.ZA_MOVE_SEE()
 
             elif self.battle_current_state=="BATTLE_MOVE" and (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("POKEMON_ZA_EYE_CHECK")):
                 Seecheckflg+=1
                 if Seecheckflg>7 or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 2):
-                    self.MOVE_SEE()
+                    self.ZA_MOVE_SEE()
                     #self.press(Direction(Stick.RIGHT, 90), duration=0.03, wait=0.1)
                 elif Seecheckflg>5 and (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and (Seecheckflg2 == 1 and (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")))):
-                    self.MOVE_SEE("END")
+                    self.ZA_MOVE_SEE("END")
                     Seecheckflg2=2
                 elif Seecheckflg>5 and ((self.no_Cplus==0 and (not self.image_check("POKEMON_ZA_C+")))) or (((movestep - 1) == self.ZONELIST[self.targetzone][3]) and Seecheckflg2 == 0 and ((self.no_Cplus==0 and (not self.image_check("POKEMON_ZA_C+"))))):
-                    self.MOVE_SEE()
+                    self.ZA_MOVE_SEE()
                     
             elif self.battle_current_state=="BATTLE_MOVE" and (not (self.ZONELIST[self.targetzone][5 + movestep][3] and self.image_check("POKEMON_ZA_EYE_CHECK"))): 
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 Seecheckflg=0
 
             #敗北用の保険                
@@ -15553,7 +15609,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 lastescape = time.perf_counter() 
                 endbk = end
                 end = time.perf_counter()
-                self.DebugLog(2,"while if REWARD_RESULT",end,endbk)
+                self.ZA_DebugLog(2,"while if REWARD_RESULT",end,endbk)
                 
                 self.battle_step=2
                 for i in range(1,15):
@@ -15572,66 +15628,66 @@ class ZA_story_Base(ImageProcPythonCommand):
                 
                 if self.battlecount>(self.battle_zone_loop_num - 1):
                     self.battle_step=0
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "BATTLE_START"
                 self.battle_step=0
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 return "BATTLE_MAP_OPEN"
             
             elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_END"):
                 for i in range(5):
                     self.press(Button.B, wait=0.0)
                 self.quasarcount += 1
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 return "QUASAR_START"
             elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                 for i in range(5):
                     self.press(Button.B, wait=0.0)
                 self.quasarcount += 1
                 self.quasarlosecount += 1
-                self.MOVE_SEE("END")
-                self.ZL_ACTION("END")
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 return "QUASAR_START"
     
             elif self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
                 
                 endbk = end
                 end = time.perf_counter()
-                self.DebugLog(3,"while elif ESCAPE",end,endbk)
+                self.ZA_DebugLog(3,"while elif ESCAPE",end,endbk)
                 
                 if self.battle_step==0:
                     
                     endbk = end
                     end = time.perf_counter()
-                    self.DebugLog(4,"while elif ESCAPE step0",end,endbk)
+                    self.ZA_DebugLog(4,"while elif ESCAPE step0",end,endbk)
                     
                     #end = time.perf_counter()    # 計測途中
                     print(f"バトル開始時間: {end - start:.5f} 秒")
                     self.battle_step=1
                     self.notargetcount=0
                     lockonflg=1
-                self.ZL_ACTION("END")
-                self.ZL_ACTION("")
+                self.ZA_ZL_ACTION("END")
+                self.ZA_ZL_ACTION("")
 
-                self.battle_lockon_test()
+                self.ZA_battle_lockon_test()
                    
                 if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_END"):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                 elif self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_REWORD_LOSE"):
                     for i in range(5):
                         self.press(Button.B, wait=0.0)
                     self.quasarcount += 1
                     self.quasarlosecount += 1
-                    self.MOVE_SEE("END")
-                    self.ZL_ACTION("END")
+                    self.ZA_MOVE_SEE("END")
+                    self.ZA_ZL_ACTION("END")
                     return "QUASAR_START"
                    
                     
@@ -15652,8 +15708,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(0.1)
                         
                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                            self.MOVE_SEE("END")
-                            self.ZL_ACTION("END")
+                            self.ZA_MOVE_SEE("END")
+                            self.ZA_ZL_ACTION("END")
                             self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                             self.wait(0.3)
@@ -15670,8 +15726,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     #ハマった場合の逃走(ヤミラミループなど)
                     if elapsed >= 200 and self.battle_current_state=="BATTLE_MOVE":
                         print("200.0秒以上経過しました。逃走し強制的に終了します。")
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         if self.image_check("POKEMON_ZA_ESCAPE"):
                             self.battleescapecount+=1
                             self.battle_nofiled_count=0
@@ -15707,8 +15763,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.wait(0.1)
                             
                             if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                                self.MOVE_SEE("END")
-                                self.ZL_ACTION("END")
+                                self.ZA_MOVE_SEE("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                                 self.wait(0.3)
@@ -15738,8 +15794,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     self.wait(0.1)
                                 
                                 if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                                    self.MOVE_SEE("END")
-                                    self.ZL_ACTION("END")
+                                    self.ZA_MOVE_SEE("END")
+                                    self.ZA_ZL_ACTION("END")
                                     self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                                     self.wait(0.3)
@@ -15755,25 +15811,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.battlecount=self.battlecount+1
                         return "BATTLE_MAP_OPEN"    
 
-                    self.DebugLog(5,"while elif ESCAPE step1",end,endbk)
+                    self.ZA_DebugLog(5,"while elif ESCAPE step1",end,endbk)
                     
                     if self.image_check("POKEMON_ZA_SELECT"):
 
                         endbk = end
                         end = time.perf_counter()
-                        self.DebugLog(6,"while elif ESCAPE step1 SELECT",end,endbk)
+                        self.ZA_DebugLog(6,"while elif ESCAPE step1 SELECT",end,endbk)
                         for i in range(0,3):
                             self.etc_sendCommand("Lbutton_up")
                     elif (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")):
                         self.notargetcount=0
-                        self.MOVE_SEE("END")
+                        self.ZA_MOVE_SEE("END")
                     elif not self.image_check("POKEMON_ZA_ESCAPE"):
                         self.notargetcount=0
-                        self.MOVE_SEE("END")
+                        self.ZA_MOVE_SEE("END")
                     else:
                         if self.notargetcount > 8:
-                            self.ZL_ACTION(lockonflg=lockonflg)
-                            self.MOVE_SEE()
+                            self.ZA_ZL_ACTION(lockonflg=lockonflg)
+                            self.ZA_MOVE_SEE()
                         #ハマり対策仮
                         #if notargetcount % 2 == 1:
                         #    self.MOVE_SEE("END")
@@ -15786,17 +15842,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.press(Direction(Stick.LEFT, 90), duration=0.3, wait=0.1)
                             else:
                                 #リワードロック対策での移動距離を多めにする。
-                                self.MOVE_SEE("END")
-                                self.ZL_ACTION("END")
+                                self.ZA_MOVE_SEE("END")
+                                self.ZA_ZL_ACTION("END")
                                 self.press(Direction(Stick.LEFT, 90), duration=3.0, wait=0.1)
-                                self.ZL_ACTION()
-                                self.MOVE_SEE()
+                                self.ZA_ZL_ACTION()
+                                self.ZA_MOVE_SEE()
                                 
                             self.notarget_movecount+=1
                             if self.notarget_movecount>3:
                                 #逃げ
-                                self.MOVE_SEE("END")
-                                self.ZL_ACTION("END")
+                                self.ZA_MOVE_SEE("END")
+                                self.ZA_ZL_ACTION("END")
                                 if self.image_check("POKEMON_ZA_ESCAPE"):
                                     self.battleescapecount+=1
                                     self.battle_nofiled_count=0
@@ -15830,8 +15886,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                         self.wait(0.1)
                                     
                                     if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                                        self.MOVE_SEE("END")
-                                        self.ZL_ACTION("END")
+                                        self.ZA_MOVE_SEE("END")
+                                        self.ZA_ZL_ACTION("END")
                                         self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                                         self.wait(0.3)
@@ -15862,8 +15918,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             self.wait(0.1)
                                         
                                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
-                                            self.MOVE_SEE("END")
-                                            self.ZL_ACTION("END")
+                                            self.ZA_MOVE_SEE("END")
+                                            self.ZA_ZL_ACTION("END")
                                             self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
 
                                             self.wait(0.3)
@@ -15885,7 +15941,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         lockonflg=1
                     self.etc_sendCommand("Lbutton_up")
                     if Seecheckflg==0:
-                        movestep = self.MOVE_ACTION(movestep,lockonflg=lockonflg)
+                        movestep = self.ZA_MOVE_ACTION(movestep,lockonflg=lockonflg)
                     #movestep=+1
                     end = time.perf_counter()
                     elapsed = end - start
@@ -15894,8 +15950,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                         print("40.0秒以上経過しました。強制的に終了します。")
                         self.battlecount=self.battlecount+1
                         self.zonemisscount[self.targetzone-1]+=1
-                        self.MOVE_SEE("END")
-                        self.ZL_ACTION("END")
+                        self.ZA_MOVE_SEE("END")
+                        self.ZA_ZL_ACTION("END")
                         #マップコメントの捕捉失敗用
 
                         if self.image_check("POKEMON_ZA_ESCAPE"):
@@ -15920,12 +15976,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             count=count+1
             self.notargetcount += 1
 
-        self.MOVE_SEE("END")
-        self.ZL_ACTION("END")
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
 
         return "BATTLE_MAP_OPEN" 
 
-    def battle_lockon_test(self):
+    def ZA_battle_lockon_test(self):
         self.quasar_battle_lockon=1
         self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
         self.notargetcount=0
@@ -15936,9 +15992,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.press(Direction(Stick.LEFT, 90), duration=0.9, wait=0.1)
                 elif (self.battle_current_state=="QUASAR_BATTLE_LOOP" and (self.notargetcount % 9 == 1)):
                     self.press(Direction(Stick.LEFT, 90), duration=0.9, wait=0.1)
-                self.MOVE_SEE("")
-            self.ZL_ACTION("END")
-            self.ZL_ACTION("")
+                self.ZA_MOVE_SEE("")
+            self.ZA_ZL_ACTION("END")
+            self.ZA_ZL_ACTION("")
             #self.press(Button.A, wait=0.0)
             end = time.perf_counter()
             elapsed = end - start
@@ -15948,7 +16004,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Button.RCLICK,0.05,0.1) 
 
             if (self.no_Cplus==0 and self.image_check("POKEMON_ZA_C+")):
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 self.press(Button.A, wait=0.0)
                 self.press(Button.B, wait=0.0)
                 self.notargetcount=0
@@ -15960,20 +16016,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             elif self.battle_step==1 and self.battle_current_state=="BATTLE_MOVE" and self.image_check("POKEMON_ZA_REWARD_RESULT"):
                 self.battle_step=2
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 return
             elif self.battle_current_state=="BATTLE_MOVE" and self.image_check("POKEMON_ZA_LOSE"):
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 return
             
             if (self.image_check("POKEMON_ZA_REWORD_END") or self.image_check("POKEMON_ZA_REWORD_LOSE")):
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 return
             if self.image_check("POKEMON_ZA_SELECT"):
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 return
             if not self.image_check("POKEMON_ZA_ESCAPE"):
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 return
             
             if self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W"):
@@ -15982,7 +16038,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if ((self.battlemarker_skipcount > self.battlemarker_skipcount_threshold) and (self.image_check("POKEMON_ZA_TARGET_RIGHT_LOW") or self.image_check("POKEMON_ZA_TARGET_LEFT_LOW") or (self.Rstick_state == 0 and (self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW"))))):# LOWで数回確認後通常のマーカーでもチェックできた場合継続(画像検知位置は回転を考慮し左寄り) 視点回転していない場合右も確認
 
                 
-                    self.MOVE_SEE("END")
+                    self.ZA_MOVE_SEE("END")
                     if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
                         self.quasar_target_start_low_count+=1
                     else:
@@ -16021,9 +16077,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if not self.image_check("POKEMON_ZA_ESCAPE"):
                             self.notargetcount=0
                             
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                         time.sleep(0.2)
-                        self.ZL_ACTION("")
+                        self.ZA_ZL_ACTION("")
                         time.sleep(0.2)
                         #self.notargetcount=0#
                         
@@ -16062,9 +16118,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if not self.image_check("POKEMON_ZA_ESCAPE"):
                             self.notargetcount=0
                         
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                         time.sleep(0.2)
-                        self.ZL_ACTION("")
+                        self.ZA_ZL_ACTION("")
                         time.sleep(0.2)
                         self.notargetcount+=1
                     else:
@@ -16077,7 +16133,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     
                 elif ((self.battlemarker_skipcount <= self.battlemarker_skipcount_threshold) and (self.image_check("POKEMON_ZA_TARGET_RIGHT") or self.image_check("POKEMON_ZA_TARGET_LEFT") or (self.Rstick_state == 0 and (self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK"))))):# 視点回転していない場合右も確認 LOWでチェックミスがある場合しばらくLOWを使用しない。
 
-                    self.MOVE_SEE("END")
+                    self.ZA_MOVE_SEE("END")
                     
                     if self.quasar_current_state=="QUASAR_BATTLE_LOOP":
                         self.quasar_target_start_count+=1
@@ -16117,14 +16173,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if not self.image_check("POKEMON_ZA_ESCAPE"):
                             self.notargetcount=0
                         
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                         time.sleep(0.2)
-                        self.ZL_ACTION("")
+                        self.ZA_ZL_ACTION("")
                         time.sleep(0.2)
                     self.notargetcount+=1
                 elif ((self.quasar_current_state=="QUASAR_BATTLE_LOOP" and (self.image_check("POKEMON_ZA_ATTACK_DISPLAY") or self.image_check("POKEMON_ZA_ATTACK_C+_DISPLAY"))) or (self.Rstick_state == 0 and (self.quasar_current_state=="QUASAR_BATTLE_LOOP" and (self.image_check("POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW") or self.image_check("POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW"))))):# 攻撃表示による判定
                 #elif ( (self.image_check("ATTACK_DISPLAY") or self.image_check("ATTACK_C+_DISPLAY"))or (self.Rstick_state == 0 and (self.image_check("ATTACK_DISPLAY_RIHGT_CHECKW") or self.image_check("ATTACK_C+_DISPLAY_RIHGT_CHECKW")))):# 攻撃表示による判定
-                    self.MOVE_SEE("END")
+                    self.ZA_MOVE_SEE("END")
                     self.quasar_battle_display_start_count+=1
                     time.sleep(0.2)
                     for i in range(0,3):
@@ -16149,16 +16205,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if not self.image_check("POKEMON_ZA_ESCAPE"):
                             self.notargetcount=0
                         
-                        self.ZL_ACTION("END")
+                        self.ZA_ZL_ACTION("END")
                         time.sleep(0.2)
-                        self.ZL_ACTION("")
+                        self.ZA_ZL_ACTION("")
                         time.sleep(0.2)
                         self.notargetcount+=1
                 else:
                     self.notargetcount+=1
             else:
                 ## 交換中などのため0にする(間隔をあけるため-8?)
-                self.MOVE_SEE("END")
+                self.ZA_MOVE_SEE("END")
                 self.notargetcount=0#-8
                 self.press(Button.A, wait=0.0)
                     
@@ -16166,14 +16222,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return
                     
             
-    def battle_lockon_test_all(self):
+    def ZA_battle_lockon_test_all(self):
         if self.image_check("POKEMON_ZA_TARGET_LEFT"):
             print("left_check")
         
         if self.image_check("POKEMON_ZA_TARGET_RIGHT"):
             print("right_check")
 
-    def DebugLog(self,num,logmessage,endtime=0,starttime=0):
+    def ZA_DebugLog(self,num,logmessage,endtime=0,starttime=0):
         return
         if starttime == 0:
             print(f"[lognum:{num}] {logmessage}")
@@ -16183,10 +16239,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # QUASAR_FUNCTION
     ###################################################### 
-    def quasar_start(self):
+    def ZA_quasar_start(self):
         self.chicketmaxflag = 0
         return "QUASAR_MOVE_DOOR"
-    def quasar_move_door(self):
+    def ZA_quasar_move_door(self):
         if not (self.image_check("POKEMON_ZA_FIELD") or self.image_check("POKEMON_ZA_FIELD_BACK") or self.image_check("POKEMON_ZA_DEAD")):
             self.etc_sendCommand("Lbutton_left")
             self.wait(self.SLEEPLIST[0][2])
@@ -16197,7 +16253,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Button.A, wait=0.0)
             return "QUASAR_MOVE_ENTRANCE"
         return "QUASAR_MOVE_DOOR"
-    def quasar_move_entrance(self):
+    def ZA_quasar_move_entrance(self):
         if not (self.image_check("POKEMON_ZA_FIELD") or self.image_check("POKEMON_ZA_FIELD_BACK") or self.image_check("POKEMON_ZA_DEAD")):
             self.etc_sendCommand("Lbutton_left")
             self.wait(self.SLEEPLIST[0][2])
@@ -16209,9 +16265,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Button.A, wait=0.0)
         return "QUASAR_BATTLE_LOOP"
     
-    def quasar_battle_loop(self):
+    def ZA_quasar_battle_loop(self):
         self.notargetcount=0
-        return self.battle_move_test()
+        return self.ZA_battle_move_test()
 
 ######################################################
 # ZA_battle_infi_Base_End
@@ -16300,11 +16356,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         if targetimage in ("POKEMON_ZA_FALSE_RETURN", "FALSE_RETURN", "RETURN_FALSE", "RETURN FALSE"):
             return False
         if targetimage == "POKEMON_ZA_FILED_HARD_CHECK_0":
-            return bool(self.story_Template_Field_HardGaurd())
+            return bool(self.ZA_story_Template_Field_HardGaurd())
         if targetimage == "POKEMON_ZA_FILED_HARD_CHECK_1":
-            return bool(self.story_Template_Field_HardGaurd(mode=1))
+            return bool(self.ZA_story_Template_Field_HardGaurd(mode=1))
         if targetimage == "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK":
-            return bool(self.no_battle_filed_check_HardGaurd())
+            return bool(self.ZA_no_battle_filed_check_HardGaurd())
         if targetimage == "POKEMON_ZA_ZONE12":
             return True
         # POKECON_IMAGE_CHECK_EXCEPTION_USER_BEGIN
