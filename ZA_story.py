@@ -1912,7 +1912,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
     def ZA_MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD"):
-            
+        if action != "END" and time.monotonic() < getattr(
+                self, "_za_mega_rclick_dir1_until", 0.0):
+            # Mega Evolution直後は相手へ接近するdir1を最優先する。
+            dirnum = 1
+
         if action != "END":
             if self.Lstick_state == 0 and self.Lstick_state2 == 0 and self.Lstick_state3 == 0 and self.Lstick_state4 == 0 and self.Lstick_state_m1 == 0 and self.Lstick_state_m2 == 0:
                 if dirnum==1: 
@@ -2154,7 +2158,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
 
         
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture=""):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1):
         count=0
         self.no_Cplus=0
         no_target_count=0
@@ -2168,15 +2172,20 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         Cp_mode=0
         targetmode=0
+        rclick_lockon_used=False
+        rclick_retry_at=0.0
+        self._za_mega_rclick_dir1_until=0.0
         
         while True:
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
+                    self._za_mega_rclick_dir1_until=0.0
                     self.ZA_ZL_ACTION("END")
                     self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
                 if self.image_check(end2picture):
+                    self._za_mega_rclick_dir1_until=0.0
                     self.ZA_ZL_ACTION("END")
                     self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
@@ -2185,9 +2194,27 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check("POKEMON_ZA_HELP_MARKER"):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
-            if self.image_check("POKEMON_ZA_R_push"):
+            r_push_ready=self.image_check("POKEMON_ZA_R_push")
+            if lockon_rclick:
+                now=time.monotonic()
+                attack_ready=self.image_check("POKEMON_ZA_C+")
+                lockon_active=getattr(self,"ZL_state",0)==1
+                if (lockon_active and attack_ready
+                        and now>=rclick_retry_at
+                        and (r_push_ready or not rclick_lockon_used)):
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
+                    self.press(Button.RCLICK,0.05,0.1)
+                    rclick_lockon_used=True
+                    rclick_retry_at=now+3.0
+                    self._za_mega_rclick_dir1_until=now+3.0
+                    # 演出待ち中からdir1で接近し、そのまま攻撃ループへ入る。
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")
+                    self.wait(1.0)
+                    self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
+            elif r_push_ready:
+                # 引数で無効化した場合は従来のR_push画像判定だけを使う。
                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
-                self.press(Button.RCLICK,0.05,0.1) 
+                self.press(Button.RCLICK,0.05,0.1)
                 self.wait(1.0)
                 self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 
