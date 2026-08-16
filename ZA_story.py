@@ -1912,74 +1912,47 @@ class ZA_story_Base(ImageProcPythonCommand):
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
     def ZA_MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD"):
-        if action != "END" and time.monotonic() < getattr(
-                self, "_za_mega_rclick_dir1_until", 0.0):
-            # Mega Evolution直後は相手へ接近するdir1を最優先する。
-            dirnum = 1
+        if action != "END":
+            now = time.monotonic()
+            if (dirnum not in (-1, -2)
+                    and now < getattr(
+                        self, "_za_mega_rclick_dir3_until", 0.0)):
+                # RCLICK後は前方向を強めるdir3を最優先する。
+                dirnum = 3
+            elif now < getattr(
+                    self, "_za_mega_field_dir4_until", 0.0):
+                # バトル再開直後は小幅のマーカー補正も上書きし、
+                # 移動を途切れさせずdir4を維持する。
+                dirnum = 4
 
         if action != "END":
-            if self.Lstick_state == 0 and self.Lstick_state2 == 0 and self.Lstick_state3 == 0 and self.Lstick_state4 == 0 and self.Lstick_state_m1 == 0 and self.Lstick_state_m2 == 0:
-                if dirnum==1: 
-                    self.hold(Direction(Stick.LEFT, dir1,1.0))
-                    self.Lstick_state = 1
-                elif dirnum==2: 
-                    self.hold(Direction(Stick.LEFT, dir2,1.0))
-                    self.Lstick_state2 = 1
-                elif dirnum==3: 
-                    self.hold(Direction(Stick.LEFT, dir3,1.0))
-                    self.Lstick_state3 = 1
-                elif dirnum==4: 
-                    self.hold(Direction(Stick.LEFT, dir4,1.0))
-                    self.Lstick_state4 = 1  
-                #ロックオンマーカー時の視点変換用
-                elif dirnum==-1: 
-                    self.hold(Direction(Stick.LEFT, 50,0.1))
-                    self.Lstick_state_m1 = 1
-                elif dirnum==-2: 
-                    self.hold(Direction(Stick.LEFT, 140,0.1))
-                    self.Lstick_state_m2 = 1  
-            else:
-                if self.Lstick_state == 1:
-                    self.holdEnd(Direction(Stick.LEFT, dir1))
-                    self.Lstick_state = 0
-                if self.Lstick_state2 == 1:
-                    self.holdEnd(Direction(Stick.LEFT, dir2))
-                    self.Lstick_state2 = 0
-                if self.Lstick_state3 == 1:
-                    self.holdEnd(Direction(Stick.LEFT, dir3))
-                    self.Lstick_state3 = 0
-                if self.Lstick_state4 == 1:
-                    self.holdEnd(Direction(Stick.LEFT, dir4))
-                    self.Lstick_state4 = 0
-                #ロックオンマーカー時の視点変換用
-                if self.Lstick_state_m1 == 1: 
-                    self.holdEnd(Direction(Stick.LEFT, 50))
-                    self.Lstick_state_m1 = 0
-                if self.Lstick_state_m2 == 1: 
-                    self.holdEnd(Direction(Stick.LEFT, 140))
-                    self.Lstick_state_m2 = 0  
-                    
-                self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
-                
-                if dirnum==1: 
-                    self.hold(Direction(Stick.LEFT, dir1,1.0))
-                    self.Lstick_state = 1
-                elif dirnum==2: 
-                    self.hold(Direction(Stick.LEFT, dir2,1.0))
-                    self.Lstick_state2 = 1
-                elif dirnum==3: 
-                    self.hold(Direction(Stick.LEFT, dir3,1.0))
-                    self.Lstick_state3 = 1    
-                elif dirnum==4: 
-                    self.hold(Direction(Stick.LEFT, dir4,1.0))
-                    self.Lstick_state4 = 1   
-                #ロックオンマーカー時の視点変換用
-                elif dirnum==-1: 
-                    self.hold(Direction(Stick.LEFT, 50,0.1))
-                    self.Lstick_state_m1 = 1 
-                elif dirnum==-2: 
-                    self.hold(Direction(Stick.LEFT, 140,0.1))
-                    self.Lstick_state_m2 = 1 
+            directions = {
+                1: Direction(Stick.LEFT, dir1,1.0),
+                2: Direction(Stick.LEFT, dir2,1.0),
+                3: Direction(Stick.LEFT, dir3,1.0),
+                4: Direction(Stick.LEFT, dir4,1.0),
+                # ロックオンマーカー時の向き変更用
+                -1: Direction(Stick.LEFT, 50,0.5),
+                -2: Direction(Stick.LEFT, 140,0.5),
+            }
+            direction = directions.get(dirnum)
+            if direction is None:
+                return
+            # 標準KeyPressだけで左スティック保持方向を置換する。
+            # 同じ方向でも解除パケットを送らず、保持入力を1パケットで再送する。
+            self.keys.holdButton = [
+                held for held in self.keys.holdButton
+                if not (isinstance(held, Direction)
+                        and held.stick == Stick.LEFT)
+            ]
+            self.keys.holdButton.append(direction)
+            self.keys.input([])
+            self.Lstick_state = 1 if dirnum == 1 else 0
+            self.Lstick_state2 = 1 if dirnum == 2 else 0
+            self.Lstick_state3 = 1 if dirnum == 3 else 0
+            self.Lstick_state4 = 1 if dirnum == 4 else 0
+            self.Lstick_state_m1 = 1 if dirnum == -1 else 0
+            self.Lstick_state_m2 = 1 if dirnum == -2 else 0
         elif action == "END":
             if self.Lstick_state == 1:
                 self.holdEnd(Direction(Stick.LEFT, dir1))
@@ -2157,8 +2130,104 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
             return True
 
+
+    def ZA_mega_target_marker_direction(self):
+        if (self.image_check("POKEMON_ZA_TARGET_LEFT_LOW")
+                or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW")):
+            return -2
+        if (self.image_check("POKEMON_ZA_TARGET_RIGHT_LOW")
+                or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW")):
+            return -1
+        return 0
+
+    def ZA_mega_relock_toward_marker(self,dir1,dir2,dir3,dir4,dodge_repeat=0):
+        now = time.monotonic()
+        if now < getattr(
+                self, "_za_mega_field_dir4_until", 0.0):
+            # 再開直後はZL解除・小幅補正・待機の反復を行わず、
+            # 回避ボタンを保ったまdir4の連続移動を優先する。
+            if dodge_repeat:
+                self.pressRep(
+                    Button.Y,
+                    repeat=dodge_repeat,
+                    duration=0.04,
+                    wait=0.0,
+                    interval=0.1)
+            self.ZA_MOVE_LStick(
+                dir1,dir2,dir3,dir4,4,"RELOAD")
+            return
+        if dodge_repeat:
+            self.pressRep(
+                Button.Y,
+                repeat=dodge_repeat,
+                duration=0.04,
+                wait=0.0,
+                interval=0.1)
+        # 前回のマーカー補正が残っていても、先に通常移動へ戻す。
+        resume_dirnum = self.ZA_mega_keep_left_moving(
+            dir1,dir2,dir3,dir4)
+        if now < getattr(self, "_za_mega_relock_retry_at", 0.0):
+            return
+        self._za_mega_relock_retry_at = now + 1.0
+        marker_direction = self.ZA_mega_target_marker_direction()
+        self.ZA_ZL_ACTION("END")
+        if marker_direction:
+            self.ZA_MOVE_LStick(
+                dir1,dir2,dir3,dir4,marker_direction,"RELOAD")
+            # マーカー方向の小幅入力は最大0.2秒に限定する。
+            self.wait(0.2)
+        else:
+            self.wait(0.1)
+        self.ZA_ZL_ACTION("")
+        self.ZA_MOVE_LStick(
+            dir1,dir2,dir3,dir4,resume_dirnum,"RELOAD")
+
+    def ZA_mega_nonfield_picture_confirmed(self,picture):
+        # 戦闘中の一時的な誤検知で移動をENDしない。
+        # 移動を保持したまま次フレーム側で再確認する。
+        self.wait(0.05)
+        return (
+            not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+            and self.image_check(picture)
+        )
+
+    def ZA_mega_choice_input_guard(self):
+        # 2体／3体選択ではFIELDの検知状態にかかわらず、
+        # 選択肢を動かす戦闘入力を止める。
+        if (self.image_check("POKEMON_ZA_2_SELECT")
+                or self.image_check("POKEMON_ZA_3_SELECT")):
+            return True
+        return (
+            self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
+            and not self.image_check(
+                "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")) #FIELDから変更
+
+    def ZA_mega_attack_ready(self):
+        # 通常閾値を優先し、取りこぼした場合だけ0.60のLOWを確認する。
+        return (
+            self.image_check("POKEMON_ZA_C+")
+            or self.image_check("POKEMON_ZA_C+_LOW"))
+
+    def ZA_mega_keep_left_moving(self,dir1,dir2,dir3,dir4,fallback_dirnum=4):
+        # 右スティックの視点回転中に左入力だけが消えないよう、
+        # 現在の通常移動方向を再送する。マーカー補正は継続しない。
+        state_directions = (
+            ("Lstick_state", 1),
+            ("Lstick_state2", 2),
+            ("Lstick_state3", 3),
+            ("Lstick_state4", 4),
+        )
+        dirnum = fallback_dirnum
+        for state_name, state_dirnum in state_directions:
+            if getattr(self, state_name, 0) == 1:
+                dirnum = state_dirnum
+                break
+        self.ZA_MOVE_LStick(
+            dir1,dir2,dir3,dir4,dirnum,"RELOAD")
+        return dirnum
+
         
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0):
         count=0
         self.no_Cplus=0
         no_target_count=0
@@ -2174,30 +2243,61 @@ class ZA_story_Base(ImageProcPythonCommand):
         targetmode=0
         rclick_lockon_used=False
         rclick_retry_at=0.0
-        self._za_mega_rclick_dir1_until=0.0
+        self._za_mega_rclick_dir3_until=0.0
+        self._za_mega_field_dir4_until=0.0
+        self._za_mega_relock_retry_at=0.0
         
         while True:
+            choice_input_guard = self.ZA_mega_choice_input_guard()
+            if choice_input_guard:
+                # 選択画面へ方向入力を持ち越さないよう、ループの最初に停止する。
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
+
+            field_resume_detected = (
+                not choice_input_guard
+                and nofiled==1
+                and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")) #FIELDから変更
+            if field_resume_detected:
+                # 他の画像検知より先に移動を再開し、既定10秒間dir4を優先する。
+                self._za_mega_field_dir4_until = (
+                    time.monotonic()
+                    + max(0.0, field_resume_dir4_seconds))
+                self.ZA_MOVE_LStick(
+                    dir1,dir2,dir3,dir4,4,"RELOAD")
+
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
-                    self._za_mega_rclick_dir1_until=0.0
+                    self._za_mega_rclick_dir3_until=0.0
+                    self._za_mega_field_dir4_until=0.0
                     self.ZA_ZL_ACTION("END")
                     self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
                 if self.image_check(end2picture):
-                    self._za_mega_rclick_dir1_until=0.0
+                    self._za_mega_rclick_dir3_until=0.0
+                    self._za_mega_field_dir4_until=0.0
                     self.ZA_ZL_ACTION("END")
                     self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                     self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     return True
+
+            if not choice_input_guard and nofiled==0:
+                # 戦闘中はHARD_FIELDが一時不一致でも、保持移動を毎ループ再送する。
+                self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
                 
-            if self.image_check("POKEMON_ZA_HELP_MARKER"):
+            if (not choice_input_guard
+                    and self.image_check("POKEMON_ZA_HELP_MARKER")):
                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                 
-            r_push_ready=self.image_check("POKEMON_ZA_R_push")
+            r_push_ready=(
+                not choice_input_guard
+                and self.image_check("POKEMON_ZA_R_push"))
             if lockon_rclick:
                 now=time.monotonic()
-                attack_ready=self.image_check("POKEMON_ZA_C+")
+                attack_ready=(
+                    not choice_input_guard
+                    and self.ZA_mega_attack_ready())
                 lockon_active=getattr(self,"ZL_state",0)==1
                 if (lockon_active and attack_ready
                         and now>=rclick_retry_at
@@ -2206,9 +2306,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.press(Button.RCLICK,0.05,0.1)
                     rclick_lockon_used=True
                     rclick_retry_at=now+3.0
-                    self._za_mega_rclick_dir1_until=now+3.0
-                    # 演出待ち中からdir1で接近し、そのまま攻撃ループへ入る。
-                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")
+                    self._za_mega_rclick_dir3_until=time.monotonic()+15.0
+                    # 演出待ち中から15秒間dir3で前進し、そのまま攻撃ループへ入る。
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
                     self.wait(1.0)
                     self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
             elif r_push_ready:
@@ -2218,31 +2318,57 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
                 self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 
-            if nofiled==1 and (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")): #FIELDから変更
+            if field_resume_detected:
                 self.ZA_ZL_ACTION("")
+                # 初回FIELD位置判定は、停止せずdir4で移動しながら行う。
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                 if (
                     (usenum==1 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD1") or self.image_check("POKEMON_ZA_FIELD_BACK1"))) #FIELDから変更
                     or (usenum==2 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD2") or self.image_check("POKEMON_ZA_FIELD_BACK2"))) #FIELDから変更
                     or (usenum==3 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD3") or self.image_check("POKEMON_ZA_FIELD_BACK3"))) #FIELDから変更
                     or (usenum==4 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD4") or self.image_check("POKEMON_ZA_FIELD_BACK4"))) #FIELDから変更
                     or (usenum==5 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD5") or self.image_check("POKEMON_ZA_FIELD_BACK5"))) #FIELDから変更
-                    or (usenum==6 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD6") or self.image_check("POKEMON_ZA_FIELD_BACK6"))) #FIELDから変更
+                or (usenum==6 and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD6") or self.image_check("POKEMON_ZA_FIELD_BACK6"))) #FIELDから変更
                 ):
-                    self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
-                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
+                    # 生コマンド後にロックオンと保持移動を再送する。
+                    self.keys.input([])
                     nofiled=0
                 else:
                     self.etc_sendCommand("Lbutton_left")
+                    # 位置再判定待ちの間も移動を保持する。
+                    self.keys.input([])
                     self.wait(0.5)
                     continue
           
-            for i in range(5): 
-                if count==0 and Cp_mode==1:
-                    self.etc_sendCommand("plusbutton")
-                if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"): 
+            attack_loop_count = (
+                10 if time.monotonic() < getattr(
+                    self, "_za_mega_rclick_dir3_until", 0.0)
+                else 5)
+            for i in range(attack_loop_count):
+                if (choice_input_guard
+                        or self.ZA_mega_choice_input_guard()):
+                    self.ZA_MOVE_LStick(
+                        dir1,dir2,dir3,dir4,1,"END")
+                    self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     break
-                if count==0 and Aaction==1 and self.image_check("POKEMON_ZA_C+"):
+                enabled_attacks = (Aaction,Baction,Xaction,Yaction)
+                for _ in range(4):
+                    if enabled_attacks[count]:
+                        break
+                    count=(count + 1) % 4
+                rclick_attack_active = (
+                    time.monotonic() < getattr(
+                        self, "_za_mega_rclick_dir3_until", 0.0))
+                # RCLICK演出でC+表示が一時的に消えても、開始前に攻撃可能を
+                # 確認済みの15秒間はAXYB攻撃を止めない。
+                attack_input_ready = (
+                    rclick_attack_active
+                    or self.ZA_mega_attack_ready())
+                if count==0 and Cp_mode==1:
+                    # 保持中の左スティックを維持できる標準ボタン操作を使う。
+                    self.press(Button.PLUS, duration=0.04, wait=0.0)
+                if count==0 and Aaction==1 and attack_input_ready:
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     
@@ -2251,31 +2377,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=1)
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=5)
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")  
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=9)
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
-                elif count==1 and Baction==1 and self.image_check("POKEMON_ZA_C+"):
+                elif count==1 and Baction==1 and attack_input_ready:
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
@@ -2284,31 +2404,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
 
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=1)
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=5)
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")  
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=9)
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
-                elif count==2 and Xaction==1 and self.image_check("POKEMON_ZA_C+"):
+                elif count==2 and Xaction==1 and attack_input_ready:
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
@@ -2316,31 +2430,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=1)
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=5)
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")  
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=9)
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
-                elif count==3 and Yaction==1 and self.image_check("POKEMON_ZA_C+"):
+                elif count==3 and Yaction==1 and attack_input_ready:
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if escape_flag==1:
@@ -2348,34 +2456,26 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=1)
                     elif escape_flag==2:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=5, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=5)
                     elif escape_flag==3:
                         #回避行動用
                         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,4,"RELOAD")
                             if self.image_check("POKEMON_ZA_C+"):
-                                self.ZA_ZL_ACTION("END")
-                                self.pressRep(Button.Y, repeat=9, duration=0.04, wait=0.0, interval=0.1)
-                                self.ZA_ZL_ACTION("")  
+                                self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4,dodge_repeat=9)
                     count=(count + 1) % 4
                     no_target_count=0
                     target_count+=1
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
-                elif not self.image_check("POKEMON_ZA_C+"):
-                    self.ZA_ZL_ACTION("END")
-                    self.wait(0.1)
-                    self.ZA_ZL_ACTION("")
+                elif not attack_input_ready:
+                    self.ZA_mega_relock_toward_marker(dir1,dir2,dir3,dir4)
                     if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                         no_target_count+=1
                         target_count=0
@@ -2384,20 +2484,62 @@ class ZA_story_Base(ImageProcPythonCommand):
                     break
                 
             #回避行動中にターゲットマーカーチェックの移動を行えないと別方向に視点が行ってしまうため
-            self.wait(1.0)   
-            if not (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")):    
-                if (self.image_check("POKEMON_ZA_TARGET_LEFT_LOW") or self.image_check("POKEMON_ZA_TARGET_RIGHT_LOW") or self.image_check("POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW") or self.image_check("POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW")):
+            midloop_choice_input_guard = (
+                choice_input_guard
+                or self.ZA_mega_choice_input_guard())
+            if midloop_choice_input_guard:
+                self.ZA_MOVE_LStick(
+                    dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
+            if (not midloop_choice_input_guard and not (
+                    self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+                    or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"))):
+                marker_direction = self.ZA_mega_target_marker_direction()
+                if marker_direction:
 
                     if target_marker_count==2:
-                        if not self.image_check("POKEMON_ZA_C+"):
-                            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,-1,"RELOAD")
-                            self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                        if not self.ZA_mega_attack_ready():
+                            if time.monotonic() < getattr(
+                                    self, "_za_mega_field_dir4_until", 0.0):
+                                self.ZA_MOVE_LStick(
+                                    dir1,dir2,dir3,dir4,4,"RELOAD")
+                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            else:
+                                resume_dirnum = self.ZA_mega_keep_left_moving(
+                                    dir1,dir2,dir3,dir4)
+                                self.ZA_MOVE_LStick(
+                                    dir1,dir2,dir3,dir4,marker_direction,"RELOAD")
+                                self.wait(0.2)
+                                self.pressRep(Button.L, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                                self.ZA_MOVE_LStick(
+                                    dir1,dir2,dir3,dir4,resume_dirnum,"RELOAD")
                             print("LS")
                         self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
-                        for i in range(5):
-                            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"): 
+                        for i in range(
+                                10 if time.monotonic() < getattr(
+                                    self, "_za_mega_rclick_dir3_until", 0.0)
+                                else 5):
+                            if self.ZA_mega_choice_input_guard():
+                                self.ZA_MOVE_LStick(
+                                    dir1,dir2,dir3,dir4,1,"END")
+                                self.ZA_MOVE_SEE(
+                                    action = "END",in_see_r=see_r)
                                 break
-                            if count==0 and Aaction==1 and self.image_check("POKEMON_ZA_C+"):
+                            enabled_attacks = (
+                                Aaction,Baction,Xaction,Yaction)
+                            for _ in range(4):
+                                if enabled_attacks[count]:
+                                    break
+                                count=(count + 1) % 4
+                            rclick_attack_active = (
+                                time.monotonic() < getattr(
+                                    self,
+                                    "_za_mega_rclick_dir3_until",
+                                    0.0))
+                            attack_input_ready = (
+                                rclick_attack_active
+                                or self.ZA_mega_attack_ready())
+                            if count==0 and Aaction==1 and attack_input_ready:
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
@@ -2416,7 +2558,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
-                            elif count==1 and Baction==1 and self.image_check("POKEMON_ZA_C+"):
+                            elif count==1 and Baction==1 and attack_input_ready:
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
@@ -2435,7 +2577,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")    
                                 count=(count + 1) % 4
                                 break
-                            elif count==2 and Xaction==1 and self.image_check("POKEMON_ZA_C+"):
+                            elif count==2 and Xaction==1 and attack_input_ready:
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
@@ -2454,7 +2596,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"RELOAD")   
                                 count=(count + 1) % 4
                                 break
-                            elif count==3 and Yaction==1 and self.image_check("POKEMON_ZA_C+"):
+                            elif count==3 and Yaction==1 and attack_input_ready:
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
@@ -2494,10 +2636,27 @@ class ZA_story_Base(ImageProcPythonCommand):
                 else:
                     target_marker_count=0
                     self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
+            else:
+                # コメント中は左移動を停止する場合があるため、
+                # 右スティックだけを回転状態にしない。
+                target_marker_count=0
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
             count=(count + 1) % 4
             
-            if not self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-                if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+            black_comment = self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
+            field_active = self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") #FIELDから変更
+            black_nonfield_candidate = black_comment and not field_active
+            if black_nonfield_candidate:
+                # BLACK_COMMENTと選択肢では方向入力を送らない。
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
+            black_nonfield_confirmed = (
+                black_nonfield_candidate
+                and self.ZA_mega_nonfield_picture_confirmed(
+                    "POKEMON_ZA_TEXT_BLACK_COMMENT")
+            )
+            if not black_nonfield_confirmed:
+                if field_active:
                     if no_target_count>no_target_count_threshold:
                         targetmode=0
                         self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
@@ -2512,71 +2671,90 @@ class ZA_story_Base(ImageProcPythonCommand):
                 #self.MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(0.1)
 
-            elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            else:
                 no_target_count=0
                 target_count=target_count_threshold
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                     
-            if self.image_check("POKEMON_ZA_FIELD_W"):
+            if field_active and not black_nonfield_candidate:
                 self.etc_sendCommand("Lbutton_up")
+                # 生コマンドで上書きされたロックオンと保持移動をすぐに再送する。
+                self.keys.input([])
 
-            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT") and (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+            if black_nonfield_confirmed:
                 if nofiled==0:
                     nofiled=1
+                    self._za_mega_field_dir4_until=0.0
                     battle_count+=1
                     Cp_mode=(Cp_mode+1)%2#Cpのモード切替
                     print(f'BATTLE_COUNT::{battle_count}')
                 no_target_count=0
                 target_count=target_count_threshold
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_2_SELECT"):
                     self.wait(1.0)
                     if self.image_check("POKEMON_ZA_2_SELECT_TUTORIAL"):
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
                     else:
-                        if not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")): #FIELDから変更
-                            self.etc_sendCommand("Lbutton_down")
-                            self.wait(1.0)
+                        # 通常の2体選択は1項目下へ移動してから決定する。
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(1.0)
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
                 elif self.image_check("POKEMON_ZA_3_SELECT"):
                     self.wait(1.0)
                     if self.image_check("POKEMON_ZA_3_SELECT_SELECT"):
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                     else:
-                        if not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")): #FIELDから変更
-                            self.etc_sendCommand("Lbutton_down")
-                            self.wait(1.0)
+                        # 通常の3体選択は1項目下へ移動してから決定する。
+                        self.etc_sendCommand("Lbutton_down")
+                        self.wait(1.0)
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 else:
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                      
-            elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
+            elif (not choice_input_guard
+                    and not self.ZA_mega_choice_input_guard()
+                    and self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
                 self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER") #FIELDから変更
 
-            elif self.image_check("POKEMON_ZA_2_SELECT") and (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+            elif (
+                    not field_active
+                    and self.image_check("POKEMON_ZA_2_SELECT")
+                    and self.ZA_mega_nonfield_picture_confirmed(
+                        "POKEMON_ZA_2_SELECT")):
+                nofiled=1
+                self._za_mega_field_dir4_until=0.0
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_2_SELECT_TUTORIAL"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
                 else:
-                    if not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")): #FIELDから変更
-                        self.etc_sendCommand("Lbutton_down")
-                        self.wait(1.0)
+                    self.wait(1.0)
+                    # 通常の2体選択は1項目下へ移動してから決定する。
+                    self.etc_sendCommand("Lbutton_down")
                     self.wait(1.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)  
-            elif self.image_check("POKEMON_ZA_3_SELECT") and (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+            elif (
+                    not field_active
+                    and self.image_check("POKEMON_ZA_3_SELECT")
+                    and self.ZA_mega_nonfield_picture_confirmed(
+                        "POKEMON_ZA_3_SELECT")):
+                nofiled=1
+                self._za_mega_field_dir4_until=0.0
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_3_SELECT_SELECT"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 else:
-                    if not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")): #FIELDから変更
-                        self.etc_sendCommand("Lbutton_down")
-                        self.wait(1.0)
+                    # 通常の3体選択は1項目下へ移動してから決定する。
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(1.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-
-            self.wait(0.5)
 
     def ZA_ZL_ACTION(self,action = "RELOAD",lockonflg=1):
         if action != "END":
@@ -3275,42 +3453,72 @@ class ZA_story_Base(ImageProcPythonCommand):
         left = marker + "_LEFT_WIDE"
         right = marker + "_RIGHT_WIDE"
         last_movement_name = "_za_markerdir_last_movement_" + marker
+
+        def is_detected_in(target, detail):
+            if not detail or not detail.get("matched"):
+                return False
+            x, y = detail["position"]
+            width, height = detail["template_size"]
+            for variant in self.IMAGE_DETECTION_TARGETS.get(target, []):
+                crop = variant.get("crop", [])
+                if not crop or len(crop) != 4 or not any(int(value) for value in crop):
+                    return True
+                x1, y1, x2, y2 = [int(value) for value in crop]
+                if x >= x1 and y >= y1 and x + width <= x2 and y + height <= y2:
+                    return True
+            return False
     
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") or nofiled: #FIELDから変更
-            if self.image_check(center):
+            variants = self.IMAGE_DETECTION_TARGETS.get(center, [])
+            detail = None
+            if variants:
+                detect_settings = dict(variants[0])
+                detect_settings.pop("health_ignored_warnings", None)
+                detect_settings["crop"] = []
+                detect_settings["exclude_regions"] = [[0, 0, 210, 210]]
+                if not hasattr(self, "_image_similarity_history"):
+                    self._image_similarity_history = SimilarityHistory()
+                detail = detect_image(
+                    self,
+                    name=marker + "_POSITION",
+                    history=self._image_similarity_history,
+                    **detect_settings)
+                self.last_image_detection = detail
+
+            if is_detected_in(center, detail):
                 setattr(self, last_movement_name, None)
                 return True
-            elif self.image_check(wide_downer):
+            elif is_detected_in(wide_downer, detail):
                 movement = (270, 1.0, 0.0)
-            elif self.image_check(wide_upper):
+            elif is_detected_in(wide_upper, detail):
                 movement = (90, 1.0, 0.0)
-            elif self.image_check(wide_downer_left_near):
+            elif is_detected_in(wide_downer_left_near, detail):
                 movement = (180, 0.2, 0.0)
-            elif self.image_check(wide_downer_right_near):
+            elif is_detected_in(wide_downer_right_near, detail):
                 movement = (0, 0.2, 0.0)
-            elif self.image_check(wide_upper_left_near):
+            elif is_detected_in(wide_upper_left_near, detail):
                 movement = (180, 0.2, 0.0)
-            elif self.image_check(wide_upper_right_near):
+            elif is_detected_in(wide_upper_right_near, detail):
                 movement = (0, 0.2, 0.0)
-            elif self.image_check(wide_downer_left):
+            elif is_detected_in(wide_downer_left, detail):
                 movement = (180, 1.0, 0.03)
-            elif self.image_check(wide_downer_right):
+            elif is_detected_in(wide_downer_right, detail):
                 movement = (0, 1.0, 0.03)
-            elif self.image_check(wide_upper_left):
+            elif is_detected_in(wide_upper_left, detail):
                 movement = (180, 1.0, 0.03)
-            elif self.image_check(wide_upper_right):
+            elif is_detected_in(wide_upper_right, detail):
                 movement = (0, 1.0, 0.03)
-            elif self.image_check(left_side):
+            elif is_detected_in(left_side, detail):
                 movement = (180, 1.0, 0.03)
-            elif self.image_check(right_side):
+            elif is_detected_in(right_side, detail):
                 movement = (0, 1.0, 0.03)
-            elif self.image_check(left):
-                if self.image_check(center_wide):
+            elif is_detected_in(left, detail):
+                if is_detected_in(center_wide, detail):
                     movement = (180, 0.2, 0.0)
                 else:
                     movement = (180, 1.0, 0.03)
-            elif self.image_check(right):
-                if self.image_check(center_wide):
+            elif is_detected_in(right, detail):
+                if is_detected_in(center_wide, detail):
                     movement = (0, 0.2, 0.0)
                 else:
                     movement = (0, 1.0, 0.03)
@@ -16513,6 +16721,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                         'template_path': 'Template/ZA_Story/Common/C+.png',
                         'threshold': 0.75,
                         'use_gray': False}],
+     'POKEMON_ZA_C+_LOW': [{'crop': [1000, 565, 1280, 720],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/C+.png',
+                            'threshold': 0.6,
+                            'use_gray': False}],
      'POKEMON_ZA_CHAT_MARKER': [{'crop': [600, 300, 850, 500],
                                  'ms': 2000,
                                  'show_only_true_rect': False,
@@ -19114,6 +19330,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_BOX_MENU': 'OR',
      'POKEMON_ZA_BOX_WINDOW': 'OR',
      'POKEMON_ZA_C+': 'OR',
+     'POKEMON_ZA_C+_LOW': 'OR',
      'POKEMON_ZA_CHAT_MARKER': 'OR',
      'POKEMON_ZA_CHICKET_MAX': 'OR',
      'POKEMON_ZA_CHICKET_MAX_RIGHT': 'OR',
@@ -19432,6 +19649,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_BOX_MENU': 'Pokemon ZA image detection migrated from ZA_story: BOX_MENU',
                  'POKEMON_ZA_BOX_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: BOX_WINDOW',
                  'POKEMON_ZA_C+': 'Pokemon ZA image detection migrated from ZA_story: C+',
+                 'POKEMON_ZA_C+_LOW': 'Pokemon ZA low-threshold C+ detection',
                  'POKEMON_ZA_CHAT_MARKER': 'Pokemon ZA image detection migrated from ZA_story: CHAT_MARKER',
                  'POKEMON_ZA_CHICKET_MAX': 'Pokemon ZA image detection migrated from ZA_story: CHICKET_MAX',
                  'POKEMON_ZA_CHICKET_MAX_RIGHT': 'Pokemon ZA image detection migrated from ZA_story: CHICKET_MAX_RIGHT',
