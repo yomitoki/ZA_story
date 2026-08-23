@@ -29,7 +29,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
     ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 30.0
     ZA_STORY_BATTLE_RETURN_RECOVERY_COUNT = 3
-    ZA_STORY_BATTLE_RETURN_RECOVERY_WINDOW_SECONDS = 10.0
 
     # 検索用ステータス（各対象行には該当する1つだけを残す）:
     # 状態を進める時は旧コメントを消し、次の状態コメントへ置き換える。
@@ -126,7 +125,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     }
 
     # 値は (復帰先, battle_before成功時の遷移先)。第1要素は30秒待機と
-    # battle_functionから10秒以内に3回戻った場合の両方で使用する。
+    # battle_functionから連続3回戻った場合の両方で使用する。
     ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS = {
         "1_STORY_SECOND_BATTLE_START": ("1_STORY_SECOND_BATTLE_START", "1_STORY_SECOND_BATTLE"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "1_STORY_HOTEL_Z_MOVE15": ("1_STORY_HOTEL_Z_MOVE15", "1_STORY_THIRD_BATTLE"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -137,10 +136,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_Y_LANK_MOVE3": ("2_STORY_Y_LANK_MOVE0", "2_STORY_Y_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_X_LANK_MOVE3": ("2_STORY_X_LANK_MOVE3", "2_STORY_X_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_W_LANK_MOVE3": ("2_STORY_W_LANK_MOVE3", "2_STORY_W_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_W_LANK_MOVE11": ("2_STORY_W_LANK_MOVE11", "2_STORY_W_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_W_LANK_MOVE11": ("2_STORY_W_LANK_BATTLE_ZONE", "2_STORY_W_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE6": ("2_STORY_ABSOL_MOVE6", "2_STORY_ABSOL_MOVE7"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE11": ("2_STORY_ABSOL_MOVE11", "2_STORY_ABSOL_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE17": ("2_STORY_ABSOL_MOVE17", "2_STORY_ABSOL_MOVE18"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE17": ("2_STORY_ABSOL_MOVE14", "2_STORY_ABSOL_MOVE18"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_MEGA_MOVE10": ("2_STORY_MEGA_MOVE10", "2_STORY_MEGA_MOVE11"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_MEGA_MOVE25": ("2_STORY_MEGA_MOVE25", "2_STORY_MEGA_MOVE26"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_3": ("3_STORY_CANARI_3", "3_STORY_CANARI_4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -1751,6 +1750,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.battlemarker_skipcount=self.battlemarker_skipcount_threshold
         
         self.battle_zone_loop_num = 3
+        # Keep the last confirmed destination across POKEMONCENTER cycles.
+        # A map cursor/input miss must not send ZA_INFI straight back to the
+        # same area.  Three consecutive abnormal area endings are enough to
+        # abandon the area loop and recover through POKEMONCENTER.
+        self.infi_previous_targetzone = None
+        self.infi_area_failure_count = 0
+        self.infi_area_failure_limit = 3
         self.no_Cplus=1
     ######################################################
     # ZA_battle_infi_Base_End
@@ -3455,10 +3461,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
         state_function = state_functions[current_state]
+        function_names = getattr(
+            getattr(state_function, "__func__", state_function),
+            "__code__", None)
+        function_names = getattr(function_names, "co_names", ())
+        is_battle_function = (
+            "ZA_story_Template_battle_function" in function_names)
         observe_white_comment = (
             current_state in self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS)
         white_comment_matched = [None]
-        if observe_white_comment:
+        battle_active_matched = [False]
+        observe_image_checks = observe_white_comment or is_battle_function
+        if observe_image_checks:
             original_image_check = self.image_check
             had_instance_image_check = "image_check" in self.__dict__
             instance_image_check = self.__dict__.get("image_check")
@@ -3469,13 +3483,19 @@ class ZA_story_Base(ImageProcPythonCommand):
                         and white_comment_matched[0] is None):
                     # 追加照合はせず、このStepが元々行う最初の判定だけを使う。
                     white_comment_matched[0] = bool(matched)
+                if (str(targetimage) in {
+                        "POKEMON_ZA_BATTLE_BALL_CHECK",
+                        "POKEMON_ZA_ESCAPE"} and matched):
+                    # 一度でも実バトルを検知した系列は、後からCOMMENTで
+                    # beforeへ戻っても未突入復帰の対象にしない。
+                    battle_active_matched[0] = True
                 return matched
 
             self.image_check = observed_image_check
         try:
             next_state = state_function()
         finally:
-            if observe_white_comment:
+            if observe_image_checks:
                 if had_instance_image_check:
                     self.image_check = instance_image_check
                 else:
@@ -3491,50 +3511,55 @@ class ZA_story_Base(ImageProcPythonCommand):
             battle_before_exempt = set()
             self._za_story_battle_before_recovery_exempt = (
                 battle_before_exempt)
-        battle_return_times = getattr(
-            self, "_za_story_battle_return_times", None)
-        if battle_return_times is None:
-            battle_return_times = {}
-            self._za_story_battle_return_times = battle_return_times
+        battle_return_counts = getattr(
+            self, "_za_story_battle_return_counts", None)
+        if battle_return_counts is None:
+            battle_return_counts = {}
+            self._za_story_battle_return_counts = battle_return_counts
+        battle_active_states = getattr(
+            self, "_za_story_battle_active_states", None)
+        if battle_active_states is None:
+            battle_active_states = set()
+            self._za_story_battle_active_states = battle_active_states
+
+        if is_battle_function and battle_active_matched[0]:
+            battle_active_states.add(current_state)
+            # 実バトルを一度でも確認した時点で、それ以前の未検知回数は破棄する。
+            for before_state, (_, battle_state) in (
+                    self.ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS.items()):
+                if battle_state == current_state:
+                    battle_return_counts.pop(before_state, None)
 
         # battle_functionが実際にbattle_beforeへ戻した場合だけ、その待機中は
         # 町イベント未突入の復帰対象にしない。
-        function_names = getattr(
-            getattr(state_function, "__func__", state_function),
-            "__code__", None)
-        function_names = getattr(function_names, "co_names", ())
-        is_battle_function = (
-            "ZA_story_Template_battle_function" in function_names)
         if (is_battle_function
                 and next_state
                 in self.ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS):
             battle_before_exempt.add(next_state)
             timers.pop(next_state, None)
-            now = time.monotonic()
-            recent_returns = [
-                returned_at
-                for returned_at in battle_return_times.get(next_state, ())
-                if (now - returned_at
-                    <= self.ZA_STORY_BATTLE_RETURN_RECOVERY_WINDOW_SECONDS)
-            ]
-            recent_returns.append(now)
-            battle_return_times[next_state] = recent_returns
-            if (len(recent_returns)
+            if current_state in battle_active_states:
+                # 実バトル検知後は、COMMENTによるbefore戻りを何度繰り返しても
+                # 無限バトル／レベリングを抜ける復帰判定には使用しない。
+                battle_return_counts.pop(next_state, None)
+                return next_state
+            return_count = battle_return_counts.get(next_state, 0) + 1
+            battle_return_counts[next_state] = return_count
+            if (return_count
                     >= self.ZA_STORY_BATTLE_RETURN_RECOVERY_COUNT):
                 recovery_target = (
                     self.ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS[
                         next_state][0])
-                battle_return_times.pop(next_state, None)
+                battle_return_counts.pop(next_state, None)
                 if recovery_target != next_state:
                     battle_before_exempt.discard(next_state)
                     print(
                         "[BATTLE_RETURN_RECOVERY] {} -> {} ({} times)".format(
-                            next_state, recovery_target,
-                            len(recent_returns)))
+                            next_state, recovery_target, return_count))
                     return recovery_target
         elif is_battle_function and next_state != current_state:
-            # 正常にバトル後へ進んだ場合は、以前の短時間戻りを持ち越さない。
-            battle_return_times.clear()
+            # 正常に別Stepへ進んだ場合は、このバトル系列の履歴を持ち越さない。
+            battle_return_counts.clear()
+            battle_active_states.discard(current_state)
 
         if current_state in self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS:
             if white_comment_matched[0] is not False:
@@ -3552,7 +3577,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             recovery_target, success_state = battle_before
             if next_state == success_state:
                 timers.pop(current_state, None)
+                returned_from_battle = current_state in battle_before_exempt
                 battle_before_exempt.discard(current_state)
+                if not returned_from_battle:
+                    # 初回進入時だけ新しいバトル系列として履歴を初期化する。
+                    battle_active_states.discard(success_state)
+                    battle_return_counts.pop(current_state, None)
                 return next_state
             if current_state in battle_before_exempt:
                 timers.pop(current_state, None)
@@ -3661,10 +3691,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if not (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE")):
                     if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                         return bkprg_ret
+        # TODO: 共通battle_functionの全呼び出し元で影響を確認する。
+        # BATTLE_BALL／ESCAPE未検知時のCOMMENTはbattle_afterへ進めず、
+        # battle_beforeへ戻して復帰ループ判定の対象にする。
         elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            return prg_ret
+            return bkprg_ret
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            return prg_ret
+            return bkprg_ret
         elif self.image_check("POKEMON_ZA_CHAT_MARKER"):#背景なし用
             if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.5, interval=0.1)
@@ -3674,9 +3707,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                             return bkprg_ret
             elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-                return prg_ret
+                return bkprg_ret
             elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                return prg_ret
+                return bkprg_ret
             else:
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return bkprg_ret
@@ -3699,7 +3732,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                    return prg_ret
+                    return bkprg_ret
             return noprg_ret
             #TODO　以下をいったん破棄
         
@@ -3719,7 +3752,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                            return prg_ret
+                            return bkprg_ret
                     return noprg_ret
             elif markertype==1:
                 if self.ZA_markerdir("SIDE_MARKER"):
@@ -3738,7 +3771,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                            return prg_ret
+                            return bkprg_ret
                     return noprg_ret
             
             elif markertype==-1:
@@ -9415,6 +9448,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE23"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+                self.wait(1.0)
+                self.press(Direction(Stick.LEFT,270), duration=0.5, wait=1.0)
+                self.press(Direction(Stick.LEFT,0), duration=0.4, wait=1.0)
+                self.press(Direction(Stick.LEFT,270), duration=0.1, wait=1.0)
+                self.wait(0.5)
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                for i in range(1,20):
+                    if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                        return "2_STORY_ABSOL_MOVE17"
+                    self.wait(1.0)
+                return "2_STORY_ABSOL_MOVE20" 
         return "2_STORY_ABSOL_MOVE22"
     
     def _2_story_absol_move23(self):
@@ -16289,6 +16335,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     ###################################################### 
     def ZA_battle_start(self):
         self.battlecount=0
+        self.infi_area_failure_count=0
         return "BATTLE_MAP_OPEN"
     
     def ZA_battle_map_open(self):
@@ -16389,22 +16436,39 @@ class ZA_story_Base(ImageProcPythonCommand):
                     for i in range(0,(self.battlecount + 1)):
                         self.etc_sendCommand("Lbutton_up")
                         
-                    for i in range(0,self.battle_zone_loop_num):
-                        if not self.battlecount > (self.battle_zone_loop_num - 1):
-                            self.targetzone=self.ZA_zone_check()
-                        if self.battlecount > (self.battle_zone_loop_num - 1):
-                            break
-                        elif (self.testcode==0 and(not self.ZONELIST[self.targetzone][2]) or (self.testcode==2 and (not (self.targetzone == self.testtarget)))):
+                    for i in range(0,self.battle_zone_loop_num + 1):
+                        self.targetzone=self.ZA_zone_check()
+                        previous_targetzone = getattr(
+                            self, "infi_previous_targetzone", None)
+                        same_zone = (
+                            previous_targetzone is not None
+                            and self.targetzone == previous_targetzone)
+                        unavailable = (
+                            (self.testcode==0 and
+                             (not self.ZONELIST[self.targetzone][2]))
+                            or (self.testcode==2 and
+                                (not (self.targetzone == self.testtarget))))
+                        if same_zone or unavailable:
                             print(str(self.targetzone) + ": " + self.ZONELIST[self.targetzone][1])
                             self.battlecount=self.battlecount+1
                             self.etc_sendCommand("Lbutton_up")
-                            self.zonemisscount[self.targetzone-1]+=1
-                            print("SKIP")
+                            if unavailable:
+                                self.zonemisscount[self.targetzone-1]+=1
+                            print("SKIP_SAME" if same_zone else "SKIP")
                             print("==================================")
                             self.wait(self.SLEEPLIST[1][2])
+                            if self.battlecount > (self.battle_zone_loop_num - 1):
+                                # The requested upper-bound behavior is to
+                                # move to the next highlighted area once, then
+                                # return through POKEMONCENTER.  Refresh the
+                                # detected zone after moving the cursor so the
+                                # post-teleport movement data is not stale.
+                                self.targetzone=self.ZA_zone_check()
+                                break
                         else:
                             print(str(self.targetzone) + ": " + self.ZONELIST[self.targetzone][1])
                             break
+                    self.infi_previous_targetzone = self.targetzone
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
 
                     for i in range(1,10):
@@ -16479,12 +16543,33 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif self.image_check("POKEMON_ZA_DEAD"):
                 return "BATTLE_START"
          
-  #TEST
+      #TEST
+        battlecount_before = self.battlecount
+        self._za_infi_area_end_reason = ""
         if self.battle_step_return == 0:
-            return self.ZA_battle_move_test()
+            result = self.ZA_battle_move_test()
         else:
             self.battle_step_return = 0
-            return self.ZA_battle_move_test(1)      
+            result = self.ZA_battle_move_test(1)
+
+        if result == "BATTLE_MAP_OPEN":
+            if self._za_infi_area_end_reason == "reward":
+                self.infi_area_failure_count = 0
+            else:
+                # Several recovery branches leave the movement loop with a
+                # bare ``break``.  Count that area exactly once even when the
+                # branch forgot to advance battlecount itself.
+                if self.battlecount <= battlecount_before:
+                    self.battlecount = battlecount_before + 1
+                self.infi_area_failure_count = (
+                    int(getattr(self, "infi_area_failure_count", 0)) + 1)
+                failure_limit = max(
+                    1, int(getattr(self, "infi_area_failure_limit", 3)))
+                if (self.infi_area_failure_count >= failure_limit
+                        or self.battlecount >
+                           (self.battle_zone_loop_num - 1)):
+                    return "BATTLE_START"
+        return result
         
     def ZA_infi_attack_ready(self):
         # 通常閾値を優先し、取りこぼした場合だけ0.60のLOWを確認する。
@@ -17070,6 +17155,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "BATTLE_START"
                 
             if (self.battle_step==1 and self.battle_current_state=="BATTLE_MOVE" and self.image_check("POKEMON_ZA_REWARD_RESULT")) or self.battle_step==2:
+                self._za_infi_area_end_reason = "reward"
+                self.infi_area_failure_count = 0
                 lastescape = time.perf_counter() 
                 endbk = end
                 end = time.perf_counter()
