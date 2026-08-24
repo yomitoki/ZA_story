@@ -70,6 +70,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_TOWER_49": "2_STORY_TOWER_49",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_51": "2_STORY_TOWER_51",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_68": "2_STORY_TOWER_68",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        
+        "2_STORY_TOWER_58": "2_STORY_TOWER_69",  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
+
+        "2_STORY_TOWER_72": "2_STORY_TOWER_74",  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
+        
         "2_STORY_X_LANK_MOVE8": "2_STORY_X_LANK_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE22": "2_STORY_ABSOL_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE24": "2_STORY_ABSOL_MOVE24",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -132,7 +137,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "1_STORY_OUT_HOTEL_Z_83": ("1_STORY_OUT_HOTEL_Z_83", "1_STORY_OUT_HOTEL_Z_84"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_27": ("2_STORY_TOWER_27", "2_STORY_TOWER_28"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_81": ("2_STORY_TOWER_81", "2_STORY_TOWER_82"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_X_LANK_MOVE11": ("2_STORY_X_LANK_MOVE11", "2_STORY_X_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_X_LANK_MOVE11": ("2_STORY_X_LANK_BATTLE_ZONE", "2_STORY_X_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_Y_LANK_MOVE3": ("2_STORY_Y_LANK_MOVE0", "2_STORY_Y_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_X_LANK_MOVE3": ("2_STORY_X_LANK_MOVE3", "2_STORY_X_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_W_LANK_MOVE3": ("2_STORY_W_LANK_MOVE3", "2_STORY_W_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -783,6 +788,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         self._2_story_current_state="2_STORY_START_CHECK" 
         self._2_story_current_state_init= "2_STORY_AME1"
+        # 通常進行ではYUBIWA画像を実際に確認した時だけTrueにする。
+        # 途中Step開始時の値はmain_state_initで、選択されたStepを基準に
+        # 改めて設定する（Command run optionsは__init__後に反映されるため）。
+        self._2_story_yubiwa_checked=False
 
 
         self._2_story_restaurant_dohutsu_loop_count=0
@@ -2613,7 +2622,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif r_push_ready:
                 # 引数で無効化した場合は従来のR_push画像判定だけを使う。
                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
-                self.press(Button.RCLICK,0.05,0.1)
+                self.press(Button.RCLICK,0.15,0.1)
                 self.wait(1.0)
                 self.ZA_MOVE_SEE(action = "",in_see_r=see_r)
                 
@@ -3108,14 +3117,15 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         battle_without_field = (
             (not bool(self.ZA_story_Template_Field_HardGaurd()))
-            and bool(self.ZA_no_battle_filed_check_HardGaurd(mode=1)))
+            and bool(self.ZA_story_Template_Field_HardGaurd(mode=1))
+            and not self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"))
         if not battle_without_field:
             setattr(self, count_name, 0)
             return False
 
         missing_field_count = getattr(self, count_name, 0) + 1
         setattr(self, count_name, missing_field_count)
-        if missing_field_count < 30:
+        if missing_field_count < 10:
             return False
 
         setattr(self, count_name, 0)
@@ -3723,16 +3733,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
     
             #TODO　処理の更新
-            for i in range(30):
-                if i == 0:
-                    self.press(Direction(Stick.LEFT,90), duration=rebattle_move_fast, wait=0.5)
-                else:
-                    self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
-                    
-                if self.image_check("POKEMON_ZA_CHAT_MARKER"):
-                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                    return bkprg_ret
+            if ((markertype==0 and self.ZA_markerdir("EVENT")) or (markertype==1 and self.ZA_markerdir("SIDE_MARKER")) or markertype==-1):
+                for i in range(30):
+                    if i == 0:
+                        self.press(Direction(Stick.LEFT,90), duration=rebattle_move_fast, wait=0.5)
+                    else:
+                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                        
+                    if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                        return bkprg_ret
             return noprg_ret
             #TODO　以下をいったん破棄
         
@@ -4435,6 +4446,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "MAIN_1_Z_LANK"
         elif  self.main_current_state_init=="MAIN_2_Y_V_LANK":
             self._2_story_current_state=self._2_story_current_state_init
+            self._2_story_yubiwa_checked = (
+                self._2_story_yubiwa_checked_for_start(
+                    self._2_story_current_state_init))
             return "MAIN_2_Y_V_LANK"
         elif  self.main_current_state_init=="MAIN_3_F_LANK":
             self._3_story_current_state=self._3_story_current_state_init
@@ -8383,27 +8397,41 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_tower_54(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
-                return "2_STORY_TOWER_55"
+                return self._2_story_tower_55_or_61()
             
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
                 if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
-                    return "2_STORY_TOWER_55"
+                    return self._2_story_tower_55_or_61()
         return "2_STORY_TOWER_52"
+
+    def _2_story_yubiwa_checked_for_start(self, state):
+        """途中Step開始時にYUBIWA確認済み状態を復元する。"""
+        states = tuple(self.STATE_2_STORY_FUNCTION)
+        try:
+            return states.index(str(state)) > states.index("2_STORY_TOWER_55")
+        except ValueError:
+            return False
+
+    def _2_story_tower_55_or_61(self):
+        """YUBIWA確認後は、TOWER55への巻き戻しをTOWER61へ送る。"""
+        if self._2_story_yubiwa_checked:
+            return "2_STORY_TOWER_61"
+        return "2_STORY_TOWER_55"
     
     def _2_story_tower_55(self): 
         ### AUTO_SAVE_POINT
         if self.check_picture==1:
             if self.image_check("POKEMON_ZA_SIDE_SELECT_TOP_MAP"):
                 print("POKEMON_ZA_SIDE_SELECT_TOP_MAP")
-            return "2_STORY_TOWER_55"
+            return self._2_story_tower_55_or_61()
         else:
             ret = self.ZA_Common_goto(4,0,-3)#Wゾーン4に移動で位置確定
             if ret == "START":
                 return "2_STORY_TOWER_56"
             else:
-                return "2_STORY_TOWER_55"
+                return self._2_story_tower_55_or_61()
     
     def _2_story_tower_56(self): 
         ### AUTO_SAVE_POINT
@@ -8418,7 +8446,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=14.0, wait=0.5)
             self.press(Direction(Stick.LEFT,110), duration=6.5, wait=0.5)
             self.press(Direction(Stick.LEFT,180), duration=1.8, wait=0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)# TODO なかったら飛ばす？
             self.wait(1.0)
             return "2_STORY_TOWER_58"
         return "2_STORY_TOWER_57"
@@ -8429,20 +8457,30 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
                 return "2_STORY_TOWER_59"
-        elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            return "2_STORY_TOWER_55"
+        elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更　#TODOバトルじゃない場合になし判定？
+            return self._2_story_tower_55_or_61()
         return "2_STORY_TOWER_58"
     
     def _2_story_tower_59(self):
         #return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_58",prg_ret="2_STORY_TOWER_60",noprg_ret="2_STORY_TOWER_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
-
+        if self.image_check("POKEMON_ZA_FIELD_W"):
+            self.etc_sendCommand("Lbutton_up")
         if self.image_check("POKEMON_ZA_ESCAPE"):
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            return "2_STORY_TOWER_60"
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_YUBIWA",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.image_check("POKEMON_ZA_YUBIWA"):
+                    self._2_story_yubiwa_checked=True
+                    if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_YUBIWA"):
+                        return "2_STORY_TOWER_61"
+                else:
+                    #self.press(Direction(Stick.LEFT,280), duration=9.0, wait=0.0)-
+                    self.press(Direction(Stick.LEFT,260), duration=17.0, wait=0.0)
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    return self._2_story_tower_55_or_61()
         return "2_STORY_TOWER_59"
     
     def _2_story_tower_60(self):
@@ -8512,9 +8550,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
                 return "2_STORY_TOWER_69"
-        return "2_STORY_TOWER_68"
+
+        for i in range(10):
+            self.wait(0.5)
+            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+                    return "2_STORY_TOWER_69"
+        return "2_STORY_TOWER_69"
     
     def _2_story_tower_69(self):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            return "2_STORY_TOWER_68"
         ### AUTO_SAVE_POINT
         ret = self.ZA_Common_goto(1,0,-3)#ローリングドリーマーに移動で位置確定
         if ret == "START":
@@ -8546,19 +8592,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_70"
     
     def _2_story_tower_71(self):
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0): #FIELDから変更
                 return "2_STORY_TOWER_72"
 
         for i in range(10):
             self.wait(0.5)
-            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0): #FIELDから変更
                     return "2_STORY_TOWER_72"
-        return "2_STORY_TOWER_69"
+        return "2_STORY_TOWER_74"
     
     def _2_story_tower_72(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_71",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_73",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
 
         #親分ホルビーが必要な場合はゲットマーカー4でゲット処理を追加
         #敗戦対応が必要なはず
@@ -8634,7 +8680,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.pressRep(
                         Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                     self.wait(1.0)
-                    return "2_STORY_TOWER_69"
+                    return self._2_story_tower_55_or_61()
         return "2_STORY_TOWER_78"
     def _2_story_tower_79(self): 
         if self.image_check("POKEMON_ZA_WANINOKO_ICON") or self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
@@ -9142,8 +9188,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
+    #TODO bkprg_retを敗北用に
     def _2_story_absol_move7(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE8",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -9592,6 +9639,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE38"
     
     def _2_story_restaurant_dohutsu_loop(self):
+        # X攻撃が戦闘終了と重なるとXメニューが開くことがある。
+        # ESCAPEやコメントより先に閉じないと、下のfallbackがAを送り
+        # 続けてメニュー内へ入り込み、このStepから離脱できなくなる。
+        if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            self._2_story_restaurant_dohutsu_black_check=0
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return "2_STORY_RESTAURANT_DOHUTSU_LOOP"
         if self.image_check("POKEMON_ZA_ESCAPE"):
             self._2_story_restaurant_dohutsu_black_check=0
             self._2_story_restaurant_dohutsu_white_check=1
@@ -20952,7 +21008,15 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
     # DevStudioの登録済み画像検知から追加。再生成時も保持されます。
-    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_COMMENT_MARKER': [{'crop': [930, 658, 965, 691],
+    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [{'crop': [120, 500, 260, 580],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/Common/battle_active_level.png',
+                                           'threshold': 0.85,
+                                           'use_gray': True}],
+     'POKEMON_ZA_COMMENT_MARKER': [{'crop': [930, 658, 965, 691],
                                     'ms': 2000,
                                     'show_only_true_rect': False,
                                     'show_position': True,
@@ -21517,9 +21581,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             'show_value': False,
                                             'template_path': 'Template/ZA_Story/Common/side_marker.png',
                                             'threshold': 0.8,
-                                            'use_gray': False}]})
+                                            'use_gray': False}],
+     'POKEMON_ZA_YUBIWA': [{'crop': [351, 557, 435, 651],
+                            'match_color': '#00c853',
+                            'ms': 2000,
+                            'no_match_color': '#ff9800',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/_2_y_lank/POKEMON_ZA_YUBIWA.png',
+                            'threshold': 0.8,
+                            'use_gray': False}]})
     if 'IMAGE_DETECTION_OPERATORS' in locals():
-        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_COMMENT_MARKER': 'OR',
+        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'OR',
+     'POKEMON_ZA_COMMENT_MARKER': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER_LEFT_SIDE': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER_RIGHT_SIDE': 'OR',
@@ -21571,9 +21646,11 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_SIDE_MARKER_CENTER_WIDE_UPPER_RIGHT': 'OR',
      'POKEMON_ZA_SIDE_MARKER_CENTER_WIDE_UPPER_RIGHT_NEAR': 'OR',
      'POKEMON_ZA_SIDE_MARKER_LEFT_WIDE': 'OR',
-     'POKEMON_ZA_SIDE_MARKER_RIGHT_WIDE': 'OR'})
+     'POKEMON_ZA_SIDE_MARKER_RIGHT_WIDE': 'OR',
+     'POKEMON_ZA_YUBIWA': 'OR'})
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
-        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_COMMENT_MARKER': '',
+        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'Pokemon ZAの戦闘中に左下へ表示される操作中ポケモンの固定Lv.表示',
+     'POKEMON_ZA_COMMENT_MARKER': '',
      'POKEMON_ZA_EVENT_MARKER_CENTER': 'Pokemon ZA image detection migrated from ZA_story: '
                                        'EVENT_MARKER_CENTER',
      'POKEMON_ZA_EVENT_MARKER_CENTER_LEFT_SIDE': 'Pokemon ZA image detection: '
@@ -21673,7 +21750,8 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_SIDE_MARKER_LEFT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                          'SIDE_MARKER_LEFT_WIDE',
      'POKEMON_ZA_SIDE_MARKER_RIGHT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
-                                          'SIDE_MARKER_RIGHT_WIDE'})
+                                          'SIDE_MARKER_RIGHT_WIDE',
+     'POKEMON_ZA_YUBIWA': 'Area Captureから登録'})
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
 
     def _image_check_target(self, targetimage):
