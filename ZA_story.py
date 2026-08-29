@@ -12758,7 +12758,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_77(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
                 return "4_STORY_SHIRO_78"
         return "4_STORY_SHIRO_77"
     
@@ -19397,7 +19397,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  'show_position': True,
                                  'show_value': False,
                                  'template_path': 'Template/ZA_Story/Common/chatmarker.png',
-                                 'threshold': 0.85,
+                                 'threshold': 0.75,
                                  'use_gray': True}],
      'POKEMON_ZA_CHICKET_MAX': [{'crop': [700, 600, 1000, 720],
                                  'match_color': 'blue',
