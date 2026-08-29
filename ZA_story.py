@@ -86,7 +86,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_10": "3_STORY_CANARI_10",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_CANARI_16": "3_STORY_CANARI_16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_16": "3_STORY_CANARI_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_18": "3_STORY_CANARI_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_20": "3_STORY_CANARI_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE2": "3_STORY_MEGA_MOVE2",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -97,7 +97,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE30": "3_STORY_MEGA_MOVE30",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_12": "4_STORY_SHIRO_12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_15": "4_STORY_SHIRO_15",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_15": "4_STORY_SHIRO_13",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_17": "4_STORY_SHIRO_17",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_20": "4_STORY_SHIRO_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_41": "4_STORY_SHIRO_41",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -137,11 +137,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         "1_STORY_OUT_HOTEL_Z_83": ("1_STORY_OUT_HOTEL_Z_83", "1_STORY_OUT_HOTEL_Z_84"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_27": ("2_STORY_TOWER_27", "2_STORY_TOWER_28"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_81": ("2_STORY_TOWER_81", "2_STORY_TOWER_82"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_X_LANK_MOVE11": ("2_STORY_X_LANK_BATTLE_ZONE", "2_STORY_X_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_Y_LANK_MOVE3": ("2_STORY_Y_LANK_MOVE0", "2_STORY_Y_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_X_LANK_MOVE11": ("2_STORY_X_LANK_MOVE11", "2_STORY_X_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_Y_LANK_MOVE3": ("2_STORY_Y_LANK_MOVE3", "2_STORY_Y_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_X_LANK_MOVE3": ("2_STORY_X_LANK_MOVE3", "2_STORY_X_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_W_LANK_MOVE3": ("2_STORY_W_LANK_MOVE3", "2_STORY_W_LANK_MOVE4"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_W_LANK_MOVE11": ("2_STORY_W_LANK_BATTLE_ZONE", "2_STORY_W_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_W_LANK_MOVE11": ("2_STORY_W_LANK_MOVE11", "2_STORY_W_LANK_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE6": ("2_STORY_ABSOL_MOVE6", "2_STORY_ABSOL_MOVE7"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE11": ("2_STORY_ABSOL_MOVE11", "2_STORY_ABSOL_MOVE12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE17": ("2_STORY_ABSOL_MOVE14", "2_STORY_ABSOL_MOVE18"),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -3200,7 +3200,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZA_ZL_ACTION("END")
             
-    def ZA_battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1):
+    def ZA_battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1,R_Push_enable=1):
         noCp_count=0
         target_marker=1
         nofiled=1
@@ -3253,7 +3253,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif battle_mode==1 and self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
                 
-            if self.image_check("POKEMON_ZA_R_push"):
+            if ((R_Push_enable == 1) and self.image_check("POKEMON_ZA_R_push")):
                 self.press(Button.RCLICK,0.05,0.1) 
                 
             self.ZA_ZL_ACTION("")
@@ -3470,13 +3470,34 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_story_event_entry_recovery_step(
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
+        # Story側のチケット集めStepへ入った時だけ、前のランクで立った
+        # 満杯フラグを破棄する。同じStep内の周回では再初期化しない。
+        # ZA_INFI単体実行はこのStory用ラッパーを通らないため対象外。
+        is_lank_battle_zone = str(current_state).endswith(
+            "_LANK_BATTLE_ZONE")
+        if is_lank_battle_zone:
+            active_lank_battle_zone = getattr(
+                self, "_za_story_active_lank_battle_zone", None)
+            if active_lank_battle_zone != current_state:
+                previous_chicketmaxflag = self.chicketmaxflag
+                self.chicketmaxflag = 0
+                self._za_story_active_lank_battle_zone = current_state
+                print(
+                    f"[LANK_BATTLE_ZONE] {current_state} entry: "
+                    f"chicketmaxflag {previous_chicketmaxflag} -> 0")
+        else:
+            self._za_story_active_lank_battle_zone = None
+
         state_function = state_functions[current_state]
         function_names = getattr(
             getattr(state_function, "__func__", state_function),
             "__code__", None)
         function_names = getattr(function_names, "co_names", ())
-        is_battle_function = (
-            "ZA_story_Template_battle_function" in function_names)
+        is_battle_function = any(name in function_names for name in (
+            "ZA_story_Template_battle_function",
+            "ZA_story_Template_battle_function_active_level",
+            "ZA_story_Template_battle_function_renda_route",
+        ))
         observe_white_comment = (
             current_state in self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS)
         white_comment_matched = [None]
@@ -3495,7 +3516,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     white_comment_matched[0] = bool(matched)
                 if (str(targetimage) in {
                         "POKEMON_ZA_BATTLE_BALL_CHECK",
-                        "POKEMON_ZA_ESCAPE"} and matched):
+                        "POKEMON_ZA_ESCAPE",
+                        "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"} and matched):
                     # 一度でも実バトルを検知した系列は、後からCOMMENTで
                     # beforeへ戻っても未突入復帰の対象にしない。
                     battle_active_matched[0] = True
@@ -3510,6 +3532,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.image_check = instance_image_check
                 else:
                     del self.image_check
+        if is_lank_battle_zone and next_state != current_state:
+            self._za_story_active_lank_battle_zone = None
         timers = getattr(
             self, "_za_story_event_entry_recovery_started", None)
         if timers is None:
@@ -3627,7 +3651,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return noprg_ret
 
-    def ZA_story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=0,battle_mode=0,move=0,sleeptime=0.5,rebattle_move_fast=0.1):
+    # 2026-08-24: 左下Lv.基準版から即座に戻せるよう、旧共通関数を保持する。
+    ZA_story_Template_battle_before_backup_20260824 = ZA_story_Template_battle_before
+
+    def ZA_story_Template_battle_function(self,bkprg_ret,prg_ret,noprg_ret,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=0,battle_mode=0,move=0,sleeptime=0.5,rebattle_move_fast=0.1,rebattle=1):
         # 毎周必ず両方を判定し、一致した対象のループだけを実行する。
         x_menu_visible = self.image_check("POKEMON_ZA_X_MENU_OPEN")
         help_visible = self.image_check("POKEMON_ZA_HELP_MARKER")
@@ -3732,18 +3759,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
     
-            #TODO　処理の更新
-            if ((markertype==0 and self.ZA_markerdir("EVENT")) or (markertype==1 and self.ZA_markerdir("SIDE_MARKER")) or markertype==-1):
-                for i in range(30):
-                    if i == 0:
-                        self.press(Direction(Stick.LEFT,90), duration=rebattle_move_fast, wait=0.5)
-                    else:
-                        self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
-                        
-                    if self.image_check("POKEMON_ZA_CHAT_MARKER"):
-                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                    elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                        return bkprg_ret
+            if rebattle==1:
+                #TODO　処理の更新
+                if ((markertype==0 and self.ZA_markerdir("EVENT")) or (markertype==1 and self.ZA_markerdir("SIDE_MARKER")) or markertype==-1):
+                    for i in range(30):
+                        if i == 0:
+                            self.press(Direction(Stick.LEFT,90), duration=rebattle_move_fast, wait=0.5)
+                        else:
+                            self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                            
+                        if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                        elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                            return bkprg_ret
+            else:
+                return prg_ret
             return noprg_ret
             #TODO　以下をいったん破棄
         
@@ -3809,8 +3839,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         #    return bkprg_ret
 
         return noprg_ret
+
+    # 2026-08-24: 左下Lv.基準版から即座に戻せるよう、旧共通関数を保持する。
+    ZA_story_Template_battle_function_backup_20260824 = ZA_story_Template_battle_function
     
-    def ZA_story_Template_battle_after(self,bkprg_ret,prg_ret,selected_pic="POKEMON_ZA_FALSE_RETURN",selected_target=0,mode=0,sleeptime=0.5):
+    def ZA_story_Template_battle_after_backup_20260828(self,bkprg_ret,prg_ret,selected_pic="POKEMON_ZA_FALSE_RETURN",selected_target=0,mode=0,sleeptime=0.5):
         filed_check_count=0
         if self.ZA_story_Template_Comment_Out(selected_pic=selected_pic,selected_target=selected_target,mode=mode,sleeptime=sleeptime):
             for i in range(30):
@@ -3844,6 +3877,888 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             print("after4_")
             return prg_ret
+
+    # 2026-08-28: フィールド確認・endpicture対応前の旧共通関数を保持する。
+    ZA_story_Template_battle_after_backup_20260824 = ZA_story_Template_battle_after_backup_20260828
+
+    def ZA_story_Template_battle_after(
+            self, bkprg_ret, prg_ret,
+            selected_pic="POKEMON_ZA_FALSE_RETURN", selected_target=0,
+            mode=0, sleeptime=0.5,
+            endpicture="", endpicture2="", endpicture3=""):
+        """戦闘後コメントを抜け、フィールドまたは指定画像で次へ進む。"""
+        del mode  # 呼び出し互換用。終了時は共通の非戦闘フィールドを確認する。
+        false_pictures = {
+            None, "", "RETURN_FALSE", "RETURN FALSE",
+            "POKEMON_ZA_FALSE_RETURN",
+        }
+        endpictures = tuple(
+            picture for picture in (endpicture, endpicture2, endpicture3)
+            if picture not in false_pictures)
+        selected_picture_enabled = selected_pic not in false_pictures
+        a_pictures = (
+            "POKEMON_ZA_TEXT_BLACK_COMMENT",
+            "POKEMON_ZA_CHAT_MARKER",
+            "POKEMON_ZA_COIN_ICON",
+            "POKEMON_ZA_1_SELECT",
+            "POKEMON_ZA_2_SELECT",
+            "POKEMON_ZA_3_SELECT",
+            "POKEMON_ZA_4_SELECT",
+            "POKEMON_ZA_HELP_MARKER",
+            "POKEMON_ZA_MORNING",
+            "POKEMON_ZA_NIGHT",
+        )
+        b_pictures = (
+            "POKEMON_ZA_X_MENU_OPEN",
+            "POKEMON_ZA_TEXT_WHITE_COMMENT",
+            "POKEMON_ZA_TEXT_GREEN_COMMENT",
+            "POKEMON_ZA_COMMENT_MARKER",
+        )
+
+        while True:
+            self.checkIfAlive()
+
+            # 明示された終了画像は、戦闘表示と同時に見えても優先する。
+            if any(self.image_check(picture) for picture in endpictures):
+                return prg_ret
+
+            # BATTLE_BALL_CHECKは状態異常で閾値が変わるため使用しない。
+            if (self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+                    or self.image_check("POKEMON_ZA_ESCAPE")):
+                return bkprg_ret
+
+            # コメントや演出が完全に消え、フィールドが見えてから次へ進む。
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                return prg_ret
+
+            if (selected_picture_enabled
+                    and self.image_check(selected_pic)):
+                self.wait(1.0)
+                for _ in range(selected_target):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+            elif any(self.image_check(picture) for picture in a_pictures):
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.04,
+                    wait=0.0, interval=0.1)
+            elif any(self.image_check(picture) for picture in b_pictures):
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.04,
+                    wait=0.0, interval=0.1)
+            else:
+                # 遷移中の無検知画面では操作せず、次の画像を待つ。
+                self.wait(max(0.1, sleeptime))
+                continue
+            self.wait(max(0.1, sleeptime))
+
+    def _ZA_story_battle_flow_state(self, battle_flow_key):
+        flows = getattr(self, "_za_story_battle_flows", None)
+        if flows is None:
+            flows = {}
+            self._za_story_battle_flows = flows
+        return flows.setdefault(battle_flow_key, {
+            "phase": "WAIT_ENTRY",
+            "active_seen": False,
+            "result_seen": False,
+            "field_result_count": 0,
+            "field_result_since": None,
+        })
+
+    def _ZA_story_battle_flow_mark(self, battle_flow_key, phase, reason):
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        if state["phase"] != phase:
+            print(
+                "[BATTLE_FLOW] {}: {} -> {} ({})".format(
+                    battle_flow_key, state["phase"], phase, reason))
+            state["phase"] = phase
+        return state
+
+    def _ZA_story_battle_flow_reset(self, battle_flow_key, reason):
+        flows = getattr(self, "_za_story_battle_flows", None)
+        if flows is not None and battle_flow_key in flows:
+            print("[BATTLE_FLOW] {}: reset ({})".format(
+                battle_flow_key, reason))
+            del flows[battle_flow_key]
+
+    def ZA_story_Template_battle_before_active_level(
+            self, noprg_ret, prg_ret, battle_flow_key=None,
+            green_check=0, no_filed=0, sleeptime=0.5,
+            black_comment_is_defeat=False, event_move_duration=0.05):
+        """戦闘前を進め、実戦闘または非戦闘の結果候補を次へ渡す。"""
+        if not battle_flow_key:
+            # 旧呼び出しからの移行時もbefore／battle／afterで同じキーに
+            # なるよう、battle Step名（beforeの遷移先）を既定値にする。
+            battle_flow_key = prg_ret
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        retry_entry = state["phase"] == "RETRY_ENTRY"
+        event_reacquire_allowed = (
+            state["phase"] not in {"RESULT_CANDIDATE", "RESULT_SEEN"}
+            and not state["result_seen"])
+        if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+            state["active_seen"] = True
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "ACTIVE_SEEN", "active_level")
+            return prg_ret
+
+        # 戦闘前イベントは1周につき1入力だけ送り、Lv.表示を待つ。
+        if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            if black_comment_is_defeat:
+                state["active_seen"] = False
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "RETRY_ENTRY",
+                    "black_comment_defeat_before")
+            return noprg_ret
+        elif (self.image_check("POKEMON_ZA_HELP_MARKER")
+                or self.image_check("POKEMON_ZA_1_SELECT")
+                or self.image_check("POKEMON_ZA_2_SELECT")
+                or self.image_check("POKEMON_ZA_3_SELECT")
+                or self.image_check("POKEMON_ZA_4_SELECT")):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+        elif (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_COMMENT_MARKER")
+                or (green_check == 1 and self.image_check(
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT"))):
+            if retry_entry or not state["active_seen"]:
+                # 敗北後または実戦闘前の会話は、別の人物へ話しかけた
+                # 可能性がある。会話を閉じてbeforeに留まり、次周の
+                # フィールド画面でEVENTを探し直す。
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                if not retry_entry:
+                    state["active_seen"] = False
+                    state["result_seen"] = False
+                    state["field_result_count"] = 0
+                    state["field_result_since"] = None
+                    self._ZA_story_battle_flow_mark(
+                        battle_flow_key, "WAIT_ENTRY",
+                        "comment_closed_reacquire_event")
+            else:
+                # 実戦闘を一度確認済みの場合だけ結果候補として渡す。
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "RESULT_CANDIDATE",
+                    "entry_result_after_active")
+                return prg_ret
+        elif self.image_check("POKEMON_ZA_COIN_ICON"):
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_CANDIDATE", "entry_coin")
+            return prg_ret
+        elif (self.image_check("POKEMON_ZA_MISSION_COMPLETE")
+                or self.image_check("POKEMON_ZA_IN_ICON")):
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_CANDIDATE", "entry_completion")
+            return prg_ret
+        elif self.image_check("POKEMON_ZA_CHAT_MARKER"):
+            # A「話しかける」が見えていても、先にEVENTマーカーを
+            # 画面中央へ合わせる。after到達後のフローでは探索しない。
+            if not event_reacquire_allowed:
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+            elif self.ZA_markerdir("EVENT", nofiled=True):
+                # 中央化できてもその場から話しかけず、EVENT側へ小さく
+                # 接近してから、話しかけ表示が残っている場合だけAを送る。
+                self.press(
+                    Direction(Stick.LEFT, 90),
+                    duration=max(0.02, float(event_move_duration)), wait=0.2)
+                if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                    self.pressRep(
+                        Button.A, repeat=1, duration=0.15,
+                        wait=0.5, interval=0.1)
+            else:
+                self.wait(max(0.1, sleeptime))
+        elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            # 連戦の合間にフィールドへ戻った場合は、次の相手へ近づく。
+            # RESULT_SEEN（after到達後）ではEVENT探索・移動を行わない。
+            if (event_reacquire_allowed
+                    and (self.ZA_markerdir("EVENT")
+                         or self.ZA_markerdir("SIDE_MARKER"))):
+                self.press(
+                    Direction(Stick.LEFT, 90),
+                    duration=max(0.02, float(event_move_duration)), wait=0.5)
+        else:
+            self.wait(max(0.1, sleeptime))
+        return noprg_ret
+
+    def ZA_story_Template_battle_function_active_level(
+            self, bkprg_ret, prg_ret, noprg_ret, battle_flow_key=None,
+            Xaction=0, Aaction=0, Yaction=0, Baction=0,
+            lockon_endskip=0, get_chanceicon4=0, noCp=0,
+            markertype=0, battle_mode=0, move=0, sleeptime=0.5,
+            rebattle_move_fast=0.1,
+            result_picture="POKEMON_ZA_FALSE_RETURN",
+            black_comment_is_defeat=False, rebattle=1):
+        """左下Lv.を戦闘中の唯一の基準として戦闘結果まで進める。"""
+        if not battle_flow_key:
+            # battle関数の現在Step名。beforeのprg_ret、afterのbkprg_retと
+            # 同じ値になるため、明示キーなしでも3関数で状態を共有できる。
+            battle_flow_key = noprg_ret
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+
+        if self.image_check("POKEMON_ZA_HELP_MARKER"):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return noprg_ret
+        if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return noprg_ret
+
+        if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+            state["active_seen"] = True
+            state["result_seen"] = False
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "ACTIVE_SEEN", "active_level")
+            field_w_up_handled = False
+            if (noCp == 1 and battle_mode == 1
+                    and self.image_check("POKEMON_ZA_FIELD_W")):
+                self.etc_sendCommand("Lbutton_up")
+                field_w_up_handled = True
+            if noCp == 0:
+                if move == 0:
+                    self.ZA_battle_Cp_loop(
+                        Xaction=Xaction, Aaction=Aaction,
+                        Yaction=Yaction, Baction=Baction,
+                        get_chanceicon4=get_chanceicon4,
+                        battle_mode=battle_mode)
+                else:
+                    self.ZA_battle_Cp_loop_move(
+                        Xaction=Xaction, Aaction=Aaction,
+                        Yaction=Yaction, Baction=Baction,
+                        get_chanceicon4=get_chanceicon4,
+                        battle_mode=battle_mode)
+            else:
+                if (get_chanceicon4 == 1
+                        and self.image_check("POKEMON_ZA_GETCHANCE_ICON4")):
+                    self.ZA_get_pokemon()
+                self.ZA_battle_coCp_noloop(
+                    Xaction=Xaction, Aaction=Aaction,
+                    Yaction=Yaction, Baction=Baction,
+                    battle_mode=battle_mode,
+                    selection_up_handled=field_w_up_handled)
+            return noprg_ret
+
+        if (self.image_check("POKEMON_ZA_3_SELECT")
+                or self.image_check("POKEMON_ZA_2_SELECT")
+                or self.image_check("POKEMON_ZA_1_SELECT")
+                or self.image_check("POKEMON_ZA_4_SELECT")):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return noprg_ret
+
+        if (result_picture != "POKEMON_ZA_FALSE_RETURN"
+                and self.image_check(result_picture)):
+            state["result_seen"] = True
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", result_picture)
+            return prg_ret
+
+        if self.image_check("POKEMON_ZA_COIN_ICON"):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            state["result_seen"] = True
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", "coin")
+            return prg_ret
+
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            if black_comment_is_defeat:
+                state["active_seen"] = False
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "RETRY_ENTRY",
+                    "black_comment_defeat")
+                return bkprg_ret
+            # 黒コメントを敗戦に使わない戦闘は従来動作を維持する。
+            if state["active_seen"]:
+                return noprg_ret
+            state["result_seen"] = False
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "WAIT_ENTRY",
+                "black_comment_without_active")
+            return bkprg_ret
+
+        if (self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_COMMENT_MARKER")):
+            if not state["active_seen"]:
+                # 戦闘を一度も確認していないCommentは、別の人物との
+                # 会話として閉じ、beforeでEVENTを探し直す。
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "WAIT_ENTRY",
+                    "comment_without_active")
+                return bkprg_ret
+            if result_picture != "POKEMON_ZA_FALSE_RETURN":
+                # 専用勝利画像がある戦闘では、白／緑コメントや
+                # COMMENT_MARKERだけで敗北・勝利を決めない。会話を送り、
+                # functionに留まって専用画像またはBLACK_COMMENTを待つ。
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                return noprg_ret
+            state["result_seen"] = True
+            reason = (
+                "result_comment_after_active"
+                if state["active_seen"] else "no_battle_result_comment")
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", reason)
+            return prg_ret
+
+        if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+            if not state["active_seen"]:
+                # ここでは話しかけずbeforeへ戻す。before側がEVENTを
+                # 中央へ合わせてからAを送る。
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "WAIT_ENTRY",
+                    "chat_marker_without_active")
+                return bkprg_ret
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return noprg_ret
+
+        if (self.image_check("POKEMON_ZA_MISSION_COMPLETE")
+                or self.image_check("POKEMON_ZA_IN_ICON")):
+            state["result_seen"] = True
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", "completion_icon")
+            return prg_ret
+
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            if not state["active_seen"]:
+                if black_comment_is_defeat:
+                    self.wait(max(0.1, sleeptime))
+                    return noprg_ret
+                if rebattle == 0:
+                    state["result_seen"] = True
+                    self._ZA_story_battle_flow_mark(
+                        battle_flow_key, "RESULT_SEEN",
+                        "field_without_rebattle")
+                    return prg_ret
+                return bkprg_ret
+            now = time.monotonic()
+            if state["field_result_since"] is None:
+                state["field_result_since"] = now
+                state["field_result_count"] = 1
+            else:
+                state["field_result_count"] += 1
+            if (state["field_result_count"] >= 2
+                    and now - state["field_result_since"] >= 0.5):
+                if black_comment_is_defeat:
+                    # W戦はFIELDだけで再戦へ戻さない。勝利専用画像または
+                    # BLACK_COMMENTの確定までbattle_functionを維持する。
+                    self.wait(max(0.1, sleeptime))
+                    return noprg_ret
+                if rebattle == 0:
+                    state["result_seen"] = True
+                    self._ZA_story_battle_flow_mark(
+                        battle_flow_key, "RESULT_SEEN",
+                        "stable_field_without_rebattle")
+                    return prg_ret
+                # 白／緑・コイン・完了表示を見ないままフィールドへ
+                # 戻った場合は、勝利確定にせず再試行する。
+                state["active_seen"] = False
+                state["result_seen"] = False
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "WAIT_ENTRY",
+                    "stable_field_without_result")
+                return bkprg_ret
+            self.wait(max(0.1, sleeptime))
+            return noprg_ret
+
+        state["field_result_count"] = 0
+        state["field_result_since"] = None
+        self.wait(max(0.1, sleeptime))
+        if state["active_seen"]:
+            # 技演出中にLv.が一時的に消えても、入力や終了判定を行わない。
+            return noprg_ret
+        if black_comment_is_defeat:
+            # 敗北をBLACK_COMMENTで判定する戦闘は、無検知だけでbeforeへ
+            # 戻さず、勝敗画像を引き続き確認する。
+            return noprg_ret
+        return bkprg_ret
+
+    def ZA_story_Template_battle_after_active_level(
+            self, bkprg_ret, prg_ret, battle_flow_key=None,
+            selected_pic="POKEMON_ZA_FALSE_RETURN", selected_target=0,
+            mode=0, sleeptime=0.5,
+            black_comment_is_defeat=False,
+            endpicture="", endpicture2="", endpicture3=""):
+        """勝利後会話を進め、Lv.再表示だけを戦闘復帰として扱う。"""
+        del mode  # 呼び出し互換用。
+        if not battle_flow_key:
+            # afterの戻り先がbattle Stepなので、before／battleと同じキー。
+            battle_flow_key = bkprg_ret
+        false_pictures = {
+            None, "", "RETURN_FALSE", "RETURN FALSE",
+            "POKEMON_ZA_FALSE_RETURN",
+        }
+        endpictures = tuple(
+            picture for picture in (endpicture, endpicture2, endpicture3)
+            if picture not in false_pictures)
+        selected_picture_enabled = selected_pic not in false_pictures
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        if (black_comment_is_defeat
+                and self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            state["active_seen"] = False
+            state["result_seen"] = False
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RETRY_ENTRY",
+                "black_comment_defeat_after")
+            return bkprg_ret
+        if not state["result_seen"]:
+            state["result_seen"] = True
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", "entered_after")
+
+        field_count = 0
+        while True:
+            self.checkIfAlive()
+            # 明示された終了画像は、Lv.表示と同時でも終了を優先する。
+            if any(self.image_check(picture) for picture in endpictures):
+                self._ZA_story_battle_flow_reset(
+                    battle_flow_key, "endpicture")
+                return prg_ret
+            if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+                state["active_seen"] = True
+                state["result_seen"] = False
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "ACTIVE_SEEN", "active_level_returned")
+                return bkprg_ret
+            if self.image_check("POKEMON_ZA_MISSION_COMPLETE"):
+                # COMPLETEは終了確定にせず、Aで閉じてフィールドを待つ。
+                field_count = 0
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                continue
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                field_count += 1
+                if field_count >= 2:
+                    self._ZA_story_battle_flow_reset(
+                        battle_flow_key, "stable_field")
+                    return prg_ret
+                self.wait(max(0.1, sleeptime))
+                continue
+            field_count = 0
+            if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+                button = Button.B
+            elif (selected_picture_enabled
+                    and self.image_check(selected_pic)):
+                self.wait(1.0)
+                for _ in range(selected_target):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+                self.wait(max(0.1, sleeptime))
+                continue
+            elif (self.image_check("POKEMON_ZA_HELP_MARKER")
+                    or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
+                    or self.image_check("POKEMON_ZA_CHAT_MARKER")
+                    or self.image_check("POKEMON_ZA_COIN_ICON")
+                    or self.image_check("POKEMON_ZA_1_SELECT")
+                    or self.image_check("POKEMON_ZA_2_SELECT")
+                    or self.image_check("POKEMON_ZA_3_SELECT")
+                    or self.image_check("POKEMON_ZA_4_SELECT")):
+                button = Button.A
+            elif (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                    or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+                    or self.image_check("POKEMON_ZA_COMMENT_MARKER")):
+                button = Button.B
+            else:
+                self.wait(max(0.1, sleeptime))
+                continue
+            self.pressRep(
+                button, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+
+    def _ZA_story_battle_before_safe_renda_once(
+            self, green_check, sleeptime):
+        """before用に安全入力を1回だけ送り、停止理由を返す。"""
+        self.checkIfAlive()
+        wait_time = max(0.1, float(sleeptime))
+
+        # HELPと選択肢だけはRenda内でAを送る。
+        if (self.image_check("POKEMON_ZA_HELP_MARKER")
+                or self.image_check("POKEMON_ZA_1_SELECT")
+                or self.image_check("POKEMON_ZA_2_SELECT")
+                or self.image_check("POKEMON_ZA_3_SELECT")
+                or self.image_check("POKEMON_ZA_4_SELECT")):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.0, interval=0.1)
+            self.wait(wait_time)
+            return "continue", "a_picture"
+
+        # ここからは入力せずにRendaを止め、呼出元が画面別に処理する。
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "black_comment", "POKEMON_ZA_TEXT_BLACK_COMMENT"
+        if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+            return "active_level", "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_COMMENT_MARKER")
+                or (green_check == 1 and self.image_check(
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT"))):
+            return "result_comment", "comment"
+        if self.image_check("POKEMON_ZA_COIN_ICON"):
+            return "result", "POKEMON_ZA_COIN_ICON"
+        if self.image_check("POKEMON_ZA_MISSION_COMPLETE"):
+            return "result", "POKEMON_ZA_MISSION_COMPLETE"
+        if self.image_check("POKEMON_ZA_IN_ICON"):
+            return "result", "POKEMON_ZA_IN_ICON"
+        if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+            return "chat", "POKEMON_ZA_CHAT_MARKER"
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
+
+        # Xメニューを含む既知画面と未検知画面は、すべてBを1回送る。
+        self.pressRep(
+            Button.B, repeat=1, duration=0.15,
+            wait=0.0, interval=0.1)
+        self.wait(wait_time)
+        return "continue", "default_b"
+
+    def ZA_story_Template_battle_before_renda_route(
+            self, noprg_ret, prg_ret, battle_flow_key=None,
+            green_check=0, no_filed=0, sleeptime=0.5,
+            black_comment_is_defeat=False, event_move_duration=0.05,
+            rebattle=1):
+        """B基準の1入力Rendaで戦闘開始または結果候補まで進める。"""
+        del no_filed  # 呼び出し互換用。従来のactive_level版でも未使用。
+        if not battle_flow_key:
+            battle_flow_key = prg_ret
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        retry_entry = state["phase"] == "RETRY_ENTRY"
+        event_reacquire_allowed = (
+            rebattle != 0
+            and state["phase"] not in {"RESULT_CANDIDATE", "RESULT_SEEN"}
+            and not state["result_seen"])
+
+        stop_reason, stop_picture = (
+            self._ZA_story_battle_before_safe_renda_once(
+                green_check=green_check,
+                sleeptime=sleeptime))
+        if stop_reason != "continue":
+            print(
+                "[BATTLE_RENDA_BEFORE] {}: stop={} picture={}".format(
+                    battle_flow_key, stop_reason, stop_picture))
+
+        if stop_reason == "active_level":
+            state["active_seen"] = True
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "ACTIVE_SEEN", "active_level_before_renda")
+            return prg_ret
+
+        if stop_reason == "black_comment":
+            # afterでは敗北Commentを閉じずにbeforeへ返すため、ここで
+            # 安全側のBを1回送り、RETRY_ENTRYを維持する。
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.0, interval=0.1)
+            self.wait(max(0.1, float(sleeptime)))
+            if black_comment_is_defeat:
+                state["active_seen"] = False
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "RETRY_ENTRY",
+                    "black_comment_defeat_before_renda")
+            return noprg_ret
+
+        if stop_reason == "result_comment":
+            if retry_entry or not state["active_seen"]:
+                # 実戦闘前または敗北後の会話はBで閉じ、EVENT再取得へ戻す。
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+                self.wait(max(0.1, float(sleeptime)))
+                if not retry_entry:
+                    state["active_seen"] = False
+                    state["result_seen"] = False
+                    state["field_result_count"] = 0
+                    state["field_result_since"] = None
+                    self._ZA_story_battle_flow_mark(
+                        battle_flow_key, "WAIT_ENTRY",
+                        "comment_closed_before_renda")
+                return noprg_ret
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_CANDIDATE",
+                "result_comment_before_renda")
+            return prg_ret
+
+        if stop_reason == "result":
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_CANDIDATE",
+                "{}_before_renda".format(stop_picture))
+            return prg_ret
+
+        if stop_reason == "chat":
+            # 話しかけ表示はRendaを止めてからEVENTを中央化し、0.05秒
+            # 接近後も表示が残っている場合だけAを送る。再戦なしでは
+            # 既定移動で接近済みなのでEVENTを探さず、その場でAを送る。
+            if not event_reacquire_allowed:
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+            elif self.ZA_markerdir("EVENT", nofiled=True):
+                self.press(
+                    Direction(Stick.LEFT, 90),
+                    duration=max(0.02, float(event_move_duration)), wait=0.2)
+                if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                    self.pressRep(
+                        Button.A, repeat=1, duration=0.15,
+                        wait=0.5, interval=0.1)
+            else:
+                self.wait(max(0.1, float(sleeptime)))
+            return noprg_ret
+
+        if stop_reason == "field":
+            # RESULT_SEEN（after到達後）または再戦なしでは、EVENT探索・
+            # 移動を行わない。
+            if (event_reacquire_allowed
+                    and (self.ZA_markerdir("EVENT")
+                         or self.ZA_markerdir("SIDE_MARKER"))):
+                self.press(
+                    Direction(Stick.LEFT, 90),
+                    duration=max(0.02, float(event_move_duration)), wait=0.5)
+            return noprg_ret
+
+        # HELP／選択肢のA、または既定Bを1回送った。外側のStep監視へ
+        # 必ず制御を返し、無限ループで復旧タイマーを止めない。
+        return noprg_ret
+
+    def ZA_story_Template_battle_function_renda_route(
+            self, bkprg_ret, prg_ret, noprg_ret, battle_flow_key=None,
+            Xaction=1, Aaction=1, Yaction=1, Baction=1,
+            lockon_endskip=0, get_chanceicon4=0, noCp=0,
+            markertype=0, battle_mode=0, move=0, sleeptime=0.5,
+            rebattle_move_fast=0.1,
+            result_picture="POKEMON_ZA_FALSE_RETURN",
+            black_comment_is_defeat=False, rebattle=1):
+        """新しい安全連打フロー用の戦闘中入口。"""
+        return self.ZA_story_Template_battle_function_active_level(
+            bkprg_ret=bkprg_ret,
+            prg_ret=prg_ret,
+            noprg_ret=noprg_ret,
+            battle_flow_key=battle_flow_key,
+            Xaction=Xaction,
+            Aaction=Aaction,
+            Yaction=Yaction,
+            Baction=Baction,
+            lockon_endskip=lockon_endskip,
+            get_chanceicon4=get_chanceicon4,
+            noCp=noCp,
+            markertype=markertype,
+            battle_mode=battle_mode,
+            move=move,
+            sleeptime=sleeptime,
+            rebattle_move_fast=rebattle_move_fast,
+            result_picture=result_picture,
+            black_comment_is_defeat=black_comment_is_defeat,
+            rebattle=rebattle)
+
+    def _ZA_story_battle_after_safe_renda(
+            self, selected_pic, selected_target, endpictures, sleeptime):
+        """B連打を基準にし、停止した画面の種類と画像名を返す。"""
+        false_pictures = {
+            None, "", "RETURN_FALSE", "RETURN FALSE",
+            "POKEMON_ZA_FALSE_RETURN",
+        }
+        selected_picture_enabled = selected_pic not in false_pictures
+        a_click_pictures = (
+            "POKEMON_ZA_1_SELECT",
+            "POKEMON_ZA_2_SELECT",
+            "POKEMON_ZA_3_SELECT",
+            "POKEMON_ZA_4_SELECT",
+            "POKEMON_ZA_MORNING",
+            "POKEMON_ZA_NIGHT",
+        )
+        wait_time = max(0.1, float(sleeptime))
+
+        while True:
+            self.checkIfAlive()
+
+            # 指定選択画像とHELPだけは、停止画像より先にAで閉じる。
+            # これによりHELPと終了画像が重なっても即終了しない。
+            if (selected_picture_enabled
+                    and self.image_check(selected_pic)):
+                self.wait(1.0)
+                for _ in range(max(0, int(selected_target))):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+                self.wait(wait_time)
+                continue
+            if self.image_check("POKEMON_ZA_HELP_MARKER"):
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+                self.wait(wait_time)
+                continue
+
+            for picture in endpictures:
+                if self.image_check(picture):
+                    return "endpicture", picture
+            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                return "black_comment", "POKEMON_ZA_TEXT_BLACK_COMMENT"
+            if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+                return "active_level", "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
+
+            # 選択肢と朝／夜の切替画像はA。それ以外（COMPLETE・
+            # 各Comment・Xメニュー・CHAT・COIN・未検知を含む）は、
+            # すべて安全側のBを送る。
+            if any(self.image_check(picture) for picture in a_click_pictures):
+                button = Button.A
+            else:
+                button = Button.B
+            self.pressRep(
+                button, repeat=1, duration=0.15,
+                wait=0.0, interval=0.1)
+            self.wait(wait_time)
+
+    def ZA_story_Template_battle_after_renda_route(
+            self, bkprg_ret, prg_ret, battle_flow_key=None,
+            selected_pic="POKEMON_ZA_FALSE_RETURN", selected_target=0,
+            mode=0, sleeptime=0.5,
+            black_comment_is_defeat=False,
+            endpicture="", endpicture2="", endpicture3=""):
+        """画面別の停止理由で遷移する、B基準の戦闘後連打処理。"""
+        del mode  # 呼び出し互換用。
+        if not battle_flow_key:
+            battle_flow_key = bkprg_ret
+        false_pictures = {
+            None, "", "RETURN_FALSE", "RETURN FALSE",
+            "POKEMON_ZA_FALSE_RETURN",
+        }
+        endpictures = tuple(
+            picture for picture in (endpicture, endpicture2, endpicture3)
+            if picture not in false_pictures)
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        if not state["result_seen"]:
+            state["result_seen"] = True
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RESULT_SEEN", "entered_after_renda_route")
+
+        while True:
+            stop_reason, stop_picture = self._ZA_story_battle_after_safe_renda(
+                selected_pic=selected_pic,
+                selected_target=selected_target,
+                endpictures=endpictures,
+                sleeptime=sleeptime)
+            print(
+                "[BATTLE_RENDA] {}: stop={} picture={}".format(
+                    battle_flow_key, stop_reason, stop_picture))
+
+            if stop_reason == "endpicture":
+                self._ZA_story_battle_flow_reset(
+                    battle_flow_key, "endpicture_renda")
+                return prg_ret
+            if stop_reason == "field":
+                # FIELDは1回の検知で連打を終了し、その場で次Stepへ進む。
+                self._ZA_story_battle_flow_reset(
+                    battle_flow_key, "field_renda")
+                return prg_ret
+            if stop_reason == "active_level":
+                # 左下Lv.の再表示はバトル復帰。afterを抜けて戻り先へ返す。
+                state["active_seen"] = True
+                state["result_seen"] = False
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                self._ZA_story_battle_flow_mark(
+                    battle_flow_key, "ACTIVE_SEEN",
+                    "active_level_returned_after_renda")
+                return bkprg_ret
+            if stop_reason == "black_comment":
+                black_comment_cleared = False
+                for _ in range(10):
+                    self.checkIfAlive()
+                    self.pressRep(
+                        Button.B, repeat=1, duration=0.15,
+                        wait=0.0, interval=0.1)
+                    self.wait(max(0.1, float(sleeptime)))
+                    if not self.image_check(
+                            "POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                        black_comment_cleared = True
+                        break
+
+                if not black_comment_cleared:
+                    # Bを10回送っても残る黒Commentは、敗戦画面ではなく
+                    # アイテム使用時の黒Commentとして扱う。Aで閉じるが
+                    # RETRY_ENTRYへは変更せず、同じafter処理を継続する。
+                    self.pressRep(
+                        Button.A, repeat=1, duration=0.15,
+                        wait=0.0, interval=0.1)
+                    self.wait(max(0.1, float(sleeptime)))
+                    continue
+
+                if black_comment_is_defeat:
+                    # Bで閉じられた黒Commentだけを敗戦として扱う。
+                    state["active_seen"] = False
+                    state["result_seen"] = False
+                    state["field_result_count"] = 0
+                    state["field_result_since"] = None
+                    self._ZA_story_battle_flow_mark(
+                        battle_flow_key, "RETRY_ENTRY",
+                        "black_comment_defeat_after_renda")
+                    return bkprg_ret
+
+                # 敗北判定に使わない黒CommentはBで閉じた後、同じafter
+                # 連打へ戻る。
                 
     
     def ZA_story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub9_button="A",sub9_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,mode=0,sleeptime=0.5):
@@ -4211,57 +5126,61 @@ class ZA_story_Base(ImageProcPythonCommand):
             return detail
     
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") or nofiled: #FIELDから変更
-            variants = self.IMAGE_DETECTION_TARGETS.get(center, [])
-            detail = None
-            if variants:
-                detail = detect_marker_position(variants[0])
-                self.last_image_detection = detail
+            # EVENTは1回の呼び出し内で最新フレームを取り直し、中央になるまで
+            # 最大10回だけ方向補正する。PIN／SIDE_MARKERは従来どおり1回。
+            alignment_attempts = 10 if type == "EVENT" else 1
+            for _ in range(alignment_attempts):
+                variants = self.IMAGE_DETECTION_TARGETS.get(center, [])
+                detail = None
+                if variants:
+                    detail = detect_marker_position(variants[0])
+                    self.last_image_detection = detail
 
-            if is_detected_in(center, detail):
-                setattr(self, last_movement_name, None)
-                return True
-            elif is_detected_in(wide_downer, detail):
-                movement = (270, 1.0, 0.0)
-            elif is_detected_in(wide_upper, detail):
-                movement = (90, 1.0, 0.0)
-            elif is_detected_in(wide_downer_left_near, detail):
-                movement = (180, 0.2, 0.0)
-            elif is_detected_in(wide_downer_right_near, detail):
-                movement = (0, 0.2, 0.0)
-            elif is_detected_in(wide_upper_left_near, detail):
-                movement = (180, 0.2, 0.0)
-            elif is_detected_in(wide_upper_right_near, detail):
-                movement = (0, 0.2, 0.0)
-            elif is_detected_in(wide_downer_left, detail):
-                movement = (180, 1.0, 0.03)
-            elif is_detected_in(wide_downer_right, detail):
-                movement = (0, 1.0, 0.03)
-            elif is_detected_in(wide_upper_left, detail):
-                movement = (180, 1.0, 0.03)
-            elif is_detected_in(wide_upper_right, detail):
-                movement = (0, 1.0, 0.03)
-            elif is_detected_in(left_side, detail):
-                movement = (180, 1.0, 0.03)
-            elif is_detected_in(right_side, detail):
-                movement = (0, 1.0, 0.03)
-            elif is_detected_in(left, detail):
-                if is_detected_in(center_wide, detail):
+                if is_detected_in(center, detail):
+                    setattr(self, last_movement_name, None)
+                    return True
+                elif is_detected_in(wide_downer, detail):
+                    movement = (270, 1.0, 0.0)
+                elif is_detected_in(wide_upper, detail):
+                    movement = (90, 1.0, 0.0)
+                elif is_detected_in(wide_downer_left_near, detail):
                     movement = (180, 0.2, 0.0)
-                else:
-                    movement = (180, 1.0, 0.03)
-            elif is_detected_in(right, detail):
-                if is_detected_in(center_wide, detail):
+                elif is_detected_in(wide_downer_right_near, detail):
                     movement = (0, 0.2, 0.0)
-                else:
+                elif is_detected_in(wide_upper_left_near, detail):
+                    movement = (180, 0.2, 0.0)
+                elif is_detected_in(wide_upper_right_near, detail):
+                    movement = (0, 0.2, 0.0)
+                elif is_detected_in(wide_downer_left, detail):
+                    movement = (180, 1.0, 0.03)
+                elif is_detected_in(wide_downer_right, detail):
                     movement = (0, 1.0, 0.03)
-            else:
-                movement = getattr(self, last_movement_name, None)
-                if movement is None:
-                    movement = (180, 1.0, 0.0)
-            angle, magnitude, duration = movement
-            self.press(Direction(Stick.RIGHT,angle,magnitude), duration=duration, wait=0.0)
-            setattr(self, last_movement_name, movement)
-            self.wait(0.1)
+                elif is_detected_in(wide_upper_left, detail):
+                    movement = (180, 1.0, 0.03)
+                elif is_detected_in(wide_upper_right, detail):
+                    movement = (0, 1.0, 0.03)
+                elif is_detected_in(left_side, detail):
+                    movement = (180, 1.0, 0.03)
+                elif is_detected_in(right_side, detail):
+                    movement = (0, 1.0, 0.03)
+                elif is_detected_in(left, detail):
+                    if is_detected_in(center_wide, detail):
+                        movement = (180, 0.2, 0.0)
+                    else:
+                        movement = (180, 1.0, 0.03)
+                elif is_detected_in(right, detail):
+                    if is_detected_in(center_wide, detail):
+                        movement = (0, 0.2, 0.0)
+                    else:
+                        movement = (0, 1.0, 0.03)
+                else:
+                    movement = getattr(self, last_movement_name, None)
+                    if movement is None:
+                        movement = (180, 1.0, 0.0)
+                angle, magnitude, duration = movement
+                self.press(Direction(Stick.RIGHT,angle,magnitude), duration=duration, wait=0.0)
+                setattr(self, last_movement_name, movement)
+                self.wait(0.1)
         return False
 
     def ZA_battle_infi_main(self):
@@ -4424,6 +5343,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         # Reloadや開始位置指定で前回実行時の戦闘完了状態を引き継がない。
         self._za_first_battle_started = False
         self._za_first_battle_confirm_count = 0
+        self._za_story_battle_flows = {}
+        self._za_story_active_lank_battle_zone = None
         while True:
             
             self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
@@ -4773,7 +5694,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_farst_battle(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_function(
+        return self.ZA_story_Template_battle_function_renda_route(
             bkprg_ret="1_STORY_FARST_BATTLE",
             prg_ret="1_STORY_FARST_BATTLE_END",
             noprg_ret="1_STORY_FARST_BATTLE",
@@ -4828,7 +5749,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_farst_battle_end(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_after(
+        return self.ZA_story_Template_battle_after_renda_route(
             bkprg_ret="1_STORY_FARST_BATTLE",
             prg_ret="1_STORY_FARST_BATTLE_ZONE_MOVE1")
 
@@ -4857,7 +5778,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_second_battle_start(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_before(
+        return self.ZA_story_Template_battle_before_renda_route(
             noprg_ret="1_STORY_SECOND_BATTLE_START",
             prg_ret="1_STORY_SECOND_BATTLE",
             green_check=0)
@@ -4869,7 +5790,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_second_battle(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_function(
+        return self.ZA_story_Template_battle_function_renda_route(
             bkprg_ret="1_STORY_SECOND_BATTLE_START",
             prg_ret="1_STORY_SECOND_BATTLE_END",
             noprg_ret="1_STORY_SECOND_BATTLE",
@@ -4884,7 +5805,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_second_battle_end(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_after(
+        return self.ZA_story_Template_battle_after_renda_route(
             bkprg_ret="1_STORY_SECOND_BATTLE",
             prg_ret="1_STORY_FARST_BATTLE_ZONE_MOVE2")
 
@@ -5083,10 +6004,11 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move15(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_before(
+        return self.ZA_story_Template_battle_before_renda_route(
             noprg_ret="1_STORY_HOTEL_Z_MOVE15",
             prg_ret="1_STORY_THIRD_BATTLE",
-            green_check=0)
+            green_check=0,
+            rebattle=0)
         
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
@@ -5095,12 +6017,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_third_battle(self):#TODO BATTLE
         # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_function(
+        return self.ZA_story_Template_battle_function_renda_route(
             bkprg_ret="1_STORY_HOTEL_Z_MOVE15",
             prg_ret="1_STORY_THIRD_BATTLE_END",
             noprg_ret="1_STORY_THIRD_BATTLE",
             Xaction=1, Aaction=1, Yaction=1, Baction=0,
-            lockon_endskip=0, get_chanceicon4=0, noCp=1)
+            lockon_endskip=0, get_chanceicon4=0, noCp=1,rebattle=0)
         
         
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK"):
@@ -5831,7 +6753,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_55"
     
     def _1_story_out_hotel_z_56(self):#TODO STOP
-        #return self.ZA_story_Template_battle_before(noprg_ret="1_STORY_OUT_HOTEL_Z_56",prg_ret="1_STORY_OUT_HOTEL_Z_57",green_check=0)
+        #return self.ZA_story_Template_battle_before_renda_route(noprg_ret="1_STORY_OUT_HOTEL_Z_56",prg_ret="1_STORY_OUT_HOTEL_Z_57",green_check=0)
 
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,90), duration=4.75, wait=0.5)
@@ -5839,7 +6761,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_56"
     
     def _1_story_out_hotel_z_57(self):
-        #return self.ZA_story_Template_battle_function(bkprg_ret="1_STORY_OUT_HOTEL_Z_56",prg_ret="1_STORY_OUT_HOTEL_Z_58",noprg_ret="1_STORY_OUT_HOTEL_Z_57",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        #return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="1_STORY_OUT_HOTEL_Z_56",prg_ret="1_STORY_OUT_HOTEL_Z_58",noprg_ret="1_STORY_OUT_HOTEL_Z_57",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):
             self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
@@ -5848,7 +6770,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_57"
     
     def _1_story_out_hotel_z_58(self):
-        #return self.ZA_story_Template_battle_after(bkprg_ret="1_STORY_OUT_HOTEL_Z_57",prg_ret="1_STORY_OUT_HOTEL_Z_59")
+        #return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="1_STORY_OUT_HOTEL_Z_57",prg_ret="1_STORY_OUT_HOTEL_Z_59")
 
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
@@ -6071,7 +6993,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_82"
     
     def _1_story_out_hotel_z_83(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="1_STORY_OUT_HOTEL_Z_83",prg_ret="1_STORY_OUT_HOTEL_Z_84",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="1_STORY_OUT_HOTEL_Z_83",prg_ret="1_STORY_OUT_HOTEL_Z_84",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
@@ -6080,7 +7002,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     #Zランク
     def _1_story_out_hotel_z_84(self):#TODO BATTLE?
-        return self.ZA_story_Template_battle_function(bkprg_ret="1_STORY_OUT_HOTEL_Z_83",prg_ret="1_STORY_OUT_HOTEL_Z_85",noprg_ret="1_STORY_OUT_HOTEL_Z_84",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="1_STORY_OUT_HOTEL_Z_83",prg_ret="1_STORY_OUT_HOTEL_Z_85",noprg_ret="1_STORY_OUT_HOTEL_Z_84",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
@@ -6095,8 +7017,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "1_STORY_OUT_HOTEL_Z_85"
         return "1_STORY_OUT_HOTEL_Z_84"
     
-    def _1_story_out_hotel_z_85(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="1_STORY_OUT_HOTEL_Z_84",prg_ret="1_STORY_END")
+    def _1_story_out_hotel_z_85(self):#ランク終了で送られない？
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="1_STORY_OUT_HOTEL_Z_84",prg_ret="1_STORY_END",endpicture="POKEMON_ZA_IN_ICON")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
@@ -6187,7 +7109,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_9"
     
     def _2_story_tower_10(self):
-        #return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_9",prg_ret="2_STORY_TOWER_11")
+        #return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_9",prg_ret="2_STORY_TOWER_11")
 
         #return self.story_Template_battle_after(bkprg_ret="2_STORY_TOWER_9",prg_ret="2_STORY_TOWER_11")
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
@@ -6326,7 +7248,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_26"
     
     def _2_story_tower_27(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_TOWER_27",prg_ret="2_STORY_TOWER_28",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_TOWER_27",prg_ret="2_STORY_TOWER_28",green_check=1)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
@@ -6334,7 +7256,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_27"
     
     def _2_story_tower_28(self):#TODO BATTLE?
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_27",prg_ret="2_STORY_TOWER_29",noprg_ret="2_STORY_TOWER_28",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_TOWER_27",prg_ret="2_STORY_TOWER_29",noprg_ret="2_STORY_TOWER_28",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
@@ -6352,7 +7274,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_28"
     
     def _2_story_tower_29(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_28",prg_ret="2_STORY_TOWER_30")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_28",prg_ret="2_STORY_TOWER_30")
 
         
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
@@ -8452,7 +9374,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_57"
     
     def _2_story_tower_58(self): #やみらみ
-        #return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_TOWER_58",prg_ret="2_STORY_TOWER_59",green_check=0)
+        #return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_TOWER_58",prg_ret="2_STORY_TOWER_59",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
@@ -8462,7 +9384,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_58"
     
     def _2_story_tower_59(self):
-        #return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_58",prg_ret="2_STORY_TOWER_60",noprg_ret="2_STORY_TOWER_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
+        #return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_TOWER_58",prg_ret="2_STORY_TOWER_60",noprg_ret="2_STORY_TOWER_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
         if self.image_check("POKEMON_ZA_FIELD_W"):
             self.etc_sendCommand("Lbutton_up")
         if self.image_check("POKEMON_ZA_ESCAPE"):
@@ -8484,7 +9406,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_59"
     
     def _2_story_tower_60(self):
-        #return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_59",prg_ret="2_STORY_TOWER_61")
+        #return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_59",prg_ret="2_STORY_TOWER_61")
 
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"): #FIELDから変更
@@ -8604,7 +9526,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_74"
     
     def _2_story_tower_72(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_73",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_TOWER_73",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
 
         #親分ホルビーが必要な場合はゲットマーカー4でゲット処理を追加
         #敗戦対応が必要なはず
@@ -8629,7 +9551,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_72"
     
     def _2_story_tower_73(self): 
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
@@ -8701,7 +9623,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_80"
     
     def _2_story_tower_81(self): 
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_TOWER_81",prg_ret="2_STORY_TOWER_82",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_TOWER_81",prg_ret="2_STORY_TOWER_82",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
@@ -8709,7 +9631,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_81"
     
     def _2_story_tower_82(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_TOWER_81",prg_ret="2_STORY_TOWER_83",noprg_ret="2_STORY_TOWER_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_TOWER_81",prg_ret="2_STORY_TOWER_83",noprg_ret="2_STORY_TOWER_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=1)
 
         if self.image_check("POKEMON_ZA_ESCAPE"):
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -8721,7 +9643,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_82"
     
     def _2_story_tower_83(self): 
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_TOWER_82",prg_ret="2_STORY_TOWER_84")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_82",prg_ret="2_STORY_TOWER_84")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
@@ -8778,7 +9700,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_Y_LANK_MOVE2"
 
     def _2_story_y_lank_move3(self):#TODO BATTLE?
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_Y_LANK_MOVE3",prg_ret="2_STORY_Y_LANK_MOVE4",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_Y_LANK_MOVE3",prg_ret="2_STORY_Y_LANK_MOVE4",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
@@ -8792,7 +9714,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     #Yランク
     def _2_story_y_lank_move4(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_Y_LANK_MOVE3",prg_ret="2_STORY_Y_LANK_MOVE5",noprg_ret="2_STORY_Y_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_Y_LANK_MOVE3",prg_ret="2_STORY_Y_LANK_MOVE5",noprg_ret="2_STORY_Y_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -8808,7 +9730,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_Y_LANK_MOVE4"
 
     def _2_story_y_lank_move5(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_Y_LANK_MOVE4",prg_ret="2_STORY_Y_END")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_Y_LANK_MOVE4",prg_ret="2_STORY_Y_END")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_3_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sub4_button="A",sub4_picture="POKEMON_ZA_MORNING"):
@@ -8838,7 +9760,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE2"
     
     def _2_story_x_lank_move3(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE4",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE4",green_check=1)
 
         
         if self.ZA_story_Template_Comment_Out():
@@ -8852,7 +9774,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE3"
     
     def _2_story_x_lank_move4(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE5",noprg_ret="2_STORY_X_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_X_LANK_MOVE3",prg_ret="2_STORY_X_LANK_MOVE5",noprg_ret="2_STORY_X_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -8871,11 +9793,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE4"
     
     def _2_story_x_lank_move5(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")#TODO
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")#TODO
 
         if self.image_check("POKEMON_ZA_COIN_ICON") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#コインアイコンで抜けた場合はコメント画面まで連打
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")
+                return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_X_LANK_MOVE4",prg_ret="2_STORY_X_LANK_MOVE6")
         return "2_STORY_X_LANK_MOVE5"
 
     def _2_story_x_lank_move6(self):
@@ -8940,13 +9862,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE10"
     
     def _2_story_x_lank_move11(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE12",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE12",green_check=1)
 
     def _2_story_x_lank_move12(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE13",noprg_ret="2_STORY_X_LANK_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_X_LANK_MOVE11",prg_ret="2_STORY_X_LANK_MOVE13",noprg_ret="2_STORY_X_LANK_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
     
     def _2_story_x_lank_move13(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_X_LANK_MOVE12",prg_ret="2_STORY_W_LANK_MOVE1")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_X_LANK_MOVE12",prg_ret="2_STORY_W_LANK_MOVE1")
 
     def _2_story_w_lank_move1(self):
         ret = self.ZA_Common_goto(4,0,1)#Wゾーン2へ移動
@@ -8978,13 +9900,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE2"
     
     def _2_story_w_lank_move3(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE4",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE4",green_check=1)
 
     def _2_story_w_lank_move4(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_W_LANK_MOVE3",prg_ret="2_STORY_W_LANK_MOVE5",noprg_ret="2_STORY_W_LANK_MOVE4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
     def _2_story_w_lank_move5(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE6")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_W_LANK_MOVE4",prg_ret="2_STORY_W_LANK_MOVE6")
     
     #ヒトカゲの対策を先にした方がよい？(回復はしないが通る)
     def _2_story_w_lank_move6(self):
@@ -9038,7 +9960,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE10"
     
     def _2_story_w_lank_move11(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_W_LANK_MOVE12",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_W_LANK_MOVE12",battle_flow_key="2_STORY_W_LANK",green_check=1,black_comment_is_defeat=True)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
@@ -9051,7 +9973,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE8"
     
     def _2_story_w_lank_move12(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_W_LANK_MOVE13",noprg_ret="2_STORY_W_LANK_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_W_LANK_MOVE13",noprg_ret="2_STORY_W_LANK_MOVE12",battle_flow_key="2_STORY_W_LANK",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,result_picture="POKEMON_ZA_W_BATTLE_END",black_comment_is_defeat=True)
 
         if self.image_check("POKEMON_ZA_W_BATTLE_END"):
             return "2_STORY_W_LANK_MOVE13"
@@ -9081,7 +10003,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE12"
     #check
     def _2_story_w_lank_move13(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_W_LANK_MOVE12",prg_ret="2_STORY_ABSOL_MOVE1")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_ABSOL_MOVE1",battle_flow_key="2_STORY_W_LANK",black_comment_is_defeat=True)
 
         if self.image_check("POKEMON_ZA_W_BATTLE_END"):
             return "2_STORY_ABSOL_MOVE1"
@@ -9110,6 +10032,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,0), duration=15.0, wait=1.0)
             self.wait(0.5)
             return "2_STORY_ABSOL_MOVE2"
+        elif self.ZA_story_Template_Comment_Out():
+            return "2_STORY_ABSOL_MOVE1"
         return "2_STORY_ABSOL_MOVE1"
     
     def _2_story_absol_move2(self):
@@ -9184,13 +10108,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE5"
     
     def _2_story_absol_move6(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE7",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_ABSOL_MOVE6",prg_ret="2_STORY_ABSOL_MOVE7",green_check=1)
     
     #アブソル入れ替え処理後で実施
     #敗北チェックがめんどくさいので最悪何もせず負けた方がよい？
     #TODO bkprg_retを敗北用に
     def _2_story_absol_move7(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE8",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE8",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -9217,7 +10141,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     
     def _2_story_absol_move8(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_ABSOL_MOVE9")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_MAPPING_110")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
@@ -9426,13 +10350,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE10"
     
     def _2_story_absol_move11(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
     
     def _2_story_absol_move12(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,rebattle=0)
     
     def _2_story_absol_move13(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
     
     def _2_story_absol_move14(self):
         ### AUTO_SAVE_POINT
@@ -9465,15 +10389,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE16"
     
     def _2_story_absol_move17(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",battle_flow_key="2_STORY_ABSOL",green_check=1)
     
     def _2_story_absol_move18(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE19",noprg_ret="2_STORY_ABSOL_MOVE18",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE19",noprg_ret="2_STORY_ABSOL_MOVE18",battle_flow_key="2_STORY_ABSOL",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1)
     
     def _2_story_absol_move19(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_ABSOL_MOVE18",prg_ret="2_STORY_ABSOL_MOVE20")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE18",prg_ret="2_STORY_ABSOL_MOVE20",battle_flow_key="2_STORY_ABSOL")
     
     def _2_story_absol_move20(self):
+        #if self.ZA_story_Template_Comment_Out():#TODO
+        #    return "2_STORY_ABSOL_MOVE20"
         ### AUTO_SAVE_POINT
         ret = self.ZA_Common_goto(1,1,0)#クェーサー社へ移動
         if ret == "START":
@@ -10037,7 +10963,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE9"
     
     def _2_story_mega_move10(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_MEGA_MOVE10",prg_ret="2_STORY_MEGA_MOVE11",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_MEGA_MOVE10",prg_ret="2_STORY_MEGA_MOVE11",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
@@ -10045,7 +10971,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE10"
     
     def _2_story_mega_move11(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_MEGA_MOVE10",prg_ret="2_STORY_MEGA_MOVE12",noprg_ret="2_STORY_MEGA_MOVE11",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_MEGA_MOVE10",prg_ret="2_STORY_MEGA_MOVE12",noprg_ret="2_STORY_MEGA_MOVE11",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10070,7 +10996,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE11"
     
     def _2_story_mega_move12(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_MEGA_MOVE11",prg_ret="2_STORY_MEGA_MOVE13")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_MEGA_MOVE11",prg_ret="2_STORY_MEGA_MOVE13")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
@@ -10196,7 +11122,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE24"
     
     def _2_story_mega_move25(self):#BSA
-        return self.ZA_story_Template_battle_before(noprg_ret="2_STORY_MEGA_MOVE25",prg_ret="2_STORY_MEGA_MOVE26",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_MEGA_MOVE25",prg_ret="2_STORY_MEGA_MOVE26",green_check=1)
 
         
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
@@ -10206,7 +11132,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE25"
     
     def _2_story_mega_move26(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="2_STORY_MEGA_MOVE25" ,prg_ret="2_STORY_MEGA_MOVE27" ,noprg_ret="2_STORY_MEGA_MOVE26" ,Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_MEGA_MOVE25" ,prg_ret="2_STORY_MEGA_MOVE27" ,noprg_ret="2_STORY_MEGA_MOVE26" ,Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10231,7 +11157,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_MEGA_MOVE26"
     
     def _2_story_mega_move27(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="2_STORY_MEGA_MOVE26" ,prg_ret="2_STORY_END")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_MEGA_MOVE26" ,prg_ret="2_STORY_END")
 
         
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
@@ -10269,7 +11195,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_2"
 
     def _3_story_canari_3(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="3_STORY_CANARI_3",prg_ret="3_STORY_CANARI_4",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="3_STORY_CANARI_3",prg_ret="3_STORY_CANARI_4",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture2="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
@@ -10277,7 +11203,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_3"
 
     def _3_story_canari_4(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="3_STORY_CANARI_3",prg_ret="3_STORY_CANARI_5",noprg_ret="3_STORY_CANARI_4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="3_STORY_CANARI_3",prg_ret="3_STORY_CANARI_5",noprg_ret="3_STORY_CANARI_4",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10303,7 +11229,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_4"
 
     def _3_story_canari_5(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="3_STORY_CANARI_4",prg_ret="3_STORY_CANARI_6")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="3_STORY_CANARI_4",prg_ret="3_STORY_CANARI_6")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
@@ -10560,14 +11486,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_35"
     
     def _3_story_canari_36(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="3_STORY_CANARI_36",prg_ret="3_STORY_CANARI_37",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="3_STORY_CANARI_36",prg_ret="3_STORY_CANARI_37",green_check=0)
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             return "3_STORY_CANARI_37"
         return "3_STORY_CANARI_36"
     
     def _3_story_canari_37(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="3_STORY_CANARI_36",prg_ret="3_STORY_CANARI_38",noprg_ret="3_STORY_CANARI_37",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="3_STORY_CANARI_36",prg_ret="3_STORY_CANARI_38",noprg_ret="3_STORY_CANARI_37",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10594,7 +11520,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_37"
     
     def _3_story_canari_38(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="3_STORY_CANARI_37",prg_ret="3_STORY_CANARI_39")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="3_STORY_CANARI_37",prg_ret="3_STORY_CANARI_39",endpicture="POKEMON_ZA_4_SELECT")
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",endpicture4="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             for i in range(10):
@@ -10648,14 +11574,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_43"
     
     def _3_story_canari_44(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="3_STORY_CANARI_44",prg_ret="3_STORY_CANARI_45",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="3_STORY_CANARI_44",prg_ret="3_STORY_CANARI_45",green_check=0)
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             return "3_STORY_CANARI_45"
         return "3_STORY_CANARI_44"
     
     def _3_story_canari_45(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="3_STORY_CANARI_44",prg_ret="3_STORY_CANARI_46",noprg_ret="3_STORY_CANARI_45",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="3_STORY_CANARI_44",prg_ret="3_STORY_CANARI_46",noprg_ret="3_STORY_CANARI_45",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10681,7 +11607,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_45"
     
     def _3_story_canari_46(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="3_STORY_CANARI_45",prg_ret="3_STORY_CANARI_47")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="3_STORY_CANARI_45",prg_ret="3_STORY_CANARI_47")
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             for i in range(10):
@@ -10705,14 +11631,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_47"
     
     def _3_story_canari_48(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_49",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_49",green_check=0)
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             return "3_STORY_CANARI_49"
         return "3_STORY_CANARI_48"
     
     def _3_story_canari_49(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_50",noprg_ret="3_STORY_CANARI_49",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_50",noprg_ret="3_STORY_CANARI_49",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -10738,7 +11664,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_49"
     
     def _3_story_canari_50(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="3_STORY_CANARI_49",prg_ret="3_STORY_MEGA_MOVE1")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="3_STORY_CANARI_49",prg_ret="3_STORY_MEGA_MOVE1")
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             for i in range(10):
@@ -11068,7 +11994,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_4"
             
     def _4_story_shiro_5(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_5",prg_ret="4_STORY_SHIRO_6",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="4_STORY_SHIRO_5",prg_ret="4_STORY_SHIRO_6",green_check=0)
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
@@ -11076,7 +12002,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_5"
     
     def _4_story_shiro_6(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_5",prg_ret="4_STORY_SHIRO_7",noprg_ret="4_STORY_SHIRO_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_5",prg_ret="4_STORY_SHIRO_7",noprg_ret="4_STORY_SHIRO_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
         if self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") or self.image_check("POKEMON_ZA_ESCAPE"):# or self.image_check("TEXT_WHITE_COMMENT"):
             self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1)
@@ -11102,7 +12028,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_6"
     
     def _4_story_shiro_7(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_6",prg_ret="4_STORY_SHIRO_8")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_6",prg_ret="4_STORY_SHIRO_8")
 
         if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture2="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
             for i in range(5):
@@ -11145,13 +12071,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_11"
     
     def _4_story_shiro_12(self):
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#FILED上下が出ない
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
                 return "4_STORY_SHIRO_13"
         return "4_STORY_SHIRO_12"
     
     def _4_story_shiro_13(self):
-        ret = self.ZA_Common_goto(4,0,7)#Wゾーン8へ移動
+        ret = self.ZA_Common_goto(4,0,-3)#Wゾーン8へ移動
         if ret == "START":
             return "4_STORY_SHIRO_14"
         else:
@@ -11164,6 +12090,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,180), duration=8.0, wait=1.0)
             self.wait(0.5)
+            self.press(Direction(Stick.LEFT,90), duration=0.02, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_15"
         return "4_STORY_SHIRO_14"
     
@@ -11187,7 +12116,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_16"
     
     def _4_story_shiro_17(self):
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#TODO　セーブから16に戻らないと方向不明？
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
                 return "4_STORY_SHIRO_18"
         return "4_STORY_SHIRO_17"
@@ -11282,7 +12211,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and self.image_check("POKEMON_ZA_FIELD3"): #FIELDから変更
                 self.etc_sendCommand("Lbutton_up")
-                self.wait(1.0)
+                self.wait(3.0)
                 return "4_STORY_SHIRO_27"
             elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and self.image_check("POKEMON_ZA_FIELD_BACK3"): #FIELDから変更
                 self.wait(1.0)
@@ -11296,7 +12225,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_27(self):
         self.wait(1.0)
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+            for i in range(1,5):
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "4_STORY_SHIRO_28"
         return "4_STORY_SHIRO_27"
@@ -11309,14 +12239,22 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_29(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.wait(0.5)
-            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
-            self.wait(0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            #self.wait(0.5)
+            #self.press(Direction(Stick.LEFT,90), duration=3.2, wait=1.0)
+            #self.wait(0.5)
+            #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            
+            self.ZA_ROTOM_GLIDE(dir=90,a_count=30)
             return "4_STORY_SHIRO_30"
         return "4_STORY_SHIRO_29"
     
     def _4_story_shiro_30(self):
+        #敗北でいいので戦う処理を省く
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_31"
+        return "4_STORY_SHIRO_30"
+        
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.wait(0.5)
             self.ZA_battle_coCp_noloop(Xaction=1,Aaction=1,Yaction=1,Baction=0)
@@ -11360,13 +12298,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_34"
     
     def _4_story_shiro_35(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_36",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_36",green_check=1)
     
     def _4_story_shiro_36(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_37",noprg_ret="4_STORY_SHIRO_36")
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_35",prg_ret="4_STORY_SHIRO_37",noprg_ret="4_STORY_SHIRO_36")
     
     def _4_story_shiro_37(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_36",prg_ret="4_STORY_SHIRO_38",selected_pic="POKEMON_ZA_4_SELECT",selected_target=1)
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_36",prg_ret="4_STORY_SHIRO_38",selected_pic="POKEMON_ZA_4_SELECT",selected_target=1)
     
     def _4_story_shiro_38(self):
         ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
@@ -11398,14 +12336,136 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_41"
     
     def _4_story_shiro_42(self):
+        try:
+            return self.ZA_story_shiro42_renda_once()
+        except Exception as error:
+            message = (
+                "[STEP_ERROR] step=4_STORY_SHIRO_42 exception="
+                f"{type(error).__name__} detail={error}")
+            print(message)
+            logger = getattr(self, "_logger", None)
+            if logger is not None:
+                log_exception = getattr(logger, "exception", None)
+                if callable(log_exception):
+                    log_exception(message)
+                else:
+                    logger.error(message)
+            raise
+
+    def ZA_story_shiro42_renda_once(self):
+        step_name = "4_STORY_SHIRO_42"
+        now = time.monotonic()
+        diagnostic = getattr(self, "_za_shiro42_diagnostic", None)
+        if diagnostic is None:
+            diagnostic = {
+                "started": now,
+                "last_log": now,
+                "cycles": 0,
+                "last_screen": "",
+                "same_screen_count": 0,
+            }
+            self._za_shiro42_diagnostic = diagnostic
+        diagnostic["cycles"] += 1
+
+        def finish(next_state, screen, action, target=""):
+            log_now = time.monotonic()
+            if screen == diagnostic["last_screen"]:
+                diagnostic["same_screen_count"] += 1
+            else:
+                diagnostic["last_screen"] = screen
+                diagnostic["same_screen_count"] = 1
+
+            if next_state != step_name:
+                message = (
+                    f"[STEP_RECOVERY] step={step_name} next={next_state} "
+                    f"cause={screen} elapsed="
+                    f"{log_now - diagnostic['started']:.1f}s cycles="
+                    f"{diagnostic['cycles']}")
+                print(message)
+                logger = getattr(self, "_logger", None)
+                if logger is not None:
+                    logger.info(message)
+                self._za_shiro42_diagnostic = None
+                self._za_shiro42_select_pending = False
+                return next_state
+
+            if log_now - diagnostic["last_log"] >= 10.0:
+                detection = getattr(self, "last_image_detection", {})
+                score = detection.get("score") if isinstance(
+                    detection, dict) else None
+                threshold = detection.get("threshold") if isinstance(
+                    detection, dict) else None
+                score_text = (
+                    f"{float(score):.6f}" if score is not None else "unknown")
+                threshold_text = (
+                    f"{float(threshold):.6f}"
+                    if threshold is not None else "unknown")
+                message = (
+                    f"[STEP_STALL] step={step_name} screen={screen} "
+                    f"action={action} target={target or 'none'} elapsed="
+                    f"{log_now - diagnostic['started']:.1f}s cycles="
+                    f"{diagnostic['cycles']} same_screen_count="
+                    f"{diagnostic['same_screen_count']} last_score="
+                    f"{score_text} last_threshold={threshold_text}")
+                print(message)
+                logger = getattr(self, "_logger", None)
+                if logger is not None:
+                    logger.warning(message)
+                diagnostic["last_log"] = log_now
+            return next_state
+
+        # SELECTが出た場合はFIELD判定より先に決められた選択動作へ渡す。
         if self.image_check("POKEMON_ZA_3_SELECT"):
-            for i in range(2):
-                self.etc_sendCommand("Lbutton_down")
+            if not getattr(self, "_za_shiro42_select_pending", False):
+                self._za_shiro42_select_pending = True
+                for _ in range(2):
+                    self.etc_sendCommand("Lbutton_down")
+                    self.wait(0.5)
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                return finish(
+                    step_name, "three_select", "DOWNx2+A",
+                    "POKEMON_ZA_3_SELECT")
+            self.wait(0.5)
+            return finish(
+                step_name, "three_select_wait_transition", "wait",
+                "POKEMON_ZA_3_SELECT")
+
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return finish(
+                "4_STORY_SHIRO_43", "field_detected", "none",
+                "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+
+        # 3択が一度消えた後に再表示された場合は、次の3択として選び直す。
+        self._za_shiro42_select_pending = False
+
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            self.pressRep(
+                Button.B, repeat=1, duration=0.04,
+                wait=0.0, interval=0.1)
+            self.wait(0.5)
+            return finish(
+                step_name, "white_comment", "B",
+                "POKEMON_ZA_TEXT_WHITE_COMMENT")
+
+        for target in (
+                "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_2_SELECT",
+                "POKEMON_ZA_HELP_MARKER"):
+            if self.image_check(target):
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.04,
+                    wait=0.0, interval=0.1)
                 self.wait(0.5)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=sleeptime): #FIELDから変更
-                return "4_STORY_SHIRO_43"
-        return "4_STORY_SHIRO_42"
+                return finish(step_name, target, "A", target)
+
+        # 遷移中などの未検知画面は、誤決定を避けるため既定のBを送る。
+        self.pressRep(
+            Button.B, repeat=1, duration=0.04,
+            wait=0.0, interval=0.1)
+        self.wait(0.5)
+        return finish(step_name, "unrecognized", "B")
     
     def _4_story_shiro_43(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -11415,7 +12475,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(4.0)
                 #C+チェックをして、battle_Cp_loopでC+チェックを抜けるため
                 self.ZA_ZL_ACTION("")
-                self.ZA_battle_Cp_loop(Xaction=1,Aaction=0,Yaction=0,Baction=0)
+                for i in range(1,5):
+                    self.ZA_battle_Cp_loop(Xaction=1,Aaction=0,Yaction=0,Baction=0)
                 return "4_STORY_SHIRO_44"
             else:   
                 self.etc_sendCommand("Lbutton_left")
@@ -11486,7 +12547,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_50"
     
     def _4_story_shiro_51(self):
-
+        # 手持5番目（x=4, y=-1）をBOX側の空き枠（x=1, y=0）へ移す。
+        self.common_box_change_current_state = (
+            self.ZA_common_box_change_function(
+                target1=4, target2=1,
+                target1_high=-1, target2_high=0))
+        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
+            return "4_STORY_SHIRO_52"
         return "4_STORY_SHIRO_51"
     
     def _4_story_shiro_52(self):
@@ -11505,7 +12572,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_53"
     
     def _4_story_shiro_54(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_54",prg_ret="4_STORY_SHIRO_55",green_check=0)
+        #return self.ZA_story_Template_battle_before_renda_route(noprg_ret="4_STORY_SHIRO_54",prg_ret="4_STORY_SHIRO_55",green_check=0)
 
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.ZA_ball_change(2):#ハイパーボールチェック
@@ -11513,24 +12580,58 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_54"
     
     def _4_story_shiro_55(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_54",prg_ret="4_STORY_SHIRO_56",noprg_ret="4_STORY_SHIRO_55",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0)
+        #return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_54",prg_ret="4_STORY_SHIRO_56",noprg_ret="4_STORY_SHIRO_55",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0)
 
-        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
-            return "4_STORY_SHIRO_55"
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): 
+            if self.ZA_markerdir("EVENT"):
+                self.press(Direction(Stick.LEFT,90), duration=0.5, wait=1.0)
+                return "4_STORY_SHIRO_56"
         return "4_STORY_SHIRO_55"
     #todo
     def _4_story_shiro_56(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_55",prg_ret="4_STORY_SHIRO_57")
-
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sleeptime=0.3): #FIELDから変更
+                return "4_STORY_SHIRO_57"
+        elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.5, interval=0.1)
+        elif self.image_check("POKEMON_ZA_EVENT_MARKER_CENTER_WIDE") or self.image_check("POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE"):
+            return "4_STORY_SHIRO_55"
+        #return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_55",prg_ret="4_STORY_SHIRO_57")
+        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1,R_Push_enable =0):
+            return "4_STORY_SHIRO_56"
         return "4_STORY_SHIRO_56"
     
     def _4_story_shiro_57(self):
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+            self.press(Direction(Stick.LEFT,90), duration=15.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,0), duration=0.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,150), duration=6.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,70), duration=12.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=0.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,180), duration=0.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=4.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=17.0, wait=1.0)
+            return "4_STORY_SHIRO_58"
         return "4_STORY_SHIRO_57"
     
     def _4_story_shiro_58(self):
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+            self.press(Direction(Stick.LEFT,180), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=10.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=1.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,45), duration=10.0, wait=1.0)
+            return "4_STORY_SHIRO_59"
         return "4_STORY_SHIRO_58"
     
     def _4_story_shiro_59(self):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+                return "4_STORY_SHIRO_61"
         return "4_STORY_SHIRO_59"
     
     def _4_story_shiro_60(self):
@@ -11573,9 +12674,11 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_66(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,130), duration=3.5, wait=1.0)
+            self.press(Direction(Stick.LEFT,130), duration=3.7, wait=1.0)
             self.wait(0.5)
-            self.press(Direction(Stick.LEFT,220), duration=0.1, wait=1.0)
+            self.press(Direction(Stick.LEFT,220), duration=0.3, wait=1.0)
+            self.wait(0.5)
+            self.press(Direction(Stick.LEFT,270), duration=0.1, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_67"
@@ -11584,7 +12687,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _4_story_shiro_67(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
-                return "4_STORY_SHIRO_68"
+                return "4_STORY_SHIRO_68" 
         return "4_STORY_SHIRO_67"
     
     def _4_story_shiro_68(self):
@@ -11675,13 +12778,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_79"
     
     def _4_story_shiro_80(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_81",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_81",green_check=0)
 
     def _4_story_shiro_81(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _4_story_shiro_82(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
  
     def _4_story_shiro_83(self):
         ### AUTO_SAVE_POINT
@@ -11710,13 +12813,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_85"
  
     def _4_story_shiro_86(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_87",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_87",green_check=0)
 
     def _4_story_shiro_87(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_88",noprg_ret="4_STORY_SHIRO_87",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_86",prg_ret="4_STORY_SHIRO_88",noprg_ret="4_STORY_SHIRO_87",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _4_story_shiro_88(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="4_STORY_SHIRO_87",prg_ret= "4_STORY_END")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_87",prg_ret= "4_STORY_END")
 
     def _4_story_end(self):
         return "4_STORY_START_CHECK" 
@@ -11872,13 +12975,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_3"
 
     def _5_story_karasuba_4(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_5",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_5",green_check=0)
             
     def _5_story_karasuba_5(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_6",noprg_ret="5_STORY_KARASUBA_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_4",prg_ret="5_STORY_KARASUBA_6",noprg_ret="5_STORY_KARASUBA_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _5_story_karasuba_6(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_5",prg_ret= "5_STORY_KARASUBA_7")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_5",prg_ret= "5_STORY_KARASUBA_7")
 
     def _5_story_karasuba_7(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -11890,15 +12993,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_7"
     
     def _5_story_karasuba_8(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_9",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_9",green_check=0)
 
     
     def _5_story_karasuba_9(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_10",noprg_ret="5_STORY_KARASUBA_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_8",prg_ret="5_STORY_KARASUBA_10",noprg_ret="5_STORY_KARASUBA_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _5_story_karasuba_10(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_9",prg_ret= "5_STORY_KARASUBA_11")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_9",prg_ret= "5_STORY_KARASUBA_11")
 
     
     def _5_story_karasuba_11(self):
@@ -12138,13 +13241,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_38"
     
     def _5_story_karasuba_39(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_40",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_40",green_check=0)
     
     def _5_story_karasuba_40(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_41",noprg_ret="5_STORY_KARASUBA_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_39",prg_ret="5_STORY_KARASUBA_41",noprg_ret="5_STORY_KARASUBA_40",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _5_story_karasuba_41(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_40",prg_ret= "5_STORY_KARASUBA_42")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_40",prg_ret= "5_STORY_KARASUBA_42")
     
     def _5_story_karasuba_42(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -12679,14 +13782,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_103"
     
     def _5_story_karasuba_104(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_105",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_105",green_check=0)
     
     def _5_story_karasuba_105(self):
         # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_106",noprg_ret="5_STORY_KARASUBA_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_104",prg_ret="5_STORY_KARASUBA_106",noprg_ret="5_STORY_KARASUBA_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _5_story_karasuba_106(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_105",prg_ret= "5_STORY_KARASUBA_107")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_105",prg_ret= "5_STORY_KARASUBA_107")
     
     def _5_story_karasuba_107(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -12698,15 +13801,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_107"
     
     def _5_story_karasuba_108(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_109",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_109",green_check=0)
 
     
     def _5_story_karasuba_109(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_110",noprg_ret="5_STORY_KARASUBA_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_108",prg_ret="5_STORY_KARASUBA_110",noprg_ret="5_STORY_KARASUBA_109",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _5_story_karasuba_110(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_109",prg_ret= "5_STORY_KARASUBA_111")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_109",prg_ret= "5_STORY_KARASUBA_111")
 
     def _5_story_karasuba_111(self):
         ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_NIGHT")#時間変更前のためとりあえず時間変更とする
@@ -12785,13 +13888,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_121"
 
     def _5_story_karasuba_122(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_123",green_check=0)
 
     def _5_story_karasuba_123(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="5_STORY_KARASUBA_122",prg_ret="5_STORY_KARASUBA_124",noprg_ret="5_STORY_KARASUBA_123",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _5_story_karasuba_124(self):
-        ret = self.ZA_story_Template_battle_after(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_END")
+        ret = self.ZA_story_Template_battle_after_renda_route(bkprg_ret="5_STORY_KARASUBA_123",prg_ret= "5_STORY_END")
         if ret == "5_STORY_END":
             #誤判定用のガード
             if self.image_check("POKEMON_ZA_ODAIRU_ICON") or self.image_check("POKEMON_ZA_ABSOL_ICON"):
@@ -12912,13 +14015,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_3"
 
     def _6_story_yukari_4(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_5",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_5",green_check=0)
             
     def _6_story_yukari_5(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_6",noprg_ret="6_STORY_YUKARI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_4",prg_ret="6_STORY_YUKARI_6",noprg_ret="6_STORY_YUKARI_5",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _6_story_yukari_6(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_5",prg_ret= "6_STORY_YUKARI_7")
 
     def _6_story_yukari_7(self):
         ### AUTO_SAVE_POINT
@@ -12931,15 +14034,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_7"
     
     def _6_story_yukari_8(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_9",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_9",green_check=0)
 
     
     def _6_story_yukari_9(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_10",noprg_ret="6_STORY_YUKARI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_8",prg_ret="6_STORY_YUKARI_10",noprg_ret="6_STORY_YUKARI_9",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     
     def _6_story_yukari_10(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_9",prg_ret= "6_STORY_YUKARI_11")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_9",prg_ret= "6_STORY_YUKARI_11")
 
     
     def _6_story_yukari_11(self):
@@ -12974,13 +14077,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_13"
     
     def _6_story_yukari_14(self):
-        return  self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
+        return  self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_14",prg_ret= "6_STORY_YUKARI_15")
     
     def _6_story_yukari_15(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_14",prg_ret="6_STORY_YUKARI_16",noprg_ret="6_STORY_YUKARI_15",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_16(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_15",prg_ret="6_STORY_YUKARI_17")
 
     def _6_story_yukari_17(self):
         ### AUTO_SAVE_POINT
@@ -13305,14 +14408,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_57"
     
     def _6_story_yukari_58(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_59",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_59",green_check=0)
     
     def _6_story_yukari_59(self):
         #連戦をまとめて処理する
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_60",noprg_ret="6_STORY_YUKARI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_58",prg_ret="6_STORY_YUKARI_60",noprg_ret="6_STORY_YUKARI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _6_story_yukari_60(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_59",prg_ret= "6_STORY_YUKARI_61")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_59",prg_ret= "6_STORY_YUKARI_61")
     
     def _6_story_yukari_61(self):
         ### AUTO_SAVE_POINT
@@ -13346,13 +14449,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_64"
     
     def _6_story_yukari_65(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_65",prg_ret= "6_STORY_YUKARI_66")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_65",prg_ret= "6_STORY_YUKARI_66")
     
     def _6_story_yukari_66(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_65",prg_ret="6_STORY_YUKARI_67",noprg_ret="6_STORY_YUKARI_66",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_65",prg_ret="6_STORY_YUKARI_67",noprg_ret="6_STORY_YUKARI_66",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_67(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_66",prg_ret="6_STORY_YUKARI_68")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_66",prg_ret="6_STORY_YUKARI_68")
     
     def _6_story_yukari_68(self):
         if self.ZA_markerdir("EVENT"):
@@ -13362,13 +14465,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_68"
     
     def _6_story_yukari_69(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_69",prg_ret= "6_STORY_YUKARI_70")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_69",prg_ret= "6_STORY_YUKARI_70")
 
     def _6_story_yukari_70(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_69",prg_ret="6_STORY_YUKARI_71",noprg_ret="6_STORY_YUKARI_70",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_69",prg_ret="6_STORY_YUKARI_71",noprg_ret="6_STORY_YUKARI_70",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
     def _6_story_yukari_71(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_70",prg_ret="6_STORY_YUKARI_72")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_70",prg_ret="6_STORY_YUKARI_72")
     
     def _6_story_yukari_72(self):
         if self.ZA_markerdir("EVENT"):
@@ -13378,13 +14481,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_72"
     
     def _6_story_yukari_73(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_73",prg_ret= "6_STORY_YUKARI_74")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_73",prg_ret= "6_STORY_YUKARI_74")
     
     def _6_story_yukari_74(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_73",prg_ret="6_STORY_YUKARI_75",noprg_ret="6_STORY_YUKARI_74",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_73",prg_ret="6_STORY_YUKARI_75",noprg_ret="6_STORY_YUKARI_74",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_75(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_74",prg_ret="6_STORY_YUKARI_76")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_74",prg_ret="6_STORY_YUKARI_76")
     
     def _6_story_yukari_76(self):
         if self.ZA_markerdir("EVENT"):
@@ -13394,13 +14497,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_76"
         
     def _6_story_yukari_77(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_77",prg_ret= "6_STORY_YUKARI_78")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_77",prg_ret= "6_STORY_YUKARI_78")
     
     def _6_story_yukari_78(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_77",prg_ret="6_STORY_YUKARI_79",noprg_ret="6_STORY_YUKARI_78",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_77",prg_ret="6_STORY_YUKARI_79",noprg_ret="6_STORY_YUKARI_78",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_79(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_78",prg_ret="6_STORY_YUKARI_80")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_78",prg_ret="6_STORY_YUKARI_80")
     
     def _6_story_yukari_80(self):
         if self.ZA_markerdir("EVENT"):
@@ -13410,13 +14513,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_80"   
         
     def _6_story_yukari_81(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_81",prg_ret= "6_STORY_YUKARI_82")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_81",prg_ret= "6_STORY_YUKARI_82")
     
     def _6_story_yukari_82(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_81",prg_ret="6_STORY_YUKARI_83",noprg_ret="6_STORY_YUKARI_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_81",prg_ret="6_STORY_YUKARI_83",noprg_ret="6_STORY_YUKARI_82",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_83(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_82",prg_ret="6_STORY_YUKARI_84")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_82",prg_ret="6_STORY_YUKARI_84")
     
     def _6_story_yukari_84(self):
         if self.ZA_markerdir("EVENT"):
@@ -13427,13 +14530,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     #ジガルデの対戦文ではない？
     def _6_story_yukari_85(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_85",prg_ret= "6_STORY_YUKARI_86")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_85",prg_ret= "6_STORY_YUKARI_86")
 
     def _6_story_yukari_86(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_85",prg_ret="6_STORY_YUKARI_87",noprg_ret="6_STORY_YUKARI_86",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_85",prg_ret="6_STORY_YUKARI_87",noprg_ret="6_STORY_YUKARI_86",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
 
     def _6_story_yukari_87(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_86",prg_ret="6_STORY_YUKARI_88")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_86",prg_ret="6_STORY_YUKARI_88")
     
     def _6_story_yukari_88(self):
         if self.ZA_markerdir("EVENT"):
@@ -13443,13 +14546,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_88"
     
     def _6_story_yukari_89(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_89",prg_ret= "6_STORY_YUKARI_90")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_89",prg_ret= "6_STORY_YUKARI_90")
     
     def _6_story_yukari_90(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_89",prg_ret="6_STORY_YUKARI_91",noprg_ret="6_STORY_YUKARI_90",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_89",prg_ret="6_STORY_YUKARI_91",noprg_ret="6_STORY_YUKARI_90",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
    
     def _6_story_yukari_91(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_90",prg_ret="6_STORY_YUKARI_92")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_90",prg_ret="6_STORY_YUKARI_92")
     
     def _6_story_yukari_92(self):
         if self.ZA_markerdir("EVENT"):
@@ -13459,13 +14562,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_92"
     
     def _6_story_yukari_93(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="6_STORY_YUKARI_93",prg_ret= "6_STORY_YUKARI_94")
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="6_STORY_YUKARI_93",prg_ret= "6_STORY_YUKARI_94")
     
     def _6_story_yukari_94(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="6_STORY_YUKARI_93",prg_ret="6_STORY_YUKARI_95",noprg_ret="6_STORY_YUKARI_94",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="6_STORY_YUKARI_93",prg_ret="6_STORY_YUKARI_95",noprg_ret="6_STORY_YUKARI_94",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,battle_mode=0)
     
     def _6_story_yukari_95(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="6_STORY_YUKARI_94",prg_ret="6_STORY_END")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="6_STORY_YUKARI_94",prg_ret="6_STORY_END")
     
     def _6_story_end(self):
         return "6_STORY_START_CHECK"
@@ -13772,13 +14875,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_24"
     
     def _7_story_guri_25(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_26",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_26",green_check=0)
 
     def _7_story_guri_26(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_27",noprg_ret="7_STORY_GURI_26",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_25",prg_ret="7_STORY_GURI_27",noprg_ret="7_STORY_GURI_26",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
     
     def _7_story_guri_27(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_26",prg_ret= "7_STORY_GURI_28")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_26",prg_ret= "7_STORY_GURI_28")
     
     def _7_story_guri_28(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -13800,13 +14903,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_29"
     
     def _7_story_guri_30(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_31",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_31",green_check=0)
 
     def _7_story_guri_31(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_32",noprg_ret="7_STORY_GURI_31",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_30",prg_ret="7_STORY_GURI_32",noprg_ret="7_STORY_GURI_31",Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=1)
 
     def _7_story_guri_32(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
 
     def _7_story_guri_33(self):
         #AUTOSAVE
@@ -14020,13 +15123,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_57"
     
     def _7_story_guri_58(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_59",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_59",green_check=0)
 
     def _7_story_guri_59(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_60",noprg_ret="7_STORY_GURI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_58",prg_ret="7_STORY_GURI_60",noprg_ret="7_STORY_GURI_59",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_60(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_59",prg_ret= "7_STORY_GURI_61")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_59",prg_ret= "7_STORY_GURI_61")
 
     def _7_story_guri_61(self):
         ret = self.ZA_Common_goto(2,0,-3)#ポケセンメディオに移動で位置確定
@@ -14148,13 +15251,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_77"
     
     def _7_story_guri_78(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_79",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_79",green_check=0)
    
     def _7_story_guri_79(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_80",noprg_ret="7_STORY_GURI_79",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_78",prg_ret="7_STORY_GURI_80",noprg_ret="7_STORY_GURI_79",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _7_story_guri_80(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_79",prg_ret= "7_STORY_GURI_81")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_79",prg_ret= "7_STORY_GURI_81")
 
     def _7_story_guri_81(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -14433,7 +15536,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_113" 
        
     def _7_story_guri_114(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_115",green_check=1)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_115",green_check=1)
 
         
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
@@ -14441,14 +15544,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_114" 
        
     def _7_story_guri_115(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_116",noprg_ret="7_STORY_GURI_115",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_116",noprg_ret="7_STORY_GURI_115",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0)
 
         if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,get_chanceicon4=1):
             return "7_STORY_GURI_116" 
         return "7_STORY_GURI_115" 
        
     def _7_story_guri_116(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_115" ,prg_ret="7_STORY_GURI_117")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_115" ,prg_ret="7_STORY_GURI_117")
        
     def _7_story_guri_117(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -14596,13 +15699,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_138"
        
     def _7_story_guri_139(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_140",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_140",green_check=0)
        
     def _7_story_guri_140(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_141",noprg_ret="7_STORY_GURI_140",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_139",prg_ret="7_STORY_GURI_141",noprg_ret="7_STORY_GURI_140",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
        
     def _7_story_guri_141(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="7_STORY_GURI_140",prg_ret= "7_STORY_END",mode=1)
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_140",prg_ret= "7_STORY_END",mode=1)
     
     def _7_story_end(self):
         return "7_STORY_START_CHECK"
@@ -14643,13 +15746,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_4"    
             
     def _8_story_story_last_5(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_6",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_6",green_check=0)
 
     def _8_story_story_last_6(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_7",noprg_ret="8_STORY_STORY_LAST_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_5",prg_ret="8_STORY_STORY_LAST_7",noprg_ret="8_STORY_STORY_LAST_6",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
 
     def _8_story_story_last_7(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_6",prg_ret="8_STORY_STORY_LAST_8",mode=1)
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_6",prg_ret="8_STORY_STORY_LAST_8",mode=1)
 
     def _8_story_story_last_8(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -14678,13 +15781,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_10"
     
     def _8_story_story_last_11(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_12",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_12",green_check=0)
     
     def _8_story_story_last_12(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_13",noprg_ret="8_STORY_STORY_LAST_12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_13",noprg_ret="8_STORY_STORY_LAST_12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_13(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_12",prg_ret="8_STORY_STORY_LAST_14")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_12",prg_ret="8_STORY_STORY_LAST_14")
 
     
     def _8_story_story_last_14(self):
@@ -14703,13 +15806,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_15"
     
     def _8_story_story_last_16(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_15",prg_ret="8_STORY_STORY_LAST_17",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_15",prg_ret="8_STORY_STORY_LAST_17",green_check=0)
     
     def _8_story_story_last_17(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_16",prg_ret="8_STORY_STORY_LAST_18",noprg_ret="8_STORY_STORY_LAST_17",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_16",prg_ret="8_STORY_STORY_LAST_18",noprg_ret="8_STORY_STORY_LAST_17",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_18(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_17",prg_ret="8_STORY_STORY_LAST_19")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_17",prg_ret="8_STORY_STORY_LAST_19")
 
     
     def _8_story_story_last_19(self):
@@ -14749,15 +15852,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_22"
     
     def _8_story_story_last_23(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_22",prg_ret="8_STORY_STORY_LAST_24",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_22",prg_ret="8_STORY_STORY_LAST_24",green_check=0)
 
     
     def _8_story_story_last_24(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_23",prg_ret="8_STORY_STORY_LAST_25",noprg_ret="8_STORY_STORY_LAST_24",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_23",prg_ret="8_STORY_STORY_LAST_25",noprg_ret="8_STORY_STORY_LAST_24",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
 
     
     def _8_story_story_last_25(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_24",prg_ret="8_STORY_STORY_LAST_26")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_24",prg_ret="8_STORY_STORY_LAST_26")
 
     
     def _8_story_story_last_26(self):
@@ -14853,15 +15956,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_28"
     
     def _8_story_story_last_29(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_28",prg_ret="8_STORY_STORY_LAST_30",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_28",prg_ret="8_STORY_STORY_LAST_30",green_check=0)
 
     
     def _8_story_story_last_30(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_29",prg_ret="8_STORY_STORY_LAST_31",noprg_ret="8_STORY_STORY_LAST_30",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_29",prg_ret="8_STORY_STORY_LAST_31",noprg_ret="8_STORY_STORY_LAST_30",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
 
     
     def _8_story_story_last_31(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_30",prg_ret="8_STORY_STORY_LAST_32")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_30",prg_ret="8_STORY_STORY_LAST_32")
 
     
     def _8_story_story_last_32(self):
@@ -14874,13 +15977,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_32"
     
     def _8_story_story_last_33(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_32",prg_ret="8_STORY_STORY_LAST_34",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_32",prg_ret="8_STORY_STORY_LAST_34",green_check=0)
 
     def _8_story_story_last_34(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_33",prg_ret="8_STORY_STORY_LAST_35",noprg_ret="8_STORY_STORY_LAST_34",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_33",prg_ret="8_STORY_STORY_LAST_35",noprg_ret="8_STORY_STORY_LAST_34",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_35(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_34",prg_ret="8_STORY_STORY_LAST_36")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_34",prg_ret="8_STORY_STORY_LAST_36")
         
     def _8_story_story_last_36(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -14918,14 +16021,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_40"
     
     def _8_story_story_last_41(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_42",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_42",green_check=0)
 
     
     def _8_story_story_last_42(self):
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_43",noprg_ret="8_STORY_STORY_LAST_42",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_43",noprg_ret="8_STORY_STORY_LAST_42",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_43(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_42",prg_ret="8_STORY_STORY_LAST_44")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_42",prg_ret="8_STORY_STORY_LAST_44")
     
     def _8_story_story_last_44(self):
         return "8_STORY_STORY_LAST_44"
@@ -15139,14 +16242,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_103"
     
     def _8_story_story_last_104(self):
-        return self.ZA_story_Template_battle_before(noprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_105",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_105",green_check=0)
     
     def _8_story_story_last_105(self):
         # 連戦をどちらもこちらで対応(106に行った後、105に戻るため)
-        return self.ZA_story_Template_battle_function(bkprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_106",noprg_ret="8_STORY_STORY_LAST_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
+        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_104",prg_ret="8_STORY_STORY_LAST_106",noprg_ret="8_STORY_STORY_LAST_105",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _8_story_story_last_106(self):
-        return self.ZA_story_Template_battle_after(bkprg_ret="8_STORY_STORY_LAST_105",prg_ret= "8_STORY_STORY_LAST_107")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_105",prg_ret= "8_STORY_STORY_LAST_107")
 
     ###CPEND
     def _8_story_end(self):
@@ -15158,11 +16261,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # Commonskill
     ######################################################
-    def ZA_common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0):
+    def ZA_common_skill_change_function(self,selectpokemonnum,target1,target2,machine=0,targetskill_pic="",targetskill_timeout=60.0):
+        if self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_START":
+            self._za_common_skill_target_search_picture = ""
+            self._za_common_skill_target_search_active = False
+            self._za_common_skill_target_search_count = 0
+            self._za_common_skill_target_search_started_at = None
         if self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
             self.common_skill_change_current_state = self.ZA_common_skill_change_pokemon_select(selectnum=selectpokemonnum)
         elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1":
-            self.common_skill_change_current_state = self.ZA_common_skill_change_skill_window_chtarget1(target1=target1,machine=machine)
+            self.common_skill_change_current_state = self.ZA_common_skill_change_skill_window_chtarget1(
+                target1=target1,
+                machine=machine,
+                targetskill_pic=targetskill_pic,
+                targetskill_timeout=targetskill_timeout,
+            )
         elif self.common_skill_change_current_state == "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2":
             self.common_skill_change_current_state = self.ZA_common_skill_change_skill_window_chtarget2(target2=target2)
         else:
@@ -15238,10 +16351,73 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
         return "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN"
         
-    def ZA_common_skill_change_skill_window_chtarget1(self,target1,machine):
+    def ZA_common_skill_change_skill_window_chtarget1(self,target1,machine,targetskill_pic="",targetskill_timeout=60.0):
+        targetskill_pic = str(targetskill_pic or "").strip()
+        picture_search = machine == 1 and bool(targetskill_pic)
+
+        if not picture_search:
+            self._za_common_skill_target_search_picture = ""
+            self._za_common_skill_target_search_active = False
+            self._za_common_skill_target_search_count = 0
+            self._za_common_skill_target_search_started_at = None
+        elif getattr(self, "_za_common_skill_target_search_picture", "") != targetskill_pic:
+            self._za_common_skill_target_search_picture = targetskill_pic
+            self._za_common_skill_target_search_active = False
+            self._za_common_skill_target_search_count = 0
+            self._za_common_skill_target_search_started_at = None
+
+        if picture_search and getattr(self, "_za_common_skill_target_search_active", False):
+            skill_page_visible = self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW")
+            if skill_page_visible and self.image_check(targetskill_pic):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.wait(0.5)
+                self._za_common_skill_target_search_picture = ""
+                self._za_common_skill_target_search_active = False
+                self._za_common_skill_target_search_count = 0
+                self._za_common_skill_target_search_started_at = None
+                return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET2"
+
+            now = time.monotonic()
+            started_at = getattr(self, "_za_common_skill_target_search_started_at", None)
+            if started_at is None:
+                started_at = now
+                self._za_common_skill_target_search_started_at = started_at
+            try:
+                timeout_seconds = max(0.0, float(targetskill_timeout))
+            except (TypeError, ValueError):
+                timeout_seconds = 60.0
+            search_count = int(getattr(self, "_za_common_skill_target_search_count", 0))
+            if now - started_at >= timeout_seconds or search_count >= 200:
+                print("targetskill_pic not found: " + targetskill_pic)
+                self._za_common_skill_target_search_picture = ""
+                self._za_common_skill_target_search_active = False
+                self._za_common_skill_target_search_count = 0
+                self._za_common_skill_target_search_started_at = None
+                # 指定技が未所持の場合。技マシン画面を残したまま再試行Stepへ
+                # 戻さないよう、Bでメニューを閉じてから失敗状態を返す。
+                for _ in range(10):
+                    if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                        break
+                    self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                    self.wait(0.3)
+                return "COMMON_SKILL_CHANGE_FALSE"
+
+            if skill_page_visible:
+                self.etc_sendCommand("Lbutton_down")
+                self._za_common_skill_target_search_count = search_count + 1
+            self.wait(0.3)
+            return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
+
         if self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
-                if target1 == "X":
+                if picture_search:
+                    self.pressRep(Button.ZR, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                    self.wait(0.5)
+                    self._za_common_skill_target_search_active = True
+                    self._za_common_skill_target_search_count = 0
+                    self._za_common_skill_target_search_started_at = time.monotonic()
+                    return "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1"
+                elif target1 == "X":
                     self.etc_sendCommand("Lbutton_right")
                     self.wait(0.5)
                     self.etc_sendCommand("Lbutton_up")
@@ -15609,33 +16785,72 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.common_evolution_current_state
     
     def ZA_common_evolution_exec(self):
-        if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
-            if self.ZA_renda_button(rendabutton="B",
-                                endpicture="POKEMON_ZA_TEXT_BLACK_COMMENT",
-                                not_endpicture="POKEMON_ZA_ZA_ROYALE",
-                                sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
-                                sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",
-                                sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",
-                                sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",
-                                sub5_button="A",sub5_picture="POKEMON_ZA_HELP_MARKER",
-                                sub6_button="A",sub6_picture="POKEMON_ZA_MORNING",
-                                sub7_button="A",sub7_picture="POKEMON_ZA_NIGHT",
-                                sub8_button="A",sub8_picture="POKEMON_ZA_X_MENU_EVO_MENU"):
+        # 3_SELECTはステータス／Xメニューの白枠を拾う場合がある。
+        # 専用画面を先に処理し、誤検知したAでメニューへ入り直さない。
+        if self.image_check("POKEMON_ZA_EVOLUTION_CONFIRM"):
+            # 「そのまま見守る／やめる」は汎用2_SELECTより形が異なる。
+            button = Button.A
+        elif self.image_check("POKEMON_ZA_X_MENU_EVO_MENU"):
+            # 先頭の「進化する」を選択する画面だけはAで進める。
+            button = Button.A
+        elif self.image_check("POKEMON_ZA_2_SELECT"):
+            # 「進化する」の次の確認は背後のXメニューより優先する。
+            button = Button.A
+        elif (self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW")
+                or self.image_check(
+                    "POKEMON_ZA_POKEMON_MENU_X_MENU_W_SELECT_SKILL")
+                or self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W")
+                or self.image_check("POKEMON_ZA_X_MENU_OPEN")):
+            button = Button.B
+            # 確認画面の表示アニメーション中は、背後のXメニューだけが
+            # 先に一致することがある。すぐBを送らず短時間だけ再確認し、
+            # 進化画面または2_SELECTが現れたらAを優先する。
+            # Xメニューで誤一致する3_SELECTは再確認対象にしない。
+            for _ in range(3):
+                self.wait(0.1)
+                if (self.image_check("POKEMON_ZA_EVOLUTION_CONFIRM")
+                        or self.image_check("POKEMON_ZA_X_MENU_EVO_MENU")
+                        or self.image_check("POKEMON_ZA_2_SELECT")):
+                    button = Button.A
+                    break
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if not self.image_check("POKEMON_ZA_ZA_ROYALE"):
                 return "COMMON_EVOLUTION_LOOP"
+            button = Button.A
+        elif (self.image_check("POKEMON_ZA_HELP_MARKER")
+                or self.image_check("POKEMON_ZA_3_SELECT")
+                or self.image_check("POKEMON_ZA_4_SELECT")
+                or self.image_check("POKEMON_ZA_MORNING")
+                or self.image_check("POKEMON_ZA_NIGHT")):
+            button = Button.A
+        else:
+            button = Button.B
+        self.pressRep(
+            button, repeat=1, duration=0.04,
+            wait=0.0, interval=0.1)
+        self.wait(0.5)
         return "COMMON_EVOLUTION_EXEC"
     
     def ZA_common_evolution_loop(self):
-        if self.ZA_renda_button(rendabutton="B",
-                            endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1", #FIELDから変更
-                            not_endpicture="POKEMON_ZA_ZA_ROYALE",
-                            sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
-                            sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",
-                            sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",
-                            sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",
-                            sub5_button="A",sub5_picture="POKEMON_ZA_HELP_MARKER",
-                            sub6_button="A",sub6_picture="POKEMON_ZA_MORNING",
-                            sub7_button="A",sub7_picture="POKEMON_ZA_NIGHT"):
+        # mode=1のFIELD判定は、ステータス画面やXメニューの背後にある
+        # パーティー表示だけでも成立する。メニューを閉じる前に終了扱いに
+        # するとEVO2へ進んでも画面が残るため、各メニューをBで1階層ずつ
+        # 閉じてからフィールド復帰を確定する。
+        if (self.image_check("POKEMON_ZA_X_MENU_OPEN")
+                or self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW")
+                or self.image_check(
+                    "POKEMON_ZA_POKEMON_MENU_X_MENU_W_SELECT_SKILL")
+                or self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W")
+                or self.image_check("POKEMON_ZA_X_MENU_EVO_MENU")):
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return "COMMON_EVOLUTION_LOOP"
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1"):
             return "COMMON_EVOLUTION_END"
+        self.pressRep(
+            Button.B, repeat=1, duration=0.15,
+            wait=0.5, interval=0.1)
         return "COMMON_EVOLUTION_LOOP"
     
     def ZA_common_evolution_end(self):
@@ -16633,6 +17848,119 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.image_check("POKEMON_ZA_C+")
             or self.image_check("POKEMON_ZA_C+_LOW"))
 
+    def ZA_infi_guarded_ladder_climb(self):
+        """Send ladder input in slices, yielding as soon as combat resumes."""
+        moved = False
+        for _ in range(20):
+            if (self.image_check("POKEMON_ZA_ESCAPE")
+                    or self.ZA_infi_attack_ready()
+                    or self.image_check("POKEMON_ZA_SELECT")
+                    or self.image_check("POKEMON_ZA_2_SELECT")
+                    or self.image_check("POKEMON_ZA_3_SELECT")
+                    or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
+                    or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")):
+                return moved, False
+            self.press(
+                Direction(Stick.LEFT, 90), duration=0.5, wait=0.0)
+            moved = True
+        return moved, True
+
+    def ZA_infi_stalled_ladder_recovery(
+            self, attack_ready=False, now=None, frame=None):
+        """Climb out of a stalled ladder without overriding live combat."""
+        reset_names = (
+            "_za_infi_ladder_previous_frame",
+            "_za_infi_ladder_still_since",
+        )
+
+        def reset_candidate():
+            for name in reset_names:
+                setattr(self, name, None)
+
+        if (self.battle_current_state != "BATTLE_MOVE"
+                or self.battle_step not in (0, 1)):
+            reset_candidate()
+            return False
+        if attack_ready or self.image_check("POKEMON_ZA_ESCAPE"):
+            reset_candidate()
+            return False
+        if (self.image_check("POKEMON_ZA_SELECT")
+                or self.image_check("POKEMON_ZA_2_SELECT")
+                or self.image_check("POKEMON_ZA_3_SELECT")
+                or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")):
+            reset_candidate()
+            return False
+
+        if frame is None:
+            camera = getattr(self, "camera", None)
+            if camera is None:
+                reset_candidate()
+                return False
+            if hasattr(camera, "readFreshFrame"):
+                frame = camera.readFreshFrame(timeout=0.75)
+            else:
+                frame = camera.readFrame() if hasattr(
+                    camera, "readFrame") else None
+        if frame is None or getattr(frame, "size", 0) == 0:
+            reset_candidate()
+            return False
+
+        height, width = frame.shape[:2]
+        region = frame[
+            int(height * 0.12):max(int(height * 0.12) + 1,
+                                   int(height * 0.82)),
+            int(width * 0.15):max(int(width * 0.15) + 1,
+                                  int(width * 0.85))]
+        if region.size == 0:
+            reset_candidate()
+            return False
+        fingerprint = cv2.resize(
+            cv2.cvtColor(region, cv2.COLOR_BGR2GRAY), (32, 18))
+        current_time = time.monotonic() if now is None else float(now)
+        previous = getattr(
+            self, "_za_infi_ladder_previous_frame", None)
+        self._za_infi_ladder_previous_frame = fingerprint
+        if previous is None:
+            self._za_infi_ladder_still_since = current_time
+            return False
+
+        frame_difference = cv2.mean(
+            cv2.absdiff(fingerprint, previous))[0]
+        if frame_difference > 1.5:
+            self._za_infi_ladder_still_since = current_time
+            return False
+        still_since = getattr(
+            self, "_za_infi_ladder_still_since", None)
+        if still_since is None:
+            self._za_infi_ladder_still_since = current_time
+            return False
+        if current_time - float(still_since) < 3.0:
+            return False
+        last_attempt = float(getattr(
+            self, "_za_infi_ladder_last_attempt", -1000000.0))
+        if current_time - last_attempt < 30.0:
+            return False
+
+        # C+ is checked here even when this story Step normally uses
+        # no_Cplus=1.  A visible attack opportunity always takes priority over
+        # ladder recovery.
+        if self.ZA_infi_attack_ready():
+            reset_candidate()
+            return False
+
+        self._za_infi_ladder_last_attempt = current_time
+        reset_candidate()
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        # A long uninterrupted hold can suppress combat for ten seconds.
+        # Send 0.5-second slices and stop before the next slice as soon as the
+        # normal battle UI or an attack opportunity returns.
+        moved, _ = self.ZA_infi_guarded_ladder_climb()
+        if moved:
+            print("[INFI_LADDER_RECOVERY] 静止を検出したため上入力で復帰")
+        return moved
+
     def ZA_infi_target_marker_direction(self):
         # Mega戦と同じく、左上マップを除外した全画面座標から
         # 画面下中央を起点とする左スティック方向を求める。
@@ -16805,6 +18133,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "infi", enabled=recovery_enabled,
                     attack_ready=infi_attack_ready):
                 continue
+            if self.ZA_infi_stalled_ladder_recovery(
+                    attack_ready=infi_attack_ready):
+                continue
             self.out_str = (
                 f'----------------------------'
                 f'\n STATE_MAIN_FUNCTION   :: {self.main_current_state}'
@@ -16908,7 +18239,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                     self.ZA_MOVE_SEE("END")
                     self.ZA_ZL_ACTION("END")
-                    self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                    _, ladder_climb_completed = \
+                        self.ZA_infi_guarded_ladder_climb()
+                    if not ladder_climb_completed:
+                        continue
 
                     self.wait(0.3)
                     
@@ -17040,7 +18374,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                         self.ZA_MOVE_SEE("END")
                         self.ZA_ZL_ACTION("END")
-                        self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                        _, ladder_climb_completed = \
+                            self.ZA_infi_guarded_ladder_climb()
+                        if not ladder_climb_completed:
+                            continue
 
                         self.wait(0.3)
                         
@@ -17089,7 +18426,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                             self.ZA_MOVE_SEE("END")
                             self.ZA_ZL_ACTION("END")
-                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                            _, ladder_climb_completed = \
+                                self.ZA_infi_guarded_ladder_climb()
+                            if not ladder_climb_completed:
+                                continue
 
                             self.wait(0.3)
                             
@@ -17317,7 +18657,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                             self.ZA_MOVE_SEE("END")
                             self.ZA_ZL_ACTION("END")
-                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                            _, ladder_climb_completed = \
+                                self.ZA_infi_guarded_ladder_climb()
+                            if not ladder_climb_completed:
+                                continue
 
                             self.wait(0.3)
                             
@@ -17372,7 +18715,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                             if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                                 self.ZA_MOVE_SEE("END")
                                 self.ZA_ZL_ACTION("END")
-                                self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                                _, ladder_climb_completed = \
+                                    self.ZA_infi_guarded_ladder_climb()
+                                if not ladder_climb_completed:
+                                    continue
 
                                 self.wait(0.3)
                                 
@@ -17403,7 +18749,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                                     self.ZA_MOVE_SEE("END")
                                     self.ZA_ZL_ACTION("END")
-                                    self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                                    _, ladder_climb_completed = \
+                                        self.ZA_infi_guarded_ladder_climb()
+                                    if not ladder_climb_completed:
+                                        continue
 
                                     self.wait(0.3)
                                     
@@ -17495,7 +18844,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                                         self.ZA_MOVE_SEE("END")
                                         self.ZA_ZL_ACTION("END")
-                                        self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                                        _, ladder_climb_completed = \
+                                            self.ZA_infi_guarded_ladder_climb()
+                                        if not ladder_climb_completed:
+                                            continue
 
                                         self.wait(0.3)
                                         
@@ -17527,7 +18879,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                         if noescapeflg==0 and self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK") and (not self.image_check("POKEMON_ZA_ESCAPE")):
                                             self.ZA_MOVE_SEE("END")
                                             self.ZA_ZL_ACTION("END")
-                                            self.press(Direction(Stick.LEFT, 90), duration=10.0, wait=0.1)
+                                            _, ladder_climb_completed = \
+                                                self.ZA_infi_guarded_ladder_climb()
+                                            if not ladder_climb_completed:
+                                                continue
 
                                             self.wait(0.3)
                                             
@@ -17873,7 +19228,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 画像認識
     ######################################################
     # POKECON_IMAGE_CHECK_BEGIN
-    # Generated image detection selection: list:POKEMON_ZA_ALL
+    # Generated image detection selection: list:SyncSelection
     IMAGE_DETECTION_TARGETS = {'POKEMON_ZA_1_SELECT': [{'crop': [920, 400, 1180, 550],
                               'ms': 2000,
                               'show_only_true_rect': False,
@@ -17986,6 +19341,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                             'template_path': 'Template/ZA_Story/Common/battle.png',
                             'threshold': 0.75,
                             'use_gray': True}],
+     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [{'crop': [120, 500, 300, 580],
+                                         'match_color': 'blue',
+                                         'ms': 2000,
+                                         'no_match_color': 'red',
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/battle_active_level.png',
+                                         'threshold': 0.8,
+                                         'use_gray': False}],
      'POKEMON_ZA_BATTLE_BALL_CHECK': [{'crop': [500, 30, 850, 70],
                                        'ms': 2000,
                                        'show_only_true_rect': False,
@@ -18060,6 +19425,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                'template_path': 'Template/ZA_Story/Common/many_icon.png',
                                'threshold': 0.8,
                                'use_gray': True}],
+     'POKEMON_ZA_COMMENT_MARKER': [{'crop': [930, 658, 965, 691],
+                                    'match_color': 'blue',
+                                    'ms': 2000,
+                                    'no_match_color': 'red',
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': True,
+                                    'template_path': 'Template/ZA_Story/Common/ZA_COMMENT_MARKER.png',
+                                    'threshold': 0.8,
+                                    'use_gray': True}],
      'POKEMON_ZA_DEAD': [{'crop': [50, 640, 350, 680],
                           'ms': 2000,
                           'show_only_true_rect': False,
@@ -18068,8 +19443,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                           'template_path': 'Template/ZA_Story/Common/dead.png',
                           'threshold': 0.8,
                           'use_gray': True}],
-     'POKEMON_ZA_DOOR_A': [{'crop': [680, 400, 760, 450],
+     'POKEMON_ZA_DOOR_A': [{'crop': [630, 350, 800, 500],
+                            'match_color': 'blue',
                             'ms': 2000,
+                            'no_match_color': 'red',
                             'show_only_true_rect': False,
                             'show_position': True,
                             'show_value': False,
@@ -18302,6 +19679,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                              'template_path': 'Template/ZA_Story/Common/event_marker.png',
                                              'threshold': 0.8,
                                              'use_gray': False}],
+     'POKEMON_ZA_EVOLUTION_CONFIRM': [{'crop': [880, 380, 1220, 580],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/evolution_2_select.png',
+                                       'threshold': 0.8,
+                                       'use_gray': True}],
      'POKEMON_ZA_EYE_CHECK': [{'crop': [600, 50, 700, 120],
                                'ms': 2000,
                                'show_only_true_rect': False,
@@ -18502,6 +19887,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                      'template_path': 'Template/ZA_Story/Common/getmerker4.png',
                                      'threshold': 0.6,
                                      'use_gray': False}],
+     'POKEMON_ZA_GET_BALL': [{'crop': [300, 200, 1000, 700],
+                              'match_color': '#00c853',
+                              'ms': 2000,
+                              'no_match_color': '#ff9800',
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/GET_BALL.png',
+                              'threshold': 0.8,
+                              'use_gray': False}],
      'POKEMON_ZA_HASHIGO_ICON': [{'crop': [300, 150, 900, 650],
                                   'ms': 2000,
                                   'show_only_true_rect': False,
@@ -18598,6 +19993,24 @@ class ZA_story_Base(ImageProcPythonCommand):
                                      'template_path': 'Template/ZA_Story/_1_z_lank/meripicon.png',
                                      'threshold': 0.75,
                                      'use_gray': True}],
+     'POKEMON_ZA_MISSION_COMPLETE': [{'crop': [416, 179, 881, 243],
+                                      'match_color': '#00c853',
+                                      'ms': 2000,
+                                      'no_match_color': '#ff9800',
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/Common/POKEMON_ZA_MISSION_COMPLETE.png',
+                                      'threshold': 0.5,
+                                      'use_gray': True},
+                                     {'crop': [421, 184, 866, 238],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/Common/POKEMON_ZA_MISSION_COMPLETE.png',
+                                      'threshold': 0.8,
+                                      'use_gray': False}],
      'POKEMON_ZA_MORNING': [{'crop': [540, 155, 740, 350],
                              'ms': 2000,
                              'show_only_true_rect': False,
@@ -19414,6 +20827,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                          'template_path': 'Template/ZA_Story/ZA_infi/move_comment_battle.png',
                                          'threshold': 0.75,
                                          'use_gray': True}],
+     'POKEMON_ZA_MOVE_COMMENT_BATTLE2': [{'crop': [353, 587, 744, 665],
+                                          'match_color': '#00c853',
+                                          'ms': 2000,
+                                          'no_match_color': '#ff9800',
+                                          'show_only_true_rect': False,
+                                          'show_position': True,
+                                          'show_value': False,
+                                          'template_path': 'Template/ZA_Story/ZA_infi/POKEMON_ZA_MOVE_COMMENT_BATTLE2.png',
+                                          'threshold': 0.8,
+                                          'use_gray': False}],
      'POKEMON_ZA_M_BALL_ICON': [{'crop': [610, 595, 670, 650],
                                  'ms': 2000,
                                  'show_only_true_rect': False,
@@ -19438,8 +20861,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  'template_path': 'Template/ZA_Story/_4_e_lank/Odairu_icon.png',
                                  'threshold': 0.8,
                                  'use_gray': True}],
-     'POKEMON_ZA_OUT_MARKER': [{'crop': [600, 300, 850, 500],
+     'POKEMON_ZA_OUT_MARKER': [{'crop': [550, 250, 900, 550],
+                                'match_color': 'blue',
                                 'ms': 2000,
+                                'no_match_color': 'red',
                                 'show_only_true_rect': False,
                                 'show_position': True,
                                 'show_value': False,
@@ -19664,7 +21089,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                        'template_path': 'Template/ZA_Story/_1_z_lank/quasar_movie_icon.png',
                                        'threshold': 0.8,
                                        'use_gray': True}],
-     'POKEMON_ZA_REIBI_SKILL': [{'crop': [40, 200, 320, 300],
+     'POKEMON_ZA_REIBI_SKILL': [{'crop': [40, 200, 320, 550],
                                  'ms': 2000,
                                  'show_only_true_rect': False,
                                  'show_position': True,
@@ -19680,6 +21105,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                    'template_path': 'Template/ZA_Story/ZA_infi/REWARD.png',
                                    'threshold': 0.75,
                                    'use_gray': True}],
+     'POKEMON_ZA_REWORD': [{'crop': [366, 40, 560, 74],
+                            'match_color': '#00c853',
+                            'ms': 2000,
+                            'no_match_color': '#ff9800',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/X_menu/POKEMON_ZA_REWORD.png',
+                            'threshold': 0.8,
+                            'use_gray': False}],
      'POKEMON_ZA_REWORD_END': [{'crop': [200, 500, 1080, 720],
                                 'ms': 2000,
                                 'show_only_true_rect': False,
@@ -20189,6 +21624,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                   'template_path': 'Template/ZA_Story/_2_y_lank/Wbattle_end.png',
                                   'threshold': 0.85,
                                   'use_gray': True}],
+     'POKEMON_ZA_X_MENU_EVO_MENU': [{'crop': [600, 140, 1280, 400],
+                                     'match_color': '#00c853',
+                                     'ms': 2000,
+                                     'no_match_color': '#ff9800',
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/Common/X_menu/POKEMON_ZA_X_MENU_EVO_MENU.png',
+                                     'threshold': 0.8,
+                                     'use_gray': False}],
      'POKEMON_ZA_X_MENU_OPEN': [{'crop': [50, 50, 450, 120],
                                  'ms': 2000,
                                  'show_only_true_rect': False,
@@ -20197,6 +21642,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  'template_path': 'Template/ZA_Story/Common/X_menu/x_menu_window.png',
                                  'threshold': 0.85,
                                  'use_gray': True}],
+     'POKEMON_ZA_YUBIWA': [{'crop': [351, 557, 435, 651],
+                            'match_color': '#00c853',
+                            'ms': 2000,
+                            'no_match_color': '#ff9800',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/_2_y_lank/POKEMON_ZA_YUBIWA.png',
+                            'threshold': 0.8,
+                            'use_gray': False}],
      'POKEMON_ZA_ZA_ROYALE': [{'crop': [20, 40, 380, 80],
                                'ms': 2000,
                                'show_only_true_rect': False,
@@ -20292,7 +21747,285 @@ class ZA_story_Base(ImageProcPythonCommand):
                            'show_value': False,
                            'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone9.png',
                            'threshold': 0.85,
-                           'use_gray': True}]}
+                           'use_gray': True}],
+     'PS_SSR3_BATTLE_BATTLECARD': [{'crop': [0, 0, 0, 0],
+                                    'match_color': 'blue',
+                                    'ms': 2000,
+                                    'no_match_color': 'red',
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/PS_SSR3/battle_battlecard.png',
+                                    'threshold': 0.8,
+                                    'use_gray': False}],
+     'PS_SSR3_BATTLE_TRANING': [{'crop': [0, 0, 0, 0],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/PS_SSR3/battle_traning.png',
+                                 'threshold': 0.8,
+                                 'use_gray': False}],
+     'PS_SSR3_BGGRD1': [{'crop': [0, 0, 0, 0],
+                         'match_color': 'blue',
+                         'ms': 2000,
+                         'no_match_color': 'red',
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/PS_SSR3/bggrd1.png',
+                         'threshold': 0.8,
+                         'use_gray': False}],
+     'PS_SSR3_BGGRD2': [{'crop': [0, 0, 0, 0],
+                         'match_color': 'blue',
+                         'ms': 2000,
+                         'no_match_color': 'red',
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/PS_SSR3/bggrd2.png',
+                         'threshold': 0.8,
+                         'use_gray': False}],
+     'PS_SSR3_CUSTOM_BATTLECARD': [{'crop': [0, 0, 0, 0],
+                                    'match_color': 'blue',
+                                    'ms': 2000,
+                                    'no_match_color': 'red',
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/PS_SSR3/custom_battlecard.png',
+                                    'threshold': 0.8,
+                                    'use_gray': False}],
+     'PS_SSR3_STARICON': [{'crop': [0, 0, 0, 0],
+                           'match_color': 'blue',
+                           'ms': 2000,
+                           'no_match_color': 'red',
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/PS_SSR3/staricon.png',
+                           'threshold': 0.8,
+                           'use_gray': False}],
+     'SAMPLES_BABY_MSG': [{'crop': [0, 0, 0, 0],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/Samples/baby_msg.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'SAMPLES_DOUGU_TO_BAG': [{'crop': [0, 0, 0, 0],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/Samples/dougu_to_bag.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
+     'SAMPLES_EGG_FOUND': [{'crop': [0, 0, 0, 0],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/Samples/egg_found.png',
+                            'threshold': 0.8,
+                            'use_gray': True}],
+     'SAMPLES_EGG_NOTICE': [{'crop': [0, 0, 0, 0],
+                             'ms': 2000,
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/Samples/egg_notice.png',
+                             'threshold': 0.8,
+                             'use_gray': True}],
+     'SAMPLES_FELL_MESSAGE': [{'crop': [0, 0, 0, 0],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/Samples/fell_message.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
+     'SAMPLES_LOGO_POKEMON_HOME': [{'crop': [0, 0, 0, 0],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/Samples/logo_pokemon_home.png',
+                                    'threshold': 0.8,
+                                    'use_gray': True}],
+     'SAMPLES_NETWORK_OFFLINE': [{'crop': [0, 0, 0, 0],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/Samples/Network_Offline.png',
+                                  'threshold': 0.8,
+                                  'use_gray': True}],
+     'SAMPLES_OP': [{'crop': [0, 0, 0, 0],
+                     'ms': 2000,
+                     'show_only_true_rect': False,
+                     'show_position': True,
+                     'show_value': False,
+                     'template_path': 'Template/Samples/OP.png',
+                     'threshold': 0.8,
+                     'use_gray': True}],
+     'SAMPLES_PANNELS': [{'crop': [0, 0, 0, 0],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/Samples/pannels.png',
+                          'threshold': 0.8,
+                          'use_gray': True}],
+     'SAMPLES_SAMPLE': [{'crop': [0, 0, 0, 0],
+                         'ms': 2000,
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/Samples/sample.png',
+                         'threshold': 0.8,
+                         'use_gray': True}],
+     'SAMPLES_SAMPLE_COLOR_HLS': [{'crop': [0, 0, 0, 0],
+                                   'ms': 2000,
+                                   'show_only_true_rect': False,
+                                   'show_position': True,
+                                   'show_value': False,
+                                   'template_path': 'Template/Samples/sample_color_HLS.png',
+                                   'threshold': 0.8,
+                                   'use_gray': True}],
+     'SAMPLES_SHINY_MARK': [{'crop': [0, 0, 0, 0],
+                             'ms': 2000,
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/Samples/shiny_mark.png',
+                             'threshold': 0.8,
+                             'use_gray': True}],
+     'SAMPLES_STATUS': [{'crop': [0, 0, 0, 0],
+                         'ms': 2000,
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/Samples/status.png',
+                         'threshold': 0.8,
+                         'use_gray': True}],
+     'SAMPLES_ZACHIAN_PART': [{'crop': [0, 0, 0, 0],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/Samples/zachian_part.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
+     'SSR_BKGRD': [{'crop': [0, 0, 242, 720],
+                    'match_color': 'blue',
+                    'ms': 2000,
+                    'no_match_color': 'red',
+                    'show_only_true_rect': False,
+                    'show_position': True,
+                    'show_value': False,
+                    'template_path': 'Template/PS_SSR3/bggrd.png',
+                    'threshold': 0.8,
+                    'use_gray': False}],
+     'ZA_STORY_COMMON_2026-03-15_15-42-16': [{'crop': [0, 0, 0, 0],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/Common/2026-03-15_15-42-16.png',
+                                              'threshold': 0.8,
+                                              'use_gray': True}],
+     'ZA_STORY_COMMON_C+2': [{'crop': [0, 0, 0, 0],
+                              'ms': 2000,
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/C+2.png',
+                              'threshold': 0.8,
+                              'use_gray': True}],
+     'ZA_STORY_COMMON_EVENTFLAG': [{'crop': [0, 0, 0, 0],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/ZA_Story/Common/eventflag.png',
+                                    'threshold': 0.8,
+                                    'use_gray': True}],
+     'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': [{'crop': [0, 0, 0, 0],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/ZA_infi/attack_display_c+.png',
+                                             'threshold': 0.8,
+                                             'use_gray': True}],
+     'ZA_STORY_ZA_INFI_MAP': [{'crop': [0, 0, 0, 0],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/ZA_infi/map.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
+     'ZA_STORY_ZA_INFI_MAP2': [{'crop': [0, 0, 0, 0],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/ZA_infi/map2.png',
+                                'threshold': 0.8,
+                                'use_gray': True}],
+     'ZA_STORY_ZA_INFI_MOVE_COMMENT': [{'crop': [0, 0, 0, 0],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/ZA_infi/move_comment.png',
+                                        'threshold': 0.8,
+                                        'use_gray': True}],
+     'ZA_STORY_ZA_INFI_REWORD_END2': [{'crop': [0, 0, 0, 0],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/ZA_infi/reword_end2.png',
+                                       'threshold': 0.8,
+                                       'use_gray': True}],
+     'ZA_STORY_ZA_INFI_SELECT_ALL': [{'crop': [0, 0, 0, 0],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/ZA_infi/select_all.png',
+                                      'threshold': 0.8,
+                                      'use_gray': True}],
+     'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': [{'crop': [0, 0, 0, 0],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/ZA_infi/select_pekecenter.png',
+                                             'threshold': 0.8,
+                                             'use_gray': True}],
+     'ZA_STORY_ZA_INFI_SELECT_ZONE': [{'crop': [0, 0, 0, 0],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/ZA_infi/select_zone.png',
+                                       'threshold': 0.8,
+                                       'use_gray': True}],
+     'ZA_STORY__0_START_開始画面': [{'crop': [0, 0, 0, 0],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/_0_Start/開始画面.png',
+                                 'threshold': 0.8,
+                                 'use_gray': True}]}
     IMAGE_DETECTION_OPERATORS = {'POKEMON_ZA_1_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT_TUTORIAL': 'OR',
@@ -20307,6 +22040,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ATTACK_DISPLAY': 'OR',
      'POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW': 'OR',
      'POKEMON_ZA_BATTLE': 'OR',
+     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'OR',
      'POKEMON_ZA_BATTLE_BALL_CHECK': 'OR',
      'POKEMON_ZA_BOX_MENU': 'OR',
      'POKEMON_ZA_BOX_WINDOW': 'OR',
@@ -20316,6 +22050,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_CHICKET_MAX': 'OR',
      'POKEMON_ZA_CHICKET_MAX_RIGHT': 'OR',
      'POKEMON_ZA_COIN_ICON': 'OR',
+     'POKEMON_ZA_COMMENT_MARKER': 'OR',
      'POKEMON_ZA_DEAD': 'OR',
      'POKEMON_ZA_DOOR_A': 'OR',
      'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'OR',
@@ -20341,6 +22076,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_EVENT_MARKER_LEFT_WIDE': 'OR',
      'POKEMON_ZA_EVENT_MARKER_RANGE': 'OR',
      'POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE': 'OR',
+     'POKEMON_ZA_EVOLUTION_CONFIRM': 'OR',
      'POKEMON_ZA_EYE_CHECK': 'OR',
      'POKEMON_ZA_EYE_CHECK_HIGH': 'OR',
      'POKEMON_ZA_EYE_CHECK_HIGH_POKE': 'OR',
@@ -20362,6 +22098,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_FIELD_W': 'OR',
      'POKEMON_ZA_FURADARI_MAP': 'OR',
      'POKEMON_ZA_GETCHANCE_ICON4': 'OR',
+     'POKEMON_ZA_GET_BALL': 'OR',
      'POKEMON_ZA_HASHIGO_ICON': 'OR',
      'POKEMON_ZA_HELP_MARKER': 'OR',
      'POKEMON_ZA_H_BALL_ICON': 'OR',
@@ -20374,6 +22111,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_MAP': 'OR',
      'POKEMON_ZA_MAP2': 'OR',
      'POKEMON_ZA_MERIP_ICON_GET5': 'OR',
+     'POKEMON_ZA_MISSION_COMPLETE': 'OR',
      'POKEMON_ZA_MORNING': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE': 'OR',
@@ -20476,6 +22214,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_MOVESPOT_TAB': 'OR',
      'POKEMON_ZA_MOVE_COMMENT': 'OR',
      'POKEMON_ZA_MOVE_COMMENT_BATTLE': 'OR',
+     'POKEMON_ZA_MOVE_COMMENT_BATTLE2': 'OR',
      'POKEMON_ZA_M_BALL_ICON': 'OR',
      'POKEMON_ZA_NIGHT': 'OR',
      'POKEMON_ZA_ODAIRU_ICON': 'OR',
@@ -20504,6 +22243,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_QUASAR_MOVIE_ICON': 'OR',
      'POKEMON_ZA_REIBI_SKILL': 'OR',
      'POKEMON_ZA_REWARD_RESULT': 'OR',
+     'POKEMON_ZA_REWORD': 'OR',
      'POKEMON_ZA_REWORD_END': 'OR',
      'POKEMON_ZA_REWORD_LOSE': 'OR',
      'POKEMON_ZA_R_push': 'OR',
@@ -20561,7 +22301,9 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_WANINOKO_ICON': 'OR',
      'POKEMON_ZA_WATER_ICON': 'OR',
      'POKEMON_ZA_W_BATTLE_END': 'OR',
+     'POKEMON_ZA_X_MENU_EVO_MENU': 'OR',
      'POKEMON_ZA_X_MENU_OPEN': 'OR',
+     'POKEMON_ZA_YUBIWA': 'OR',
      'POKEMON_ZA_ZA_ROYALE': 'OR',
      'POKEMON_ZA_ZONE1': 'OR',
      'POKEMON_ZA_ZONE10': 'OR',
@@ -20573,7 +22315,40 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ZONE6': 'OR',
      'POKEMON_ZA_ZONE7': 'OR',
      'POKEMON_ZA_ZONE8': 'OR',
-     'POKEMON_ZA_ZONE9': 'OR'}
+     'POKEMON_ZA_ZONE9': 'OR',
+     'PS_SSR3_BATTLE_BATTLECARD': 'OR',
+     'PS_SSR3_BATTLE_TRANING': 'OR',
+     'PS_SSR3_BGGRD1': 'OR',
+     'PS_SSR3_BGGRD2': 'OR',
+     'PS_SSR3_CUSTOM_BATTLECARD': 'OR',
+     'PS_SSR3_STARICON': 'OR',
+     'SAMPLES_BABY_MSG': 'OR',
+     'SAMPLES_DOUGU_TO_BAG': 'OR',
+     'SAMPLES_EGG_FOUND': 'OR',
+     'SAMPLES_EGG_NOTICE': 'OR',
+     'SAMPLES_FELL_MESSAGE': 'OR',
+     'SAMPLES_LOGO_POKEMON_HOME': 'OR',
+     'SAMPLES_NETWORK_OFFLINE': 'OR',
+     'SAMPLES_OP': 'OR',
+     'SAMPLES_PANNELS': 'OR',
+     'SAMPLES_SAMPLE': 'OR',
+     'SAMPLES_SAMPLE_COLOR_HLS': 'OR',
+     'SAMPLES_SHINY_MARK': 'OR',
+     'SAMPLES_STATUS': 'OR',
+     'SAMPLES_ZACHIAN_PART': 'OR',
+     'SSR_BKGRD': 'OR',
+     'ZA_STORY_COMMON_2026-03-15_15-42-16': 'OR',
+     'ZA_STORY_COMMON_C+2': 'OR',
+     'ZA_STORY_COMMON_EVENTFLAG': 'OR',
+     'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': 'OR',
+     'ZA_STORY_ZA_INFI_MAP': 'OR',
+     'ZA_STORY_ZA_INFI_MAP2': 'OR',
+     'ZA_STORY_ZA_INFI_MOVE_COMMENT': 'OR',
+     'ZA_STORY_ZA_INFI_REWORD_END2': 'OR',
+     'ZA_STORY_ZA_INFI_SELECT_ALL': 'OR',
+     'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': 'OR',
+     'ZA_STORY_ZA_INFI_SELECT_ZONE': 'OR',
+     'ZA_STORY__0_START_開始画面': 'OR'}
     IMAGE_DETECTION_DESCRIPTIONS = {'targets': {'POKEMON_ZA_1_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 1_SELECT',
                  'POKEMON_ZA_2_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT',
                  'POKEMON_ZA_2_SELECT_TUTORIAL': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT_TUTORIAL',
@@ -20590,6 +22365,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW': 'Pokemon ZA image detection migrated from ZA_story: '
                                                            'ATTACK_DISPLAY_RIHGT_CHECKW',
                  'POKEMON_ZA_BATTLE': 'Pokemon ZA image detection migrated from ZA_story: BATTLE',
+                 'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'Pokemon ZAの戦闘中に左下へ表示される操作中ポケモンの固定Lv.表示',
                  'POKEMON_ZA_BATTLE_BALL_CHECK': 'Pokemon ZA image detection migrated from ZA_story: BATTLE_BALL_CHECK',
                  'POKEMON_ZA_BOX_MENU': 'Pokemon ZA image detection migrated from ZA_story: BOX_MENU',
                  'POKEMON_ZA_BOX_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: BOX_WINDOW',
@@ -20599,6 +22375,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_CHICKET_MAX': 'Pokemon ZA image detection migrated from ZA_story: CHICKET_MAX',
                  'POKEMON_ZA_CHICKET_MAX_RIGHT': 'Pokemon ZA image detection migrated from ZA_story: CHICKET_MAX_RIGHT',
                  'POKEMON_ZA_COIN_ICON': 'Pokemon ZA image detection migrated from ZA_story: COIN_ICON',
+                 'POKEMON_ZA_COMMENT_MARKER': '',
                  'POKEMON_ZA_DEAD': 'Pokemon ZA image detection migrated from ZA_story: DEAD',
                  'POKEMON_ZA_DOOR_A': 'Pokemon ZA image detection migrated from ZA_story: DOOR_A',
                  'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'Pokemon ZA image detection migrated from ZA_story: '
@@ -20637,6 +22414,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_EVENT_MARKER_RANGE': 'Pokemon ZA image detection migrated from ZA_story: EVENT_MARKER_RANGE',
                  'POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                                        'EVENT_MARKER_RIGHT_WIDE',
+                 'POKEMON_ZA_EVOLUTION_CONFIRM': 'Pokemon ZA evolution confirmation: watch evolution / cancel',
                  'POKEMON_ZA_EYE_CHECK': 'Pokemon ZA image detection migrated from ZA_story: EYE_CHECK',
                  'POKEMON_ZA_EYE_CHECK_HIGH': 'Pokemon ZA image detection migrated from ZA_story: EYE_CHECK_HIGH',
                  'POKEMON_ZA_EYE_CHECK_HIGH_POKE': 'Pokemon ZA image detection migrated from ZA_story: EYE_CHECK_HIGH_POKE',
@@ -20658,6 +22436,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_FIELD_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_W',
                  'POKEMON_ZA_FURADARI_MAP': 'Pokemon ZA image detection migrated from ZA_story: FURADARI_MAP',
                  'POKEMON_ZA_GETCHANCE_ICON4': 'Pokemon ZA image detection migrated from ZA_story: GETCHANCE_ICON4',
+                 'POKEMON_ZA_GET_BALL': 'Area Captureから登録',
                  'POKEMON_ZA_HASHIGO_ICON': 'Pokemon ZA image detection migrated from ZA_story: HASHIGO_ICON',
                  'POKEMON_ZA_HELP_MARKER': 'Pokemon ZA image detection migrated from ZA_story: HELP_MARKER',
                  'POKEMON_ZA_H_BALL_ICON': 'Pokemon ZA image detection migrated from ZA_story: H_BALL_ICON',
@@ -20670,6 +22449,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_MAP': 'Pokemon ZA image detection migrated from ZA_story: MAP',
                  'POKEMON_ZA_MAP2': 'Pokemon ZA image detection migrated from ZA_story: MAP2',
                  'POKEMON_ZA_MERIP_ICON_GET5': 'Pokemon ZA image detection migrated from ZA_story: MERIP_ICON_GET5',
+                 'POKEMON_ZA_MISSION_COMPLETE': '',
                  'POKEMON_ZA_MORNING': 'Pokemon ZA image detection migrated from ZA_story: MORNING',
                  'POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM': 'Pokemon ZA image detection migrated from ZA_story: '
                                                         'MOVEPOINT_PIC_ART_MUSEUM',
@@ -20870,6 +22650,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_MOVESPOT_TAB': 'Pokemon ZA image detection migrated from ZA_story: MOVESPOT_TAB',
                  'POKEMON_ZA_MOVE_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: MOVE_COMMENT',
                  'POKEMON_ZA_MOVE_COMMENT_BATTLE': 'Pokemon ZA image detection migrated from ZA_story: MOVE_COMMENT_BATTLE',
+                 'POKEMON_ZA_MOVE_COMMENT_BATTLE2': 'Area Captureから登録',
                  'POKEMON_ZA_M_BALL_ICON': 'Pokemon ZA image detection migrated from ZA_story: M_BALL_ICON',
                  'POKEMON_ZA_NIGHT': 'Pokemon ZA image detection migrated from ZA_story: NIGHT',
                  'POKEMON_ZA_ODAIRU_ICON': 'Pokemon ZA image detection migrated from ZA_story: ODAIRU_ICON',
@@ -20911,6 +22692,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_QUASAR_MOVIE_ICON': 'Pokemon ZA image detection migrated from ZA_story: QUASAR_MOVIE_ICON',
                  'POKEMON_ZA_REIBI_SKILL': 'Pokemon ZA image detection migrated from ZA_story: REIBI_SKILL',
                  'POKEMON_ZA_REWARD_RESULT': 'Pokemon ZA image detection migrated from ZA_story: REWARD_RESULT',
+                 'POKEMON_ZA_REWORD': 'Area Captureから登録',
                  'POKEMON_ZA_REWORD_END': 'Pokemon ZA image detection migrated from ZA_story: REWORD_END',
                  'POKEMON_ZA_REWORD_LOSE': 'Pokemon ZA image detection migrated from ZA_story: REWORD_LOSE',
                  'POKEMON_ZA_R_push': 'Pokemon ZA image detection migrated from ZA_story: R_push',
@@ -20992,7 +22774,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_WANINOKO_ICON': 'Pokemon ZA image detection migrated from ZA_story: WANINOKO_ICON',
                  'POKEMON_ZA_WATER_ICON': 'Pokemon ZA image detection migrated from ZA_story: WATER_ICON',
                  'POKEMON_ZA_W_BATTLE_END': 'Pokemon ZA image detection migrated from ZA_story: W_BATTLE_END',
+                 'POKEMON_ZA_X_MENU_EVO_MENU': 'Area Captureから登録',
                  'POKEMON_ZA_X_MENU_OPEN': 'Pokemon ZA image detection migrated from ZA_story: X_MENU_OPEN',
+                 'POKEMON_ZA_YUBIWA': 'Area Captureから登録',
                  'POKEMON_ZA_ZA_ROYALE': 'Pokemon ZA image detection migrated from ZA_story: ZA_ROYALE',
                  'POKEMON_ZA_ZONE1': 'Pokemon ZA image detection migrated from ZA_story: ZONE1',
                  'POKEMON_ZA_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: ZONE10',
@@ -21004,7 +22788,40 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: ZONE6',
                  'POKEMON_ZA_ZONE7': 'Pokemon ZA image detection migrated from ZA_story: ZONE7',
                  'POKEMON_ZA_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: ZONE8',
-                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9'}}
+                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9',
+                 'PS_SSR3_BATTLE_BATTLECARD': 'Templateから自動登録',
+                 'PS_SSR3_BATTLE_TRANING': 'Templateから自動登録',
+                 'PS_SSR3_BGGRD1': 'Templateから自動登録',
+                 'PS_SSR3_BGGRD2': 'Templateから自動登録',
+                 'PS_SSR3_CUSTOM_BATTLECARD': 'Templateから自動登録',
+                 'PS_SSR3_STARICON': 'Templateから自動登録',
+                 'SAMPLES_BABY_MSG': 'Templateから自動登録',
+                 'SAMPLES_DOUGU_TO_BAG': 'Templateから自動登録',
+                 'SAMPLES_EGG_FOUND': 'Templateから自動登録',
+                 'SAMPLES_EGG_NOTICE': 'Templateから自動登録',
+                 'SAMPLES_FELL_MESSAGE': 'Templateから自動登録',
+                 'SAMPLES_LOGO_POKEMON_HOME': 'Templateから自動登録',
+                 'SAMPLES_NETWORK_OFFLINE': 'Templateから自動登録',
+                 'SAMPLES_OP': 'Templateから自動登録',
+                 'SAMPLES_PANNELS': 'Templateから自動登録',
+                 'SAMPLES_SAMPLE': 'Templateから自動登録',
+                 'SAMPLES_SAMPLE_COLOR_HLS': 'Templateから自動登録',
+                 'SAMPLES_SHINY_MARK': 'Templateから自動登録',
+                 'SAMPLES_STATUS': 'Templateから自動登録',
+                 'SAMPLES_ZACHIAN_PART': 'Templateから自動登録',
+                 'SSR_BKGRD': '',
+                 'ZA_STORY_COMMON_2026-03-15_15-42-16': 'Templateから自動登録',
+                 'ZA_STORY_COMMON_C+2': 'Templateから自動登録',
+                 'ZA_STORY_COMMON_EVENTFLAG': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_MAP': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_MAP2': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_MOVE_COMMENT': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_REWORD_END2': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_SELECT_ALL': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': 'Templateから自動登録',
+                 'ZA_STORY_ZA_INFI_SELECT_ZONE': 'Templateから自動登録',
+                 'ZA_STORY__0_START_開始画面': 'Templateから自動登録'}}
 
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
     # DevStudioの登録済み画像検知から追加。再生成時も保持されます。
@@ -21212,8 +23029,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                       'show_position': True,
                                       'show_value': False,
                                       'template_path': 'Template/ZA_Story/Common/POKEMON_ZA_MISSION_COMPLETE.png',
-                                      'threshold': 0.8,
-                                      'use_gray': False},
+                                      'threshold': 0.5,
+                                      'use_gray': True},
                                      {'crop': [421, 184, 866, 238],
                                       'ms': 2000,
                                       'show_only_true_rect': False,
