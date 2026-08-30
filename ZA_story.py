@@ -3551,7 +3551,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return
 
         self.ZA_ZL_ACTION("")
-        self.wait(0.05)#TODO
+        # ロックオンがゲーム側へ反映されてから攻撃を開始する。
+        self.wait(0.1)
         for i in range(3):
             if Xaction==1:
                 self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3564,7 +3565,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if lockon_endskip==0:
             self.ZA_ZL_ACTION("END")
             
-    def ZA_battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1,R_Push_enable=1):
+    def ZA_battle_Cp_loop(self,Xaction=0,Aaction=0,Yaction=0,Baction=0,lockon_endskip=0,get_chanceicon4=0,mode=0,battle_mode=0,Cp_low_check=0,usenum=1,R_Push_enable=1,view_lockon_mode=0,lockon_attack_wait=0.0):
         noCp_count=0
         target_marker=1
         nofiled=1
@@ -3619,8 +3620,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 
             if ((R_Push_enable == 1) and self.image_check("POKEMON_ZA_R_push")):
                 self.press(Button.RCLICK,0.05,0.1) 
-                
+
+            # 指定時はnoCp_countを待たず、既存の視点回転を開始してから
+            # ZLを再入力する。既定OFFなので既存呼出しの動作は変えない。
+            if view_lockon_mode == 1:
+                self.ZA_MOVE_SEE(action="", in_see_r=0.6)
             self.ZA_ZL_ACTION("")
+            if lockon_attack_wait > 0:
+                # ロックオンがゲーム側へ反映されてからC+攻撃判定へ進む。
+                self.wait(lockon_attack_wait)
             
             for i in range(5):
                 #バトル中チェック チェックできない場合は、一旦抜ける
@@ -7712,6 +7720,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,63), duration=5.5, wait=0.5)
             self.press(Direction(Stick.LEFT,20), duration=1.3, wait=0.5)
+            
+            self.press(Direction(Stick.LEFT,360), duration=0.3, wait=0.5)
+            
             self.press(Direction(Stick.LEFT,290), duration=0.5, wait=0.5)
             
             
@@ -13841,10 +13852,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_48(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
-                return "5_STORY_KARASUBA_49"
+                return "5_STORY_KARASUBA_50"#49"
         return "5_STORY_KARASUBA_48"
     
-    def _5_story_karasuba_49(self):
+    def _5_story_karasuba_49(self):#TODO デンリュウアリの場合
         self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=2)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
             return "5_STORY_KARASUBA_50"
@@ -13915,7 +13926,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_59(self):
         self.no_Cplus=0
-        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,mode=1,battle_mode=1):
+        if self.ZA_battle_Cp_loop(Xaction=1,Aaction=1,Yaction=0,Baction=1,mode=1,battle_mode=1,view_lockon_mode=1):
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "5_STORY_KARASUBA_60"
         return "5_STORY_KARASUBA_59"
@@ -13939,6 +13950,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
                 return "5_STORY_KARASUBA_63"
+        elif (self.ZA_markerdir("EVENT")):
+            for i in range(30):
+                self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.5)
+                if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    break
         return "5_STORY_KARASUBA_62"
     
     def _5_story_karasuba_63(self):
@@ -13987,20 +14005,71 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_69(self):
         #失敗時に戻れるように
-        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
+        ret = self.ZA_Common_goto(
+            0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP",
+            select1_position0_direct=1)#地下水道入口へ移動（MINUS後、移動なしで0番目をA）
         if ret == "START":
+            self._5_story_karasuba_69_loop_state = None
+            self._5_story_karasuba_69_loop_count = 0
             return "5_STORY_KARASUBA_70"
+
+        # ZA_Common_gotoは正常処理中もEXECを返すため、同じ共通内部Stateが
+        # 10回連続で変化しない場合だけループ復帰を行う。
+        common_state = str(getattr(self, "Common_current_state", ""))
+        previous_state = getattr(
+            self, "_5_story_karasuba_69_loop_state", None)
+        if common_state == previous_state:
+            loop_count = int(getattr(
+                self, "_5_story_karasuba_69_loop_count", 0)) + 1
         else:
-            return "5_STORY_KARASUBA_69"
+            self._5_story_karasuba_69_loop_state = common_state
+            loop_count = 1
+        self._5_story_karasuba_69_loop_count = loop_count
+
+        if loop_count >= 10:
+            print(
+                "[KARASUBA_69_RECOVERY] "
+                f"common_state={common_state} repeated={loop_count}; "
+                "press B up to 20 times until FIELD")
+            if self._5_story_karasuba_69_field_recovery():
+                self.Common_current_state = "COMMON_START"
+                self._5_story_karasuba_69_loop_state = None
+                self._5_story_karasuba_69_loop_count = 0
+                return "5_STORY_KARASUBA_70"
+            # FIELD未検知時は同じ20回処理を毎Step連続実行せず、
+            # 共通処理を再度10回観測してから再試行する。
+            self._5_story_karasuba_69_loop_count = 0
+        return "5_STORY_KARASUBA_69"
+
+    def _5_story_karasuba_69_field_recovery(self, max_press_count=20):
+        for press_count in range(max(1, int(max_press_count))):
+            self.checkIfAlive()
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                print(
+                    "[KARASUBA_69_RECOVERY] FIELD detected "
+                    f"before B count={press_count}; advance to 70")
+                return True
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.1, interval=0.1)
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                print(
+                    "[KARASUBA_69_RECOVERY] FIELD detected "
+                    f"after B count={press_count + 1}; advance to 70")
+                return True
+        print(
+            "[KARASUBA_69_RECOVERY] FIELD not detected after "
+            f"{max(1, int(max_press_count))} B presses; remain at 69")
+        return False
     
     def _5_story_karasuba_70(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD2") or self.image_check("POKEMON_ZA_FIELD_BACK2")): #FIELDから変更
+            # フィールド1番目への切替完了を画像で確認してから移動を開始する。
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD1") or self.image_check("POKEMON_ZA_FIELD_BACK1")): #FIELDから変更
                 self.etc_sendCommand("Lbutton_up")
                 self.wait(1.0)
-                if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and self.image_check("POKEMON_ZA_FIELD_BACK_W"): #FIELDから変更
-                    return "5_STORY_KARASUBA_71"                
-            else:
+                return "5_STORY_KARASUBA_71"
+            elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
                 self.etc_sendCommand("Lbutton_left")
                 self.wait(1.0)
         return "5_STORY_KARASUBA_70"
@@ -14011,12 +14080,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "5_STORY_KARASUBA_72"
         return "5_STORY_KARASUBA_71"
+
+    def _ZA_karasuba_69_95_battle_noloop(self):
+        self.ZA_battle_Cp_loop(
+            Xaction=1,Aaction=0,Yaction=1,Baction=0,
+            mode=1,battle_mode=1,lockon_attack_wait=0.3)
+        return self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")
     
     def _5_story_karasuba_72(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
 
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
@@ -14032,10 +14111,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_73"
     
     def _5_story_karasuba_74(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_75"
@@ -14051,10 +14134,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_75"
     
     def _5_story_karasuba_76(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_77"
@@ -14069,10 +14156,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_77"
     
     def _5_story_karasuba_78(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_79"
@@ -14088,10 +14179,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_79"
     
     def _5_story_karasuba_80(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_81"
@@ -14107,10 +14202,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_81"
     
     def _5_story_karasuba_82(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_83"
@@ -14125,10 +14224,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_83"
     
     def _5_story_karasuba_84(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_85"
@@ -14143,10 +14246,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_85"
     
     def _5_story_karasuba_86(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_87"
@@ -14162,10 +14269,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_87"
     
     def _5_story_karasuba_88(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_89"
@@ -14180,10 +14291,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_89"
     
     def _5_story_karasuba_90(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_91"
@@ -14200,10 +14315,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_91"
     
     def _5_story_karasuba_92(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_93"
@@ -14220,10 +14339,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_93"
     
     def _5_story_karasuba_94(self):
+        if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            return "5_STORY_KARASUBA_95"
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             self.wait(1.0)
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1,battle_mode=1)
+            if self._ZA_karasuba_69_95_battle_noloop():
+                return "5_STORY_KARASUBA_95"
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 self.wait(2.0)
                 return "5_STORY_KARASUBA_95"
@@ -14233,10 +14356,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
                 return "5_STORY_KARASUBA_96"
+        elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): 
+            for i in range(1,10):
+                if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                    return "5_STORY_KARASUBA_95"
+                self.wait(0.1)
+            return "5_STORY_KARASUBA_69"
+                
         return "5_STORY_KARASUBA_95"
     
     def _5_story_karasuba_96(self):
-        ret = self.ZA_Common_goto(0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP")#地下水道入口へ移動
+        ret = self.ZA_Common_goto(
+            0,0,0,othermap="POKEMON_ZA_UG_SEWER_MAP",
+            select1_position0_direct=1)#地下水道入口へ移動（MINUS後、移動なしで0番目をA）
         if ret == "START":
             return "5_STORY_KARASUBA_97"
         else:
@@ -17504,7 +17636,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return "COMMON_MAP_OPEN"
     
-    def ZA_Common_goto_select1(self,position,othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_goto_select1(self,position,othermap="POKEMON_ZA_FALSE_RETURN",select_position0_direct=0):
         # position:0 すべて
         # position:1 施設
         # position:2 ポケセン
@@ -17515,7 +17647,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_MAP2") or self.image_check(othermap):      
             self.wait(0.1)
             if self.image_check("POKEMON_ZA_MOVESPOT_TAB"):
-                if self.map_cursor_reset==0:
+                # 特殊マップ用。左タブのリセット移動を行わず、MINUSで
+                # フィルターを開いて現在の0番目をそのままAで選択する。
+                if select_position0_direct and position == 0:
+                    if self.image_check("POKEMON_ZA_TAB_FILTER"):
+                        self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                    elif self.image_check("POKEMON_ZA_SELECT_ALL"):
+                        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
+                        return "COMMON_GOTO_SELECT2"
+                elif self.map_cursor_reset==0:
                     if self.image_check("POKEMON_ZA_SIDE_SELECT_TOP_MAP"):
                         self.map_cursor_reset=1
                     else:
@@ -17535,7 +17675,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.01, interval=0.1)
                         return "COMMON_GOTO_SELECT2"
             else:
-                    self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+                self.pressRep(Button.Y, repeat=1, duration=0.15, wait=0.1, interval=0.1)
         
         # ステップ遷移ミス用
         #elif self.image_check("MORNING"):  
@@ -17733,12 +17873,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_Common_false_return(self,othermap="POKEMON_ZA_FALSE_RETURN"):#dummy
         return "COMMON_FALSE_RETURN"
 
-    def ZA_Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN"):
+    def ZA_Common_goto(self,position1,position2left,position2down,movepoint_check=0,check_pic1="POKEMON_ZA_FALSE_RETURN",check_pic2="POKEMON_ZA_FALSE_RETURN",othermap="POKEMON_ZA_FALSE_RETURN",select1_position0_direct=0):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
         if self.Common_current_state == "COMMON_MAP_OPEN":
             self.Common_current_state = self.ZA_Common_map_open(check_pic1=check_pic1,check_pic2=check_pic2,othermap=othermap)
         elif self.Common_current_state == "COMMON_GOTO_SELECT1":
-            self.Common_current_state = self.ZA_Common_goto_select1(position1,othermap=othermap)
+            self.Common_current_state = self.ZA_Common_goto_select1(
+                position1,othermap=othermap,
+                select_position0_direct=select1_position0_direct)
         elif self.Common_current_state == "COMMON_GOTO_SELECT2":
             self.Common_current_state = self.ZA_Common_goto_select2(position2left,position2down,movepoint_check,othermap=othermap)
         else:
