@@ -13524,6 +13524,24 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_ABSOL_MOVE16"
     
     def _2_story_absol_move17(self):
+        # この再戦選択肢は背景のFIELDを同時検知することがあるため、
+        # 1～4択を共通beforeより先に扱い、現在の選択をAで確定する。
+        select_picture=next((
+            picture for picture in (
+                "POKEMON_ZA_1_SELECT",
+                "POKEMON_ZA_2_SELECT",
+                "POKEMON_ZA_3_SELECT",
+                "POKEMON_ZA_4_SELECT",
+            )
+            if self.image_check(picture)), None)
+        if select_picture:
+            print(
+                "[ABSOL_MOVE17] {} detected -> press A".format(
+                    select_picture))
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            return "2_STORY_ABSOL_MOVE17"
         return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_ABSOL_MOVE17",prg_ret="2_STORY_ABSOL_MOVE18",battle_flow_key="2_STORY_ABSOL",green_check=1)
     
     def _2_story_absol_move18(self):
