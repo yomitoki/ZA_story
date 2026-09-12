@@ -2353,6 +2353,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             local_see_r = self.see_r
         else:
             local_see_r = in_see_r
+        cover_guard=getattr(
+            self, "ZA_mega_mode5_testmode1_controls_cover", None)
+        if (action != "END" and callable(cover_guard)
+                and cover_guard()):
+            # TESTMODE1は青側障害物へ入った後、力をためた／強い光まで
+            # 通常の右スティック視点回転を再開しない。
+            action="END"
             
         if (self.no_Cplus==1 and (not self.image_check("POKEMON_ZA_ESCAPE"))):#一旦視点移動はC+がない時のみ
             self.notargetcount=0
@@ -2394,6 +2401,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             isinstance(dirnum, Direction)
             and dirnum.stick == Stick.LEFT)
         if action != "END" and not force_direction:
+            cover_guard=getattr(
+                self, "ZA_mega_mode5_testmode1_controls_cover", None)
+            if callable(cover_guard) and cover_guard():
+                # 障害物内では、攻撃後に旧dir1～4を再送する通常移動を
+                # 抑止する。明示した障害物回避Yだけforce_directionで通す。
+                return
             now = time.monotonic()
             mode5_dynamic = bool(
                 getattr(self, "_za_mega_last_battle_mode", False)
@@ -2663,6 +2676,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self, mode=0, usenum=1,
             Xaction=1, Aaction=1, Yaction=1, Baction=0,
             movemode=0, Z_Gaurd=0, Cplus_attack=0,
+            testmode1=0,
             red_edge_y_renda_seconds=0.0,
             attack_unavailable_y_dodge=1):
         #アブソル Bはまもるのため選ばない。
@@ -2683,11 +2697,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 最終戦の専用4技UIだけはC+がないため、別経路でA/X/B/Yを送る。
         elif mode == 5 and self.ZA_mega_evolution_battle_mode5(
                 usenum=usenum, movemode=movemode,
-                Z_Gaurd=Z_Gaurd, Cplus_attack=Cplus_attack):
+                Z_Gaurd=Z_Gaurd, Cplus_attack=Cplus_attack,
+                testmode1=testmode1):
             return True
 
     def ZA_mega_evolution_battle_mode5(
-            self, usenum=1, movemode=0, Z_Gaurd=0, Cplus_attack=0):
+            self, usenum=1, movemode=0, Z_Gaurd=0, Cplus_attack=0,
+            testmode1=0):
         """最終戦専用mode 5を、通常MEGA戦とは別の入口から開始する。
 
         開始フラグ:
@@ -2719,7 +2735,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             attack_unavailable_y_dodge=0,
             movemode=movemode,
             Z_Gaurd=Z_Gaurd,
-            Cplus_attack=Cplus_attack)
+            Cplus_attack=Cplus_attack,
+            testmode1=testmode1)
 
     def ZA_mega_mode5_transition(self, next_phase, reason):
         """mode 5の現在フェーズを更新し、変化した理由を1行で記録する。"""
@@ -2750,10 +2767,39 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_trace_retry_at=now + 5.0
         self._za_mega_mode5_last_detection=detection
         self._za_mega_mode5_last_action=action
+        testmode1=int(bool(getattr(
+            self, "_za_mega_testmode1_enabled", False)))
+        resume_hp=str(getattr(
+            self, "_za_mega_testmode1_resume_hp", "LEGACY"))
+        hp_color=str(getattr(
+            self, "_za_mega_testmode1_hp_color", "NONE"))
+        hp_ratio=float(getattr(
+            self, "_za_mega_testmode1_hp_fill_ratio", 0.0))
+        test_phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "DISABLED"))
         print(
             "[STATE_MAIN_FUNCTION][MEGA_MODE5] "
+            "TESTMODE1={} RESUME_HP={} HP_COLOR={} HP_RATIO={:.3f} "
+            "TEST_PHASE={} "
             "START_FLAG={} PHASE={} DETECT={} ACTION={}".format(
+                testmode1, resume_hp, hp_color, hp_ratio, test_phase,
                 start_flag, phase, detection, action))
+        # mode 5戦闘関数は完了まで外側のZA_story_mainへ戻らないため、
+        # 外側だけに任せるとCommandsの状態表示が戦闘中に更新されない。
+        # 状態変化／5秒間隔のtrace時に、同じステータス欄を直接更新する。
+        status_builder=getattr(self, "ZA_story_status_text", None)
+        status_printer=getattr(self, "print_t", None)
+        status_clear=getattr(self, "print_tb", None)
+        if callable(status_builder) and callable(status_printer):
+            try:
+                self.out_str=status_builder()
+                if callable(status_clear):
+                    status_clear("d")
+                status_printer(self.out_str)
+            except Exception as error:
+                print(
+                    "[MEGA_MODE5_STATUS] display update failed: {}".format(
+                        error))
         return True
 
     def ZA_mega_mode5_set_start_flag(
@@ -3045,7 +3091,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return -1
         return 0
 
-    def ZA_mega_mode5_colored_enemy_direction(self, frame=None):
+    def ZA_mega_mode5_colored_enemy_direction(
+            self, frame=None, allow_resume=False, blue_only=False):
         """mode 5だけ、赤／青の敵色をマーカー未検出時の位置補助に使う。"""
         self._za_mega_colored_enemy_position=None
         self._za_mega_colored_enemy_color=None
@@ -3057,12 +3104,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 赤／青はテンプレート画像ではなく色領域なので、会話・選択肢・
         # 暗転・必殺技演出にも候補が現れる。直前に戦闘FIELDを画像確認した
         # 短い区間だけ許可し、画面外状態の色で移動方向を上書きしない。
-        if (int(getattr(
+        if (not allow_resume
+                and (int(getattr(
                     self, "_za_mega_mode5_start_flag", 0)) != 4
-                or not getattr(
-                    self, "_za_mega_mode5_battle_active", False)
-                or now >= float(getattr(
-                    self, "_za_mega_mode5_color_field_until", 0.0))):
+                     or not getattr(
+                        self, "_za_mega_mode5_battle_active", False)
+                     or now >= float(getattr(
+                        self, "_za_mega_mode5_color_field_until", 0.0)))):
             return 0
         if frame is None:
             frame=getattr(self, "_za_mega_last_target_frame", None)
@@ -3231,7 +3279,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         blue_candidates=[
             candidate for candidate in candidates
             if candidate[2] == "blue"]
-        preferred_candidates=blue_candidates or candidates
+        if blue_only and not blue_candidates:
+            return 0
+        preferred_candidates=(
+            blue_candidates if blue_only else (blue_candidates or candidates))
         (score,color_pixels,color_name,raw_target_x,raw_target_y,
          rect_x,rect_y,rect_w,rect_h,coverage,solidity)=max(
              preferred_candidates, key=lambda item: item[0])
@@ -3435,6 +3486,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         """mode 5でマーカーを見失った間、最後の左右へ視点を連続して送る。"""
         if (not getattr(self, "_za_mega_last_battle_mode", False)
                 or getattr(self, "_za_mega_movemode", 0) != 1):
+            return False
+        if (getattr(self, "_za_mega_testmode1_enabled", False)
+                and getattr(self, "_za_mega_testmode1_phase", "")
+                != "EXISTING_CHARGE"):
+            # TESTMODE1は再開準備から障害物攻撃まで視点を固定する。
+            # 予兆検知後のcharge処理だけは専用の右視点確認を許可する。
+            self.ZA_mega_mode5_marker_search_view_stop(relock=False)
             return False
         now=time.monotonic()
         green_hold_active=bool(getattr(
@@ -4664,8 +4722,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if not self.ZA_mega_red_screen_edge_check():
             self._za_mega_red_edge_latched = False
             return "none"
+        cover_guard=getattr(
+            self, "ZA_mega_mode5_testmode1_controls_cover", None)
+        testmode1_cover=bool(
+            callable(cover_guard) and cover_guard())
         if (getattr(self, "_za_mega_last_battle_mode", False)
                 and getattr(self, "_za_mega_z_guard_enabled", False)
+                and not testmode1_cover
                 and self.ZA_mega_z_guard_update(
                     dir1, dir2, dir3, dir4)):
             # 赤端と緑床が同時に見える場合は、ロックオン解除Yよりも
@@ -4686,6 +4749,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         # Yローリング中に相手方向へ吸われないよう、入力前にZLを外す。
         self.ZA_ZL_ACTION("END")
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        if testmode1_cover:
+            # 障害物待機中の赤端回避は、非ロックオンYを障害物方向へ送る。
+            self.ZA_MOVE_LStick(
+                dir1,dir2,dir3,dir4,
+                Direction(Stick.LEFT, 90.0, 1.0),
+                "RELOAD", force_direction=True)
         if repeat_count:
             print(
                 "[MEGA_RED_EDGE] unlock and Y rolling x{}".format(
@@ -4700,7 +4769,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if result == "complete":
             # 回避完了後はロックオン、保持移動、視点処理の順に復帰する。
             self.ZA_ZL_ACTION("")
-            self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
+            if testmode1_cover:
+                self.ZA_MOVE_LStick(
+                    dir1,dir2,dir3,dir4,1,"END")
+                self._za_mega_testmode1_next_dodge_at=(
+                    time.monotonic() + 2.4)
+            else:
+                self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
             self.ZA_MOVE_SEE(
                 action=("END" if getattr(
                     self, "_za_mega_movemode", 0) == 1 else ""),
@@ -5318,13 +5393,343 @@ class ZA_story_Base(ImageProcPythonCommand):
         }
         return matched
 
+    def ZA_mega_mode5_hp_resume_mode(self, frame=None):
+        """testmode1用に再開時HPをHP75／OTHER／UNKNOWNへ分類する。"""
+        self._za_mega_testmode1_hp_fill_ratio=0.0
+        self._za_mega_testmode1_hp_color="NONE"
+        self._za_mega_testmode1_hp_frame=None
+        if not getattr(self, "_za_mega_last_battle_mode", False):
+            return "UNKNOWN"
+        if frame is None:
+            camera=getattr(self, "camera", None)
+            if camera is None:
+                return "UNKNOWN"
+            if hasattr(camera, "readFreshFrame"):
+                frame=camera.readFreshFrame(timeout=0.75)
+            else:
+                frame=(camera.readFrame()
+                       if hasattr(camera, "readFrame") else None)
+        if frame is None or getattr(frame, "size", 0) == 0:
+            return "UNKNOWN"
+        self._za_mega_testmode1_hp_frame=frame
+
+        height,width=frame.shape[:2]
+        x0,x1=int(width * 0.30),int(width * 0.71)
+        y0,y1=int(height * 0.105),int(height * 0.16)
+        region=frame[y0:y1, x0:x1]
+        if region.size == 0:
+            return "UNKNOWN"
+        hsv=cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
+        color_masks=(
+            ("GREEN", cv2.inRange(
+                hsv, (35, 90, 100), (100, 255, 255))),
+            ("YELLOW", cv2.inRange(
+                hsv, (18, 100, 140), (40, 255, 255))),
+        )
+        minimum_column_pixels=max(3, int(region.shape[0] * 0.08))
+        best_color="NONE"
+        best_start=-1
+        best_end=-1
+        best_width=0
+        for color_name,color_mask in color_masks:
+            columns=(color_mask > 0).sum(axis=0)
+            run_start=-1
+            for index,column_pixels in enumerate(columns):
+                if int(column_pixels) >= minimum_column_pixels:
+                    if run_start < 0:
+                        run_start=index
+                    continue
+                if run_start >= 0:
+                    if index - run_start > best_width:
+                        best_color=color_name
+                        best_start=run_start
+                        best_end=index
+                        best_width=index - run_start
+                    run_start=-1
+            if run_start >= 0 and len(columns) - run_start > best_width:
+                best_color=color_name
+                best_start=run_start
+                best_end=len(columns)
+                best_width=len(columns) - run_start
+        if best_start < 0 or best_end <= best_start:
+            return "UNKNOWN"
+
+        global_start=x0 + best_start
+        global_end=x0 + best_end - 1
+        full_bar_width=max(1.0, float(width) * 0.345)
+        fill_ratio=float(best_width) / full_bar_width
+        bar_position_valid=bool(
+            float(width) * 0.31 <= global_start <= float(width) * 0.36
+            and global_end <= float(width) * 0.71
+            and 0.12 <= fill_ratio <= 1.10)
+        if not bar_position_valid:
+            return "UNKNOWN"
+        resume_mode=(
+            "HP75"
+            if best_color == "GREEN" and 0.55 <= fill_ratio <= 0.80
+            else "OTHER")
+        self._za_mega_testmode1_hp_fill_ratio=fill_ratio
+        self._za_mega_testmode1_hp_color=best_color
+        self.last_image_detection={
+            "name": "POKEMON_ZA_LAST_BATTLE_TESTMODE1_HP",
+            "matched": True,
+            "resume_mode": resume_mode,
+            "hp_color": best_color,
+            "fill_ratio": fill_ratio,
+            "yellow_run": [global_start, global_end],
+            "position": (global_start, y0),
+            "template_size": (best_width, y1 - y0),
+        }
+        return resume_mode
+
+    def ZA_mega_mode5_testmode1_controls_cover(self):
+        """試案の障害物待機が通常movemodeを置き換える区間を返す。"""
+        return bool(
+            getattr(self, "_za_mega_testmode1_enabled", False)
+            and getattr(
+                self, "_za_mega_testmode1_phase", "")
+            in {"FACE_BLUE", "COVER_ATTACK"})
+
+    def ZA_mega_mode5_testmode1_resume_update(
+            self, dir1, dir2, dir3, dir4, see_r):
+        """再開経路の準備完了後、青敵側の障害物へ移動する試案。"""
+        if not getattr(self, "_za_mega_testmode1_enabled", False):
+            return None
+        phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "DISABLED"))
+        if phase == "HP75_EXISTING":
+            return None
+        now=time.monotonic()
+        if phase == "CLASSIFY_HP":
+            if now < float(getattr(
+                    self, "_za_mega_testmode1_hp_retry_at", 0.0)):
+                self.wait(0.1)
+                return True
+            resume_hp=self.ZA_mega_mode5_hp_resume_mode()
+            remaining=max(0, int(getattr(
+                self, "_za_mega_testmode1_hp_checks_remaining", 0)) - 1)
+            self._za_mega_testmode1_hp_checks_remaining=remaining
+            self._za_mega_testmode1_hp_retry_at=now + 0.25
+            if resume_hp == "UNKNOWN" and remaining > 0:
+                self.ZA_mega_mode5_trace(
+                    "HP_UNKNOWN",
+                    "testmode1 wait for visible HP bar ({}/4)".format(
+                        4 - remaining))
+                self.wait(0.1)
+                return True
+            if resume_hp == "UNKNOWN":
+                # 判定不能のまま棒立ちにせず、試案側のOTHERとして進める。
+                resume_hp="OTHER"
+            self._za_mega_testmode1_resume_hp=resume_hp
+            if resume_hp == "HP75":
+                self._za_mega_testmode1_phase="HP75_EXISTING"
+                self._za_mega_mode5_green_priority_checks_remaining=(
+                    8 if self._za_mega_z_guard_enabled else 0)
+                self.ZA_mega_mode5_trace(
+                    "HP75",
+                    "testmode1 use existing green + 90deg resume",
+                    force=True)
+                return None
+            self._za_mega_testmode1_phase="FIND_BLUE"
+            self.ZA_mega_mode5_trace(
+                "HP_OTHER",
+                "testmode1 find blue enemy and move to cover",
+                force=True)
+            phase="FIND_BLUE"
+
+        if phase != "FIND_BLUE":
+            return True
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        self.ZA_ZL_ACTION("END")
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        resume_hp=str(getattr(
+            self, "_za_mega_testmode1_resume_hp", "OTHER"))
+        if resume_hp == "HP75":
+            # HP75は先に緑床回避を行うため、その終了位置では青敵が
+            # 固定画角の外にいる。青未検知時の正面90度移動は中央の敵へ
+            # 再接近していたため、緑床から青側障害物へ約215度で回り込む。
+            # 移動後は反対寄りの35度へ向き、青敵との間に障害物を挟んで
+            # Lロックオンと攻撃を開始する。
+            blue_direction=0
+            blue_found=False
+            cover_angle=215.0
+            face_angle=35.0
+            cover_seconds=2.0
+            cover_detection="HP75_BLUE_COVER_FIXED"
+        else:
+            blue_direction=self.ZA_mega_mode5_colored_enemy_direction(
+                allow_resume=True, blue_only=True)
+            attempts=int(getattr(
+                self, "_za_mega_testmode1_blue_scan_attempts", 0)) + 1
+            self._za_mega_testmode1_blue_scan_attempts=attempts
+            blue_found=isinstance(blue_direction, Direction)
+            if blue_found:
+                cover_angle=max(
+                    20.0,
+                    min(160.0, float(blue_direction.angle_for_show)))
+            elif attempts >= 10:
+                # 青色が演出で隠れ続ける場合も有界にし、現在の正面方向を使う。
+                cover_angle=90.0
+            else:
+                # TESTMODE1中は予兆前に視点を動かさない。現在画角の青を
+                # 有界回数だけ取り直し、見えなければ正面へ有限移動する。
+                self.ZA_mega_mode5_trace(
+                    "BLUE_ENEMY_MISSING",
+                    "testmode1 keep view stopped; check blue enemy {}/10".format(
+                        attempts))
+                self.wait(0.1)
+                return True
+            face_angle=cover_angle
+            cover_seconds=1.4
+            cover_detection=(
+                "BLUE_ENEMY" if blue_found else "BLUE_FALLBACK")
+
+        self._za_mega_testmode1_cover_angle=cover_angle
+        self._za_mega_testmode1_face_angle=face_angle
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        self.press(
+            Direction(Stick.LEFT, cover_angle, 1.0),
+            duration=cover_seconds, wait=0.0)
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        self._za_mega_mode5_initial_phase_active=False
+        self._za_mega_mode5_green_priority_checks_remaining=0
+        self._za_mega_testmode1_phase="FACE_BLUE"
+        self.ZA_mega_mode5_set_start_flag(
+            3,
+            cover_detection,
+            "testmode1 cover move angle={:.0f} {:.1f}s; "
+            "face={:.0f}; FIELD input next".format(
+                cover_angle, cover_seconds, face_angle))
+        return True
+
+    def ZA_mega_mode5_testmode1_combat_update(
+            self, dir1, dir2, dir3, dir4, see_r):
+        """障害物から青敵へL正面化し、攻撃間に非ロックオンYを行う。"""
+        if not self.ZA_mega_mode5_testmode1_controls_cover():
+            if (getattr(self, "_za_mega_testmode1_enabled", False)
+                    and getattr(
+                        self, "_za_mega_testmode1_phase", "")
+                    == "EXISTING_GREEN"):
+                if self.ZA_mega_z_guard_update(dir1,dir2,dir3,dir4):
+                    self.ZA_mega_mode5_trace(
+                        "GREEN_FLOOR",
+                        "testmode1 temporarily use existing green action")
+                    return "handled"
+                self._za_mega_testmode1_phase="WAIT_RESUME"
+                self._za_mega_testmode1_resume_hp="PENDING"
+                self.ZA_mega_mode5_set_start_flag(
+                    0, "GREEN_FLOOR_COMPLETE",
+                    "testmode1 restart from HP classification",
+                )
+                return "restart"
+            return "none"
+
+        phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "FACE_BLUE"))
+        now=time.monotonic()
+        if phase == "FACE_BLUE":
+            blue_direction=self.ZA_mega_mode5_colored_enemy_direction(
+                allow_resume=True, blue_only=True)
+            if isinstance(blue_direction, Direction):
+                face_angle=max(
+                    20.0,
+                    min(160.0, float(blue_direction.angle_for_show)))
+            else:
+                # 障害物へ入った後は「力をためた」通知まで視点を回さない。
+                # 青が演出で隠れても、移動前に保存した角度でL正面化する。
+                face_angle=float(getattr(
+                    self, "_za_mega_testmode1_face_angle", 90.0))
+            self._za_mega_testmode1_face_angle=face_angle
+            self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+            self.ZA_ZL_ACTION("END")
+            self.ZA_MOVE_LStick(
+                dir1,dir2,dir3,dir4,
+                Direction(Stick.LEFT, face_angle, 1.0),
+                "RELOAD", force_direction=True)
+            self.wait(0.1)
+            self.pressRep(
+                Button.L, repeat=1, duration=0.04,
+                wait=0.0, interval=0.1)
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_ZL_ACTION("")
+            self._za_mega_testmode1_phase="COVER_ATTACK"
+            self._za_mega_testmode1_next_dodge_at=(
+                time.monotonic() + 2.4)
+            self.ZA_mega_mode5_trace(
+                "BLUE_ENEMY" if isinstance(blue_direction, Direction)
+                else "BLUE_FALLBACK",
+                "testmode1 Button.L face blue; lockon attack",
+                force=True)
+            return "handled"
+
+        # 障害物位置から通常movemodeへ戻ると敵へ接近して遮蔽物を離れる。
+        # 「力をためた／強い光」通知までは視点と通常左入力を止め、
+        # 障害物内から攻撃する。通常時の緑床はここへ割り込ませず、
+        # 予兆検知後のcharge処理だけが緑床探索・移動を開始する。
+        # 2.4秒ごとだけ前方90度へYを2回送り、直後に再ロックオンする。
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        if now < float(getattr(
+                self, "_za_mega_testmode1_next_dodge_at", 0.0)):
+            if getattr(self, "ZL_state", 0) == 0:
+                self.ZA_ZL_ACTION("")
+            return "attack"
+
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_ZL_ACTION("END")
+        self.ZA_MOVE_LStick(
+            dir1,dir2,dir3,dir4,
+            Direction(Stick.LEFT, 90.0, 1.0),
+            "RELOAD", force_direction=True)
+        self.pressRep(
+            Button.Y, repeat=2, duration=0.04,
+            wait=0.0, interval=0.12)
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        self.ZA_ZL_ACTION("")
+        self._za_mega_testmode1_next_dodge_at=time.monotonic() + 2.4
+        self.ZA_mega_mode5_trace(
+            "TESTMODE1_COVER",
+            "unlock; Y x2 toward obstacle; relock",
+            force=True)
+        return "handled"
+
+    def ZA_mega_mode5_testmode1_finish_hp75_initial(self, detection):
+        """HP75専用の初期回避後、青側障害物経路へ合流する。"""
+        if not (getattr(self, "_za_mega_testmode1_enabled", False)
+                and getattr(
+                    self, "_za_mega_testmode1_resume_hp", "") == "HP75"):
+            return False
+        self._za_mega_testmode1_phase="FIND_BLUE"
+        self._za_mega_testmode1_blue_scan_attempts=0
+        self._za_mega_mode5_initial_phase_active=False
+        self._za_mega_mode5_green_priority_checks_remaining=0
+        self._za_mega_mode5_post_move_wait_until=0.0
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_mega_mode5_transition(
+            "BLUE_COVER_SEARCH",
+            "HP75 green/90deg avoidance complete; fixed 215deg cover route")
+        self.ZA_mega_mode5_trace(
+            detection,
+            "HP75 initial avoidance complete; move 215deg to blue-side cover",
+            force=True)
+        return True
+
     def ZA_mega_mode5_begin_resume(
             self, z_guard_enabled, initial_approach_seconds, see_r,
             resume_reason):
         """戦闘再開時に前ターゲット状態を破棄し、緑床優先へ遷移する。"""
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
-        yellow_low_hp=self.ZA_mega_mode5_low_yellow_hp()
+        testmode1_enabled=bool(getattr(
+            self, "_za_mega_testmode1_enabled", False))
+        resume_hp=(
+            self.ZA_mega_mode5_hp_resume_mode()
+            if testmode1_enabled else "LEGACY")
+        hp_frame=getattr(self, "_za_mega_testmode1_hp_frame", None)
+        yellow_low_hp=self.ZA_mega_mode5_low_yellow_hp(frame=hp_frame)
         self._za_mega_mode5_low_yellow_hp_active=bool(yellow_low_hp)
         # 再開検知の瞬間は暗転や選択肢からの切替中で、
         # HPバーがまだ出ていない場合がある。初回失敗だけで
@@ -5335,6 +5740,21 @@ class ZA_story_Base(ImageProcPythonCommand):
             time.monotonic() + 0.25)
         self._za_mega_mode5_low_yellow_hp_lock_seen=False
         self._za_mega_mode5_lockon_retreating=False
+        self._za_mega_testmode1_resume_hp=resume_hp
+        self._za_mega_testmode1_hp_checks_remaining=(
+            4 if resume_hp == "UNKNOWN" else 0)
+        self._za_mega_testmode1_hp_retry_at=time.monotonic() + 0.25
+        self._za_mega_testmode1_blue_scan_attempts=0
+        self._za_mega_testmode1_face_attempts=0
+        self._za_mega_testmode1_next_dodge_at=0.0
+        if not testmode1_enabled:
+            self._za_mega_testmode1_phase="DISABLED"
+        elif resume_hp == "HP75":
+            self._za_mega_testmode1_phase="HP75_EXISTING"
+        elif resume_hp == "OTHER":
+            self._za_mega_testmode1_phase="FIND_BLUE"
+        else:
+            self._za_mega_testmode1_phase="CLASSIFY_HP"
         # 黄色HPは初期移動角度ではなく、ロックオン後の距離維持へ使う。
         self._za_mega_mode5_initial_approach_angle=90
         if yellow_low_hp:
@@ -5345,8 +5765,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self, "_za_mega_mode5_yellow_hp_fill_ratio", 0.0))))
         self._za_mega_mode5_view_search_block_until=0.0
         self._za_mega_mode5_view_search_block_logged=False
+        use_existing_resume=bool(
+            not testmode1_enabled or resume_hp == "HP75")
         self._za_mega_mode5_green_priority_checks_remaining=(
-            8 if z_guard_enabled else 0)
+            8 if z_guard_enabled and use_existing_resume else 0)
         self._za_mega_mode5_initial_phase_active=True
         self._za_mega_mode5_initial_green_handled=False
         self._za_mega_mode5_initial_approach_started=False
@@ -5388,16 +5810,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_z_guard_direction_until=0.0
         self.ZA_mega_mode5_transition(
             "GREEN_PRIORITY",
-            "{} detected; stop view and inspect green floor".format(
-                resume_reason))
+            "{} detected; testmode1 HP={} ratio={:.3f}".format(
+                resume_reason, resume_hp, float(getattr(
+                    self, "_za_mega_testmode1_hp_fill_ratio", 0.0))))
         self.ZA_mega_mode5_set_start_flag(
             2, resume_reason,
-            "green-floor or fixed {}deg movement".format(
+            "resume HP={}; test phase={}; green/fixed {}deg or cover".format(
+                resume_hp, self._za_mega_testmode1_phase,
                 self._za_mega_mode5_initial_approach_angle))
 
     def ZA_mega_mode5_begin_post_move_wait(
             self, detection, wait_seconds=2.0):
-        """開始移動後の待機を開始する。待機中は視点探索だけを許可する。"""
+        """開始移動後の待機を開始する。HP75試案中は視点も止める。"""
         now=time.monotonic()
         if float(getattr(
                 self, "_za_mega_mode5_post_move_wait_until", 0.0)) <= 0.0:
@@ -5407,8 +5831,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "POST_MOVE_WAIT",
                 "{}; wait {:.1f}s before FIELD_W input".format(
                     detection, max(0.0, float(wait_seconds))))
+            testmode1_hp75=bool(
+                getattr(self, "_za_mega_testmode1_enabled", False)
+                and getattr(
+                    self, "_za_mega_testmode1_resume_hp", "") == "HP75")
             self.ZA_mega_mode5_trace(
-                detection, "wait after movement; view rotation allowed",
+                detection,
+                "wait after movement; {}".format(
+                    "testmode1 view stopped" if testmode1_hp75
+                    else "view rotation allowed"),
                 force=True)
 
     def ZA_mega_mode5_green_and_initial_update(
@@ -5418,6 +5849,12 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         Trueはこの周回を終了して画面を取り直す、Falseは攻撃へ進める状態。
         """
+        if getattr(self, "_za_mega_testmode1_enabled", False):
+            testmode1_result=self.ZA_mega_mode5_testmode1_resume_update(
+                dir1,dir2,dir3,dir4,see_r)
+            if testmode1_result is not None:
+                return bool(testmode1_result)
+
         post_move_wait_until=float(getattr(
             self, "_za_mega_mode5_post_move_wait_until", 0.0))
         yellow_retry_phase=bool(
@@ -5456,14 +5893,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         if post_move_wait_until > 0.0:
             now=time.monotonic()
             if now < post_move_wait_until:
-                # 左スティックは初期移動の終了位置で止め、待機中は
-                # 右スティック探索だけを許可する。
+                # 左スティックは初期移動の終了位置で止める。HP75の
+                # TESTMODE1は青側障害物へ移るまで右視点も停止する。
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-                self.ZA_mega_mode5_marker_search_view()
+                testmode1_hp75=bool(
+                    getattr(self, "_za_mega_testmode1_enabled", False)
+                    and getattr(
+                        self, "_za_mega_testmode1_resume_hp", "") == "HP75")
+                if testmode1_hp75:
+                    self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+                    self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+                else:
+                    self.ZA_mega_mode5_marker_search_view()
                 self.wait(0.1)
                 return True
             self._za_mega_mode5_post_move_wait_until=0.0
             self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+            finish_hp75=getattr(
+                self, "ZA_mega_mode5_testmode1_finish_hp75_initial", None)
+            if (callable(finish_hp75) and finish_hp75(
+                    "HP75_POST_MOVE_WAIT_COMPLETE")):
+                return True
             self.ZA_mega_mode5_transition(
                 "FIELD_W_INPUT", "post-movement wait complete")
             self.ZA_mega_mode5_set_start_flag(
@@ -5538,12 +5988,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                             False):
                         # 緑床移動後はZ_Guard内で2.5秒待機済み。
                         # さらに2秒足さず、FIELD_W確認へ進む。
-                        self.ZA_mega_mode5_transition(
-                            "FIELD_W_INPUT",
-                            "green-floor 2.5s wait complete")
-                        self.ZA_mega_mode5_set_start_flag(
-                            3, "GREEN_FLOOR_WAIT_COMPLETE",
-                            "check FIELD_W and press up")
+                        finish_hp75=getattr(
+                            self,
+                            "ZA_mega_mode5_testmode1_finish_hp75_initial",
+                            None)
+                        if (callable(finish_hp75) and finish_hp75(
+                                "HP75_GREEN_FLOOR_WAIT_COMPLETE")):
+                            return True
+                        else:
+                            self.ZA_mega_mode5_transition(
+                                "FIELD_W_INPUT",
+                                "green-floor 2.5s wait complete")
+                            self.ZA_mega_mode5_set_start_flag(
+                                3, "GREEN_FLOOR_WAIT_COMPLETE",
+                                "check FIELD_W and press up")
                     else:
                         self.ZA_mega_mode5_begin_post_move_wait(
                             "GREEN_FLOOR_COMPLETE")
@@ -5604,7 +6062,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return False
 
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0):
         if last_battle_mode:
             # AはC+画像がなくても戦闘画面なら使用する。B/X/Yは呼び出し値を
             # 保持し、後段でC+画像を確認できた時だけ技入力として許可する。
@@ -5643,6 +6101,23 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_field_w_up_retry_at=0.0
         attack_unavailable_since=None
         self._za_mega_last_battle_mode=bool(last_battle_mode)
+        self._za_mega_testmode1_enabled=bool(
+            last_battle_mode and testmode1)
+        self._za_mega_testmode1_resume_hp=(
+            "PENDING" if self._za_mega_testmode1_enabled else "LEGACY")
+        self._za_mega_testmode1_phase=(
+            "WAIT_RESUME" if self._za_mega_testmode1_enabled
+            else "DISABLED")
+        self._za_mega_testmode1_hp_fill_ratio=0.0
+        self._za_mega_testmode1_hp_color="NONE"
+        self._za_mega_testmode1_hp_frame=None
+        self._za_mega_testmode1_hp_checks_remaining=0
+        self._za_mega_testmode1_hp_retry_at=0.0
+        self._za_mega_testmode1_blue_scan_attempts=0
+        self._za_mega_testmode1_face_attempts=0
+        self._za_mega_testmode1_cover_angle=90.0
+        self._za_mega_testmode1_face_angle=90.0
+        self._za_mega_testmode1_next_dodge_at=0.0
         # movemode／Z_Gaurdは最終戦(mode 5)専用。直接呼び出しで値が
         # 混入しても、既存mode 0～4の移動・視点経路を変更しない。
         self._za_mega_movemode=(int(movemode) if last_battle_mode else 0)
@@ -5800,6 +6275,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self._za_mega_mode5_visual_lockon_until=0.0
                     self._za_mega_colored_enemy_track_position=None
                     self._za_mega_colored_enemy_track_seen_at=0.0
+                    if self._za_mega_testmode1_enabled:
+                        self._za_mega_testmode1_resume_hp="PENDING"
+                        self._za_mega_testmode1_phase="WAIT_RESUME"
                     # 次ターゲット選択ではBACK_Wを経由しない場合もあるため、
                     # 前のターゲットで消費した上入力回数をここで破棄する。
                     if getattr(self, "_za_mega_field_w_up_attempts", 0):
@@ -5811,7 +6289,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self._za_mega_field_w_up_latched=False
                     self.ZA_mega_mode5_set_start_flag(
                         0, "CHOICE_OR_BLACK_COMMENT",
-                        "stop movement and reset before retry selection")
+                        "stop movement; reset HP/test phase before retry")
 
             if endpicture != "" or end2picture != "":
                 if self.image_check(endpicture):
@@ -5970,6 +6448,30 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             if charge_result in {
                     "search", "green", "dodge", "guard", "complete"}:
+                if self._za_mega_testmode1_enabled:
+                    if charge_result in {"search", "green"}:
+                        self._za_mega_testmode1_phase="EXISTING_CHARGE"
+                        self.ZA_mega_mode5_trace(
+                            "CHARGE_" + charge_result.upper(),
+                            "testmode1 suspended; existing charge/green action",
+                            force=True)
+                    elif charge_result in {"dodge", "complete"}:
+                        self._za_mega_testmode1_resume_hp="PENDING"
+                        self._za_mega_testmode1_phase="WAIT_RESUME"
+                        nofiled=1
+                        self.ZA_mega_mode5_set_start_flag(
+                            0, "CHARGE_" + charge_result.upper(),
+                            "existing charge action complete; reclassify resume HP")
+                continue
+
+            testmode1_action="none"
+            if self._za_mega_testmode1_enabled:
+                testmode1_action=self.ZA_mega_mode5_testmode1_combat_update(
+                    dir1,dir2,dir3,dir4,see_r)
+            if testmode1_action == "restart":
+                nofiled=1
+                continue
+            if testmode1_action == "handled":
                 continue
 
             # mode 5の専用4技画面はC+を表示しない。緑床をもう一度
@@ -5978,6 +6480,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     and int(getattr(
                         self, "_za_mega_mode5_start_flag", 0)) == 4):
                 if (self._za_mega_z_guard_enabled
+                        and not self.ZA_mega_mode5_testmode1_controls_cover()
                         and self.ZA_mega_z_guard_update(
                             dir1,dir2,dir3,dir4)):
                     self.ZA_mega_mode5_trace(
@@ -6030,7 +6533,10 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             if (not choice_input_guard and nofiled==0
                     and not (last_battle_mode
-                             and self._za_mega_movemode == 1)):
+                             and self._za_mega_movemode == 1)
+                    and not (last_battle_mode
+                             and self._za_mega_testmode1_enabled
+                             and self.ZA_mega_mode5_testmode1_controls_cover())):
                 # mode 5以外は従来の保持移動を維持する。mode 5は下の
                 # movemode処理で有限パルスを送るため、先に保持を再送しない。
                 self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
@@ -6055,7 +6561,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                     rclick_retry_at=now+3.0
                     self._za_mega_rclick_dir3_until=time.monotonic()+35.0
                     # 演出待ち中から35秒間dir3で前進し、そのまま攻撃ループへ入る。
-                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,3,"RELOAD")
+                    if (last_battle_mode
+                            and self._za_mega_testmode1_enabled
+                            and self.ZA_mega_mode5_testmode1_controls_cover()):
+                        self.ZA_MOVE_LStick(
+                            dir1,dir2,dir3,dir4,1,"END")
+                        self.ZA_MOVE_SEE(
+                            action="END", in_see_r=see_r)
+                    else:
+                        self.ZA_MOVE_LStick(
+                            dir1,dir2,dir3,dir4,3,"RELOAD")
                     self.wait(1.0)
                     self.ZA_MOVE_SEE(
                         action=("END" if self._za_mega_movemode == 1 else ""),
@@ -6088,7 +6603,9 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             if (not choice_input_guard and nofiled==0
                     and last_battle_mode
-                    and self._za_mega_movemode == 1):
+                    and self._za_mega_movemode == 1
+                    and (not self._za_mega_testmode1_enabled
+                         or not self.ZA_mega_mode5_testmode1_controls_cover())):
                 # 初期90度移動後は、ターゲットへ接近または周回しながら攻撃する。
                 self.ZA_mega_movemode_update(
                     dir1,dir2,dir3,dir4,
@@ -6174,10 +6691,37 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return True
                 if charge_result in {
                         "search", "green", "dodge", "guard", "complete"}:
+                    if self._za_mega_testmode1_enabled:
+                        if charge_result in {"search", "green"}:
+                            self._za_mega_testmode1_phase="EXISTING_CHARGE"
+                            self.ZA_mega_mode5_trace(
+                                "CHARGE_" + charge_result.upper(),
+                                "testmode1 suspended inside attack loop",
+                                force=True)
+                        elif charge_result in {"dodge", "complete"}:
+                            self._za_mega_testmode1_resume_hp="PENDING"
+                            self._za_mega_testmode1_phase="WAIT_RESUME"
+                            nofiled=1
+                            self.ZA_mega_mode5_set_start_flag(
+                                0, "CHARGE_" + charge_result.upper(),
+                                "charge action complete; reclassify resume HP")
+                    charge_interrupted=True
+                    break
+                testmode1_action="none"
+                if self._za_mega_testmode1_enabled:
+                    testmode1_action=(
+                        self.ZA_mega_mode5_testmode1_combat_update(
+                            dir1,dir2,dir3,dir4,see_r))
+                if testmode1_action == "restart":
+                    nofiled=1
+                    charge_interrupted=True
+                    break
+                if testmode1_action == "handled":
                     charge_interrupted=True
                     break
                 # 攻撃5回の途中で出た緑床も即時優先する。
                 if (self._za_mega_z_guard_enabled and nofiled==0
+                        and not self.ZA_mega_mode5_testmode1_controls_cover()
                         and self.ZA_mega_z_guard_update(
                             dir1,dir2,dir3,dir4)):
                     if last_battle_mode:
@@ -6189,7 +6733,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     z_guard_interrupted=True
                     break
                 if (last_battle_mode and nofiled==0
-                        and self._za_mega_movemode == 1):
+                        and self._za_mega_movemode == 1
+                        and (not self._za_mega_testmode1_enabled
+                             or not self.ZA_mega_mode5_testmode1_controls_cover())):
                     # 外側ループだけで移動を更新すると、画像判定5回の間に
                     # 左入力が十数秒消える。各攻撃の直前にも短い接近／探索を
                     # 行い、緑床判定後から攻撃判定まで移動を途切れさせない。
@@ -9827,7 +10373,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'\n GAME_RESET_FUNCTION   :: {game_reset_state}')
         mega_mode5_status = ""
         if getattr(self, "_za_mega_last_battle_mode", False):
+            hp_ratio=float(getattr(
+                self, "_za_mega_testmode1_hp_fill_ratio", 0.0))
             mega_mode5_status = (
+                f'\n MEGA_MODE5_TESTMODE1  :: '
+                f'{int(bool(getattr(self, "_za_mega_testmode1_enabled", False)))}'
+                f'\n MEGA_MODE5_RESUME_HP  :: '
+                f'{getattr(self, "_za_mega_testmode1_resume_hp", "LEGACY")}'
+                f' :: {getattr(self, "_za_mega_testmode1_hp_color", "NONE")}'
+                f' :: ratio={hp_ratio:.3f}'
+                f'\n MEGA_MODE5_TEST_PHASE :: '
+                f'{getattr(self, "_za_mega_testmode1_phase", "DISABLED")}'
                 f'\n MEGA_MODE5_START_FLAG :: '
                 f'{getattr(self, "_za_mega_mode5_start_flag", 0)}'
                 f' :: {getattr(self, "_za_mega_mode5_phase", "WAIT_RESUME")}'
@@ -10819,7 +11375,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # EVENT正面から左へ少しずつ視点をずらしてメリープを再探索する。
         # 向きを累積させると岩へロックオンするため、各試行の前と
         # 全試行失敗後に必ずEVENTへ戻す。左への最大補正は0.50秒。
-        left_view_durations = (0.50,0.80)
+        left_view_durations = (0.80)#,0.50)
         self.ZA_ZL_ACTION("END")
         for attempt, left_duration in enumerate(left_view_durations, 1):
             self.checkIfAlive()
@@ -21239,7 +21795,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_48(self):
         if self.ZA_mega_evolution_battle_mode_select(
-                mode=5, movemode=1, Z_Gaurd=1, Cplus_attack=1):
+                mode=5, movemode=1, Z_Gaurd=1, Cplus_attack=1,
+                testmode1=1):
             return "8_STORY_STORY_LAST_49"
         return "8_STORY_STORY_LAST_48"
     
