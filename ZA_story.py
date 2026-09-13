@@ -23079,8 +23079,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(
                     rendabutton="B",
-                    endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
-                    endpicture2="POKEMON_ZA_R_push",
+                    endpicture="POKEMON_ZA_R_push",
                     sub_button="A",
                     sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
                     sub2_button="A",
@@ -23121,12 +23120,96 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_50"
     
     def _8_story_story_last_51(self):
-        
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_renda_button(
+                    rendabutton="B",
+                    endpicture="POKEMON_ZA_IN_ICON",
+                    sub_button="A",
+                    sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    sub2_button="A",
+                    sub2_picture="POKEMON_ZA_2_SELECT",
+                    sub3_button="A",
+                    sub3_picture="POKEMON_ZA_3_SELECT",
+                    sub4_button="A",
+                    sub4_picture="POKEMON_ZA_FIN"): #FIELDから変更
+                return "8_STORY_STORY_LAST_52"
+        return "8_STORY_STORY_LAST_51"
+    
+    def _8_story_story_last_52(self):
+        if self.image_check("POKEMON_ZA_IN_ICON"):
+            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "8_STORY_STORY_LAST_53"
+        return "8_STORY_STORY_LAST_52"
+    
+    def _8_story_story_last_53(self):
+        if self.ZA_markerdir("EVENT", 1, nofiled=True):
+            return "8_STORY_STORY_LAST_54"
+        else:   
+            return "8_STORY_STORY_LAST_53"
+    
+    def _8_story_story_last_54(self):
+        if self.image_check("POKEMON_ZA_EVENT_MARKER_CENTER"):
+            self.press(Direction(Stick.LEFT,90), duration=2.4, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "8_STORY_STORY_LAST_55"
+        return "8_STORY_STORY_LAST_54"
+    
+    def _8_story_story_last_55(self):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            return "8_STORY_STORY_LAST_56"
+        return "8_STORY_STORY_LAST_55"
+    
+    def _8_story_story_last_56(self):
+        if self.ZA_markerdir("EVENT", 1, nofiled=False):
+            return "8_STORY_STORY_LAST_57"
+        return "8_STORY_STORY_LAST_56"
+
+    def _8_story_story_last_57(self):
+        if self.image_check("POKEMON_ZA_EVENT_MARKER_CENTER"):
+            self.press(Direction(Stick.LEFT,90), duration=2.4, wait=1.0)
+            return "8_STORY_STORY_LAST_58"
+        return "8_STORY_STORY_LAST_57"
+    
+    def _8_story_story_last_58(self):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_renda_button(
+                    rendabutton="B",
+                    endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",
+                    sub_button="A",
+                    sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    sub2_button="A",
+                    sub2_picture="POKEMON_ZA_2_SELECT",
+                    sub3_button="A",
+                    sub3_picture="POKEMON_ZA_HELP_MARKER"):
+                return "8_STORY_STORY_LAST_59"
+        return "8_STORY_STORY_LAST_58"
+    
+    def _8_story_story_last_59(self):
+        ret = self.ZA_Common_goto(1,0,0)#メディオプラザへ移動
+        if ret == "START":
+            return "8_STORY_STORY_LAST_60"
+        else:
+            return "8_STORY_STORY_LAST_59"
+    
+    def _8_story_story_last_60(self):
+        if self.ZA_markerdir("EVENT", 1, nofiled=False):
+            return "8_STORY_STORY_LAST_61"
+        return "8_STORY_STORY_LAST_60"
+    
+    def _8_story_story_last_61(self):
+        if self.image_check("POKEMON_ZA_EVENT_MARKER_CENTER"):
+            self.press(Direction(Stick.LEFT,90), duration=3.4, wait=1.0)
+            return "8_STORY_STORY_LAST_62"
+        return "8_STORY_STORY_LAST_61"
+    
+    def _8_story_story_last_62(self):
         #if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
         if self.ZA_renda_button(
                 rendabutton="B",
-                endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
-                endpicture2="POKEMON_ZA_R_push",
+                endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",
                 sub_button="A",
                 sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
                 sub2_button="A",
@@ -23134,45 +23217,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 sub3_button="A",
                 sub3_picture="POKEMON_ZA_3_SELECT",
                 sub4_button="A",
-                sub4_picture="POKEMON_ZA_FIN"): #FIELDから変更
-            return "8_STORY_STORY_LAST_52"
-        return "8_STORY_STORY_LAST_51"
-    
-    def _8_story_story_last_52(self):
-        return "8_STORY_STORY_LAST_52"
-    
-    def _8_story_story_last_53(self):
-        return "8_STORY_STORY_LAST_53"
-    
-    def _8_story_story_last_54(self):
-        return "8_STORY_STORY_LAST_54"
-    
-    def _8_story_story_last_55(self):
-        return "8_STORY_STORY_LAST_55"
-    
-    def _8_story_story_last_56(self):
-        return "8_STORY_STORY_LAST_56"
-
-    def _8_story_story_last_57(self):
-        return "8_STORY_STORY_LAST_57"
-    
-    def _8_story_story_last_58(self):
-        return "8_STORY_STORY_LAST_58"
-    
-    def _8_story_story_last_59(self):
-        return "8_STORY_STORY_LAST_59"
-    
-    def _8_story_story_last_60(self):
-        return "8_STORY_STORY_LAST_60"
-    
-    def _8_story_story_last_61(self):
-        return "8_STORY_STORY_LAST_61"
-    
-    def _8_story_story_last_62(self):
-
+                sub4_picture="POKEMON_ZA_HELP_MARKER"):
+            return "8_STORY_STORY_LAST_63"
         return "8_STORY_STORY_LAST_62"
     
-    def _8_story_story_last_63(self):
+    def _8_story_story_last_63(self):#ZAロワイヤル∞開始
         return "8_STORY_STORY_LAST_63"
     
     def _8_story_story_last_64(self):
