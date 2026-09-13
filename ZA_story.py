@@ -328,6 +328,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.check_picture=0
         self.TESTADDCODE=0
         self.ZL_state = 0
+        # MAPPING_52～54 が一周した回数を数え、同じ経路を繰り返した場合だけ
+        # 37～39 のWゾーン2登録確認へ戻す。MAPPING_52単体の滞留は数えない。
+        self._2_story_mapping_52_54_loop_count = 0
+        self._2_story_mapping_52_recovery_active = False
 
         # ポケモン選択間隔 ,マップ選択間隔 ,ZL間隔 ,バトルゾーン判断開始までの猶予期間 ,RIGHT_Stick間隔
         #self.sleetimes = [0.25,0.2,0.01,0.4,0,13]
@@ -2664,6 +2668,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.image_check(sub4_picture):
                         if sub4_button == "A":
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+                            checkerflg=1
+                            self.wait(sleeptime)
+                        elif sub4_button == "R_push":
+                            self.press(Button.RCLICK,0.05,0.1)
                             checkerflg=1
                             self.wait(sleeptime)
                 if sub5_picture != "":
@@ -14441,7 +14449,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_37(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
-        ret = self.ZA_Common_goto(3,0,1)##ヌーヴォカフェに移動で位置確定
+        # MAPPING_52からの復旧時は、現在位置がWゾーン3開始になるため
+        # 通常進行とは異なる選択位置2からヌーヴォカフェへ移動する。
+        goto_position = (
+            2 if getattr(
+                self, "_2_story_mapping_52_recovery_active", False)
+            else 1)
+        ret = self.ZA_Common_goto(3,0,goto_position)##ヌーヴォカフェに移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_38"
         else:
@@ -14471,6 +14485,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.wait(1.0)
                 if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2",pic2="POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2") == True:
                     self.ZA_Common_goto_jump()
+                    if getattr(
+                            self,
+                            "_2_story_mapping_52_recovery_active",
+                            False):
+                        self._2_story_mapping_52_recovery_active = False
+                        print(
+                            "[MAPPING_52_RECOVERY] W_ZONE2 registered "
+                            "-> return MAPPING_52")
+                        return "2_STORY_MAPPING_52"
                     return "2_STORY_MAPPING_40"
                 else:
                     #登録できていない場合、移動元からやり直し
@@ -14655,6 +14678,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
                 if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO") == True:
+                    self._2_story_mapping_52_54_loop_count = 0
+                    self._2_story_mapping_52_recovery_active = False
                     self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_52"
                 else:
@@ -14672,11 +14697,18 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mapping_52(self):
         ### AUTO_SAVE_POINT
         #失敗時に再実施できるようにマップ移動から開始する。
+        # このフラグはMAPPING_54から52へ5回戻った場合だけ設定される。
+        # 52単体のgoto失敗では37へ戻らない。
+        if getattr(
+                self, "_2_story_mapping_52_recovery_active", False):
+            print(
+                "[MAPPING_52_54_RECOVERY] confirmed loop "
+                "-> check MAPPING_37-39")
+            return "2_STORY_MAPPING_37"
         ret = self.ZA_Common_goto(4,0,1)#Wゾーン2に移動で位置確定
         if ret == "START":
             return "2_STORY_MAPPING_53"
-        else:
-            return "2_STORY_MAPPING_52"
+        return "2_STORY_MAPPING_52"
     
     def _2_story_mapping_53(self):
         ### AUTO_SAVE_POINT
@@ -14705,11 +14737,25 @@ class ZA_story_Base(ImageProcPythonCommand):
             if ret == "MOVEPOINT_PIC":
                 self.wait(1.0)
                 if self.ZA_Common_mappic_check(pic1="POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER",pic2="POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER") == True:
+                    self._2_story_mapping_52_54_loop_count = 0
+                    self._2_story_mapping_52_recovery_active = False
                     self.ZA_Common_goto_jump()
                     return "2_STORY_MAPPING_55"
                 else:
                     #登録できていない場合、移動元からやり直し
                     self.pressRep(Button.B, repeat=30, duration=0.15, wait=0.5, interval=0.1)
+                    self._2_story_mapping_52_54_loop_count = getattr(
+                        self, "_2_story_mapping_52_54_loop_count", 0) + 1
+                    if self._2_story_mapping_52_54_loop_count >= 5:
+                        self._2_story_mapping_52_54_loop_count = 0
+                        self._2_story_mapping_52_recovery_active = True
+                        print(
+                            "[MAPPING_52_54_RECOVERY] completed loop 5/5 "
+                            "-> MAPPING_52 will check MAPPING_37-39")
+                    else:
+                        print(
+                            "[MAPPING_52_54] completed loop={}/5".format(
+                                self._2_story_mapping_52_54_loop_count))
                     return "2_STORY_MAPPING_52"
             elif ret == "START":
                 #想定外にこちらに来た場合は開きなおし
@@ -23030,13 +23076,66 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_48"
     
     def _8_story_story_last_49(self):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_renda_button(
+                    rendabutton="B",
+                    endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+                    endpicture2="POKEMON_ZA_R_push",
+                    sub_button="A",
+                    sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    sub2_button="A",
+                    sub2_picture="POKEMON_ZA_2_SELECT",
+                    sub3_button="A",
+                    sub3_picture="POKEMON_ZA_HELP_MARKER",
+                    sub4_button="A",
+                    sub4_picture="POKEMON_ZA_ITEM_WINDOW"): #FIELDから変更
+                self._za_story_last_50_rpush_done=False
+                return "8_STORY_STORY_LAST_50"
         return "8_STORY_STORY_LAST_49"
     
     def _8_story_story_last_50(self):
+        advance_pictures=(
+            "POKEMON_ZA_TEXT_WHITE_COMMENT",
+            "POKEMON_ZA_TEXT_GREEN_COMMENT",
+            "POKEMON_ZA_TEXT_BLACK_COMMENT",
+            "POKEMON_ZA_2_SELECT",
+            "POKEMON_ZA_HELP_MARKER",
+            "POKEMON_ZA_ITEM_WINDOW",
+            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+        )
+        if any(self.image_check(picture) for picture in advance_pictures):
+            self.ZA_ZL_ACTION("END")
+            self._za_story_last_50_rpush_done=False
+            return "8_STORY_STORY_LAST_51"
+
+        if not getattr(self, "_za_story_last_50_rpush_done", False):
+            self.press(Button.RCLICK,0.05,0.1)
+            self.wait(1.0)
+            self._za_story_last_50_rpush_done=True
+
+        self.ZA_ZL_ACTION("")
+        self.wait(0.1)
+        self.pressRep(
+            Button.X, repeat=1, duration=0.04,
+            wait=0.1, interval=0.1)
         return "8_STORY_STORY_LAST_50"
     
     def _8_story_story_last_51(self):
-
+        
+        #if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+        if self.ZA_renda_button(
+                rendabutton="B",
+                endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+                endpicture2="POKEMON_ZA_R_push",
+                sub_button="A",
+                sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+                sub2_button="A",
+                sub2_picture="POKEMON_ZA_2_SELECT",
+                sub3_button="A",
+                sub3_picture="POKEMON_ZA_3_SELECT",
+                sub4_button="A",
+                sub4_picture="POKEMON_ZA_FIN"): #FIELDから変更
+            return "8_STORY_STORY_LAST_52"
         return "8_STORY_STORY_LAST_51"
     
     def _8_story_story_last_52(self):
@@ -27308,6 +27407,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                              'template_path': 'Template/ZA_Story/Common/field.png',
                              'threshold': 0.8,
                              'use_gray': False}],
+     'POKEMON_ZA_FIN': [{'crop': [1000, 565, 1280, 720],
+                         'ms': 2000,
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/ZA_Story/Common/fin.png',
+                         'threshold': 0.8,
+                         'use_gray': True}],
      'POKEMON_ZA_FURADARI_MAP': [{'crop': [20, 0, 300, 70],
                                   'ms': 2000,
                                   'show_only_true_rect': False,
@@ -29576,6 +29683,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_FIELD_BACK6': 'OR',
      'POKEMON_ZA_FIELD_BACK_W': 'OR',
      'POKEMON_ZA_FIELD_W': 'OR',
+     'POKEMON_ZA_FIN': 'OR',
      'POKEMON_ZA_FURADARI_MAP': 'OR',
      'POKEMON_ZA_GETCHANCE_ICON4': 'OR',
      'POKEMON_ZA_GET_BALL': 'OR',
@@ -29918,6 +30026,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_FIELD_BACK6': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK6',
                  'POKEMON_ZA_FIELD_BACK_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK_W',
                  'POKEMON_ZA_FIELD_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_W',
+                 'POKEMON_ZA_FIN': 'Pokemon ZA story ending FIN shown at the lower right',
                  'POKEMON_ZA_FURADARI_MAP': 'Pokemon ZA image detection migrated from ZA_story: FURADARI_MAP',
                  'POKEMON_ZA_GETCHANCE_ICON4': 'Pokemon ZA image detection migrated from ZA_story: GETCHANCE_ICON4',
                  'POKEMON_ZA_GET_BALL': 'Area Captureから登録',
