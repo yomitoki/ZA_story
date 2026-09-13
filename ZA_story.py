@@ -3264,7 +3264,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                         and rect_h < int(height * 0.25)):
                     continue
                 # 被弾時の画面端の赤、上部HPバー、下部技UIは敵にしない。
-                if (rect_x <= 2
+                # 一方、録画では生存中の青敵が画面左端で欠け、検知ROIの
+                # 左境界へ接したことで青なしと誤判定されていた。左下UIは
+                # 後段の位置条件で除外し、中段にある十分高い青敵だけ許可する。
+                blue_enemy_at_left_edge=(
+                    color_name == "blue"
+                    and rect_x <= 2
+                    and rect_h >= int(height * 0.10)
+                    and rect_y + y0 < int(height * 0.62)
+                    and rect_y + y0 + rect_h > int(height * 0.18))
+                if ((rect_x <= 2 and not blue_enemy_at_left_edge)
                         or rect_x + rect_w >= region.shape[1] - 2
                         or rect_y + rect_h >= region.shape[0] - 2):
                     continue
@@ -4711,19 +4720,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             settings=(settings_getter()
                       if callable(settings_getter) else {})
             block_seconds=max(0.0, float(settings.get(
-                "RED_ATTACK_PREMOVE_BLOCK_SECONDS", 5.0)))
+                "RED_ATTACK_PREMOVE_BLOCK_SECONDS", 7.0)))
             if strong_light:
-                # 「力をためた」で開始した停止を、強い光の最初の検知から
-                # さらに指定秒数維持する。同じ表示の再検知では終了時刻を
-                # 延長しない。強い光だけを直接検知した場合も同様。
-                warning_state=str(getattr(
-                    self, "_za_mega_last_charge_state", "IDLE"))
-                start_cooldown=(
-                    waiting_strong_light
-                    or warning_state != "SKIP_WAIT_CLEAR")
+                # 強い光の表示中に再開しないよう、最後に確認した時点から
+                # 指定秒数まで青側／赤側共通の攻撃前移動を止める。
                 self._za_mega_testmode1_red_premove_waiting_strong_light=False
-                if not start_cooldown:
-                    return
                 self._za_mega_testmode1_red_premove_block_until=max(
                     float(getattr(
                         self,
@@ -4731,7 +4732,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     time.monotonic() + block_seconds)
                 self.ZA_mega_mode5_trace(
                     "TESTMODE1_RED_PREMOVE_BLOCK",
-                    "{}; keep 100deg pre-attack move stopped for {:.1f}s".format(
+                    "{}; keep blue/red 270deg pre-attack move stopped for {:.1f}s".format(
                         reason, block_seconds))
             else:
                 # CHARGEとSTRONG_LIGHTの間が5秒を超えても再開しない。
@@ -4739,7 +4740,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._za_mega_testmode1_red_premove_waiting_strong_light=True
                 self.ZA_mega_mode5_trace(
                     "TESTMODE1_RED_PREMOVE_BLOCK",
-                    "{}; stop 100deg pre-attack move until strong light + {:.1f}s".format(
+                    "{}; stop blue/red 270deg pre-attack move until strong light + {:.1f}s".format(
                         reason, block_seconds))
 
         state=str(getattr(
@@ -4759,12 +4760,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_last_charge_check_retry_at=now + 0.5
             if warning_still_visible:
                 # 同じ表示を複数回の予兆として数えない。
+                warning_name=(
+                    "STRONG_LIGHT" if strong_light_still_visible
+                    else "CHARGE")
+                self.ZA_mega_mode5_testmode1_warning_cycle_update(
+                    warning_name)
                 block_red_attack_premove(
                     ("strong light" if strong_light_still_visible
                      else "charge warning"),
                     strong_light=strong_light_still_visible)
                 return "skip"
             self._za_mega_last_charge_state="IDLE"
+            self.ZA_mega_mode5_testmode1_warning_cycle_update("CLEAR")
             return "none"
         if (getattr(
                 self, "_za_mega_last_charge_attack_suspended", False)
@@ -4824,6 +4831,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_last_charge_check_retry_at=(
                 time.monotonic() + 0.5)
             if charge_detected or strong_light_detected:
+                warning_name=(
+                    "STRONG_LIGHT" if strong_light_detected else "CHARGE")
+                self.ZA_mega_mode5_testmode1_warning_cycle_update(
+                    warning_name)
                 block_red_attack_premove(
                     "strong light" if strong_light_detected
                     else "charge warning",
@@ -4839,14 +4850,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self, "_za_mega_testmode1_phase", ""))
                 if skip_limit < 0 and testmode1_phase != "LEGACY_COMBAT":
                     # -1は予兆をTESTMODE1終了条件にしない。表示が残る間の
-                    # 重複判定だけ抑止し、青消失＋赤のみの確認条件による
-                    # LEGACY_COMBAT移行を待つ。
+                    # 重複判定だけ抑止する。赤色の直接確認、または予兆
+                    # セット間の青不在による赤側障害物移行を待つ。
                     self._za_mega_last_charge_state="SKIP_WAIT_CLEAR"
-                    warning_name=(
-                        "STRONG_LIGHT" if strong_light_detected else "CHARGE")
                     self.ZA_mega_mode5_trace(
                         "CHARGE_WARNING_RED_ONLY_WAIT",
-                        "{} ignored; wait for red-only fallback".format(
+                        "{} ignored; wait for red-only/warning fallback".format(
                             warning_name),
                         force=True)
                     return "skip"
@@ -4860,8 +4869,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                     skip_count+=1
                     self._za_mega_last_charge_skip_count=skip_count
                     self._za_mega_last_charge_state="SKIP_WAIT_CLEAR"
-                    warning_name=(
-                        "STRONG_LIGHT" if strong_light_detected else "CHARGE")
                     self.ZA_mega_mode5_trace(
                         "CHARGE_WARNING_SKIPPED",
                         "{} event skipped {}/{}; keep attack controls".format(
@@ -5771,52 +5778,175 @@ class ZA_story_Base(ImageProcPythonCommand):
             "INITIAL_POST_MOVE_WAIT_SECONDS": 4.5,
             # 3. HP75: 緑床位置から青側障害物へ入り、青側へ向く。
             "HP75_COVER_MOVE_ANGLE": 185.0,
-            "HP75_COVER_MOVE_SECONDS": 4.5,
+            # 障害物の端ではなく少し内側へ入るため+0.5秒。
+            "HP75_COVER_MOVE_SECONDS": 5.0,
             "HP75_FACE_ANGLE": 30.0,
             # 4. HP75以外: 緑床用90度移動を経由せず、再開地点から
             #    青側障害物へ直接移動する。HP75経路の
-            #    90度3.0秒 + 185度4.5秒の到達点を1本に合成した値。
+            #    90度3.0秒 + 185度4.5秒を1本に合成し、そこから
+            #    障害物の内側へ入る分0.5秒を追加した値。
             "OTHER_COVER_MOVE_ANGLE": 150.0,
-            "OTHER_COVER_MOVE_SECONDS": 5.2,
+            "OTHER_COVER_MOVE_SECONDS": 5.7,
             "OTHER_FACE_ANGLE": 30.0,
             # 5. 障害物到達後: 向き直し、定期的にY回避する。
             "FACE_DIRECTION_SECONDS": 1.0,
             "COVER_DODGE_INTERVAL_SECONDS": 2.4,
             "COVER_DODGE_ANGLE": 90.0,
             "COVER_DODGE_REPEAT": 2,
-            # 6. 予兆を無視する回数。-1は予兆で移行せず、7の
-            #    赤のみ判定で赤側障害物へ移る。
+            # 青側障害物から赤側へ移る直前だけ、障害物に
+            # Yを3回当てて赤側移動の開始地点を固定する。
+            "BLUE_TO_RED_ANCHOR_DODGE_ANGLE": 90.0,
+            "BLUE_TO_RED_ANCHOR_DODGE_REPEAT": 3,
+            # 青側で深く入ってロックオンが外れても、攻撃前に
+            # 赤側と同じ270度へ移動して射線を戻す。
+            "BLUE_ATTACK_PREMOVE_ANGLE": 270.0,
+            "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS": 0.5,
+            # 6. 予兆を無視する回数。-1は既存の予兆回避へ移行せず、
+            #    7の赤のみ判定または予兆セット間の青不在で赤側へ移る。
             "CHARGE_WARNING_SKIP_COUNT": -1,
-            # 7. 青が消えて赤だけ残った場合、赤側障害物へ移る条件。
+            # 予兆1組目の終了から次の予兆開始まで青敵を確認できなければ、
+            # 赤色を直接取れなくても青撃破・赤敵ありとして扱う。
+            "WARNING_BLUE_FALLBACK_ENABLED": True,
+            # 2組目の強い光が消えてから、青側でポケモンを
+            # 戻す判定と赤側障害物への移動を始めるまでの待機。
+            "WARNING_RED_COVER_DELAY_SECONDS": 5.0,
+            # 7. 既存の確定赤継続判定。
             "RED_ONLY_FALLBACK_SECONDS": 3.0,
             "RED_ONLY_CHECK_INTERVAL_SECONDS": 0.30,
-            # 0.30秒は最短再試行間隔であり、実際のCommands周回は他の
-            # 画像検知を含むため2～7秒空く。青検知では即時リセットしつつ、
-            # 赤だけの実測周回を連続扱いできる余裕を持たせる。
             "RED_ONLY_GAP_TOLERANCE_SECONDS": 10.0,
             "RED_ONLY_MIN_CONFIRMATIONS": 3,
-            # 青敵の潜行中を撃破扱いにしない猶予。青を最後に確認してから
-            # この時間が過ぎるまでは、確定赤が見えても赤側へ移らない。
             "BLUE_BURROW_GRACE_SECONDS": 12.0,
+            # 既存判定が成立しない場合の保険。青側で青敵を最後に
+            # 確認してから60秒検知できなければ赤側へ移る。
+            "BLUE_ABSENCE_FALLBACK_SECONDS": 60.0,
+            "BLUE_ABSENCE_CHECK_INTERVAL_SECONDS": 0.30,
             # 8. 青撃破後: 青側障害物から赤側障害物へ固定移動する試案値。
             #    実機調整はこの3値だけで行える。
-            "RED_COVER_MOVE_ANGLE": 40.0,
-            "RED_COVER_MOVE_SECONDS": 4.7,#4.7
-            "RED_FACE_ANGLE": 130.0,#130.0,
+            "RED_COVER_MOVE_ANGLE": 30.0,
+            # 青側の深さを0.5秒増やした分、赤側経路も延長。
+            "RED_COVER_MOVE_SECONDS": 6.5,
+            "RED_FACE_ANGLE": 140.0,#130.0,
             # 9. 赤側障害物から攻撃する直前の時間指定移動。
-            #    力をためた～強い光の最初の検知後5秒は入力しない。
+            #    力をためた～強い光の最終検知後7秒は入力しない。
             "RED_ATTACK_PREMOVE_ANGLE": 270.0,
             "RED_ATTACK_PREMOVE_ANGLE_SECONDS": 0.5,
-            "RED_ATTACK_PREMOVE_BLOCK_SECONDS": 5.0,
-            # 10. 赤側障害物へ入った後は、敵色を見失ったり青色候補を
-            #    一時検知しても通常mode5へ自動復帰しない。
-            #    Trueへ戻した場合だけ、下記条件で自動復帰する。
-            "BLUE_RETURN_TO_LEGACY_ENABLED": False,
-            "BLUE_RETURN_SECONDS": 3.0,
+            "RED_ATTACK_PREMOVE_BLOCK_SECONDS": 7.0,
+            # 10. 赤側障害物で青を再確認した場合は通常mode5へ戻す。
+            #     赤と青は同時に存在し得るため、途中の赤検知では青確認を
+            #     取り消さず、確定青を複数回確認してから復帰する。
+            "BLUE_RETURN_TO_LEGACY_ENABLED": True,
+            "BLUE_RETURN_SECONDS": 1.0,
             "BLUE_RETURN_CHECK_INTERVAL_SECONDS": 0.30,
             "BLUE_RETURN_GAP_TOLERANCE_SECONDS": 10.0,
             "BLUE_RETURN_MIN_CONFIRMATIONS": 3,
+            # 11. 赤側障害物で赤青とも長時間見えない場合の保険。
+            #     障害物による一時遮蔽では戻さず、通常mode5へ戻して
+            #     次のBLACK_COMMENT／SELECT後にTESTMODE1を再試行する。
+            "RED_COVER_NO_ENEMY_RETURN_SECONDS": 20.0,
+            "RED_COVER_NO_ENEMY_MIN_CONFIRMATIONS": 5,
         }
+
+    def ZA_mega_mode5_testmode1_warning_cycle_update(self, event):
+        """連続する予兆セット間の青敵有無から赤側遷移を判定する。"""
+        settings=self.ZA_mega_mode5_testmode1_settings()
+        phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "DISABLED"))
+        if (not getattr(self, "_za_mega_testmode1_enabled", False)
+                or phase != "COVER_ATTACK"
+                or not bool(settings.get(
+                    "WARNING_BLUE_FALLBACK_ENABLED", True))
+                or int(settings.get("CHARGE_WARNING_SKIP_COUNT", -1)) >= 0):
+            return False
+
+        event=str(event or "").upper()
+        if event == "BLUE":
+            if getattr(
+                    self,
+                    "_za_mega_testmode1_warning_interval_active", False):
+                if not getattr(
+                        self,
+                        "_za_mega_testmode1_warning_interval_blue_seen",
+                        False):
+                    self.ZA_mega_mode5_trace(
+                        "TESTMODE1_WARNING_BLUE_SEEN",
+                        "blue confirmed between warning sets; keep blue cover",
+                        force=True)
+                self._za_mega_testmode1_warning_interval_blue_seen=True
+            return False
+
+        if event in {"CHARGE", "STRONG_LIGHT"}:
+            cycle_active=bool(getattr(
+                self, "_za_mega_testmode1_warning_cycle_active", False))
+            if not cycle_active:
+                self._za_mega_testmode1_warning_cycle_active=True
+                self._za_mega_testmode1_warning_cycle_saw_strong=(
+                    event == "STRONG_LIGHT")
+                if getattr(
+                        self,
+                        "_za_mega_testmode1_warning_interval_active", False):
+                    blue_seen=bool(getattr(
+                        self,
+                        "_za_mega_testmode1_warning_interval_blue_seen",
+                        False))
+                    self._za_mega_testmode1_warning_interval_active=False
+                    self._za_mega_testmode1_warning_interval_blue_seen=False
+                    self._za_mega_testmode1_warning_red_pending=(
+                        not blue_seen)
+                    self.ZA_mega_mode5_trace(
+                        ("TESTMODE1_WARNING_BLUE_CONFIRMED"
+                         if blue_seen else
+                         "TESTMODE1_WARNING_RED_PENDING"),
+                        ("blue was visible before next warning; keep blue cover"
+                         if blue_seen else
+                         "blue was absent until next warning; wait for strong "
+                         "light to clear before red cover"),
+                        force=True)
+            elif event == "STRONG_LIGHT":
+                self._za_mega_testmode1_warning_cycle_saw_strong=True
+            return False
+
+        if event != "CLEAR":
+            return False
+        if not getattr(
+                self, "_za_mega_testmode1_warning_cycle_active", False):
+            return False
+        # 「力をためた」と「強い光」の間に通知が一時的に消えても、
+        # 1組を2回と数えない。強い光が消えた時点だけをセット終了とする。
+        if not getattr(
+                self, "_za_mega_testmode1_warning_cycle_saw_strong", False):
+            return False
+
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        if getattr(
+                self, "_za_mega_testmode1_warning_red_pending", False):
+            self._za_mega_testmode1_warning_red_pending=False
+            self._za_mega_testmode1_warning_interval_active=False
+            self._za_mega_testmode1_warning_interval_blue_seen=False
+            delay_seconds=max(0.0, float(settings.get(
+                "WARNING_RED_COVER_DELAY_SECONDS", 5.0)))
+            self._za_mega_testmode1_phase="WAIT_RED_COVER_DELAY"
+            self._za_mega_testmode1_red_cover_move_not_before=(
+                time.monotonic() + delay_seconds)
+            self._za_mega_testmode1_red_only_since=0.0
+            self._za_mega_testmode1_red_only_last_seen=0.0
+            self._za_mega_testmode1_red_only_confirmations=0
+            self._za_mega_testmode1_blue_last_seen_at=0.0
+            self._za_mega_testmode1_enemy_check_retry_at=0.0
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_WARNING_RED_COVER_DELAY",
+                "second strong light cleared; no blue in warning interval; "
+                "wait {:.1f}s before red cover".format(delay_seconds),
+                force=True)
+            return True
+
+        self._za_mega_testmode1_warning_interval_active=True
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self.ZA_mega_mode5_trace(
+            "TESTMODE1_WARNING_BLUE_WINDOW_START",
+            "warning set complete; watch blue until next warning",
+            force=True)
+        return False
 
     def ZA_mega_mode5_testmode1_enter_legacy(self, reason):
         """通常mode5をBLACK_COMMENT／SELECTまで維持する。"""
@@ -5838,7 +5968,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_blue_return_since=0.0
         self._za_mega_testmode1_blue_return_last_seen=0.0
         self._za_mega_testmode1_blue_return_confirmations=0
+        self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+        self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        self._za_mega_testmode1_warning_interval_active=False
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self._za_mega_testmode1_warning_red_pending=False
+        self._za_mega_testmode1_red_cover_move_not_before=0.0
         if not already_latched:
             self.ZA_mega_mode5_trace(
                 "TESTMODE1_LEGACY_LATCH",
@@ -5865,7 +6003,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_blue_return_since=0.0
         self._za_mega_testmode1_blue_return_last_seen=0.0
         self._za_mega_testmode1_blue_return_confirmations=0
+        self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+        self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        self._za_mega_testmode1_warning_interval_active=False
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self._za_mega_testmode1_warning_red_pending=False
+        self._za_mega_testmode1_red_cover_move_not_before=0.0
         self.ZA_mega_mode5_trace(
             "TESTMODE1_SELECTION_RESET",
             "{}; next FIELD may initialize TESTMODE1".format(reason),
@@ -5882,11 +6028,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self, "_za_mega_testmode1_existing_charge_latched", False)
             and getattr(
                 self, "_za_mega_testmode1_phase", "")
-            in {"FACE_BLUE", "COVER_ATTACK", "MOVE_TO_RED_COVER",
+            in {"FACE_BLUE", "COVER_ATTACK", "WAIT_RED_COVER_DELAY",
+                "MOVE_TO_RED_COVER",
                 "FACE_RED", "RED_COVER_ATTACK"})
 
     def ZA_mega_mode5_testmode1_red_only_fallback_update(self):
-        """青が消えて赤敵だけ残った時、赤側障害物移動へ進む。"""
+        """青を60秒検知できない時、赤側障害物移動へ進む。"""
         phase=str(getattr(
             self, "_za_mega_testmode1_phase", "DISABLED"))
         if (not getattr(self, "_za_mega_testmode1_enabled", False)
@@ -5904,29 +6051,37 @@ class ZA_story_Base(ImageProcPythonCommand):
             return False
         self._za_mega_testmode1_enemy_check_retry_at=(
             now + max(0.10, float(settings.get(
-                "RED_ONLY_CHECK_INTERVAL_SECONDS", 0.30))))
+                "BLUE_ABSENCE_CHECK_INTERVAL_SECONDS", 0.30))))
 
         # refresh_frame=Trueで毎回新しいCameraフレームを取得する。
-        # キャッシュ済みの同一赤画面を3秒間数えて解除しない。
+        # 赤や無色は青検知には含めず、青だけで60秒タイマーを戻す。
         direction=self.ZA_mega_mode5_colored_enemy_direction(
             allow_resume=True, refresh_frame=True)
         stable_color=(str(getattr(
             self, "_za_mega_colored_enemy_color", "") or "").lower()
             if isinstance(direction, Direction) else "")
-        # 生候補は青の生存確認には使うが、赤側への遷移には使わない。
-        # 青の潜行中に赤い攻撃エフェクトを拾っても撃破扱いにしない。
+        # 安定青だけでなく生の青候補も生存確認に使用する。
         observed_color=str(getattr(
             self, "_za_mega_colored_enemy_observed_color", "") or "").lower()
-        # 青は生候補でも赤のみ計測を止める一方、赤側への遷移は
-        # 位置・面積が連続した確定赤だけを数える。障害物や攻撃発光で
-        # 青が一時的に隠れた1フレームを、青撃破とは扱わない。
+        if not stable_color and not observed_color:
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_ENEMY_OCCLUDED",
+                "no red/blue in fresh frame; continue blue absence timer")
         if stable_color == "blue" or observed_color == "blue":
+            previous_seen=float(getattr(
+                self, "_za_mega_testmode1_blue_last_seen_at", 0.0))
             self._za_mega_testmode1_blue_last_seen_at=now
+            self.ZA_mega_mode5_testmode1_warning_cycle_update("BLUE")
             had_red=bool(getattr(
                 self, "_za_mega_testmode1_red_only_confirmations", 0))
             self._za_mega_testmode1_red_only_since=0.0
             self._za_mega_testmode1_red_only_last_seen=0.0
             self._za_mega_testmode1_red_only_confirmations=0
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_BLUE_ABSENCE_RESET",
+                "blue enemy confirmed; reset absence timer after {:.1f}s".format(
+                    max(0.0, now - previous_seen)
+                    if previous_seen > 0.0 else 0.0))
             if had_red:
                 self.ZA_mega_mode5_trace(
                     "TESTMODE1_RED_ONLY_RESET",
@@ -5934,15 +6089,44 @@ class ZA_story_Base(ImageProcPythonCommand):
                     force=True)
             return False
 
-        color=stable_color
         blue_last_seen=float(getattr(
             self, "_za_mega_testmode1_blue_last_seen_at", 0.0))
+        if blue_last_seen <= 0.0:
+            blue_last_seen=now
+            self._za_mega_testmode1_blue_last_seen_at=now
+        required_seconds=max(0.0, float(settings.get(
+            "BLUE_ABSENCE_FALLBACK_SECONDS", 60.0)))
+        elapsed=max(0.0, now - blue_last_seen)
+        self.ZA_mega_mode5_trace(
+            "TESTMODE1_BLUE_ABSENCE_WAIT",
+            "blue not detected {:.1f}/{:.1f}s; keep blue cover".format(
+                elapsed, required_seconds))
+        if elapsed >= required_seconds:
+            # 既存2判定が成立しない場合も、60秒青が見えなければ
+            # 赤色の成否に依存せず赤側の固定障害物経路へ移る。
+            self._za_mega_testmode1_phase="MOVE_TO_RED_COVER"
+            self._za_mega_testmode1_red_only_since=0.0
+            self._za_mega_testmode1_red_only_last_seen=0.0
+            self._za_mega_testmode1_red_only_confirmations=0
+            self._za_mega_testmode1_blue_last_seen_at=0.0
+            self._za_mega_testmode1_enemy_check_retry_at=0.0
+            self._za_mega_testmode1_warning_cycle_active=False
+            self._za_mega_testmode1_warning_cycle_saw_strong=False
+            self._za_mega_testmode1_warning_interval_active=False
+            self._za_mega_testmode1_warning_interval_blue_seen=False
+            self._za_mega_testmode1_warning_red_pending=False
+            self._za_mega_testmode1_red_cover_move_not_before=0.0
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_BLUE_ABSENCE_TIMEOUT",
+                "blue not detected for {:.1f}s; move to red-side cover".format(
+                    elapsed),
+                force=True)
+            return True
+
+        color=stable_color
         burrow_grace=max(0.0, float(settings.get(
             "BLUE_BURROW_GRACE_SECONDS", 12.0)))
-        # 青側を向いて攻撃し始めた時刻、または最後の青候補から十分な
-        # 時間が経つまでは潜行とみなす。非表示だけで撃破扱いにしない。
-        if (blue_last_seen <= 0.0
-                or now - blue_last_seen < burrow_grace):
+        if now - blue_last_seen < burrow_grace:
             self._za_mega_testmode1_red_only_since=0.0
             self._za_mega_testmode1_red_only_last_seen=0.0
             self._za_mega_testmode1_red_only_confirmations=0
@@ -5989,36 +6173,40 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_red_only_last_seen=now
         self._za_mega_testmode1_red_only_confirmations=confirmations
 
-        required_seconds=max(0.0, float(settings.get(
+        red_required_seconds=max(0.0, float(settings.get(
             "RED_ONLY_FALLBACK_SECONDS", 3.0)))
         required_confirmations=max(1, int(settings.get(
             "RED_ONLY_MIN_CONFIRMATIONS", 3)))
-        elapsed=max(0.0, now - red_since)
+        red_elapsed=max(0.0, now - red_since)
         self.ZA_mega_mode5_trace(
             "TESTMODE1_RED_ONLY_CHECK",
             "red only {:.1f}s; confirmation {}/{}".format(
-                elapsed, confirmations, required_confirmations))
-        if (elapsed < required_seconds
+                red_elapsed, confirmations, required_confirmations))
+        if (red_elapsed < red_required_seconds
                 or confirmations < required_confirmations):
             return False
 
-        # 青撃破後は通常mode5へ直接戻さず、赤側の固定障害物経路へ移る。
-        # TESTMODE1の再初期化はFIELDではなくBLACK_COMMENT／SELECTだけ。
         self._za_mega_testmode1_phase="MOVE_TO_RED_COVER"
         self._za_mega_testmode1_red_only_since=0.0
         self._za_mega_testmode1_red_only_last_seen=0.0
         self._za_mega_testmode1_red_only_confirmations=0
         self._za_mega_testmode1_blue_last_seen_at=0.0
         self._za_mega_testmode1_enemy_check_retry_at=0.0
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        self._za_mega_testmode1_warning_interval_active=False
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self._za_mega_testmode1_warning_red_pending=False
+        self._za_mega_testmode1_red_cover_move_not_before=0.0
         self.ZA_mega_mode5_trace(
             "TESTMODE1_RED_COVER_READY",
             "red only {:.1f}s ({} checks); move to red-side cover".format(
-                elapsed, confirmations),
+                red_elapsed, confirmations),
             force=True)
         return True
 
     def ZA_mega_mode5_testmode1_blue_return_update(self):
-        """赤側障害物中に青が復活し続けた時、通常mode5へ戻す。"""
+        """赤側で青の再出現または長時間の敵不在を確認して通常へ戻す。"""
         phase=str(getattr(
             self, "_za_mega_testmode1_phase", "DISABLED"))
         if (not getattr(self, "_za_mega_testmode1_enabled", False)
@@ -6026,17 +6214,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_testmode1_blue_return_since=0.0
             self._za_mega_testmode1_blue_return_last_seen=0.0
             self._za_mega_testmode1_blue_return_confirmations=0
+            self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+            self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
             return False
 
         settings=self.ZA_mega_mode5_testmode1_settings()
-        # 赤側へ入った後は、赤が画面外になったことや背景の青候補を
-        # 理由に通常mode5へ戻さない。BLACK_COMMENT／SELECTまたは
-        # 緑床成立による明示遷移までRED_COVER_ATTACKを維持する。
         if not bool(settings.get(
                 "BLUE_RETURN_TO_LEGACY_ENABLED", False)):
             self._za_mega_testmode1_blue_return_since=0.0
             self._za_mega_testmode1_blue_return_last_seen=0.0
             self._za_mega_testmode1_blue_return_confirmations=0
+            self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+            self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
             return False
         now=time.monotonic()
         if now < float(getattr(
@@ -6052,56 +6241,100 @@ class ZA_story_Base(ImageProcPythonCommand):
             if isinstance(direction, Direction) else "")
         observed_color=str(getattr(
             self, "_za_mega_colored_enemy_observed_color", "") or "").lower()
-        # 自動復帰を手動で再有効化した場合も、生の青候補1回ではなく
-        # 色helperが位置・面積を連続確認した確定青だけを使用する。
+        # 生の青候補1回ではなく、色helperが位置・面積を連続確認した
+        # 確定青だけを通常mode5への復帰条件に使用する。
         color=stable_color
         last_seen=float(getattr(
             self, "_za_mega_testmode1_blue_return_last_seen", 0.0))
         gap_limit=max(0.0, float(settings.get(
             "BLUE_RETURN_GAP_TOLERANCE_SECONDS", 10.0)))
-        if color == "red":
+        if color == "blue":
+            # 赤と青は同時に存在するため、途中に確定赤が挟まっても
+            # 青確認は取り消さない。最後の確定青からの時間だけを見る。
+            blue_since=float(getattr(
+                self, "_za_mega_testmode1_blue_return_since", 0.0))
+            confirmations=int(getattr(
+                self, "_za_mega_testmode1_blue_return_confirmations", 0))
+            if (blue_since <= 0.0 or last_seen <= 0.0
+                    or now - last_seen > gap_limit):
+                blue_since=now
+                confirmations=1
+            else:
+                confirmations+=1
+            self._za_mega_testmode1_blue_return_since=blue_since
+            self._za_mega_testmode1_blue_return_last_seen=now
+            self._za_mega_testmode1_blue_return_confirmations=confirmations
+            self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+            self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
+            required_seconds=max(0.0, float(settings.get(
+                "BLUE_RETURN_SECONDS", 1.0)))
+            required_confirmations=max(1, int(settings.get(
+                "BLUE_RETURN_MIN_CONFIRMATIONS", 3)))
+            elapsed=max(0.0, now - blue_since)
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_BLUE_RETURN_CHECK",
+                "blue {:.1f}s; confirmation {}/{}".format(
+                    elapsed, confirmations, required_confirmations))
+            if (elapsed >= required_seconds
+                    and confirmations >= required_confirmations):
+                self.ZA_mega_mode5_testmode1_enter_legacy(
+                    "BLUE_REAPPEARED")
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_BLUE_RETURN_LEGACY",
+                    "blue {:.1f}s ({} checks); resume existing mode5".format(
+                        elapsed, confirmations),
+                    force=True)
+                return True
+            return False
+
+        # 生候補を含めて赤か青が見えていれば、障害物による完全遮蔽では
+        # ないので「両方見えない」保険だけを初期化する。確定赤は青の
+        # 不在証明ではないため、上の青確認回数はここでは破棄しない。
+        any_enemy_visible=(
+            color in {"red", "blue"}
+            or observed_color in {"red", "blue"})
+        if any_enemy_visible:
+            self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+            self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
+        else:
+            no_enemy_since=float(getattr(
+                self, "_za_mega_testmode1_red_cover_no_enemy_since", 0.0))
+            no_enemy_confirmations=int(getattr(
+                self,
+                "_za_mega_testmode1_red_cover_no_enemy_confirmations", 0))
+            if no_enemy_since <= 0.0:
+                no_enemy_since=now
+                no_enemy_confirmations=1
+            else:
+                no_enemy_confirmations+=1
+            self._za_mega_testmode1_red_cover_no_enemy_since=no_enemy_since
+            self._za_mega_testmode1_red_cover_no_enemy_confirmations=(
+                no_enemy_confirmations)
+            no_enemy_seconds=max(0.0, float(settings.get(
+                "RED_COVER_NO_ENEMY_RETURN_SECONDS", 20.0)))
+            no_enemy_min=max(1, int(settings.get(
+                "RED_COVER_NO_ENEMY_MIN_CONFIRMATIONS", 5)))
+            no_enemy_elapsed=max(0.0, now - no_enemy_since)
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_RED_COVER_NO_ENEMY_CHECK",
+                "no red/blue {:.1f}s; confirmation {}/{}".format(
+                    no_enemy_elapsed, no_enemy_confirmations, no_enemy_min))
+            if (no_enemy_elapsed >= no_enemy_seconds
+                    and no_enemy_confirmations >= no_enemy_min):
+                self.ZA_mega_mode5_testmode1_enter_legacy(
+                    "RED_COVER_NO_ENEMY")
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_RED_COVER_NO_ENEMY_LEGACY",
+                    "no red/blue {:.1f}s ({} checks); retry existing mode5".format(
+                        no_enemy_elapsed, no_enemy_confirmations),
+                    force=True)
+                return True
+
+        if last_seen <= 0.0 or now - last_seen > gap_limit:
             self._za_mega_testmode1_blue_return_since=0.0
             self._za_mega_testmode1_blue_return_last_seen=0.0
             self._za_mega_testmode1_blue_return_confirmations=0
-            return False
-        if color != "blue":
-            if last_seen <= 0.0 or now - last_seen > gap_limit:
-                self._za_mega_testmode1_blue_return_since=0.0
-                self._za_mega_testmode1_blue_return_last_seen=0.0
-                self._za_mega_testmode1_blue_return_confirmations=0
-            return False
-
-        blue_since=float(getattr(
-            self, "_za_mega_testmode1_blue_return_since", 0.0))
-        confirmations=int(getattr(
-            self, "_za_mega_testmode1_blue_return_confirmations", 0))
-        if blue_since <= 0.0 or last_seen <= 0.0 or now - last_seen > gap_limit:
-            blue_since=now
-            confirmations=1
-        else:
-            confirmations+=1
-        self._za_mega_testmode1_blue_return_since=blue_since
-        self._za_mega_testmode1_blue_return_last_seen=now
-        self._za_mega_testmode1_blue_return_confirmations=confirmations
-        required_seconds=max(0.0, float(settings.get(
-            "BLUE_RETURN_SECONDS", 3.0)))
-        required_confirmations=max(1, int(settings.get(
-            "BLUE_RETURN_MIN_CONFIRMATIONS", 3)))
-        elapsed=max(0.0, now - blue_since)
-        self.ZA_mega_mode5_trace(
-            "TESTMODE1_BLUE_RETURN_CHECK",
-            "blue {:.1f}s; confirmation {}/{}".format(
-                elapsed, confirmations, required_confirmations))
-        if (elapsed < required_seconds
-                or confirmations < required_confirmations):
-            return False
-        self.ZA_mega_mode5_testmode1_enter_legacy("BLUE_REAPPEARED")
-        self.ZA_mega_mode5_trace(
-            "TESTMODE1_BLUE_RETURN_LEGACY",
-            "blue {:.1f}s ({} checks); resume existing mode5".format(
-                elapsed, confirmations),
-            force=True)
-        return True
+        return False
 
     def ZA_mega_mode5_testmode1_resume_update(
             self, dir1, dir2, dir3, dir4, see_r):
@@ -6223,16 +6456,56 @@ class ZA_story_Base(ImageProcPythonCommand):
         phase=str(getattr(
             self, "_za_mega_testmode1_phase", "FACE_BLUE"))
         now=time.monotonic()
-        if phase == "MOVE_TO_RED_COVER":
-            # 青撃破後は通常探索へ戻さず、現在の青側障害物から
-            # 赤側障害物へ手動設定の固定経路で一度だけ移動する。
-            cover_angle=float(settings["RED_COVER_MOVE_ANGLE"])
-            cover_seconds=float(settings["RED_COVER_MOVE_SECONDS"])
-            face_angle=float(settings["RED_FACE_ANGLE"])
+        if phase == "WAIT_RED_COVER_DELAY":
+            # 2組目の強い光が消えても5秒は青側障害物に留まる。
+            # 期限後は追加の上下入力を行わず、赤側障害物へ移動する。
             self.ZA_mega_mode5_marker_search_view_stop(relock=False)
             self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             self.ZA_ZL_ACTION("END")
+            move_not_before=float(getattr(
+                self, "_za_mega_testmode1_red_cover_move_not_before", 0.0))
+            if now < move_not_before:
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_WARNING_RED_COVER_WAIT",
+                    "wait {:.1f}s at blue cover".format(
+                        max(0.0, move_not_before - now)))
+                return "handled"
+            self._za_mega_testmode1_red_cover_move_not_before=0.0
+            self._za_mega_testmode1_phase="MOVE_TO_RED_COVER"
+            phase="MOVE_TO_RED_COVER"
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_WARNING_RED_COVER_READY",
+                "5.0s delay complete; begin fixed red-cover move",
+                force=True)
+        if phase == "MOVE_TO_RED_COVER":
+            # 青撃破後は通常探索へ戻さず、現在の青側障害物から
+            # Yを3回障害物に当てて開始点を揃え、赤側障害物へ
+            # 手動設定の固定経路で一度だけ移動する。
+            cover_angle=float(settings["RED_COVER_MOVE_ANGLE"])
+            cover_seconds=float(settings["RED_COVER_MOVE_SECONDS"])
+            face_angle=float(settings["RED_FACE_ANGLE"])
+            anchor_angle=float(settings[
+                "BLUE_TO_RED_ANCHOR_DODGE_ANGLE"])
+            anchor_repeat=max(1, int(settings[
+                "BLUE_TO_RED_ANCHOR_DODGE_REPEAT"]))
+            self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+            self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_ZL_ACTION("END")
+            self.ZA_MOVE_LStick(
+                dir1,dir2,dir3,dir4,
+                Direction(Stick.LEFT, anchor_angle, 1.0),
+                "RELOAD", force_direction=True)
+            self.pressRep(
+                Button.Y, repeat=anchor_repeat, duration=0.04,
+                wait=0.0, interval=0.12)
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_BLUE_COVER_ANCHOR",
+                "unlock; Y x{} at {:.0f}deg to fix red-route start".format(
+                    anchor_repeat, anchor_angle),
+                force=True)
             self.press(
                 Direction(Stick.LEFT, cover_angle, 1.0),
                 duration=cover_seconds, wait=0.0)
@@ -6288,9 +6561,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 force=True)
             return "handled"
 
-        if (phase == "COVER_ATTACK"
-                and self.ZA_mega_mode5_testmode1_red_only_fallback_update()):
-            return "handled"
         if (phase == "RED_COVER_ATTACK"
                 and self.ZA_mega_mode5_testmode1_blue_return_update()):
             # 設定で明示的に自動復帰を有効化した場合だけ到達する。
@@ -6305,35 +6575,56 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
         if now < float(getattr(
                 self, "_za_mega_testmode1_next_dodge_at", 0.0)):
-            if phase == "RED_COVER_ATTACK":
-                block_until=float(getattr(
-                    self,
-                    "_za_mega_testmode1_red_premove_block_until", 0.0))
-                waiting_strong_light=bool(getattr(
-                    self,
-                    "_za_mega_testmode1_red_premove_waiting_strong_light",
-                    False))
-                if not waiting_strong_light and now >= block_until:
-                    move_angle=float(settings[
-                        "RED_ATTACK_PREMOVE_ANGLE"])
-                    move_angle_seconds=float(settings[
-                        "RED_ATTACK_PREMOVE_ANGLE_SECONDS"])
-                    self.press(
-                        Direction(Stick.LEFT, move_angle, 1.0),
-                        duration=move_angle_seconds, wait=0.5)
-                    self.ZA_mega_mode5_trace(
-                        "TESTMODE1_RED_ATTACK_PREMOVE",
-                        "move {:.0f}deg for {:.1f}s before attack".format(
-                            move_angle, move_angle_seconds))
-                else:
-                    self.ZA_MOVE_LStick(
-                        dir1,dir2,dir3,dir4,1,"END")
-                    self.ZA_mega_mode5_trace(
-                        "TESTMODE1_RED_ATTACK_PREMOVE_SKIP",
-                        ("wait for strong light before 5s cooldown"
-                         if waiting_strong_light else
-                         "strong-light cooldown {:.1f}s remaining".format(
-                             max(0.0, block_until - now))))
+            block_until=float(getattr(
+                self,
+                "_za_mega_testmode1_red_premove_block_until", 0.0))
+            waiting_strong_light=bool(getattr(
+                self,
+                "_za_mega_testmode1_red_premove_waiting_strong_light",
+                False))
+            premove_blocked=(
+                phase in {"COVER_ATTACK", "RED_COVER_ATTACK"}
+                and (waiting_strong_light or now < block_until))
+            if premove_blocked:
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_mega_mode5_trace(
+                    ("TESTMODE1_RED_ATTACK_PREMOVE_SKIP"
+                     if phase == "RED_COVER_ATTACK" else
+                     "TESTMODE1_BLUE_ATTACK_PREMOVE_SKIP"),
+                    ("wait for strong light before 7s cooldown"
+                     if waiting_strong_light else
+                     "strong-light cooldown {:.1f}s remaining".format(
+                         max(0.0, block_until - now))))
+            elif phase == "RED_COVER_ATTACK":
+                move_angle=float(settings[
+                    "RED_ATTACK_PREMOVE_ANGLE"])
+                move_angle_seconds=float(settings[
+                    "RED_ATTACK_PREMOVE_ANGLE_SECONDS"])
+                self.press(
+                    Direction(Stick.LEFT, move_angle, 1.0),
+                    duration=move_angle_seconds, wait=0.5)
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_RED_ATTACK_PREMOVE",
+                    "move {:.0f}deg for {:.1f}s before attack".format(
+                        move_angle, move_angle_seconds))
+            elif phase == "COVER_ATTACK":
+                move_angle=float(settings[
+                    "BLUE_ATTACK_PREMOVE_ANGLE"])
+                move_angle_seconds=float(settings[
+                    "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS"])
+                self.press(
+                    Direction(Stick.LEFT, move_angle, 1.0),
+                    duration=move_angle_seconds, wait=0.5)
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_BLUE_ATTACK_PREMOVE",
+                    "move {:.0f}deg for {:.1f}s before attack".format(
+                        move_angle, move_angle_seconds))
+                # 障害物内では敵本体が隠れるため、存在確認を先に行うと
+                # 青の生存／赤だけの状態を判定できない。270度移動後の
+                # 視界が開いた最新フレームで判定し、両方見えない場合は
+                # red_only helper側で青側を維持する。
+                if self.ZA_mega_mode5_testmode1_red_only_fallback_update():
+                    return "handled"
             else:
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             if getattr(self, "ZL_state", 0) == 0:
@@ -6421,7 +6712,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "COVER_ATTACK"))
         if retained_phase not in {
                 "MOVE_TO_COVER", "FACE_BLUE", "COVER_ATTACK",
-                "MOVE_TO_RED_COVER", "FACE_RED", "RED_COVER_ATTACK"}:
+                "WAIT_RED_COVER_DELAY", "MOVE_TO_RED_COVER",
+                "FACE_RED", "RED_COVER_ATTACK"}:
             retained_phase="COVER_ATTACK"
         settings=(self.ZA_mega_mode5_testmode1_settings()
                   if testmode1_enabled else None)
@@ -6459,7 +6751,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_blue_return_since=0.0
         self._za_mega_testmode1_blue_return_last_seen=0.0
         self._za_mega_testmode1_blue_return_confirmations=0
+        self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+        self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        self._za_mega_testmode1_warning_interval_active=False
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self._za_mega_testmode1_warning_red_pending=False
+        self._za_mega_testmode1_red_cover_move_not_before=0.0
         if testmode1_enabled:
             # TESTMODE1の固定移動はBLACK_COMMENT／SELECTの後の
             # 最初のFIELDでだけ1度初期化する。
@@ -6926,11 +7226,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_blue_return_since=0.0
         self._za_mega_testmode1_blue_return_last_seen=0.0
         self._za_mega_testmode1_blue_return_confirmations=0
+        self._za_mega_testmode1_red_cover_no_enemy_since=0.0
+        self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_legacy_until_reset=False
         self._za_mega_testmode1_reinitialize_pending=bool(
             self._za_mega_testmode1_enabled)
         self._za_mega_testmode1_phase_before_charge="COVER_ATTACK"
         self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_warning_cycle_active=False
+        self._za_mega_testmode1_warning_cycle_saw_strong=False
+        self._za_mega_testmode1_warning_interval_active=False
+        self._za_mega_testmode1_warning_interval_blue_seen=False
+        self._za_mega_testmode1_warning_red_pending=False
+        self._za_mega_testmode1_red_cover_move_not_before=0.0
         # movemode／Z_Gaurdは最終戦(mode 5)専用。直接呼び出しで値が
         # 混入しても、既存mode 0～4の移動・視点経路を変更しない。
         self._za_mega_movemode=(int(movemode) if last_battle_mode else 0)
@@ -7178,7 +7486,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                         continue
                     self.ZA_mega_mode5_trace(
                         "POKEMON_ZA_FIELD_W",
-                        "Lbutton_up; begin battle processing", force=True)
+                        "Lbutton_up retry; wait for FIELD change", force=True)
+                    # 上入力が受付される前にロックオン・移動・攻撃で
+                    # 上書きしない。FIELD_Wが消えた次周回で先へ進む。
+                    self.wait(0.1)
+                    continue
                 elif field_back_w_detected or battle_screen_detected:
                     self.ZA_mega_mode5_field_w_up_retry(
                         False, field_back_w_detected)
@@ -7234,12 +7546,24 @@ class ZA_story_Base(ImageProcPythonCommand):
             if (last_battle_mode and nofiled==0
                     and int(getattr(
                         self, "_za_mega_mode5_start_flag", 0)) == 4):
-                field_w_action=self.ZA_mega_mode5_field_w_up_retry(
-                    field_w_detected, field_back_w_detected,
-                    before_recovery=lambda: self.ZA_MOVE_LStick(
-                        dir1,dir2,dir3,dir4,1,"END"))
-                if field_w_action == "menu_recovery":
+                if field_w_detected:
+                    # 戦闘処理中に倒れた場合もFIELD_Wを最優先する。
+                    # BACK_Wが重なっても上入力を省略せず、表示が消えるまで
+                    # 攻撃・移動・ロックオン処理へ流さない。
+                    field_w_action=self.ZA_mega_mode5_field_w_up_retry(
+                        True, False,
+                        before_recovery=lambda: self.ZA_MOVE_LStick(
+                            dir1,dir2,dir3,dir4,1,"END"))
+                    if field_w_action == "menu_recovery":
+                        continue
+                    self.ZA_mega_mode5_trace(
+                        "POKEMON_ZA_FIELD_W",
+                        "battle interrupted; retry Lbutton_up and wait",
+                        force=True)
+                    self.wait(0.1)
                     continue
+                self.ZA_mega_mode5_field_w_up_retry(
+                    False, field_back_w_detected)
 
             # 最終戦の即死攻撃予兆は、通常の接近・攻撃・復旧判定より先に
             # 処理する。近い緑床なら移動し、遠い／間に合わない場合だけ
