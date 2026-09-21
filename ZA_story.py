@@ -6041,8 +6041,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             "BLUE_TO_RED_ANCHOR_DODGE_REPEAT": 3,
             # 青側で深く入ってロックオンが外れても、攻撃前に
             # 赤側と同じ270度へ移動して射線を戻す。
+            "BLUE_ATTACK_PREMOVE_STAY_SECONDS": 1.0,
             "BLUE_ATTACK_PREMOVE_ANGLE": 270.0,
-            "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS": 0.5,
+            "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS": 0.8,
+            
+            "BLUE_ATTACK_PREMOVE_ANGLE2": 90.0,
+            "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS2": 0.2,
+            
+            "BLUE_ATTACK_PREMOVE_STAY_SECONDS2": 0.5,
             # 6. 予兆を無視する回数。-1は既存の予兆回避へ移行せず、
             #    7の赤のみ判定または予兆セット間の青不在で赤側へ移る。
             "CHARGE_WARNING_SKIP_COUNT": -1,
@@ -6064,15 +6070,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             "BLUE_ABSENCE_CHECK_INTERVAL_SECONDS": 0.30,
             # 8. 青撃破後: 青側障害物から赤側障害物へ固定移動する試案値。
             #    実機調整はこの3値だけで行える。
-            "RED_COVER_MOVE_ANGLE": 30.0,
+            "RED_COVER_MOVE_ANGLE": 60.0,#30.0,
             # 青側の深さを0.5秒増やした分、赤側経路も延長。
-            "RED_COVER_MOVE_SECONDS": 6.5,
-            "RED_FACE_ANGLE": 140.0,
+            "RED_COVER_MOVE_SECONDS": 6.8,#6.5,
+            "RED_FACE_ANGLE": 160.0,#140.0,
             # 9. 赤側障害物から攻撃する直前の時間指定移動。
             #    力をためた～強い光の最終検知後7秒は入力しない。
+            
+            "RED_ATTACK_PREMOVE_STAY_SECONDS": 1.0,
             "RED_ATTACK_PREMOVE_ANGLE": 270.0,
-            "RED_ATTACK_PREMOVE_ANGLE_SECONDS": 0.5,
+            "RED_ATTACK_PREMOVE_ANGLE_SECONDS": 0.8,#0.5,
             "RED_ATTACK_PREMOVE_BLOCK_SECONDS": 7.0,
+            
+            "RED_ATTACK_PREMOVE_ANGLE2": 90.0,
+            "RED_ATTACK_PREMOVE_ANGLE_SECONDS2": 0.2,
+            
+            "RED_ATTACK_PREMOVE_STAY_SECONDS2": 0.5,
             # 10. 赤側障害物で青を再確認した場合は通常mode5へ戻す。
             #     赤と青は同時に存在し得るため、途中の赤検知では青確認を
             #     取り消さず、確定青を複数回確認してから復帰する。
@@ -6724,6 +6737,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 青撃破後は通常探索へ戻さず、現在の青側障害物から
             # Yを3回障害物に当てて開始点を揃え、赤側障害物へ
             # 手動設定の固定経路で一度だけ移動する。
+            self.wait(1.0)
             cover_angle=float(settings["RED_COVER_MOVE_ANGLE"])
             cover_seconds=float(settings["RED_COVER_MOVE_SECONDS"])
             face_angle=float(settings["RED_FACE_ANGLE"])
@@ -6741,7 +6755,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "RELOAD", force_direction=True)
             self.pressRep(
                 Button.Y, repeat=anchor_repeat, duration=0.04,
-                wait=0.0, interval=0.12)
+                wait=0.0, interval=0.0)
             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             self.ZA_mega_mode5_trace(
                 "TESTMODE1_BLUE_COVER_ANCHOR",
@@ -6838,6 +6852,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                      "strong-light cooldown {:.1f}s remaining".format(
                          max(0.0, block_until - now))))
             elif phase == "RED_COVER_ATTACK":
+                self.wait(settings["RED_ATTACK_PREMOVE_STAY_SECONDS"])
                 move_angle=float(settings[
                     "RED_ATTACK_PREMOVE_ANGLE"])
                 move_angle_seconds=float(settings[
@@ -6849,7 +6864,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "TESTMODE1_RED_ATTACK_PREMOVE",
                     "move {:.0f}deg for {:.1f}s before attack".format(
                         move_angle, move_angle_seconds))
+                self.wait(settings["RED_ATTACK_PREMOVE_STAY_SECONDS2"])
+                #TODO 方向を向くだけの調整 
+                move_angle=float(settings[
+                    "RED_ATTACK_PREMOVE_ANGLE2"])
+                move_angle_seconds=float(settings[
+                    "RED_ATTACK_PREMOVE_ANGLE_SECONDS2"])
+                
+                #他動作に影響ないAボタンで攻撃
+                self.ZA_ZL_ACTION("")
+                self.wait(0.2)
+                self.press(Button.A, wait=0.1)
+                self.ZA_ZL_ACTION("END")
+                
+                self.press(
+                    Direction(Stick.LEFT, move_angle, 1.0),
+                    duration=move_angle_seconds, wait=0.5)
+                
             elif phase == "COVER_ATTACK":
+                self.wait(settings["BLUE_ATTACK_PREMOVE_STAY_SECONDS"])
                 move_angle=float(settings[
                     "BLUE_ATTACK_PREMOVE_ANGLE"])
                 move_angle_seconds=float(settings[
@@ -6861,6 +6894,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "TESTMODE1_BLUE_ATTACK_PREMOVE",
                     "move {:.0f}deg for {:.1f}s before attack".format(
                         move_angle, move_angle_seconds))
+                self.wait(settings["BLUE_ATTACK_PREMOVE_STAY_SECONDS2"])
+                #TODO 方向を向くだけの調整 
+                move_angle=float(settings[
+                    "BLUE_ATTACK_PREMOVE_ANGLE2"])
+                move_angle_seconds=float(settings[
+                    "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS2"])
+                
+                #他動作に影響ないAボタンで攻撃
+                self.ZA_ZL_ACTION("")
+                self.wait(0.2)
+                self.press(Button.A, wait=0.1)
+                self.ZA_ZL_ACTION("END")
+                
+                self.press(
+                    Direction(Stick.LEFT, move_angle, 1.0),
+                    duration=move_angle_seconds, wait=0.5)
+
                 # 障害物内では敵本体が隠れるため、存在確認を先に行うと
                 # 青の生存／赤だけの状態を判定できない。270度移動後の
                 # 視界が開いた最新フレームで判定し、両方見えない場合は
