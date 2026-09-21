@@ -24920,7 +24920,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_56(self):
         if self.ZA_markerdir("EVENT", 1, nofiled=False):
-            return "8_STORY_STORY_LAST_57"
+            self.press(Direction(Stick.LEFT,90), duration=2.4, wait=1.0)
+            return "8_STORY_STORY_LAST_58"
         return "8_STORY_STORY_LAST_56"
 
     def _8_story_story_last_57(self):
@@ -24969,7 +24970,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                     sub_button="A",
                     sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
                     sub2_button="A",
-                    sub2_picture="POKEMON_ZA_2_SELECT"):
+                    sub2_picture="POKEMON_ZA_2_SELECT",
+                    sub3_button="A",
+                    sub3_picture="POKEMON_ZA_3_SELECT",
+                    sub4_button="A",
+                    sub4_picture="POKEMON_ZA_HELP_MARKER"):
                 return "8_STORY_STORY_LAST_63"
         return "8_STORY_STORY_LAST_62"
     
