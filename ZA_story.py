@@ -11577,6 +11577,43 @@ class ZA_story_Base(ImageProcPythonCommand):
             and state["phase"] not in {"RESULT_CANDIDATE", "RESULT_SEEN"}
             and not state["result_seen"])
 
+        def event_marker_missing_fallback_for_search(event_marker_seen):
+            """Return the configured fallback after one complete EVENT search set."""
+            if not (marker_missing_limit > 0 and marker_missing_fallback):
+                return ""
+            if event_marker_seen:
+                previous_missing = marker_missing_counts.pop(
+                    marker_missing_key, 0)
+                if previous_missing:
+                    print(
+                        "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+                        "EVENT found; missing sets {}/{} -> 0".format(
+                            battle_flow_key, previous_missing,
+                            marker_missing_limit))
+                return ""
+
+            missing_sets = int(marker_missing_counts.get(
+                marker_missing_key, 0)) + 1
+            marker_missing_counts[marker_missing_key] = missing_sets
+            print(
+                "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+                "EVENT not found set={}/{}".format(
+                    battle_flow_key, missing_sets, marker_missing_limit))
+            #if missing_sets < marker_missing_limit:
+            #    return ""
+
+            #marker_missing_counts.pop(marker_missing_key, None)
+            #self._ZA_story_battle_flow_reset(
+            #    battle_flow_key,
+            #    "event_marker_missing_{}_sets".format(
+            #        marker_missing_limit))
+            #print(
+            #    "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+            #    "EVENT missing for {} sets -> {}".format(
+            #        battle_flow_key, marker_missing_limit,
+            #        marker_missing_fallback))
+            return marker_missing_fallback
+
         stop_reason, stop_picture = (
             self._ZA_story_battle_before_safe_renda_once(
                 green_check=green_check,
@@ -11585,9 +11622,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[BATTLE_RENDA_BEFORE] {}: stop={} picture={}".format(
                     battle_flow_key, stop_reason, stop_picture))
-        if stop_reason != "field" and marker_missing_limit > 0:
+        if stop_reason not in {"field", "chat"} and marker_missing_limit > 0:
             # EVENT探索が連続したFIELD周回だけを1セットとして数える。
-            # 戦闘・会話など別画面へ進めた場合は前回分を持ち越さない。
+            # 戦闘・結果画面など別画面へ進めた場合は前回分を持ち越さない。
+            # CHAT_MARKERはこの下でEVENT探索するため、FIELDと同じセット。
             marker_missing_counts.pop(marker_missing_key, None)
 
         if stop_reason == "active_level":
@@ -11651,16 +11689,27 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(
                     Button.A, repeat=1, duration=0.15,
                     wait=0.5, interval=0.1)
-            elif self.ZA_markerdir("EVENT", 1, nofiled=True):
-                self.press(
-                    Direction(Stick.LEFT, 90),
-                    duration=max(0.02, float(event_move_duration)), wait=0.2)
-                if self.image_check("POKEMON_ZA_CHAT_MARKER"):
-                    self.pressRep(
-                        Button.A, repeat=1, duration=0.15,
-                        wait=0.5, interval=0.1)
             else:
-                self.wait(max(0.1, float(sleeptime)))
+                event_marker_aligned = self.ZA_markerdir(
+                    "EVENT", 1, nofiled=True)
+                event_marker_seen = bool(getattr(
+                    self,
+                    "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
+                    event_marker_aligned))
+                missing_fallback = event_marker_missing_fallback_for_search(
+                    event_marker_seen)
+                if missing_fallback:
+                    return missing_fallback
+                if event_marker_aligned:
+                    self.press(
+                        Direction(Stick.LEFT, 90),
+                        duration=max(0.02, float(event_move_duration)), wait=0.2)
+                    if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                        self.pressRep(
+                            Button.A, repeat=1, duration=0.15,
+                            wait=0.5, interval=0.1)
+                else:
+                    self.wait(max(0.1, float(sleeptime)))
             return noprg_ret
 
         if stop_reason == "field":
@@ -11673,39 +11722,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self,
                     "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
                     event_marker_aligned))
-                if marker_missing_limit > 0 and marker_missing_fallback:
-                    if event_marker_seen:
-                        previous_missing = marker_missing_counts.pop(
-                            marker_missing_key, 0)
-                        if previous_missing:
-                            print(
-                                "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-                                "EVENT found; missing sets {}/{} -> 0".format(
-                                    battle_flow_key, previous_missing,
-                                    marker_missing_limit))
-                    else:
-                        missing_sets = int(marker_missing_counts.get(
-                            marker_missing_key, 0)) + 1
-                        marker_missing_counts[marker_missing_key] = (
-                            missing_sets)
-                        print(
-                            "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-                            "EVENT not found set={}/{}".format(
-                                battle_flow_key, missing_sets,
-                                marker_missing_limit))
-                        if missing_sets >= marker_missing_limit:
-                            marker_missing_counts.pop(
-                                marker_missing_key, None)
-                            self._ZA_story_battle_flow_reset(
-                                battle_flow_key,
-                                "event_marker_missing_{}_sets".format(
-                                    marker_missing_limit))
-                            print(
-                                "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-                                "EVENT missing for {} sets -> {}".format(
-                                    battle_flow_key, marker_missing_limit,
-                                    marker_missing_fallback))
-                            return marker_missing_fallback
+                missing_fallback = event_marker_missing_fallback_for_search(
+                    event_marker_seen)
+                if missing_fallback:
+                    return missing_fallback
             if (event_reacquire_allowed
                     and (event_marker_aligned
                          or self.ZA_markerdir("SIDE_MARKER"))):
@@ -15134,6 +15154,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return black_recovery
         if self.image_check("POKEMON_ZA_MAP2"):
             self.pressRep(Button.B, repeat=5, duration=0.04, wait=0.0, interval=0.1)
+            self.wait(10.0)
         if self.image_check("POKEMON_ZA_PIKA_ICON_GET6"):
             if self.image_check("POKEMON_ZA_EYE_CHECK"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
@@ -15182,6 +15203,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._2_story_tower_38_else_count = 0
             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
             self.pressRep(Button.B, repeat=20, duration=0.04, wait=0.0, interval=0.1)
+            self.wait(10.0)
             return "2_STORY_TOWER_37"
         elif self.ZA_Common_pokemon_recovery():
             self._2_story_tower_38_else_count = 0
@@ -15226,7 +15248,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,55), duration=10.0, wait=0.5)
             self.press(Direction(Stick.LEFT,120), duration=8.0, wait=0.5)
             return "2_STORY_TOWER_41"
-
+        elif self.image_check("POKEMON_ZA_MOVE_COMMENT_BATTLE2"):
+            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            self.pressRep(Button.B, repeat=20, duration=0.04, wait=0.0, interval=0.1)
+            self.wait(10.0)
+            return "2_STORY_TOWER_37"
         return "2_STORY_TOWER_40"
     
     def _2_story_tower_41(self):
@@ -17832,7 +17858,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_W_LANK_MOVE11"
         return "2_STORY_W_LANK_MOVE10"
     
-    def _2_story_w_lank_move11(self):
+    def _2_story_w_lank_move11(self):#TODO ABSOLへのジャンプ処理の確認が必要
         return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_W_LANK_MOVE11",prg_ret="2_STORY_W_LANK_MOVE12",battle_flow_key="2_STORY_W_LANK",green_check=1,black_comment_is_defeat=True,event_marker_missing_sets=1,event_marker_missing_fallback="2_STORY_ABSOL_MOVE0")
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
