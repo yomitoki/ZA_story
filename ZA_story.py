@@ -30,7 +30,7 @@ from LocalFunction.ImageDetection import SimilarityHistory, detect_image
 
 class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
-    ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 60.0
+    ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_40_STALL_TIMEOUT_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_RESTART_SECONDS = 5.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_GAP_SECONDS = 2.0
@@ -43,14 +43,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     ZA_STORY_YUKARI_48_FIELD_TIMEOUT_SECONDS = 10.0
     ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS_BY_STATE = {
         # ABSOLは会話・選択肢の後に長い戦闘開始演出が入るため、通常の
-        # 30秒では正常な演出中にMOVE14へ戻してしまう。ここだけ2分待つ。
+        # 120秒では正常な演出中にMOVE14へ戻してしまう場合に備え、
+        # 個別指定として明示しておく（現状はデフォルトと同値）。
         "2_STORY_ABSOL_MOVE17": 120.0,
-        # SHIRO_17は移動後の会話へ入れなかった場合だけ、
-        # セーブ位置を復元してSHIRO_16の移動からやり直す。
-        "4_STORY_SHIRO_17": 30.0,
-        # SHIRO_44の戦闘後会話へ入れない場合は、
-        # SHIRO_43の出撃・攻撃からやり直す。
-        "4_STORY_SHIRO_44": 30.0,
     }
     ZA_STORY_BATTLE_RETURN_RECOVERY_COUNT = 3
     ZA_STORY_SHIRO_WHITE_COMMENT_RECOVERY_COUNT = 3
@@ -226,13 +221,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_MEGA_MOVE6": "2_STORY_MEGA_MOVE6",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_CANARI_10": "3_STORY_CANARI_10",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_10": "3_STORY_CANARI_2_RECOVERY1",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_16": "3_STORY_CANARI_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_18": "3_STORY_CANARI_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_20": "3_STORY_CANARI_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE2": "3_STORY_MEGA_MOVE2",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE8": "3_STORY_MEGA_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE12": "3_STORY_MEGA_MOVE12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_MEGA_MOVE16": "3_STORY_MEGA_MOVE13",
         "3_STORY_MEGA_MOVE18": "3_STORY_MEGA_MOVE18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE23": "3_STORY_MEGA_MOVE23",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -982,6 +978,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             "3_STORY_START_CHECK": self._3_story_start_check,
             
             "3_STORY_CANARI_1": self._3_story_canari_1, 
+            "3_STORY_CANARI_2_RECOVERY1": self._3_story_canari_2_recovery1, 
+            "3_STORY_CANARI_2_RECOVERY2": self._3_story_canari_2_recovery2, 
+            "3_STORY_CANARI_2_RECOVERY3": self._3_story_canari_2_recovery3, 
             "3_STORY_CANARI_2": self._3_story_canari_2, 
             "3_STORY_CANARI_3": self._3_story_canari_3,  
             "3_STORY_CANARI_4": self._3_story_canari_4,  
@@ -2848,13 +2847,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         # mode 6は戦闘状態になった後、攻撃を行わず非ロックオンYを
         # 送り続けるローリング専用の退避用モード。
+        # 他メンバ0でのとどめができないため廃止
         elif mode == 6 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=1):
             return True
         # mode 7はmode 3の攻撃・移動構成に、赤端検知時の
         # 15秒非ロックオンY回避を追加するGURI_35用モード。
         elif mode == 7 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
             return True
-
+        elif mode == 8 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.40, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
+            return True
     def ZA_mega_evolution_battle_mode5(
             self, usenum=1, movemode=0, Z_Gaurd=0, Cplus_attack=0,
             testmode1=0):
@@ -11599,19 +11600,19 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
                 "EVENT not found set={}/{}".format(
                     battle_flow_key, missing_sets, marker_missing_limit))
-            #if missing_sets < marker_missing_limit:
-            #    return ""
+            if missing_sets < marker_missing_limit:
+                return ""
 
-            #marker_missing_counts.pop(marker_missing_key, None)
-            #self._ZA_story_battle_flow_reset(
-            #    battle_flow_key,
-            #    "event_marker_missing_{}_sets".format(
-            #        marker_missing_limit))
-            #print(
-            #    "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-            #    "EVENT missing for {} sets -> {}".format(
-            #        battle_flow_key, marker_missing_limit,
-            #        marker_missing_fallback))
+            marker_missing_counts.pop(marker_missing_key, None)
+            self._ZA_story_battle_flow_reset(
+                battle_flow_key,
+                "event_marker_missing_{}_sets".format(
+                    marker_missing_limit))
+            print(
+                "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+                "EVENT missing for {} sets -> {}".format(
+                    battle_flow_key, marker_missing_limit,
+                    marker_missing_fallback))
             return marker_missing_fallback
 
         stop_reason, stop_picture = (
@@ -11691,7 +11692,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     wait=0.5, interval=0.1)
             else:
                 event_marker_aligned = self.ZA_markerdir(
-                    "EVENT", 1, nofiled=True)
+                    "EVENT", 1, nofiled=True,
+                    stop_after_first_scan_move=(
+                        marker_missing_limit > 0))
                 event_marker_seen = bool(getattr(
                     self,
                     "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
@@ -11717,7 +11720,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 移動を行わない。
             event_marker_aligned = False
             if event_reacquire_allowed:
-                event_marker_aligned = self.ZA_markerdir("EVENT", 1)
+                event_marker_aligned = self.ZA_markerdir(
+                    "EVENT", 1,
+                    stop_after_first_scan_move=(
+                        marker_missing_limit > 0))
                 event_marker_seen = bool(getattr(
                     self,
                     "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
@@ -12210,7 +12216,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(3.0)
             self.etc_sendCommand("plusbutton_release")
     
-    def ZA_markerdir(self,type,search_mode=0,nofiled=False):
+    def ZA_markerdir(self,type,search_mode=0,nofiled=False,stop_after_first_scan_move=False):
         if type == "EVENT":
             marker = "POKEMON_ZA_EVENT_MARKER"
         elif type == "PIN":
@@ -12443,6 +12449,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             marker_seen_this_call = False
             for alignment_index in range(alignment_attempts):
                 movement_stick = Stick.RIGHT
+                scan_move_this_iteration = False
                 variants = self.IMAGE_DETECTION_TARGETS.get(center, [])
                 detail = None
                 if variants:
@@ -12575,6 +12582,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 "LEFT" if delayed_event_search else "RIGHT",
                                 alignment_index + 1,
                                 alignment_attempts))
+                        scan_move_this_iteration = True
                     else:
                         movement = getattr(self, last_movement_name, None)
                         if movement is None:
@@ -12583,6 +12591,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Direction(movement_stick,angle,magnitude), duration=duration, wait=0.0)
                 setattr(self, last_movement_name, movement)
                 self.wait(0.1)
+                if scan_move_this_iteration and stop_after_first_scan_move:
+                    # 中央寄せの補正移動(検出はできているが未中央)ではなく、
+                    # EVENTが完全に見つからず探索用のキャラクター移動を
+                    # 1回行った時点で、呼出元に即座にFalseで返す。
+                    print(
+                        "[MARKER_SEARCH] stop_after_first_scan_move: "
+                        "1 scan move done -> return False")
+                    return False
         return False
 
     def ZA_battle_infi_main(self):
@@ -19145,6 +19161,32 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "3_STORY_CANARI_2"
         return "3_STORY_CANARI_1"
 
+    def _3_story_canari_2_recovery1(self):
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+                return "3_STORY_CANARI_11"
+        
+        ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
+        if ret == "START":
+            return "3_STORY_CANARI_2_RECOVERY2"
+        else:
+            return "3_STORY_CANARI_2_RECOVERY1"
+
+    def _3_story_canari_2_recovery2(self):
+        ret = self.ZA_Common_goto(1,0,3)#ホテルZへ移動
+        if ret == "START":
+            return "3_STORY_CANARI_2_RECOVERY3"
+        else:
+            return "3_STORY_CANARI_2_RECOVERY2"
+    
+    def _3_story_canari_2_recovery3(self):
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+            self.press(Direction(Stick.LEFT,270), duration=2.0, wait=1.0)
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "3_STORY_CANARI_3"
+        return "3_STORY_CANARI_2_RECOVERY3"
+
     def _3_story_canari_2(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
@@ -19736,8 +19778,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
     
-    def _3_story_mega_move11(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=0):
+    def _3_story_mega_move11(self):#1/4までmode6？,7でひたすら回避でも削れるが最後はとどめようのmode選択は必須 
+        #メガスピアーはmode7では回避でライバルで削れるが、視点回転で自分から攻撃が当たる箇所に移動しない、ライバルでとどめができないため、mode7から視点回転角度を大きめにした
+        if self.ZA_mega_evolution_battle_mode_select(mode=8,usenum=4):
             return "3_STORY_MEGA_MOVE12"
         return "3_STORY_MEGA_MOVE11"
     
@@ -19785,7 +19828,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE15"
     
     def _3_story_mega_move16(self):
-        if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE17"
         return "3_STORY_MEGA_MOVE16"
