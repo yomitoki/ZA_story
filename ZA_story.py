@@ -244,6 +244,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         "4_STORY_SHIRO_50": "4_STORY_SHIRO_50",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_53": "4_STORY_SHIRO_53",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_62": "4_STORY_SHIRO_62",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        
+        "4_STORY_SHIRO_64": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_67": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_70": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_73": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+
         "4_STORY_SHIRO_75": "4_STORY_SHIRO_75",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_77": "4_STORY_SHIRO_77",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_79": "4_STORY_SHIRO_79",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -1136,6 +1142,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_60": self._4_story_shiro_60,        
             "4_STORY_SHIRO_61": self._4_story_shiro_61,        
             "4_STORY_SHIRO_62": self._4_story_shiro_62,        
+            "4_STORY_SHIRO_63_0": self._4_story_shiro_63_0,         
             "4_STORY_SHIRO_63": self._4_story_shiro_63,        
             "4_STORY_SHIRO_64": self._4_story_shiro_64,        
             "4_STORY_SHIRO_65": self._4_story_shiro_65,        
@@ -10566,8 +10573,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         if now - started < recovery_seconds:
             return normal_return
 
-        # 同じStepで毎周ログを出さないよう、復帰判定後に計時を始め直す。
-        timers[current_state] = now
+        if recovery_target == current_state:
+            # 実装未対応で自分自身へ戻すだけの項目は、実際には
+            # Stepを離れないため、毎ティックログを出さないよう
+            # ここで計時を始め直す。
+            timers[current_state] = now
+        else:
+            # 実際に別Stepへ戻す場合、ここでタイマーを残すと次に
+            # 同じStepへ再訪した際に前回（ジャンプ時点）からの
+            # 経過時間を引き継いでしまい、再訪後の設定秒数を待たずに
+            # 即リカバリーが発火してしまう。次回このStepに来たときに
+            # ゼロから計測させるため削除する。
+            timers.pop(current_state, None)
         furadari_comment_targets = getattr(
             self, "ZA_STORY_FURADARI_COMMENT_SKIP_TARGETS", {})
         if (recovery_kind == "white_comment"
@@ -19812,9 +19829,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,150), duration=3.0, wait=1.0)
             self.wait(0.5)
-            self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,100), duration=3.3, wait=1.0)#3.0"
             self.wait(0.5)
-            self.press(Direction(Stick.LEFT,210), duration=4.2, wait=1.0)
+            self.press(Direction(Stick.LEFT,210), duration=4.0, wait=1.0)#4.2
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,180), duration=14.5, wait=1.0)
             self.wait(0.5)
@@ -19822,7 +19839,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,240), duration=3.0, wait=1.0)
             self.wait(0.5)
-            self.press(Direction(Stick.LEFT,330), duration=5.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,310), duration=5.0, wait=1.0)#330
             self.wait(0.5)
             return "3_STORY_MEGA_MOVE16"
         return "3_STORY_MEGA_MOVE15"
@@ -19835,7 +19852,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE16"
     
     def _3_story_mega_move17(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=0,usenum=4):
             return "3_STORY_MEGA_MOVE18"
 
         return "3_STORY_MEGA_MOVE17"
@@ -20697,6 +20714,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
                 return "4_STORY_SHIRO_63"
         return "4_STORY_SHIRO_62"
+    
+    def _4_story_shiro_63_0(self):
+        self.ZA_gamereset()
+        return "4_STORY_SHIRO_63"
     
     def _4_story_shiro_63(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
