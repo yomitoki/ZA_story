@@ -24763,6 +24763,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_16"
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_16"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_gamereset()
         return "8_STORY_STORY_LAST_15"
     
     def _8_story_story_last_16(self):
@@ -24818,6 +24820,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_23" 
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_23"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_gamereset()
         return "8_STORY_STORY_LAST_22"
     
     def _8_story_story_last_23(self):
@@ -24947,6 +24951,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_29"
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_29"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_gamereset()
         return "8_STORY_STORY_LAST_28"
     
     def _8_story_story_last_29(self):
@@ -24971,7 +24977,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=9.0, wait=1.0)
             return "8_STORY_STORY_LAST_33"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.ZA_gamereset()
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_33"
         return "8_STORY_STORY_LAST_32"
@@ -25038,6 +25044,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_40_1"
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_40_1"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_gamereset()
         return "8_STORY_STORY_LAST_40"
     
     def _8_story_story_last_40_1(self):
