@@ -53,9 +53,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     RESET_TEMPLATE_GAME_START_CHECK_INTERVAL = 1.0
     RESET_TEMPLATE_TITLE_CONFIRM_DELAY = 1.0
     RESET_TEMPLATE_TITLE_RESPONSE_WAIT = 2.0
-    RESET_TEMPLATE_DIR = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "..", "..", "..", "..", "Template",
-        "ZA_Reset_Sample"))
     RESET_TEMPLATE_TARGETS = {
         # filename, threshold, (x, y, width, height) at 1280x720
         "SWITCH_HOME_ZA_SELECTED": (
@@ -2022,12 +2019,61 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # Switch game reset
     ######################################################
+    def _reset_template_dir(self):
+        """Template/ZA_Reset_Sampleのディレクトリを特定する。
+
+        get_filespec(mode="t")は本スクリプト（ZA_story.py）自身の
+        置き場所を基準にした別系統のTemplateディレクトリ（例:
+        Template/ZA_Story/配下）を返すため、reset_za録画用テンプレート
+        （Template/ZA_Reset_Sample/配下）には流用できない。
+        Commands配下の階層はインストール環境によって深さが異なりうる
+        ため、固定の".." 連結ではなく、__file__から親ディレクトリを
+        順に遡って"SerialController"という名前のフォルダを探し、その
+        直下のTemplate/ZA_Reset_Sampleを使う。
+        """
+        cached = getattr(self, "_reset_template_dir_cache", None)
+        if cached:
+            return cached
+        start_dir = os.path.dirname(os.path.abspath(__file__))
+        search_dir = start_dir
+        found_dir = None
+        while True:
+            if os.path.basename(search_dir) == "SerialController":
+                found_dir = search_dir
+                break
+            parent_dir = os.path.dirname(search_dir)
+            if parent_dir == search_dir:
+                break
+            search_dir = parent_dir
+        if found_dir is not None:
+            result = os.path.join(found_dir, "Template", "ZA_Reset_Sample")
+        else:
+            # "SerialController"フォルダが見つからない場合の最終手段。
+            print(
+                "[RESET_TEMPLATE_DIR] \"SerialController\" directory not "
+                "found while walking up from {}; falling back to "
+                "4 levels up".format(start_dir))
+            result = os.path.abspath(os.path.join(
+                start_dir, "..", "..", "..", "..", "Template",
+                "ZA_Reset_Sample"))
+        self._reset_template_dir_cache = result
+        return result
+
     def _reset_template_matches(self, target_name):
         """reset_za録画から作成した1280x720用テンプレートを判定する。"""
         filename, threshold, (x, y, width, height) = (
             self.RESET_TEMPLATE_TARGETS[target_name])
+        template_path = os.path.join(
+            self._reset_template_dir(), filename)
+        if not os.path.isfile(template_path):
+            # ファイルが存在しない場合、cv2側で分かりにくいエラーに
+            # なるため、ここで明示的に警告してFalse扱いにする。
+            print(
+                "[RESET_TEMPLATE] template not found: {} "
+                "(target={})".format(template_path, target_name))
+            return False
         return bool(self.isContainTemplate(
-            os.path.join(self.RESET_TEMPLATE_DIR, filename),
+            template_path,
             threshold=threshold,
             use_gray=True,
             show_value=False,
