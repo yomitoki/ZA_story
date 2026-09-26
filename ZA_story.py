@@ -5,7 +5,7 @@ from Commands.Keys import Button, Direction, Hat, Stick
 from Commands.PythonCommandBase import ImageProcPythonCommand
 from LocalFunction.ImageDetection import (SimilarityHistory,
                                            detect_image)
-from SwitchUpdatePrompt import (START_WITHOUT_UPDATE,
+from LocalFunction.SwitchUpdatePrompt import (START_WITHOUT_UPDATE,
                                 UPDATE_SELECTED,
                                 detect_switch_update_prompt_selection)
 import cv2
