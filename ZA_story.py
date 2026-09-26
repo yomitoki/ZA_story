@@ -9873,6 +9873,188 @@ class ZA_story_Base(ImageProcPythonCommand):
                 score, threshold, matched))
         return matched
 
+    def ZA_story_furadari_lab_entrance_goto(self, current_state, next_state):
+        """フラダリラボ入口へのFURADARI_MAP移動用共通goto。
+
+        「目の前がまっくらになった！」の検知漏れ等でFURADARI区間外へ
+        出てしまい、マップを開いた結果がFURADARI_MAPではなくMAP2に
+        なった場合、まずZA_Common_change_time_setを一式実施したうえで、
+        既存の専用暗転復帰と同じフィルター・場所選択（filter_down=1
+        spot_right=1 spot_down=1）→FIELD移動の経路で最寄りスポットへ
+        戻ってから、再度FURADARI_MAPへのgotoをやり直す。
+        """
+        def recovery_log(message, level="info"):
+            print(message)
+            logger = getattr(self, "_logger", None)
+            log_method = getattr(logger, level, None)
+            if callable(log_method):
+                log_method(message)
+
+        def field_is_visible():
+            return bool(self.image_check(
+                "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_0"))
+
+        recovery = getattr(
+            self, "_za_furadari_lab_entrance_recovery", None)
+
+        if recovery is None:
+            # マップ選択画面に入った瞬間の画面（FURADARI_MAP／MAP2）を
+            # 記録しておく。COMMON_MAP_OPENはFIELDからPLUSでマップを
+            # 開いた同じ周回でCOMMON_GOTO_SELECT1へ進んでしまい、マップ
+            # 画面自体はまだ描画されていないため、実際にMAP2／
+            # FURADARI_MAPが判定できるCOMMON_GOTO_SELECT1側で見る
+            # 必要がある。ZA_Common_gotoはどちらのマップでもそのまま
+            # COMMON_GOTO_SELECT1以降へ進んでしまい、"START"到達時には
+            # 既にマップ選択画面を離れているため、ここで先に判定して
+            # 憶えておかないと種別を判別できない。
+            if self.Common_current_state == "COMMON_GOTO_SELECT1":
+                if self.image_check("POKEMON_ZA_FURADARI_MAP"):
+                    self._za_furadari_lab_entrance_map_seen = "FURADARI_MAP"
+                elif self.image_check("POKEMON_ZA_MAP2"):
+                    self._za_furadari_lab_entrance_map_seen = "MAP2"
+
+            ret = self.ZA_Common_goto(
+                0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
+                battle_recovery_mode=1)
+
+            if ret == "START":
+                map_seen = getattr(
+                    self, "_za_furadari_lab_entrance_map_seen", None)
+                self._za_furadari_lab_entrance_map_seen = None
+                if map_seen != "MAP2":
+                    return next_state
+                recovery_log(
+                    "[FURADARI_LAB_ENTRANCE_RECOVERY] {} goto reached "
+                    "START via MAP2 (not FURADARI_MAP); run time "
+                    "change then alternate goto before retrying".format(
+                        current_state),
+                    level="warning")
+                self._za_furadari_lab_entrance_recovery = {
+                    "holding_state": current_state,
+                    "next_state": next_state,
+                    "phase": "CHANGE_TIME",
+                    "map_state": "COMMON_MAP_OPEN",
+                }
+                self.Common_current_state = "COMMON_START"
+                return current_state
+
+            return current_state
+
+        holding_state = recovery.get("holding_state", current_state)
+        phase = recovery.get("phase", "CHANGE_TIME")
+
+        if phase == "CHANGE_TIME":
+            ret = self.ZA_Common_change_time_set(
+                check_timing="POKEMON_ZA_MORNING")
+            if ret == "START":
+                recovery["phase"] = "ALTERNATE_GOTO"
+                recovery["map_state"] = "COMMON_MAP_OPEN"
+                self.Common_current_state = "COMMON_START"
+                recovery_log(
+                    "[FURADARI_LAB_ENTRANCE_RECOVERY] {} time change "
+                    "complete; start alternate goto filter_down=1 "
+                    "spot_right=1 spot_down=1".format(holding_state))
+            return holding_state
+
+        if phase == "ALTERNATE_GOTO":
+            common_state = recovery.get("map_state", "COMMON_MAP_OPEN")
+            if common_state == "COMMON_MAP_OPEN":
+                next_common = self.ZA_Common_map_open()
+            elif common_state == "COMMON_GOTO_SELECT1":
+                # MINUSで移動先種別を開き、「施設」（下1）を選ぶ。
+                next_common = self.ZA_Common_goto_select1(1)
+            elif common_state == "COMMON_GOTO_SELECT2":
+                # 移動スポットを現在位置から右1・下1で選ぶ。
+                next_common = self.ZA_Common_goto_select2(
+                    1, 1, 0, battle_recovery_mode=0,
+                    force_filter_navigation=True)
+            elif common_state in {
+                    "COMMON_CHANGE_TIME", "COMMON_CHECK_TIME"}:
+                next_common = common_state
+            else:
+                common_function = getattr(
+                    self, "STATE_COMMON_FUNCTION", {}).get(common_state)
+                if not callable(common_function):
+                    recovery_log(
+                        "[FURADARI_LAB_ENTRANCE_RECOVERY] unknown "
+                        "alternate map state={}; restart map "
+                        "selection".format(common_state),
+                        level="warning")
+                    self.map_cursor_reset = 0
+                    next_common = "COMMON_MAP_OPEN"
+                else:
+                    next_common = common_function()
+            recovery["map_state"] = next_common
+            if next_common in {"COMMON_CHANGE_TIME", "COMMON_CHECK_TIME"}:
+                recovery["phase"] = "WAIT_FIRST_FIELD"
+                recovery["map_state"] = "COMMON_START"
+                recovery_log(
+                    "[FURADARI_LAB_ENTRANCE_RECOVERY] {} alternate "
+                    "goto complete; wait for FIELD".format(
+                        holding_state))
+            return holding_state
+
+        if phase == "WAIT_FIRST_FIELD":
+            if not field_is_visible():
+                self.wait(0.1)
+                return holding_state
+            self.press(
+                Direction(Stick.LEFT, 90), duration=3.0, wait=1.0)
+            self.pressRep(
+                Button.A, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            recovery["phase"] = "WAIT_SECOND_FIELD"
+            recovery_log(
+                "[FURADARI_LAB_ENTRANCE_RECOVERY] {} FIELD -> move "
+                "left90 3.0s and A; wait for next FIELD".format(
+                    holding_state))
+            return holding_state
+
+        if phase == "WAIT_SECOND_FIELD":
+            if not field_is_visible():
+                self.wait(0.1)
+                return holding_state
+            self.press(
+                Direction(Stick.LEFT, 90), duration=5.0, wait=1.0)
+            recovery["phase"] = "RETRY_GOTO"
+            self.Common_current_state = "COMMON_START"
+            recovery_log(
+                "[FURADARI_LAB_ENTRANCE_RECOVERY] {} next FIELD -> "
+                "move left90 5.0s; retry POKEMON_ZA_FURADARI_MAP".format(
+                    holding_state))
+            return holding_state
+
+        # phase == "RETRY_GOTO"
+        if self.Common_current_state == "COMMON_GOTO_SELECT1":
+            if self.image_check("POKEMON_ZA_FURADARI_MAP"):
+                self._za_furadari_lab_entrance_map_seen = "FURADARI_MAP"
+            elif self.image_check("POKEMON_ZA_MAP2"):
+                self._za_furadari_lab_entrance_map_seen = "MAP2"
+
+        ret = self.ZA_Common_goto(
+            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
+            battle_recovery_mode=1)
+        if ret == "START":
+            map_seen = getattr(
+                self, "_za_furadari_lab_entrance_map_seen", None)
+            self._za_furadari_lab_entrance_map_seen = None
+            if map_seen == "MAP2":
+                recovery_log(
+                    "[FURADARI_LAB_ENTRANCE_RECOVERY] {} retry goto "
+                    "reached START via MAP2 again; retry alternate "
+                    "goto from CHANGE_TIME".format(holding_state),
+                    level="warning")
+                recovery["phase"] = "CHANGE_TIME"
+                self.Common_current_state = "COMMON_START"
+                return holding_state
+            resume_state = recovery.get("next_state", next_state)
+            self._za_furadari_lab_entrance_recovery = None
+            recovery_log(
+                "[FURADARI_LAB_ENTRANCE_RECOVERY] {} -> {} "
+                "complete".format(holding_state, resume_state))
+            return resume_state
+        return holding_state
+
     def ZA_story_furadari_black_comment_recovery_step(
             self, current_state, state_functions):
         """Recover a stuck black comment from an earlier FURADARI goto."""
@@ -10238,10 +10420,39 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "5.0s; retry POKEMON_ZA_FURADARI_MAP")
             return holding_state
 
+        # 「目の前がまっくらになった！」の検知に失敗していても、マップを
+        # 開いた結果がFURADARI_MAPではなく通常のMAP2であれば、実際には
+        # 専用暗転（FURADARI区間外へ出てしまった状態）だったとみなし、
+        # フィルター・場所選択（ALTERNATE_GOTO）経路へ切り替える。
+        # ZA_Common_gotoはMAP2／FURADARI_MAPのどちらでもそのまま
+        # COMMON_GOTO_SELECT1以降へ進めてしまい、"START"到達時には既に
+        # マップ選択画面を離れているため、COMMON_GOTO_SELECT1に入った
+        # 瞬間の画面を先に記録しておく。
+        if self.Common_current_state == "COMMON_GOTO_SELECT1":
+            if self.image_check("POKEMON_ZA_FURADARI_MAP"):
+                self._za_furadari_black_recovery_map_seen = "FURADARI_MAP"
+            elif self.image_check("POKEMON_ZA_MAP2"):
+                self._za_furadari_black_recovery_map_seen = "MAP2"
+
         goto_result = self.ZA_Common_goto(
             0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
             battle_recovery_mode=1)
         if goto_result != "START":
+            return holding_state
+
+        map_seen = getattr(
+            self, "_za_furadari_black_recovery_map_seen", None)
+        self._za_furadari_black_recovery_map_seen = None
+        if map_seen == "MAP2":
+            recovery_log(
+                "[FURADARI_BLACK_RECOVERY] {} goto reached START via "
+                "MAP2 (not FURADARI_MAP); treat as eyes-dark and "
+                "switch to alternate goto".format(holding_state),
+                level="warning")
+            recovery["dark_comment"] = True
+            recovery["phase"] = "ALTERNATE_GOTO"
+            recovery["map_state"] = "COMMON_MAP_OPEN"
+            reserve_eyes_dark_recovery()
             return holding_state
 
         fallback = getattr(
@@ -10470,7 +10681,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             battle_active_states.discard(current_state)
 
         if current_state in self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS:
-            if white_comment_matched[0] is not False:
+            # 白コメント判定自体は不一致でも、黒コメント等の別経路で
+            # 実際に次Stepへ進めていれば正常進行とみなしてタイマーを
+            # クリアする。ここを素通りすると、白判定だけを見ていた
+            # せいでタイマーが残り続け、後で無関係なStepへ再訪した際に
+            # 前回分の経過時間を引き継いで即リカバリーが発火してしまう。
+            if next_state != current_state or white_comment_matched[0] is not False:
                 timers.pop(current_state, None)
                 return next_state
             recovery_target = (
@@ -10482,11 +10698,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         if observe_mega_before_comment:
             # 両方を実際に確認して不一致だった周回だけを未突入として数える。
             # 白または緑のどちらかが一致した場合や、判定自体を行わなかった
-            # 周回では計時を解除する。
+            # 周回、あるいは別経路で実際に次Stepへ進めた周回では
+            # 計時を解除する。
             comment_missing = (
                 white_comment_matched[0] is False
                 and green_comment_matched[0] is False)
-            if not comment_missing:
+            if next_state != current_state or not comment_missing:
                 timers.pop(current_state, None)
                 return next_state
             return self._ZA_story_event_entry_recovery_timeout(
@@ -20741,12 +20958,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_66(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,130), duration=3.7, wait=1.0)
+            self.press(Direction(Stick.LEFT,120), duration=3.7, wait=1.0)#130
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,220), duration=0.3, wait=1.0)
             self.wait(0.5)
-            self.press(Direction(Stick.LEFT,270), duration=0.1, wait=1.0)
-            self.wait(0.5)
+            #self.press(Direction(Stick.LEFT,270), duration=0.2, wait=1.0)
+            #self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_67"
         return "4_STORY_SHIRO_66"
@@ -22835,7 +23052,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_39"
         
     def _6_story_yukari_40(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=4):
+        if self.ZA_mega_evolution_battle_mode_select(mode=8):#4
             return "6_STORY_YUKARI_41"
         return "6_STORY_YUKARI_40"
     
@@ -22883,7 +23100,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_46"
 
     def _6_story_yukari_47(self):
-        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW"):
+        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW",sleeptime=1.0):
             return "6_STORY_YUKARI_48"
         return "6_STORY_YUKARI_47"
     
@@ -22991,6 +23208,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,100), duration=4.0, wait=1.0)
             self.press(Direction(Stick.LEFT,190), duration=2.0, wait=1.0)
             return "6_STORY_YUKARI_52"
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_42"
         return "6_STORY_YUKARI_51"
     
     def _6_story_yukari_52(self):
@@ -23055,7 +23275,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_42"
     
     def _6_story_yukari_53(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=1,usenum=3,Xaction=1,Aaction=1,Yaction=0,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=1,usenum=4,Xaction=1,Aaction=1,Yaction=0,Baction=1):
             return "6_STORY_YUKARI_54"
         return "6_STORY_YUKARI_53"
 
@@ -23514,7 +23734,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_17"
     
     def _7_story_guri_18(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=2,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=1):
+        if self.ZA_mega_evolution_battle_mode_select(mode=7,usenum=1,Xaction=1,Aaction=1,Yaction=1,Baction=1):
             return "7_STORY_GURI_19"
         return "7_STORY_GURI_18"
     
@@ -23994,12 +24214,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_85"
     
     def _7_story_guri_86(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)
-        if ret == "START":
-            return "7_STORY_GURI_87"
-        return "7_STORY_GURI_86"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_86", "7_STORY_GURI_87")
     
     def _7_story_guri_87(self):
         #ラボカードキーA
@@ -24046,15 +24262,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_90"
     
     def _7_story_guri_91(self):
-        #失敗時に戻れるように
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            print("[GURI_91] map transfer complete -> GURI_92")
-            return "7_STORY_GURI_92"
-        else:
-            return "7_STORY_GURI_91"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_91", "7_STORY_GURI_92")
     
     def _7_story_guri_92(self):
         #電源装置
@@ -24097,13 +24306,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_94"
     
     def _7_story_guri_94(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_95"
-        else:
-            return "7_STORY_GURI_94"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_94", "7_STORY_GURI_95")
     
     def _7_story_guri_95(self):
         #ラボのカードキーB
@@ -24123,13 +24327,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_96"
     
     def _7_story_guri_97(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_98"
-        else:
-            return "7_STORY_GURI_97"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_97", "7_STORY_GURI_98")
     
     def _7_story_guri_98(self):
         #ラボカードキーB1
@@ -24158,13 +24357,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_100"
     
     def _7_story_guri_101(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_102"
-        else:
-            return "7_STORY_GURI_101"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_101", "7_STORY_GURI_102")
     
     def _7_story_guri_102(self):
         #ラボのカードキーB_オープン1
@@ -24193,13 +24387,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_104" 
        
     def _7_story_guri_105(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_106"
-        else:
-            return "7_STORY_GURI_105"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_105", "7_STORY_GURI_106")
        
     def _7_story_guri_106(self):
         #ラボのカードキーC
@@ -24225,13 +24414,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_107" 
        
     def _7_story_guri_108(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_109"
-        else:
-            return "7_STORY_GURI_108"
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_108", "7_STORY_GURI_109")
        
     def _7_story_guri_109(self):
         #ラボのカードキーC_オープン1
@@ -24314,14 +24498,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_117"
     
     def _7_story_guri_118(self):
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_119" 
-        else:
-            return "7_STORY_GURI_118" 
-       
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_118", "7_STORY_GURI_119")
     def _7_story_guri_119(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=0.0)
@@ -24347,14 +24525,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_122" 
        
     def _7_story_guri_123(self):#おわってもどり
-        ret = self.ZA_Common_goto(
-            0, 0, 0, othermap="POKEMON_ZA_FURADARI_MAP",
-            battle_recovery_mode=1)#フラダリラボ入口へ移動
-        if ret == "START":
-            return "7_STORY_GURI_124" 
-        else:
-            return "7_STORY_GURI_123" 
-       
+        return self.ZA_story_furadari_lab_entrance_goto(
+            "7_STORY_GURI_123", "7_STORY_GURI_124")
     def _7_story_guri_124(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,270), duration=4.0, wait=0.0)
