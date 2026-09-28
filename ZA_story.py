@@ -7,7 +7,10 @@ from LocalFunction.ImageDetection import (SimilarityHistory,
                                            detect_image)
 from LocalFunction.SwitchUpdatePrompt import (START_WITHOUT_UPDATE,
                                 UPDATE_SELECTED,
-                                detect_switch_update_prompt_selection)
+                                detect_switch_update_prompt_selection,
+                                START_WITHOUT_CARD,
+                                CARD_PROMPT_OTHER_SELECTED,
+                                detect_switch_virtual_card_prompt_selection)
 import cv2
 import enum
 import math
@@ -2145,6 +2148,62 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return False
 
+    def _reset_switch_virtual_card_prompt_selection(self):
+        """追加コンテンツ用バーチャルゲームカードの確認画面で選択中の
+        項目を返す。環境によってはユーザー選択画面より前にこの画面が
+        表示される。"""
+        return detect_switch_virtual_card_prompt_selection(
+            self._read_camera_frame())
+
+    def _reset_handle_switch_virtual_card_prompt(self, state_callback=None):
+        """「このままはじめる」を確認できた場合だけAで確定する。
+
+        更新確認画面の処理（_reset_handle_switch_update_prompt）と同様、
+        「このままはじめる」以外が選択中の間は絶対にAを送らず、上入力を
+        繰り返して選択が移るのを待つ。"""
+        selection = self._reset_switch_virtual_card_prompt_selection()
+        if selection is None:
+            return False
+
+        def set_state(state):
+            if callable(state_callback):
+                state_callback(state)
+
+        if selection == START_WITHOUT_CARD:
+            now = time.monotonic()
+            last_confirm = float(getattr(
+                self, "_reset_card_prompt_last_confirm", 0.0))
+            if now - last_confirm >= 1.0:
+                set_state("CONFIRM_START_WITHOUT_CARD")
+                print("[ZAゲーム再起動] 「このままはじめる」を確認 -> A")
+                self.press(Button.A, duration=0.15, wait=0.3)
+                self._reset_card_prompt_last_confirm = time.monotonic()
+            else:
+                self.wait(0.1)
+            return True
+
+        if selection == CARD_PROMPT_OTHER_SELECTED:
+            up_count = int(getattr(
+                self, "_reset_card_prompt_up_count", 0))
+            if up_count < 30:
+                up_count += 1
+                self._reset_card_prompt_up_count = up_count
+                set_state("CARD_PROMPT_OTHER_SELECTED_UP_{}/30".format(
+                    up_count))
+                print(
+                    "[ZAゲーム再起動] バーチャルゲームカード確認で"
+                    "「このままはじめる」以外が選択中 -> "
+                    "上入力 {}/30".format(up_count))
+                self.press(Hat.TOP, duration=0.15, wait=0.25)
+            else:
+                # 対象以外が選択中のままなら絶対にAを送らない。画面が
+                # 変わるか、「このままはじめる」を確認できるまで停止
+                # 可能な待機を続ける。
+                set_state("WAIT_START_WITHOUT_CARD")
+                self.wait(0.5)
+            return True
+        return False
+
     def _reset_wait_for_screen(
             self, game_screen_detector, allow_user_select=True,
             state_callback=None):
@@ -2152,6 +2211,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         while True:
             self.checkIfAlive()
             if self._reset_handle_switch_update_prompt(state_callback):
+                continue
+            if self._reset_handle_switch_virtual_card_prompt(state_callback):
                 continue
             if (allow_user_select
                     and self._reset_template_matches("SWITCH_USER_SELECT")):
@@ -2206,6 +2267,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.press(Button.A, duration=0.15, wait=0.1)
         self._reset_update_prompt_up_count = 0
         self._reset_update_prompt_last_confirm = 0.0
+        self._reset_card_prompt_up_count = 0
+        self._reset_card_prompt_last_confirm = 0.0
         set_state("WAIT_USER_OR_GAME")
         state = self._reset_wait_for_screen(
             game_screen_detector, allow_user_select=True,
@@ -19109,7 +19172,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "3_STORY_CANARI_15"
             self.wait(0.5)
         if not self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            return "3_STORY_CANARI_11"
+            return "3_STORY_CANARI_6"
         return "3_STORY_CANARI_14"
     
     def _3_story_canari_15(self):
