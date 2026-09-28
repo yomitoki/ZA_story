@@ -10545,6 +10545,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_story_event_entry_recovery_step(
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
+        active_infi_step = getattr(
+            self, "_za_story_active_infi_step", None)
+        if active_infi_step is not None and active_infi_step != current_state:
+            # ZA_INFI Stepから別Stepへ移った場合は、次回再進入時に
+            # チケット満杯判定を必ず初期化できるよう進入ラッチを外す。
+            self._za_story_active_infi_step = None
         # FURADARI区間の黒Commentが30秒継続した場合は、通常Stepを
         # 再実行せず専用の復帰Stateを進める。
         black_recovery = getattr(
@@ -10842,6 +10848,24 @@ class ZA_story_Base(ImageProcPythonCommand):
             "[SHIRO_INFI_ENTRY] kind={} chicketmaxflag {} -> 0; "
             "ZA_INFI/bench/battle/quasar states reset".format(
                 recovery_kind, previous_chicketmaxflag))
+
+    def _ZA_story_prepare_infi_step(self, step_name):
+        """Story内ZA_INFI Stepへの初回進入時だけチケット判定を初期化する。"""
+        step_name = str(step_name)
+        if getattr(self, "_za_story_active_infi_step", None) == step_name:
+            return False
+        previous_chicketmaxflag = getattr(self, "chicketmaxflag", 0)
+        self.chicketmaxflag = 0
+        self._za_story_active_infi_step = step_name
+        print(
+            "[STORY_INFI_ENTRY] step={} chicketmaxflag {} -> 0".format(
+                step_name, previous_chicketmaxflag))
+        return True
+
+    def _ZA_story_finish_infi_step(self, step_name):
+        """ZA_INFI完了後、同じStory Stepへ再進入できる状態へ戻す。"""
+        if getattr(self, "_za_story_active_infi_step", None) == str(step_name):
+            self._za_story_active_infi_step = None
 
     def _ZA_story_event_entry_recovery_timeout(
             self, current_state, recovery_target, normal_return,
@@ -13092,6 +13116,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_first_battle_confirm_count = 0
         self._za_story_battle_flows = {}
         self._za_story_active_lank_battle_zone = None
+        self._za_story_active_infi_step = None
         while True:
             
             self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
@@ -17670,11 +17695,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     
     def _2_story_y_lank_battle_zone(self):
+        self._ZA_story_prepare_infi_step("2_STORY_Y_LANK_BATTLE_ZONE")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("2_STORY_Y_LANK_BATTLE_ZONE")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "2_STORY_Y_LANK_MOVE0"
         else: 
@@ -17772,11 +17799,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_X_LANK_MOVE8"
 
     def _2_story_x_lank_battle_zone(self):
+        self._ZA_story_prepare_infi_step("2_STORY_X_LANK_BATTLE_ZONE")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("2_STORY_X_LANK_BATTLE_ZONE")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "2_STORY_X_LANK_MOVE9"
         else: 
@@ -17871,11 +17900,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_W_LANK_MOVE7"
     
     def _2_story_w_lank_battle_zone(self):
+        self._ZA_story_prepare_infi_step("2_STORY_W_LANK_BATTLE_ZONE")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("2_STORY_W_LANK_BATTLE_ZONE")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "2_STORY_W_LANK_MOVE8"
         else: 
@@ -18264,11 +18295,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move14(self):
         ### AUTO_SAVE_POINT
+        self._ZA_story_prepare_infi_step("2_STORY_ABSOL_MOVE14")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("2_STORY_ABSOL_MOVE14")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "2_STORY_ABSOL_MOVE15"
         else: 
@@ -19097,11 +19130,13 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_6(self):
         ### AUTO_SAVE_POINT
+        self._ZA_story_prepare_infi_step("3_STORY_CANARI_6")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("3_STORY_CANARI_6")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "3_STORY_CANARI_7"
         else: 
@@ -19700,11 +19735,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 残る。SHIRO初回進入とSHIRO_5滞留復旧時だけ一度初期化する。
         if not getattr(self, "_4_story_shiro_infi_initialized", False):
             self._ZA_story_reset_shiro_infi_entry("shiro_1_entry")
+        self._ZA_story_prepare_infi_step("4_STORY_SHIRO_1")
         self.battle_zone_loop_num = 1
         self.no_Cplus=1
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("4_STORY_SHIRO_1")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             self._4_story_shiro_infi_initialized = False
             return "4_STORY_SHIRO_2"
@@ -20680,11 +20717,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_MAPPING_6"
     
     def _5_story_d_lank_battle_zone(self):
+        self._ZA_story_prepare_infi_step("5_STORY_D_LANK_BATTLE_ZONE")
         self.battle_zone_loop_num = 1
         self.no_Cplus=0
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("5_STORY_D_LANK_BATTLE_ZONE")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "5_STORY_KARASUBA_1"
         else: 
@@ -22182,11 +22221,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_MAPPING_4"
     
     def _6_story_c_lank_battle_zone(self):
+        self._ZA_story_prepare_infi_step("6_STORY_C_LANK_BATTLE_ZONE")
         self.battle_zone_loop_num = 1
         self.no_Cplus=0
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("6_STORY_C_LANK_BATTLE_ZONE")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "6_STORY_YUKARI_1"
         else: 
@@ -23107,11 +23148,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_6"
 
     def _7_story_guri_7(self):
+        self._ZA_story_prepare_infi_step("7_STORY_GURI_7")
         self.battle_zone_loop_num = 1
         self.no_Cplus=0
         self.za_infi_main_current_state = self.STATE_ZA_INFI_MAIN_FUNCTION[self.za_infi_main_current_state]()
         self.wait(self.SLEEPLIST[9][2])
         if self.za_infi_main_current_state == "ZA_INFI_QUASAR_LOOP":
+            self._ZA_story_finish_infi_step("7_STORY_GURI_7")
             self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
             return "7_STORY_GURI_8"
         else: 
