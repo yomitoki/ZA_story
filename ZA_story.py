@@ -3,21 +3,63 @@
 
 from Commands.Keys import Button, Direction, Hat, Stick
 from Commands.PythonCommandBase import ImageProcPythonCommand
-from LocalFunction.ImageDetection import (SimilarityHistory,
-                                           detect_image)
-from LocalFunction.SwitchUpdatePrompt import (START_WITHOUT_UPDATE,
-                                UPDATE_SELECTED,
-                                detect_switch_update_prompt_selection,
-                                START_WITHOUT_CARD,
-                                CARD_PROMPT_OTHER_SELECTED,
-                                detect_switch_virtual_card_prompt_selection)
+import importlib
+import LocalFunction.ImageDetection as _image_detection
+import LocalFunction.SwitchUpdatePrompt as _switch_update_prompt
+
+
+def _reload_local_dependency_when_stale(module, required_names):
+    """Reload a LocalFunction module only when F5 left an older copy cached.
+
+    PokeCon reloads the Commands module but normally keeps imported
+    LocalFunction modules alive.  When a helper gains a new public symbol,
+    that otherwise makes Reload fail while an old ZA_story class continues to
+    run.  A full application restart must not be required just to pick up the
+    copied portable helpers.
+    """
+    if not all(hasattr(module, name) for name in required_names):
+        module = importlib.reload(module)
+    missing = [name for name in required_names if not hasattr(module, name)]
+    if missing:
+        raise ImportError(
+            "{} is missing required symbols: {}".format(
+                module.__name__, ", ".join(missing)))
+    return module
+
+
+_image_detection = _reload_local_dependency_when_stale(
+    _image_detection,
+    ("SimilarityHistory", "detect_image", "read_command_frame"))
+SimilarityHistory = _image_detection.SimilarityHistory
+detect_image = _image_detection.detect_image
+read_command_frame = _image_detection.read_command_frame
+
+_switch_update_prompt = _reload_local_dependency_when_stale(
+    _switch_update_prompt,
+    ("START_WITHOUT_UPDATE", "UPDATE_SELECTED",
+     "detect_switch_update_prompt_selection", "START_WITHOUT_CARD",
+     "CARD_PROMPT_OTHER_SELECTED",
+     "detect_switch_virtual_card_prompt_selection"))
+START_WITHOUT_UPDATE = _switch_update_prompt.START_WITHOUT_UPDATE
+UPDATE_SELECTED = _switch_update_prompt.UPDATE_SELECTED
+detect_switch_update_prompt_selection = (
+    _switch_update_prompt.detect_switch_update_prompt_selection)
+START_WITHOUT_CARD = _switch_update_prompt.START_WITHOUT_CARD
+CARD_PROMPT_OTHER_SELECTED = _switch_update_prompt.CARD_PROMPT_OTHER_SELECTED
+detect_switch_virtual_card_prompt_selection = (
+    _switch_update_prompt.detect_switch_virtual_card_prompt_selection)
 import cv2
 import enum
 import math
 import time
 import requests
 import sys
-import win32gui,win32con
+try:
+    import win32gui
+except ImportError:
+    # ``window_acquire`` is an optional development helper.  ZA_story itself
+    # must remain loadable in a stock 0.1.9 environment without pywin32.
+    win32gui = None
 import json
 import os
 #from Keys import Touchscreen
@@ -29,10 +71,41 @@ import os
 # これを継承し、組み合わせて実際のコマンドを作る
 #
 ######################################################
-from LocalFunction.ImageDetection import SimilarityHistory, detect_image
-
 class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
+    # Start画面に公開するのは、単独開始時の親経路が明確なStory Stepだけ。
+    # ZA_INFI内部Stateは複数のStory Stepから共有されるため直接選択せず、
+    # STATE_MAIN_FUNCTIONのMAIN_ZA_BATTLE_INFIから単独モードを開始する。
+    COMMAND_RUN_STATE_VARIABLES = (
+        "STATE_MAIN_FUNCTION",
+        "STATE_1_STORY_FUNCTION",
+        "STATE_2_STORY_FUNCTION",
+        "STATE_3_STORY_FUNCTION",
+        "STATE_4_STORY_FUNCTION",
+        "STATE_5_STORY_FUNCTION",
+        "STATE_6_STORY_FUNCTION",
+        "STATE_7_STORY_FUNCTION",
+        "STATE_8_STORY_FUNCTION",
+    )
+    COMMAND_RUN_STATE_PARENTS = {
+        "STATE_1_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_1_Z_LANK"),
+        "STATE_2_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_2_Y_V_LANK"),
+        "STATE_3_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_3_F_LANK"),
+        "STATE_4_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_4_E_LANK"),
+        "STATE_5_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_5_D_LANK"),
+        "STATE_6_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_6_C_LANK"),
+        "STATE_7_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_7_B_LANK"),
+        "STATE_8_STORY_FUNCTION": ("STATE_MAIN_FUNCTION", "MAIN_8_STORY_LAST"),
+    }
+    COMMAND_STEP_LABELS = {
+        "MAIN_ZA_BATTLE_INFI": "ZA_battle_infi_main（単独実行モード）",
+    }
+    COMMAND_STEP_DESCRIPTIONS = {
+        "MAIN_ZA_BATTLE_INFI": (
+            "Storyの途中Stepを経由せず、ZA_battle_infi_mainを単独で実行します。"),
+        "3_STORY_CANARI_6": (
+            "CANARIのバトルゾーン処理から開始します。チケット判定は初回に初期化します。"),
+    }
     ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_40_STALL_TIMEOUT_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_RESTART_SECONDS = 5.0
@@ -359,8 +432,33 @@ class ZA_story_Base(ImageProcPythonCommand):
         "8_STORY_STORY_LAST_41": ("8_STORY_STORY_LAST_41", "8_STORY_STORY_LAST_42"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
     }
 
-    def __init__(self, cam):
-        super().__init__(cam)
+    def _read_camera_frame(self):
+        """Read a frame without requiring a modified PythonCommandBase.
+
+        The extended PokeCon base class already has its stricter live-frame
+        implementation, so retain it when available. Stock 0.1.9 has no
+        ``_read_camera_frame`` method; the copied LocalFunction helper then
+        falls back to the public ``Camera.readFrame`` API.
+        """
+        parent_reader = getattr(super(), "_read_camera_frame", None)
+        if callable(parent_reader):
+            return parent_reader()
+        return read_command_frame(self)
+
+    def show_output(self, panel, text=None, image=None, html_path=None):
+        """Keep optional detection output portable to stock 0.1.9."""
+        parent_output = getattr(super(), "show_output", None)
+        if callable(parent_output):
+            return parent_output(
+                panel, text=text, image=image, html_path=html_path)
+        if text is not None:
+            print(text)
+        return None
+
+    def __init__(self, cam, gui=None):
+        # stock 0.1.9も第2引数にCaptureAreaを渡せる。保持しておくと、
+        # LocalFunction側のportable Start画面をTkメインスレッドで開ける。
+        super().__init__(cam, gui)
         self.isDebug = True
         self.showNoMatchTemplate = True
         self.showTemplateMatchVal = False
@@ -395,6 +493,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "MAIN_6_C_LANK": self.main_6_c_lank,
             "MAIN_7_B_LANK": self.main_7_b_lank,
             "MAIN_8_STORY_LAST": self.main_8_story_last,
+            "MAIN_ZA_BATTLE_INFI": self.main_za_battle_infi,
             "MAIN_STORY_END": self.main_story_end,
         }
         self.main_current_state="MAIN_STATE_INIT"
@@ -2396,6 +2495,12 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     # ウインドウ取得関数 (win32gui仕様)
     def window_acquire(self, Window_name:str, log=False, front_win=False):
+        if win32gui is None:
+            if log:
+                print(
+                    "window_acquire is unavailable because pywin32 is not "
+                    "installed; ZA_story execution continues without it.")
+            return None
         hwnd_dict = {}
         result = None
         if front_win:
@@ -13132,7 +13237,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     # MAIN_STATE_INIT (引継ぎ実行用)
     ######################################################
     def main_state_init(self):
-        if  self.main_current_state_init=="":
+        # MAIN_STATE_INIT is a UI-visible dispatcher, not a runnable resume
+        # destination.  Treat an explicitly selected MAIN_STATE_INIT exactly
+        # like the normal empty default; returning it would loop here forever.
+        if self.main_current_state_init in ("", "MAIN_STATE_INIT"):
             return "MAIN_0_START"
         elif  self.main_current_state_init=="MAIN_1_Z_LANK":
             self._1_story_current_state=self._1_story_current_state_init
@@ -13279,6 +13387,23 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "MAIN_STORY_END"
         else:
             return "MAIN_8_STORY_LAST"
+
+    ######################################################
+    # ZA_BATTLE_INFI standalone mode
+    ######################################################
+    def main_za_battle_infi(self):
+        """Run the shared ZA battle-zone loop without a Story parent Step."""
+        self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+        self.bench_current_state = "BENCH_START"
+        self.battle_current_state = "BATTLE_START"
+        self.quasar_current_state = "QUASAR_START"
+        self.chicketmaxflag = 0
+        print(
+            "[ZA_COMMAND_MODE] ZA_battle_infi_main standalone start: "
+            "state={} ticket={}".format(
+                self.za_infi_main_current_state, self.chicketmaxflag))
+        self.ZA_battle_infi_main()
+        return "MAIN_ZA_BATTLE_INFI"
         
     ######################################################
     # MAIN_STORY_END FUNCTION
@@ -32839,8 +32964,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             
 ######################################################
 # こっからがコマンド
-######################################################               
-class ZA_story(ZA_story_Base):
+######################################################
+class _StableZACommandNameMeta(type):
+    """Keep stock CommandLoader from appending the same folder repeatedly."""
+    _command_suffix = " (ZA/ZA_story/ZA_story)"
+
+    def __setattr__(cls, name, value):
+        if name == "NAME" and isinstance(value, str):
+            doubled = cls._command_suffix + cls._command_suffix
+            while value.endswith(doubled):
+                value = value[:-len(cls._command_suffix)]
+        super().__setattr__(name, value)
+
+
+class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_major = 0
     version_minor = 0
     version_patch = 0
@@ -32853,13 +32990,332 @@ class ZA_story(ZA_story_Base):
         ZA_infi_custom_name = ""
     
     NAME = f'ZA_story_v{version_major}.{version_minor}.{version_patch}{ZA_infi_custom_name}'
-    def __init__(self, cam):
-        super().__init__(cam)
+    def __init__(self, cam, gui=None):
+        super().__init__(cam, gui)
+
+    def _portable_start_apply_without_helper(self, variable, state):
+        """Apply a safe Story start when LocalFunction helper was not copied."""
+        table = getattr(self, variable, None)
+        if not isinstance(table, dict) or state not in table:
+            raise ValueError("StepがZA_storyにありません: {}".format(state))
+        if variable not in self.COMMAND_RUN_STATE_VARIABLES:
+            raise ValueError("単独開始できない内部Stateです: {}".format(variable))
+
+        self.main_current_state = "MAIN_STATE_INIT"
+        if variable == "STATE_MAIN_FUNCTION":
+            self.main_current_state_init = (
+                "" if state == "MAIN_STATE_INIT" else state)
+            return
+
+        child_init_attributes = {
+            "STATE_1_STORY_FUNCTION": "_1_story_current_state_init",
+            "STATE_2_STORY_FUNCTION": "_2_story_current_state_init",
+            "STATE_3_STORY_FUNCTION": "_3_story_current_state_init",
+            "STATE_4_STORY_FUNCTION": "_4_story_current_state_init",
+            "STATE_5_STORY_FUNCTION": "_5_story_current_state_init",
+            "STATE_6_STORY_FUNCTION": "_6_story_current_state_init",
+            "STATE_7_STORY_FUNCTION": "_7_story_current_state_init",
+            "STATE_8_STORY_FUNCTION": "_8_story_current_state_init",
+        }
+        child_attribute = child_init_attributes.get(variable)
+        parent = self.COMMAND_RUN_STATE_PARENTS.get(variable)
+        if not child_attribute or not parent or len(parent) < 2:
+            raise ValueError("親Story経路を特定できません: {}".format(variable))
+        setattr(self, child_attribute, state)
+        self.main_current_state_init = str(parent[1])
+
+    def _portable_start_records_without_helper(self):
+        """Build the same safe MAIN/Story rows as CommandStartSelector."""
+        labels = self.COMMAND_STEP_LABELS
+        descriptions = self.COMMAND_STEP_DESCRIPTIONS
+        locations = []
+        for variable in self.COMMAND_RUN_STATE_VARIABLES:
+            table = getattr(self, variable, None)
+            if not isinstance(table, dict):
+                continue
+            group = (
+                "MAIN" if variable == "STATE_MAIN_FUNCTION" else
+                variable[len("STATE_"):-len("_FUNCTION")])
+            for order, state in enumerate(table):
+                if not isinstance(state, str):
+                    continue
+                locations.append({
+                    "variable": variable,
+                    "state": state,
+                    "label": str(labels.get(state, state)),
+                    "description": str(descriptions.get(state, "")),
+                    "group": group,
+                    "order": order,
+                })
+        return locations
+
+    def _portable_start_locations_without_helper(self, query):
+        """Resolve an exact or uniquely partial Step/label query."""
+        query = str(query or "").strip().casefold()
+        if not query:
+            return []
+        exact = []
+        partial = []
+        for location in self._portable_start_records_without_helper():
+            variable = location["variable"]
+            state = location["state"]
+            label = location["label"]
+            description = location["description"]
+            item = (variable, state, label)
+            if any(query == field.casefold() for field in (state, label)):
+                exact.append(item)
+            elif query in "{} {} {} {}".format(
+                    state, label, description, variable).casefold():
+                partial.append(item)
+        return exact if exact else partial
+
+    def _show_portable_start_dialog_without_helper(self):
+        """Full embedded selector used when only ZA_story was deployed."""
+        import threading
+        import sys
+
+        # The enhanced host already displayed and applied its native picker.
+        for module_name in ("__main__", "Window"):
+            module = sys.modules.get(module_name)
+            app_class = getattr(module, "PokeControllerApp", None)
+            if callable(getattr(
+                    app_class, "_prompt_command_run_settings", None)):
+                return "default"
+        if threading.current_thread() is not threading.main_thread():
+            print(
+                "[ZA_PORTABLE_START] fallback selector cannot run outside "
+                "the GUI thread; cancel Start")
+            return "cancel"
+        try:
+            parent = self.gui.winfo_toplevel()
+            if not bool(parent.winfo_exists()):
+                return "cancel"
+        except Exception:
+            print(
+                "[ZA_PORTABLE_START] fallback selector has no GUI parent; "
+                "cancel Start")
+            return "cancel"
+
+        dialog = None
+        try:
+            import tkinter as tk
+            from tkinter import messagebox, ttk
+
+            locations = self._portable_start_records_without_helper()
+            if not locations:
+                return "cancel"
+            result = {"action": "cancel"}
+            dialog = tk.Toplevel(parent)
+            dialog.title("ZA_story - Step実行設定")
+            dialog.geometry("860x300")
+            dialog.minsize(720, 270)
+            dialog.transient(parent)
+
+            search = tk.StringVar(value="")
+            group = tk.StringVar(value="すべて")
+            selected = tk.StringVar(value="")
+            status = tk.StringVar(value="")
+            description = tk.StringVar(value="")
+            visible_locations = []
+
+            groups = ["すべて"]
+            for item in locations:
+                if item["group"] not in groups:
+                    groups.append(item["group"])
+
+            ttk.Label(
+                dialog,
+                text="Startが押されました。実行を開始するStepを選択してください。",
+                foreground="#174a7e",
+            ).pack(anchor="w", padx=12, pady=(12, 6))
+
+            filter_frame = ttk.Labelframe(dialog, text="検索・章フィルター")
+            filter_frame.pack(fill="x", padx=12, pady=5)
+            ttk.Label(filter_frame, text="文字検索:").grid(
+                column=0, row=0, padx=5, pady=6, sticky="e")
+            search_entry = ttk.Entry(filter_frame, textvariable=search)
+            search_entry.grid(
+                column=1, row=0, padx=5, pady=6, sticky="ew")
+            ttk.Label(filter_frame, text="章:").grid(
+                column=2, row=0, padx=5, pady=6, sticky="e")
+            group_combo = ttk.Combobox(
+                filter_frame, state="readonly", textvariable=group,
+                values=groups, width=22)
+            group_combo.grid(
+                column=3, row=0, padx=5, pady=6, sticky="ew")
+            ttk.Label(filter_frame, textvariable=status).grid(
+                column=4, row=0, padx=7, pady=6, sticky="w")
+            filter_frame.columnconfigure(1, weight=1)
+
+            selection_frame = ttk.Labelframe(dialog, text="開始Step")
+            selection_frame.pack(fill="x", padx=12, pady=5)
+            step_combo = ttk.Combobox(
+                selection_frame, state="readonly", textvariable=selected,
+                width=88)
+            step_combo.pack(fill="x", expand=True, padx=7, pady=8)
+            ttk.Label(
+                dialog, textvariable=description,
+                foreground="#5a5a5a").pack(
+                    anchor="w", padx=18, pady=(0, 4))
+
+            def display(item):
+                if item["label"] == item["state"]:
+                    return "{}  [{}]".format(
+                        item["state"], item["group"])
+                return "{}  ({})  [{}]".format(
+                    item["label"], item["state"], item["group"])
+
+            def selected_location():
+                return next(
+                    (item for item in visible_locations
+                     if display(item) == selected.get()), None)
+
+            def refresh_description(*_args):
+                item = selected_location()
+                description.set(item["description"] if item else "")
+
+            def refresh_filter(*_args):
+                del visible_locations[:]
+                needle = search.get().strip().casefold()
+                selected_group = group.get()
+                for item in locations:
+                    if (selected_group != "すべて"
+                            and item["group"] != selected_group):
+                        continue
+                    haystack = "{} {} {} {} {}".format(
+                        item["label"], item["state"], item["description"],
+                        item["variable"], item["group"])
+                    if needle and needle not in haystack.casefold():
+                        continue
+                    visible_locations.append(item)
+                values = [display(item) for item in visible_locations]
+                step_combo.configure(
+                    values=values,
+                    state="readonly" if values else "disabled")
+                if selected.get() not in values:
+                    preferred = next(
+                        (display(item) for item in visible_locations
+                         if item["state"] == "MAIN_0_START"), "")
+                    selected.set(preferred or (values[0] if values else ""))
+                status.set("{} / {}件".format(len(values), len(locations)))
+                refresh_description()
+
+            def close(action):
+                result["action"] = action
+                try:
+                    dialog.grab_release()
+                except tk.TclError:
+                    pass
+                dialog.destroy()
+
+            def start_selected():
+                chosen = selected_location()
+                if chosen is None:
+                    messagebox.showwarning(
+                        "ZA_story Step実行設定",
+                        "開始Stepを選択してください。", parent=dialog)
+                    return
+                try:
+                    self._portable_start_apply_without_helper(
+                        chosen["variable"], chosen["state"])
+                except (AttributeError, TypeError, ValueError) as error:
+                    messagebox.showerror(
+                        "ZA_story Step実行設定",
+                        "開始位置を設定できませんでした。\n{}".format(error),
+                        parent=dialog)
+                    return
+                print(
+                    "[ZA_PORTABLE_START_FALLBACK] {} :: {} ({})".format(
+                        chosen["variable"], chosen["state"],
+                        chosen["label"]))
+                close("apply")
+
+            buttons = ttk.Frame(dialog)
+            buttons.pack(fill="x", padx=12, pady=(8, 12))
+            ttk.Button(
+                buttons, text="開始をやめる",
+                command=lambda: close("cancel")).pack(
+                    side="right", padx=4)
+            ttk.Button(
+                buttons, text="Commands既定で開始",
+                command=lambda: close("default")).pack(
+                    side="right", padx=4)
+            ttk.Button(
+                buttons, text="選択Stepから開始",
+                command=start_selected).pack(side="right", padx=4)
+
+            search.trace_add("write", refresh_filter)
+            group_combo.bind("<<ComboboxSelected>>", refresh_filter)
+            step_combo.bind("<<ComboboxSelected>>", refresh_description)
+            dialog.protocol("WM_DELETE_WINDOW", lambda: close("cancel"))
+            refresh_filter()
+            dialog.update_idletasks()
+            dialog.grab_set()
+            dialog.lift()
+            search_entry.focus_set()
+            parent.wait_window(dialog)
+            return result["action"]
+        except Exception as error:
+            if dialog is not None:
+                try:
+                    dialog.destroy()
+                except Exception:
+                    pass
+            print(
+                "[ZA_PORTABLE_START] fallback selector failed; "
+                "cancel Start: {}".format(error))
+            return "cancel"
+
+    def start(self, ser, postProcess):
+        """Add the Step picker when running on an unmodified stock 0.1.9 UI."""
+        try:
+            from LocalFunction.CommandStartSelector import (
+                PORTABLE_START_CANCEL,
+                portable_selector_required,
+                show_portable_start_dialog,
+            )
+            action = (
+                show_portable_start_dialog(self)
+                if portable_selector_required() else "default")
+            cancel_action = PORTABLE_START_CANCEL
+        except ModuleNotFoundError as error:
+            if not str(getattr(error, "name", "")).startswith(
+                    "LocalFunction.CommandStartSelector"):
+                raise
+            print(
+                "[ZA_PORTABLE_START] LocalFunction.CommandStartSelector "
+                "is missing; use embedded fallback selector")
+            action = self._show_portable_start_dialog_without_helper()
+            cancel_action = "cancel"
+
+        if action == cancel_action:
+            # stock Window ignores a command.start return value and changes
+            # Start to Stop after this method returns. Queue its normal
+            # completion callback so the buttons are restored afterwards.
+            gui = getattr(self, "gui", None)
+            try:
+                root = gui.winfo_toplevel() if gui is not None else None
+                if root is not None:
+                    root.after_idle(postProcess)
+                else:
+                    postProcess()
+            except Exception:
+                postProcess()
+            return None
+        return super().start(ser, postProcess)
+
     def do(self):
         # スクリプト継承
+        print(
+            "[ZA_COMMAND_START] main_init={} story3_init={} "
+            "infi_state={} legacy_infi_mode={}".format(
+                self.main_current_state_init,
+                self._3_story_current_state_init,
+                self.za_infi_main_current_state,
+                getattr(self, "ZA_infimode", 0)))
         if self.testcode==1:
             self.Test()
-        elif ZA_story.ZA_infimode==1:
+        elif getattr(self, "ZA_infimode", 0)==1:
             self.ZA_battle_infi_main()
         else:
             self.ZA_story_main()
