@@ -2700,7 +2700,91 @@ class ZA_story_Base(ImageProcPythonCommand):
         #else:
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
+    def ZA_mega_field_attack_only_reset(self):
+        """FIELD復帰移動後の左スティック停止区間を解除する。"""
+        self._za_mega_field_attack_only_start=0.0
+        self._za_mega_field_attack_only_until=0.0
+        self._za_mega_field_attack_only_logged=False
+        self._za_mega_field_y_dodge_suppress_start=0.0
+        self._za_mega_field_y_dodge_suppress_until=0.0
+        self._za_mega_field_attack_only_y_dodge_logged=False
+
+    def ZA_mega_field_attack_only_active(self):
+        """FIELD復帰後の移動停止・攻撃専用区間かを返す。"""
+        start_at=float(getattr(
+            self, "_za_mega_field_attack_only_start", 0.0))
+        end_at=float(getattr(
+            self, "_za_mega_field_attack_only_until", 0.0))
+        now=time.monotonic()
+        return bool(
+            float(getattr(self, "_za_mega_field_dir5_until", 0.0)) > 0.0
+            and start_at > 0.0
+            and end_at > start_at
+            and start_at <= now < end_at)
+
+    def ZA_mega_field_y_dodge_suppression_active(self):
+        """dir5移動開始から攻撃専用区間終了までのY回避禁止を返す。"""
+        start_at=float(getattr(
+            self, "_za_mega_field_y_dodge_suppress_start", 0.0))
+        end_at=float(getattr(
+            self, "_za_mega_field_y_dodge_suppress_until", 0.0))
+        now=time.monotonic()
+        return bool(
+            float(getattr(self, "_za_mega_field_dir5_until", 0.0)) > 0.0
+            and end_at > start_at
+            and start_at <= now < end_at)
+
+    def ZA_mega_field_attack_only_suppress_y_dodge(self):
+        """dir5移動中と攻撃専用区間では非ロックオンY回避を送らない。"""
+        if not self.ZA_mega_field_y_dodge_suppression_active():
+            return False
+        if not getattr(
+                self, "_za_mega_field_attack_only_y_dodge_logged", False):
+            print(
+                "[MEGA_FIELD_ATTACK_ONLY] suppress non-lockon Y dodge "
+                "during dir5/attack-only")
+            self._za_mega_field_attack_only_y_dodge_logged=True
+        return True
+
+    def ZA_mega_field_attack_only_update(
+            self, dir1, dir2, dir3, dir4):
+        """FIELD復帰移動後の攻撃専用区間中だけ左移動を止める。"""
+        start_at=float(getattr(
+            self, "_za_mega_field_attack_only_start", 0.0))
+        end_at=float(getattr(
+            self, "_za_mega_field_attack_only_until", 0.0))
+        if start_at <= 0.0 or end_at <= start_at:
+            return False
+        # 選択肢・Comment・戦闘終了などでdir5が解除された場合は、
+        # 次Stepに停止区間を持ち越さない。
+        if float(getattr(self, "_za_mega_field_dir5_until", 0.0)) <= 0.0:
+            self.ZA_mega_field_attack_only_reset()
+            return False
+        now=time.monotonic()
+        if now < start_at:
+            return False
+        if now >= end_at:
+            if getattr(self, "_za_mega_field_attack_only_logged", False):
+                print("[MEGA_FIELD_ATTACK_ONLY] complete; resume movement")
+            self.ZA_mega_field_attack_only_reset()
+            return False
+        if not getattr(self, "_za_mega_field_attack_only_logged", False):
+            print(
+                "[MEGA_FIELD_ATTACK_ONLY] stop left stick; "
+                "attack only for {:.1f}s".format(end_at - start_at))
+            self._za_mega_field_attack_only_logged=True
+        # 攻撃・ロックオン・右スティックは継続し、左移動だけ解除する。
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        return True
+
     def ZA_MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD",force_direction=False):
+        if action != "END":
+            attack_only_update=getattr(
+                self, "ZA_mega_field_attack_only_update", None)
+            if (callable(attack_only_update)
+                    and attack_only_update(dir1,dir2,dir3,dir4)):
+                # この区間は攻撃処理を止めず、左移動の再送だけ抑止する。
+                return
         marker_direction_input = (
             isinstance(dirnum, Direction)
             and dirnum.stick == Stick.LEFT)
@@ -3041,7 +3125,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=0, red_edge_roll_with_view=0):
             return True
-        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, red_edge_roll_with_view=1):
+        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.35, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, field_resume_attack_only_seconds=12.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
+                            #self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, red_edge_roll_with_view=1):
             return True
         elif mode == 4 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=40,dir2=20,dir3=20,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=15.0, dir5=90, field_resume_dir5_seconds=2.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, mode4_view_nudge=1, mode4_yellow_hp_roll_seconds=30.0, mode4_yellow_hp_attack_wait_seconds=5.0, red_edge_roll_angle=20.0):
             return True
@@ -4928,6 +5013,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "endpicture"
                 if self.ZA_mega_choice_input_guard():
                     return "guard"
+                if self.ZA_mega_field_attack_only_suppress_y_dodge():
+                    return "attack_only"
                 self.pressRep(
                     Button.Y, repeat=1, duration=0.04,
                     wait=0.0, interval=0.05)
@@ -4941,6 +5028,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "endpicture"
             if self.ZA_mega_choice_input_guard():
                 return "guard"
+            if self.ZA_mega_field_attack_only_suppress_y_dodge():
+                return "attack_only"
             self.pressRep(
                 Button.Y, repeat=1, duration=0.04,
                 wait=0.0, interval=0.05)
@@ -5302,6 +5391,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         if not self.ZA_mega_red_screen_edge_check():
             self._za_mega_red_edge_latched = False
             return "none"
+        if self.ZA_mega_field_attack_only_suppress_y_dodge():
+            # 実際に赤端がある場合もdir5～攻撃専用の連続区間を優先し、
+            # ZLと攻撃処理を維持したままY回避だけを抑止する。
+            self.ZA_mega_field_attack_only_update(
+                dir1, dir2, dir3, dir4)
+            return "attack_only"
         cover_guard=getattr(
             self, "ZA_mega_mode5_testmode1_controls_cover", None)
         testmode1_cover=bool(
@@ -5367,6 +5462,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 15秒単位の非ロックオンY回避を切れ目なく継続する。
             print(
                 "[MEGA_RED_EDGE] red edge remains; continue Y rolling")
+        if result == "attack_only":
+            # FIELD復帰前に開始した長いY連打も、dir5移動開始時点で
+            # 中断する。ロックオンを戻し、左移動の時刻制御は変えず攻撃へ戻る。
+            self._za_mega_red_edge_latched=False
+            self.ZA_mega_field_attack_only_update(
+                dir1, dir2, dir3, dir4)
+            self.ZA_ZL_ACTION("")
+            self.ZA_MOVE_SEE(action="", in_see_r=see_r)
+            return result
         if result == "complete":
             # 回避完了後はロックオン、保持移動、視点処理の順に復帰する。
             self.ZA_ZL_ACTION("")
@@ -5901,6 +6005,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             include_upper_marker=0):
         """攻撃不能中だけZLを外してY回避し、短時間で再ロックする。"""
         now = time.monotonic()
+        if self.ZA_mega_field_attack_only_suppress_y_dodge():
+            self.ZA_mega_field_attack_only_update(
+                dir1, dir2, dir3, dir4)
+            return False
         if (now < getattr(
                 self, "_za_mega_attack_unavailable_y_dodge_retry_at", 0.0)
                 or self.ZA_mega_choice_input_guard()):
@@ -5914,6 +6022,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         retry_at = now + max(0.1, float(cooldown))
         self._za_mega_attack_unavailable_y_dodge_retry_at = retry_at
         self._za_mega_relock_retry_at = retry_at
+
+        if self.ZA_mega_field_attack_only_suppress_y_dodge():
+            # marker確認中にdir5～攻撃専用区間へ入った場合も、
+            # ZLを外す前に中止する。
+            self.ZA_mega_field_attack_only_update(
+                dir1, dir2, dir3, dir4)
+            return False
 
         # YはZL解除後に送らないと技入力となり、ローリングにならない。
         self.ZA_ZL_ACTION("END")
@@ -5933,12 +6048,28 @@ class ZA_story_Base(ImageProcPythonCommand):
             force_direction=True)
         roll_see_r = min(1.0, max(0.0, float(see_r) * 2.0))
         self.ZA_MOVE_SEE(action="", in_see_r=roll_see_r)
-        self.pressRep(
-            Button.Y,
-            repeat=max(1, int(repeat)),
-            duration=0.04,
-            wait=0.0,
-            interval=0.1)
+        roll_interrupted=False
+        roll_repeat=max(1, int(repeat))
+        for roll_index in range(roll_repeat):
+            # 区間直前に始まった2回ローリングも、期限を越えた次のYは送らない。
+            if self.ZA_mega_field_attack_only_suppress_y_dodge():
+                roll_interrupted=True
+                break
+            self.pressRep(
+                Button.Y,
+                repeat=1,
+                duration=0.04,
+                wait=0.0,
+                interval=0.1)
+            if roll_index + 1 < roll_repeat:
+                self.wait(0.1)
+        if roll_interrupted:
+            self.ZA_MOVE_SEE(action="END", in_see_r=roll_see_r)
+            self.ZA_mega_field_attack_only_update(
+                dir1, dir2, dir3, dir4)
+            self.ZA_ZL_ACTION("")
+            self.ZA_MOVE_SEE(action="", in_see_r=see_r)
+            return False
         # Yローリング後は高速視点回転だけを止め、L待機へ持ち越さない。
         self.ZA_MOVE_SEE(action="END", in_see_r=roll_see_r)
         # Lの再センターは1秒後のままでも、ZLはローリング直後に戻す。
@@ -7658,7 +7789,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return False
 
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0,field_resume_attack_only_seconds=0.0):
         if last_battle_mode:
             # AはC+画像がなくても戦闘画面なら使用する。B/X/Yは呼び出し値を
             # 保持し、後段でC+画像を確認できた時だけ技入力として許可する。
@@ -7688,6 +7819,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_rclick_dir3_until=0.0
         self._za_mega_dir5=dir5
         self._za_mega_field_dir5_until=0.0
+        self._za_mega_field_attack_only_start=0.0
+        self._za_mega_field_attack_only_until=0.0
+        self._za_mega_field_attack_only_logged=False
+        self._za_mega_field_y_dodge_suppress_start=0.0
+        self._za_mega_field_y_dodge_suppress_until=0.0
+        self._za_mega_field_attack_only_y_dodge_logged=False
         self._za_mega_field_dir4_until=0.0
         self._za_mega_relock_retry_at=0.0
         self._za_mega_red_edge_latched=False
@@ -8195,13 +8332,49 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._za_mega_mode4_yellow_hp_roll_done=False
                 self._za_mega_mode4_yellow_hp_roll_trigger=""
                 if dir5 >= 0:
+                    field_resume_started_at=time.monotonic()
+                    field_resume_move_seconds=max(
+                        0.0, field_resume_dir5_seconds)
                     self._za_mega_field_dir5_until=(
-                        time.monotonic()
-                        + max(0.0, field_resume_dir5_seconds))
+                        field_resume_started_at + field_resume_move_seconds)
+                    field_attack_only_seconds=max(
+                        0.0, float(field_resume_attack_only_seconds))
+                    field_y_dodge_suppress_until=(
+                        self._za_mega_field_dir5_until
+                        + field_attack_only_seconds)
+                    if (field_attack_only_seconds > 0.0
+                            and field_y_dodge_suppress_until
+                            > field_resume_started_at):
+                        self._za_mega_field_y_dodge_suppress_start=(
+                            field_resume_started_at)
+                        self._za_mega_field_y_dodge_suppress_until=(
+                            field_y_dodge_suppress_until)
+                    else:
+                        self._za_mega_field_y_dodge_suppress_start=0.0
+                        self._za_mega_field_y_dodge_suppress_until=0.0
+                    if field_attack_only_seconds > 0.0:
+                        self._za_mega_field_attack_only_start=(
+                            self._za_mega_field_dir5_until)
+                        self._za_mega_field_attack_only_until=(
+                            self._za_mega_field_attack_only_start
+                            + field_attack_only_seconds)
+                        self._za_mega_field_attack_only_logged=False
+                        self._za_mega_field_attack_only_y_dodge_logged=False
+                    else:
+                        self._za_mega_field_attack_only_start=0.0
+                        self._za_mega_field_attack_only_until=0.0
+                        self._za_mega_field_attack_only_logged=False
+                        self._za_mega_field_attack_only_y_dodge_logged=False
                     self._za_mega_field_dir4_until=0.0
                     field_resume_dirnum=5
                 else:
                     self._za_mega_field_dir5_until=0.0
+                    self._za_mega_field_attack_only_start=0.0
+                    self._za_mega_field_attack_only_until=0.0
+                    self._za_mega_field_attack_only_logged=False
+                    self._za_mega_field_y_dodge_suppress_start=0.0
+                    self._za_mega_field_y_dodge_suppress_until=0.0
+                    self._za_mega_field_attack_only_y_dodge_logged=False
                     self._za_mega_field_dir4_until=(
                         time.monotonic()
                         + max(0.0, field_resume_dir4_seconds))
@@ -8413,6 +8586,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             z_guard_interrupted = False
             charge_interrupted = False
             for i in range(attack_loop_count):
+                attack_only_update=getattr(
+                    self, "ZA_mega_field_attack_only_update", None)
+                if callable(attack_only_update):
+                    # 攻撃ループ中にdir5期限を越えても、即座に左移動を止める。
+                    attack_only_update(dir1,dir2,dir3,dir4)
                 if (choice_input_guard
                         or self.ZA_mega_choice_input_guard()):
                     self.ZA_MOVE_LStick(
@@ -8754,6 +8932,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                     continue
                     #QUICK_RETURN 回避動作間隔を狭めるため
                 elif count==3 and Yaction==1 and current_attack_ready:
+                    if (self.ZA_mega_field_y_dodge_suppression_active()
+                            and getattr(self, "ZL_state", 0) != 1):
+                        # dir5移動中／攻撃専用区間では、非ロックオンYがローリングへ
+                        # 化ける場合だけスキップし、次のA攻撃へ進める。
+                        self.ZA_mega_field_attack_only_suppress_y_dodge()
+                        count=advance_attack_count(count)
+                        continue
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if last_battle_mode:
@@ -9102,6 +9287,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 count=advance_attack_count(count)
                                 break
                             elif count==3 and Yaction==1 and current_attack_ready:
+                                if (self.ZA_mega_field_y_dodge_suppression_active()
+                                        and getattr(self, "ZL_state", 0) != 1):
+                                    self.ZA_mega_field_attack_only_suppress_y_dodge()
+                                    count=advance_attack_count(count)
+                                    break
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 if last_battle_mode:
