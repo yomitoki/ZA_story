@@ -13,7 +13,9 @@ def _reload_local_dependency_when_stale(module, required_names):
 
     PokeCon reloads the Commands module but normally keeps imported
     LocalFunction modules alive.  When a helper gains a new public symbol,
-    that otherwise makes Reload fail while an old ZA_story class continues to
+    that otherwise makes Reload fail while an old ZA_story from LocalFunction.ImageDetection import SimilarityHistory, detect_image
+
+class continues to
     run.  A full application restart must not be required just to pick up the
     copied portable helpers.
     """
@@ -171,6 +173,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     ZA_STORY_FURADARI_EYES_DARK_FIELD_RETURN_STATES = frozenset({
         "7_STORY_GURI_114", "7_STORY_GURI_115", "7_STORY_GURI_116"})
     ZA_STORY_FURADARI_EYES_DARK_FIELD_RETURN_TARGET = "7_STORY_GURI_114"
+    # ギルガルド戦の敗戦選択肢は、114／116をまたいで累計する。
+    # 同じ画面の連続一致だけに限定せず、2～4択を合計3回確認した時点で
+    # 既存のFURADARI敗戦復旧へ渡し、復旧完了後はGURI_108へ戻す。
+    ZA_STORY_GURI_SELECT_DEFEAT_PICTURES = frozenset({
+        "POKEMON_ZA_2_SELECT",
+        "POKEMON_ZA_3_SELECT",
+        "POKEMON_ZA_4_SELECT",
+    })
+    ZA_STORY_GURI_SELECT_DEFEAT_LIMIT = 3
+    ZA_STORY_GURI_SELECT_DEFEAT_TARGET = "7_STORY_GURI_108"
 
     # FURADARI_MAPへ移動した後、FIELD移動Stepで正面が暗転した場合の
     # 復帰先。Step番号ではなく、直前から2つ目のFURADARI_MAP gotoへ戻す。
@@ -349,7 +361,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         "5_STORY_KARASUBA_98": "5_STORY_KARASUBA_98",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_116": "5_STORY_KARASUBA_116",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_120": "5_STORY_KARASUBA_120",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        
+        "6_STORY_YUKARI_32": "6_STORY_YUKARI_29", 
         # FURADARI_MAP区間はComment_Outを取り逃がしても停止し続けないよう、
+        
         # 30秒間Commentを確認できなければ一旦次Stepへ進める。
         "7_STORY_GURI_88": "7_STORY_GURI_89",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_96": "7_STORY_GURI_97",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -2777,6 +2792,78 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
         return True
 
+    def ZA_mega_field_post_attack_roll_reset(self):
+        """FIELD復帰後の攻撃専用区間に続く1回限りの回避予約を解除する。"""
+        self._za_mega_field_post_attack_roll_start=0.0
+        self._za_mega_field_post_attack_roll_seconds=0.0
+        self._za_mega_field_post_attack_roll_pending=False
+
+    def ZA_mega_field_post_attack_roll_if_needed(
+            self, dir1, dir2, dir3, dir4, see_r,
+            endpicture="", end2picture="", active=True):
+        """攻撃専用区間の終了直後、視点回転付きY連打を1シーケンス実行する。"""
+        if not getattr(
+                self, "_za_mega_field_post_attack_roll_pending", False):
+            return "none"
+        if float(getattr(self, "_za_mega_field_dir5_until", 0.0)) <= 0.0:
+            # 復旧・終了経路でdir5が破棄された予約は実行しない。
+            self.ZA_mega_field_post_attack_roll_reset()
+            return "none"
+        start_at=float(getattr(
+            self, "_za_mega_field_post_attack_roll_start", 0.0))
+        seconds=max(0.0, float(getattr(
+            self, "_za_mega_field_post_attack_roll_seconds", 0.0)))
+        if start_at <= 0.0 or seconds <= 0.0:
+            self.ZA_mega_field_post_attack_roll_reset()
+            return "none"
+        if not active or time.monotonic() < start_at:
+            return "none"
+
+        interrupt_pictures=(
+            "POKEMON_ZA_FIELD_W",
+            "POKEMON_ZA_TEXT_GREEN_COMMENT",
+            "POKEMON_ZA_1_SELECT",
+            "POKEMON_ZA_2_SELECT_TUTORIAL",
+            "POKEMON_ZA_3_SELECT_SELECT",
+            "POKEMON_ZA_3_SELECT_TUTORIAL",
+            "POKEMON_ZA_4_SELECT")
+        endpictures=tuple(
+            picture for picture in (endpicture, end2picture) if picture)
+        if any(self.image_check(picture) for picture in endpictures):
+            self.ZA_mega_field_post_attack_roll_reset()
+            return "endpicture"
+        if (any(self.image_check(picture)
+                for picture in interrupt_pictures)
+                or self.ZA_mega_choice_input_guard()):
+            self.ZA_mega_field_post_attack_roll_reset()
+            return "guard"
+
+        # 先に予約を消費し、同じFIELD復帰で15秒回避を再実行しない。
+        self._za_mega_field_post_attack_roll_pending=False
+        self.ZA_mega_field_attack_only_reset()
+        self.ZA_ZL_ACTION("END")
+        self.ZA_MOVE_SEE(action="", in_see_r=see_r)
+        # 攻撃専用区間では左入力を解除しているため、Yを送る前に
+        # 通常移動を戻して、視点回転しながら実際にローリングさせる。
+        self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
+        print(
+            "[MEGA_FIELD_POST_ATTACK_ROLL] attack-only complete; "
+            "unlock and Y rolling with view for {:.1f}s".format(seconds))
+        result=self.ZA_mega_red_edge_y_renda(
+            seconds, endpicture=endpicture, end2picture=end2picture,
+            interrupt_pictures=interrupt_pictures,
+            continuous_wait_seconds=0.0)
+        if result == "complete":
+            self.ZA_ZL_ACTION("")
+            self.ZA_mega_keep_left_moving(dir1,dir2,dir3,dir4)
+            self.ZA_MOVE_SEE(action="", in_see_r=see_r)
+        else:
+            # 選択肢／Commentへ変わった場合は入力を持ち越さない。
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        self.ZA_mega_field_post_attack_roll_reset()
+        return result
+
     def ZA_MOVE_LStick(self,dir1,dir2,dir3,dir4,dirnum=1,action = "RELOAD",force_direction=False):
         if action != "END":
             attack_only_update=getattr(
@@ -2977,10 +3064,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             return True           
                 if sub_picture != "":
                     tmp = sub_picture
+                    picture_matched = self.image_check(sub_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -2988,10 +3077,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub2_picture != "":
                     tmp = sub2_picture
+                    picture_matched = self.image_check(sub2_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub2_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub2_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -2999,10 +3090,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub3_picture != "":
                     tmp = sub3_picture
+                    picture_matched = self.image_check(sub3_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub3_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub3_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3010,10 +3103,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub4_picture != "":
                     tmp = sub4_picture
+                    picture_matched = self.image_check(sub4_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub4_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub4_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3026,10 +3121,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub5_picture != "":
                     tmp = sub5_picture
+                    picture_matched = self.image_check(sub5_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub5_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub5_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3037,10 +3134,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub6_picture != "":
                     tmp = sub6_picture
+                    picture_matched = self.image_check(sub6_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub6_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub6_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3048,10 +3147,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub7_picture != "":
                     tmp = sub7_picture
+                    picture_matched = self.image_check(sub7_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub7_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub7_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3059,10 +3160,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub8_picture != "":
                     tmp = sub8_picture
+                    picture_matched = self.image_check(sub8_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub8_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub8_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3070,10 +3173,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.wait(sleeptime)
                 if sub9_picture != "":
                     tmp = sub9_picture
+                    picture_matched = self.image_check(sub9_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
-                            return True
-                    if self.image_check(sub9_picture):
+                            if picture_matched:
+                                return True
+                    if picture_matched:
                         if sub9_button == "A":
                             wait_for_detected_action()
                             self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
@@ -3125,7 +3230,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=0, red_edge_roll_with_view=0):
             return True
-        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.35, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, field_resume_attack_only_seconds=12.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
+        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.35, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=1.5, field_resume_attack_only_seconds=4.0, field_resume_post_attack_roll_seconds=18.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
                             #self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, red_edge_roll_with_view=1):
             return True
         elif mode == 4 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=40,dir2=20,dir3=20,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=15.0, dir5=90, field_resume_dir5_seconds=2.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, mode4_view_nudge=1, mode4_yellow_hp_roll_seconds=30.0, mode4_yellow_hp_attack_wait_seconds=5.0, red_edge_roll_angle=20.0):
@@ -5001,16 +5106,41 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_red_edge_y_renda(
             self, seconds, endpicture="", end2picture="",
-            repeat_count=0):
+            repeat_count=0, interrupt_pictures=(),
+            interrupt_check_interval=0.3,
+            continuous_wait_seconds=0.1):
         """赤い画面端を避けるためYを送り、停止理由を返す。"""
         endpictures = tuple(
             picture for picture in (endpicture, end2picture) if picture)
+        interrupt_pictures=tuple(
+            picture for picture in interrupt_pictures if picture)
+        interrupt_check_interval=max(
+            0.1, float(interrupt_check_interval))
+        continuous_wait_seconds=max(
+            0.0, float(continuous_wait_seconds))
+        next_interrupt_check=0.0
+
+        def interrupt_result():
+            nonlocal next_interrupt_check
+            now=time.monotonic()
+            if (not interrupt_pictures
+                    or now < next_interrupt_check):
+                return ""
+            next_interrupt_check=now + interrupt_check_interval
+            if any(self.image_check(picture)
+                   for picture in interrupt_pictures):
+                return "guard"
+            return ""
+
         repeat_count=max(0, int(repeat_count))
         if repeat_count:
             for repeat_index in range(repeat_count):
                 self.checkIfAlive()
                 if any(self.image_check(picture) for picture in endpictures):
                     return "endpicture"
+                interrupted=interrupt_result()
+                if interrupted:
+                    return interrupted
                 if self.ZA_mega_choice_input_guard():
                     return "guard"
                 if self.ZA_mega_field_attack_only_suppress_y_dodge():
@@ -5018,14 +5148,18 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.pressRep(
                     Button.Y, repeat=1, duration=0.04,
                     wait=0.0, interval=0.05)
-                if repeat_index + 1 < repeat_count:
-                    self.wait(0.1)
+                if (repeat_index + 1 < repeat_count
+                        and continuous_wait_seconds > 0.0):
+                    self.wait(continuous_wait_seconds)
             return "complete"
         deadline = time.monotonic() + max(0.0, float(seconds))
         while time.monotonic() < deadline:
             self.checkIfAlive()
             if any(self.image_check(picture) for picture in endpictures):
                 return "endpicture"
+            interrupted=interrupt_result()
+            if interrupted:
+                return interrupted
             if self.ZA_mega_choice_input_guard():
                 return "guard"
             if self.ZA_mega_field_attack_only_suppress_y_dodge():
@@ -5033,7 +5167,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(
                 Button.Y, repeat=1, duration=0.04,
                 wait=0.0, interval=0.05)
-            self.wait(min(0.1, max(0.0, deadline - time.monotonic())))
+            if continuous_wait_seconds > 0.0:
+                self.wait(min(
+                    continuous_wait_seconds,
+                    max(0.0, deadline - time.monotonic())))
         return "complete"
 
     def ZA_mega_last_battle_charge_dodge(
@@ -5453,7 +5590,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         while True:
             result = self.ZA_mega_red_edge_y_renda(
                 seconds, endpicture=endpicture, end2picture=end2picture,
-                repeat_count=repeat_count)
+                repeat_count=repeat_count,
+                continuous_wait_seconds=0.0)
             if result != "complete" or not repeat_while_active:
                 break
             if not self.ZA_mega_red_screen_edge_check():
@@ -7789,7 +7927,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return False
 
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0,field_resume_attack_only_seconds=0.0):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0,field_resume_attack_only_seconds=0.0,field_resume_post_attack_roll_seconds=0.0):
         if last_battle_mode:
             # AはC+画像がなくても戦闘画面なら使用する。B/X/Yは呼び出し値を
             # 保持し、後段でC+画像を確認できた時だけ技入力として許可する。
@@ -7825,6 +7963,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_field_y_dodge_suppress_start=0.0
         self._za_mega_field_y_dodge_suppress_until=0.0
         self._za_mega_field_attack_only_y_dodge_logged=False
+        self._za_mega_field_post_attack_roll_start=0.0
+        self._za_mega_field_post_attack_roll_seconds=0.0
+        self._za_mega_field_post_attack_roll_pending=False
         self._za_mega_field_dir4_until=0.0
         self._za_mega_relock_retry_at=0.0
         self._za_mega_red_edge_latched=False
@@ -8031,6 +8172,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 # 選択画面へ方向入力を持ち越さないよう、ループの最初に停止する。
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
                 self.ZA_MOVE_SEE(action = "END",in_see_r=see_r)
+                # 攻撃専用区間後の回避は同じFIELD復帰だけで有効。
+                # 選択肢／Commentへ移った予約を次の戦闘へ持ち越さない。
+                self.ZA_mega_field_post_attack_roll_reset()
                 if last_battle_mode:
                     self.ZA_mega_mode5_transition(
                         "RETRY_SELECTION",
@@ -8365,6 +8509,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self._za_mega_field_attack_only_until=0.0
                         self._za_mega_field_attack_only_logged=False
                         self._za_mega_field_attack_only_y_dodge_logged=False
+                    field_post_attack_roll_seconds=max(
+                        0.0, float(field_resume_post_attack_roll_seconds))
+                    if (field_attack_only_seconds > 0.0
+                            and field_post_attack_roll_seconds > 0.0):
+                        self._za_mega_field_post_attack_roll_start=(
+                            self._za_mega_field_attack_only_until)
+                        self._za_mega_field_post_attack_roll_seconds=(
+                            field_post_attack_roll_seconds)
+                        self._za_mega_field_post_attack_roll_pending=True
+                    else:
+                        self.ZA_mega_field_post_attack_roll_reset()
                     self._za_mega_field_dir4_until=0.0
                     field_resume_dirnum=5
                 else:
@@ -8375,6 +8530,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self._za_mega_field_y_dodge_suppress_start=0.0
                     self._za_mega_field_y_dodge_suppress_until=0.0
                     self._za_mega_field_attack_only_y_dodge_logged=False
+                    self.ZA_mega_field_post_attack_roll_reset()
                     self._za_mega_field_dir4_until=(
                         time.monotonic()
                         + max(0.0, field_resume_dir4_seconds))
@@ -8382,6 +8538,30 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_MOVE_LStick(
                     dir1,dir2,dir3,dir4,
                     field_resume_dirnum,"RELOAD")
+
+            field_post_attack_roll_result=(
+                self.ZA_mega_field_post_attack_roll_if_needed(
+                    dir1,dir2,dir3,dir4,see_r,
+                    endpicture=endpicture, end2picture=end2picture,
+                    active=(not choice_input_guard and nofiled==0)))
+            if field_post_attack_roll_result == "endpicture":
+                self._za_mega_rclick_dir3_until=0.0
+                self._za_mega_field_dir5_until=0.0
+                self._za_mega_field_dir4_until=0.0
+                self.ZA_ZL_ACTION("END")
+                self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+                if not battle_identity_confirmed:
+                    print(
+                        "[MEGA_BATTLE_IDENTITY] reject end picture; "
+                        "not confirmed: {}".format(battle_identity_picture))
+                    return "BATTLE_IDENTITY_MISMATCH"
+                return True
+            if field_post_attack_roll_result in {
+                    "complete", "guard", "attack_only"}:
+                # 15秒回避中に画面が変わり得るため、完了後は必ず
+                # ループ先頭からFIELD／選択肢／終了画像を再確認する。
+                continue
 
             if (not choice_input_guard and nofiled==0
                     and not (last_battle_mode
@@ -8591,6 +8771,30 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if callable(attack_only_update):
                     # 攻撃ループ中にdir5期限を越えても、即座に左移動を止める。
                     attack_only_update(dir1,dir2,dir3,dir4)
+                field_post_attack_roll_result=(
+                    self.ZA_mega_field_post_attack_roll_if_needed(
+                        dir1,dir2,dir3,dir4,see_r,
+                        endpicture=endpicture, end2picture=end2picture,
+                        active=(not choice_input_guard and nofiled==0)))
+                if field_post_attack_roll_result == "endpicture":
+                    self._za_mega_rclick_dir3_until=0.0
+                    self._za_mega_field_dir5_until=0.0
+                    self._za_mega_field_dir4_until=0.0
+                    self.ZA_ZL_ACTION("END")
+                    self.ZA_MOVE_LStick(
+                        dir1,dir2,dir3,dir4,1,"END")
+                    self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+                    if not battle_identity_confirmed:
+                        print(
+                            "[MEGA_BATTLE_IDENTITY] reject end picture; "
+                            "not confirmed: {}".format(
+                                battle_identity_picture))
+                        return "BATTLE_IDENTITY_MISMATCH"
+                    return True
+                if field_post_attack_roll_result in {
+                        "complete", "guard", "attack_only"}:
+                    red_edge_interrupted=True
+                    break
                 if (choice_input_guard
                         or self.ZA_mega_choice_input_guard()):
                     self.ZA_MOVE_LStick(
@@ -11596,6 +11800,78 @@ class ZA_story_Base(ImageProcPythonCommand):
                 battle_flow_key, reason))
             del flows[battle_flow_key]
 
+    def _ZA_story_guri_select_defeat_reset(self, reason):
+        """GURI_114／116で共有する敗戦選択肢の累計を破棄する。"""
+        previous_count = int(getattr(
+            self, "_za_story_guri_select_defeat_count", 0))
+        self._za_story_guri_select_defeat_count = 0
+        if previous_count:
+            print(
+                "[GURI_SELECT_DEFEAT_RECOVERY] count {} -> 0 ({})".format(
+                    previous_count, reason))
+
+    def _ZA_story_guri_select_defeat_observe(
+            self, current_state, detected_picture):
+        """2～4択を累計し、3回目に既存FURADARI敗戦復旧を予約する。"""
+        tracked_pictures = getattr(
+            self, "ZA_STORY_GURI_SELECT_DEFEAT_PICTURES", ())
+        if detected_picture not in tracked_pictures:
+            return None
+
+        limit = max(1, int(getattr(
+            self, "ZA_STORY_GURI_SELECT_DEFEAT_LIMIT", 3)))
+        count = int(getattr(
+            self, "_za_story_guri_select_defeat_count", 0)) + 1
+        self._za_story_guri_select_defeat_count = count
+        print(
+            "[GURI_SELECT_DEFEAT_RECOVERY] state={} picture={} "
+            "total={}/{}".format(
+                current_state, detected_picture, count, limit))
+        if count < limit:
+            # 不一致の周回を挟んでもリセットせず、114／116間で共有する。
+            return current_state
+
+        recovery_target = getattr(
+            self, "ZA_STORY_GURI_SELECT_DEFEAT_TARGET",
+            "7_STORY_GURI_108")
+        self._ZA_story_guri_select_defeat_reset("threshold_reached")
+        self._ZA_story_battle_flow_reset(
+            "7_STORY_GURI_115", "guri_select_defeat_recovery")
+
+        # 黒Comment復旧と同じB→FIELD→FURADARI_MAP経路を再利用する。
+        # 3回目のSELECTに対するAは呼出元が送り、この予約は次のStep周回
+        # から通常Stepを止めて敗戦復旧だけを進める。
+        self._za_furadari_black_recovery = {
+            "recovery_target": recovery_target,
+            "holding_state": current_state,
+            "dark_comment": False,
+            "field_return_without_goto": False,
+            "close_button": Button.B,
+            "close_count": 0,
+            "limit_logged": False,
+            "phase": "CLOSE_COMMENT",
+            "map_state": "COMMON_MAP_OPEN",
+        }
+        self._za_furadari_black_candidate_state = None
+        self._za_furadari_black_candidate_started = None
+        self._za_furadari_black_candidate_eyes_dark = False
+        # 同じ外側Step周回の末尾で周辺暗転復旧が割り込まないよう、既存の
+        # 専用復旧ロックを共有する。敗戦復旧完了時に既存処理が解除する。
+        self._za_furadari_eyes_dark_recovery_lock_state = current_state
+        self._za_furadari_section_dark_candidate_state = None
+        self._za_furadari_section_dark_candidate_started = None
+        self._za_furadari_section_recovery_state = None
+        self._za_furadari_section_recovery_b_count = 0
+        self._za_furadari_section_recovery_limit_logged = False
+        self._za_furadari_section_recovery_no_frame_logged = False
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        print(
+            "[GURI_SELECT_DEFEAT_RECOVERY] total={} reached; "
+            "reserved FURADARI defeat recovery {} -> {}".format(
+                limit, current_state, recovery_target))
+        return current_state
+
     def ZA_story_Template_battle_before_active_level(
             self, noprg_ret, prg_ret, battle_flow_key=None,
             green_check=0, no_filed=0, sleeptime=0.5,
@@ -11784,9 +12060,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             ) if self.image_check(picture)
         ), None)
         if (selection_picture is not None
-                and (active_level_visible or not hard_field_visible)):
-            # 戦闘HUDと選択肢が重なっていても選択肢を優先する。
-            # 通常FIELD上だけのSELECT誤検知は従来どおり無効化する。
+                and not active_level_visible
+                and not hard_field_visible):
+            # SELECTはFIELDでも戦闘Lv.表示中でもない画面だけ採用する。
+            # KARASUBA_40等で戦闘HUDを2_SELECTと誤検知してもAを押さない。
             print(
                 f"[BATTLE_SELECT] {selection_picture} detected -> press A")
             self.pressRep(
@@ -12139,17 +12416,25 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         # HELPはFIELD上でも優先する。1～4択はFIELD背景の模様を
         # 誤検知する場合があるため、HARD_FIELD不一致時だけ扱う。
-        if (self.image_check("POKEMON_ZA_HELP_MARKER")
-                or (not hard_field_visible
-                    and (self.image_check("POKEMON_ZA_1_SELECT")
-                         or self.image_check("POKEMON_ZA_2_SELECT")
-                         or self.image_check("POKEMON_ZA_3_SELECT")
-                         or self.image_check("POKEMON_ZA_4_SELECT")))):
+        if self.image_check("POKEMON_ZA_HELP_MARKER"):
             self.pressRep(
                 Button.A, repeat=1, duration=0.15,
                 wait=0.0, interval=0.1)
             self.wait(wait_time)
-            return "continue", "a_picture"
+            return "continue", "POKEMON_ZA_HELP_MARKER"
+        if not hard_field_visible:
+            for picture in (
+                    "POKEMON_ZA_1_SELECT",
+                    "POKEMON_ZA_2_SELECT",
+                    "POKEMON_ZA_3_SELECT",
+                    "POKEMON_ZA_4_SELECT"):
+                if not self.image_check(picture):
+                    continue
+                self.pressRep(
+                    Button.A, repeat=1, duration=0.15,
+                    wait=0.0, interval=0.1)
+                self.wait(wait_time)
+                return "continue", picture
 
         # ここからは入力せずにRendaを止め、呼出元が画面別に処理する。
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
@@ -12188,7 +12473,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             black_comment_is_defeat=False, event_move_duration=0.05,
             event_move_attempts=1, rebattle=1,
             event_marker_missing_sets=0,
-            event_marker_missing_fallback=""):
+            event_marker_missing_fallback="",
+            guri_select_defeat_state=""):
         """B基準の1入力Rendaで戦闘開始または結果候補まで進める。"""
         del no_filed  # 呼び出し互換用。従来のactive_level版でも未使用。
         if not battle_flow_key:
@@ -12250,6 +12536,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._ZA_story_battle_before_safe_renda_once(
                 green_check=green_check,
                 sleeptime=sleeptime))
+        if guri_select_defeat_state:
+            select_return = self._ZA_story_guri_select_defeat_observe(
+                guri_select_defeat_state, stop_picture)
+            if select_return is not None:
+                return select_return
         if stop_reason != "continue":
             print(
                 "[BATTLE_RENDA_BEFORE] {}: stop={} picture={}".format(
@@ -12441,18 +12732,21 @@ class ZA_story_Base(ImageProcPythonCommand):
             usenum=usenum)
 
     def _ZA_story_battle_after_safe_renda(
-            self, selected_pic, selected_target, endpictures, sleeptime):
+            self, selected_pic, selected_target, endpictures, sleeptime,
+            guri_select_defeat_state=""):
         """B連打を基準にし、停止した画面の種類と画像名を返す。"""
         false_pictures = {
             None, "", "RETURN_FALSE", "RETURN FALSE",
             "POKEMON_ZA_FALSE_RETURN",
         }
         selected_picture_enabled = selected_pic not in false_pictures
-        a_click_pictures = (
+        select_pictures = (
             "POKEMON_ZA_1_SELECT",
             "POKEMON_ZA_2_SELECT",
             "POKEMON_ZA_3_SELECT",
             "POKEMON_ZA_4_SELECT",
+        )
+        a_click_pictures = (
             "POKEMON_ZA_MORNING",
             "POKEMON_ZA_NIGHT",
         )
@@ -12494,7 +12788,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 選択肢と朝／夜の切替画像はA。それ以外（COMPLETE・
             # 各Comment・Xメニュー・CHAT・COIN・未検知を含む）は、
             # すべて安全側のBを送る。
-            if any(self.image_check(picture) for picture in a_click_pictures):
+            matched_select = next((
+                picture for picture in select_pictures
+                if self.image_check(picture)), None)
+            if matched_select is not None:
+                button = Button.A
+            elif any(self.image_check(
+                    picture) for picture in a_click_pictures):
                 button = Button.A
             else:
                 button = Button.B
@@ -12502,13 +12802,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                 button, repeat=1, duration=0.15,
                 wait=0.0, interval=0.1)
             self.wait(wait_time)
+            if guri_select_defeat_state and matched_select is not None:
+                select_return = self._ZA_story_guri_select_defeat_observe(
+                    guri_select_defeat_state, matched_select)
+                if select_return is not None:
+                    # 116だけは内部whileへ戻さず外側Stepへ制御を返し、
+                    # SELECTを各Step周回で1回ずつ累計する。
+                    return "guri_select_defeat", select_return
 
     def ZA_story_Template_battle_after_renda_route(
             self, bkprg_ret, prg_ret, battle_flow_key=None,
             selected_pic="POKEMON_ZA_FALSE_RETURN", selected_target=0,
             mode=0, sleeptime=0.5,
             black_comment_is_defeat=False,
-            endpicture="", endpicture2="", endpicture3=""):
+            endpicture="", endpicture2="", endpicture3="",
+            guri_select_defeat_state=""):
         """画面別の停止理由で遷移する、B基準の戦闘後連打処理。"""
         del mode  # 呼び出し互換用。
         if not battle_flow_key:
@@ -12531,7 +12839,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 selected_pic=selected_pic,
                 selected_target=selected_target,
                 endpictures=endpictures,
-                sleeptime=sleeptime)
+                sleeptime=sleeptime,
+                guri_select_defeat_state=guri_select_defeat_state)
             print(
                 "[BATTLE_RENDA] {}: stop={} picture={}".format(
                     battle_flow_key, stop_reason, stop_picture))
@@ -12539,12 +12848,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             if stop_reason == "endpicture":
                 self._ZA_story_battle_flow_reset(
                     battle_flow_key, "endpicture_renda")
+                if guri_select_defeat_state:
+                    self._ZA_story_guri_select_defeat_reset(
+                        "battle_after_endpicture")
                 return prg_ret
             if stop_reason == "field":
                 # FIELDは1回の検知で連打を終了し、その場で次Stepへ進む。
                 self._ZA_story_battle_flow_reset(
                     battle_flow_key, "field_renda")
+                if guri_select_defeat_state:
+                    self._ZA_story_guri_select_defeat_reset(
+                        "battle_after_field")
                 return prg_ret
+            if stop_reason == "guri_select_defeat":
+                return stop_picture
             if stop_reason == "active_level":
                 # 左下Lv.の再表示はバトル復帰。afterを抜けて戻り先へ返す。
                 state["active_seen"] = True
@@ -23082,34 +23399,39 @@ class ZA_story_Base(ImageProcPythonCommand):
             recovery_waiting = True
             print(
                 "[YUKARI_52_RECOVERY] BLACK_COMMENT: "
-                "press B up to 40 times until FIELD")
+                "press B then A, up to 40 rounds until FIELD")
             for attempt in range(40):
-                self.checkIfAlive()
-                if self.image_check(
-                        "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
-                    print(
-                        "[YUKARI_52_RECOVERY] FIELD detected before B "
-                        f"attempt={attempt + 1}/40 -> RECOVERY")
-                    self._6_story_yukari_52_recovery_waiting_field = False
-                    return "6_STORY_YUKARI_52_RECOVERY"
-                self.pressRep(
-                    Button.B, repeat=1, duration=0.04,
-                    wait=0.0, interval=0.1)
-                self.wait(0.1)
-                if self.image_check(
-                        "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
-                    print(
-                        "[YUKARI_52_RECOVERY] FIELD detected after B "
-                        f"attempt={attempt + 1}/40 -> RECOVERY")
-                    self._6_story_yukari_52_recovery_waiting_field = False
-                    return "6_STORY_YUKARI_52_RECOVERY"
+                for button, button_name in (
+                        (Button.A, "A"),(Button.B, "B")):
+                    self.checkIfAlive()
+                    if self.image_check(
+                            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                        print(
+                            "[YUKARI_52_RECOVERY] FIELD detected before "
+                            f"{button_name} attempt={attempt + 1}/40 "
+                            "-> RECOVERY")
+                        self._6_story_yukari_52_recovery_waiting_field = False
+                        return "6_STORY_YUKARI_52_RECOVERY"
+                    self.pressRep(
+                        button, repeat=1, duration=0.04,
+                        wait=0.0, interval=0.1)
+                    self.wait(0.1)
+                    if self.image_check(
+                            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                        print(
+                            "[YUKARI_52_RECOVERY] FIELD detected after "
+                            f"{button_name} attempt={attempt + 1}/40 "
+                            "-> RECOVERY")
+                        self._6_story_yukari_52_recovery_waiting_field = False
+                        return "6_STORY_YUKARI_52_RECOVERY"
             print(
-                "[YUKARI_52_RECOVERY] FIELD not detected after B x40; "
+                "[YUKARI_52_RECOVERY] FIELD not detected after "
+                "B+A x40 rounds; "
                 "wait at 52")
             return "6_STORY_YUKARI_52"
 
         if recovery_waiting:
-            # 40回送信後は入力を重ねず、FIELDへの復帰だけを待つ。
+            # B→Aを40ラウンド送信後は入力を重ねず、FIELDへの復帰だけを待つ。
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
                 print(
                     "[YUKARI_52_RECOVERY] delayed FIELD detected "
@@ -24177,6 +24499,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=3.5, wait=0.0)
+            self.wait(1.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self._7_story_guri_93_return_to_87 = True
+                return "7_STORY_GURI_86"
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=2.8, wait=0.0)
             self.press(Direction(Stick.LEFT,270), duration=10.0, wait=0.0)
@@ -24198,6 +24524,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=3.5, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self._7_story_guri_93_return_to_87 = True
+                return "7_STORY_GURI_86"
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
             self.ZA_ROTOM_GLIDE(dir=180,a_count=15)
             return "7_STORY_GURI_99"
@@ -24228,6 +24557,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=3.5, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self._7_story_guri_93_return_to_87 = True
+                return "7_STORY_GURI_86"
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=2.8, wait=0.0)
             self.press(Direction(Stick.LEFT,270), duration=3.0, wait=0.0)
@@ -24263,7 +24595,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,270), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=2.8, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=7.5, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.0, interval=0.1)
+                return "7_STORY_GURI_103"
             self.press(Direction(Stick.LEFT,0), duration=1.0, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.0, interval=0.1)
+                return "7_STORY_GURI_103"
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=0.0)
             self.press(Direction(Stick.LEFT,0), duration=1.5, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=7.0, wait=0.0)
@@ -24290,7 +24628,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,270), duration=3.0, wait=0.0)
             self.press(Direction(Stick.LEFT,180), duration=2.8, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=7.5, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.0, interval=0.1)
+                return "7_STORY_GURI_103"
             self.press(Direction(Stick.LEFT,0), duration=1.0, wait=0.0)
+            if self.image_check("ZA_STORY_COMMON_ZA_RESEARCH_A"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.0, interval=0.1)
+                return "7_STORY_GURI_103"
             self.press(Direction(Stick.LEFT,90), duration=6.0, wait=0.0)
             self.press(Direction(Stick.LEFT,0), duration=5.0, wait=0.0)
             self.press(Direction(Stick.LEFT,90), duration=1.2, wait=0.0)            
@@ -24314,7 +24658,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_ROTOM_GLIDE(dir=145,a_count=27)
             self.press(Direction(Stick.LEFT,330), duration=5.0, wait=0.0)
             self.press(Direction(Stick.LEFT,45), duration=3.0, wait=0.0)
+            
+            self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.0)#
             self.press(Direction(Stick.LEFT,135), duration=6.0, wait=0.0)
+            
             self.press(Direction(Stick.LEFT,90), duration=3.0, wait=0.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.0, interval=0.1)
             return "7_STORY_GURI_112"           
@@ -24336,14 +24683,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "7_STORY_GURI_114" 
         return "7_STORY_GURI_113" 
        
-    def _7_story_guri_114(self):#ギルガルド
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_115",green_check=1,rebattle=0)
+    def _7_story_guri_114(self):#ギルガルド 
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="7_STORY_GURI_114",
+            prg_ret="7_STORY_GURI_115",
+            green_check=1,
+            rebattle=0,
+            guri_select_defeat_state="7_STORY_GURI_114")
        
     def _7_story_guri_115(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_116",noprg_ret="7_STORY_GURI_115",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0,rebattle=0)
        
     def _7_story_guri_116(self):
-        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_115" ,prg_ret="7_STORY_GURI_117")
+        return self.ZA_story_Template_battle_after_renda_route(
+            bkprg_ret="7_STORY_GURI_115",
+            prg_ret="7_STORY_GURI_117",
+            guri_select_defeat_state="7_STORY_GURI_116")
        
     def _7_story_guri_117(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -28560,7 +28915,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 画像認識
     ######################################################
     # POKECON_IMAGE_CHECK_BEGIN
-    # Generated image detection selection: list:SyncSelection
+    # Generated image detection selection: list:SourceUsed
     IMAGE_DETECTION_TARGETS = {'POKEMON_ZA_1_SELECT': [{'crop': [920, 400, 1180, 550],
                               'match_color': 'blue',
                               'ms': 2000,
@@ -28643,14 +28998,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                            'template_path': 'Template/ZA_Story/Common/ame_s.png',
                            'threshold': 0.95,
                            'use_gray': False}],
-     'POKEMON_ZA_ARROW': [{'crop': [910, 620, 966, 676],
-                           'ms': 2000,
-                           'show_only_true_rect': False,
-                           'show_position': True,
-                           'show_value': False,
-                           'template_path': 'Template/ZA_Story/Common/arrow.png',
-                           'threshold': 0.88,
-                           'use_gray': True}],
      'POKEMON_ZA_ATTACK_C+_DISPLAY': [{'crop': [0, 100, 600, 650],
                                        'ms': 2000,
                                        'show_only_true_rect': False,
@@ -28829,14 +29176,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                           'template_path': 'Template/ZA_Story/Common/X_menu/down_select.png',
                                           'threshold': 0.85,
                                           'use_gray': True}],
-     'POKEMON_ZA_ELEVATOR_ICON': [{'crop': [300, 150, 900, 600],
-                                   'ms': 2000,
-                                   'show_only_true_rect': False,
-                                   'show_position': True,
-                                   'show_value': False,
-                                   'template_path': 'Template/ZA_Story/Common/elevator_icon.png',
-                                   'threshold': 0.85,
-                                   'use_gray': True}],
      'POKEMON_ZA_ESCAPE': [{'crop': [54, 477, 75, 497],
                             'ms': 2000,
                             'show_only_true_rect': False,
@@ -29271,6 +29610,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                          'template_path': 'Template/ZA_Story/Common/fin.png',
                          'threshold': 0.8,
                          'use_gray': True}],
+     'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': [{'crop': [300, 590, 760, 690],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/Common/furadari_eyes_dark_comment.png',
+                                                'threshold': 0.85,
+                                                'use_gray': True}],
      'POKEMON_ZA_FURADARI_MAP': [{'crop': [20, 0, 300, 70],
                                   'ms': 2000,
                                   'show_only_true_rect': False,
@@ -29765,30 +30112,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             'template_path': 'Template/ZA_Story/MovePoint/W_ZONE10_pic.png',
                                             'threshold': 0.9,
                                             'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE11': [{'crop': [850, 100, 1270, 450],
-                                            'ms': 2000,
-                                            'show_only_true_rect': False,
-                                            'show_position': True,
-                                            'show_value': False,
-                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE11_pic.png',
-                                            'threshold': 0.9,
-                                            'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE12': [{'crop': [850, 100, 1270, 450],
-                                            'ms': 2000,
-                                            'show_only_true_rect': False,
-                                            'show_position': True,
-                                            'show_value': False,
-                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE12_pic.png',
-                                            'threshold': 0.9,
-                                            'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE13': [{'crop': [850, 100, 1270, 450],
-                                            'ms': 2000,
-                                            'show_only_true_rect': False,
-                                            'show_position': True,
-                                            'show_value': False,
-                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE13_pic.png',
-                                            'threshold': 0.9,
-                                            'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': [{'crop': [850, 100, 1270, 450],
                                             'ms': 2000,
                                             'show_only_true_rect': False,
@@ -29803,14 +30126,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             'show_position': True,
                                             'show_value': False,
                                             'template_path': 'Template/ZA_Story/MovePoint/W_ZONE15_pic.png',
-                                            'threshold': 0.9,
-                                            'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE16': [{'crop': [850, 100, 1270, 450],
-                                            'ms': 2000,
-                                            'show_only_true_rect': False,
-                                            'show_position': True,
-                                            'show_value': False,
-                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE16_pic.png',
                                             'threshold': 0.9,
                                             'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': [{'crop': [850, 100, 1270, 450],
@@ -29845,14 +30160,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE2_pic.png',
                                            'threshold': 0.9,
                                            'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE20': [{'crop': [850, 100, 1270, 450],
-                                            'ms': 2000,
-                                            'show_only_true_rect': False,
-                                            'show_position': True,
-                                            'show_value': False,
-                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE20_pic.png',
-                                            'threshold': 0.9,
-                                            'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': [{'crop': [850, 100, 1270, 450],
                                            'ms': 2000,
                                            'show_only_true_rect': False,
@@ -30157,30 +30464,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                'template_path': 'Template/ZA_Story/MovePoint/W_ZONE10_target.png',
                                                'threshold': 0.9,
                                                'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE11': [{'crop': [0, 100, 450, 600],
-                                               'ms': 2000,
-                                               'show_only_true_rect': False,
-                                               'show_position': True,
-                                               'show_value': False,
-                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE11_target.png',
-                                               'threshold': 0.9,
-                                               'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE12': [{'crop': [0, 100, 450, 600],
-                                               'ms': 2000,
-                                               'show_only_true_rect': False,
-                                               'show_position': True,
-                                               'show_value': False,
-                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE12_target.png',
-                                               'threshold': 0.9,
-                                               'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE13': [{'crop': [0, 100, 450, 600],
-                                               'ms': 2000,
-                                               'show_only_true_rect': False,
-                                               'show_position': True,
-                                               'show_value': False,
-                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE13_target.png',
-                                               'threshold': 0.9,
-                                               'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': [{'crop': [0, 100, 450, 600],
                                                'ms': 2000,
                                                'show_only_true_rect': False,
@@ -30195,14 +30478,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                'show_position': True,
                                                'show_value': False,
                                                'template_path': 'Template/ZA_Story/MovePoint/W_ZONE15_target.png',
-                                               'threshold': 0.9,
-                                               'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE16': [{'crop': [0, 100, 450, 600],
-                                               'ms': 2000,
-                                               'show_only_true_rect': False,
-                                               'show_position': True,
-                                               'show_value': False,
-                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE16_target.png',
                                                'threshold': 0.9,
                                                'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': [{'crop': [0, 100, 450, 600],
@@ -30237,14 +30512,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE2_target.png',
                                               'threshold': 0.9,
                                               'use_gray': True}],
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE20': [{'crop': [0, 100, 450, 600],
-                                               'ms': 2000,
-                                               'show_only_true_rect': False,
-                                               'show_position': True,
-                                               'show_value': False,
-                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE20_target.png',
-                                               'threshold': 0.9,
-                                               'use_gray': True}],
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': [{'crop': [0, 100, 450, 600],
                                               'ms': 2000,
                                               'show_only_true_rect': False,
@@ -30883,14 +31150,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                        'template_path': 'Template/ZA_Story/Common/X_menu/skillpage.png',
                                        'threshold': 0.85,
                                        'use_gray': True}],
-     'POKEMON_ZA_SLEEP_ICON': [{'crop': [300, 150, 900, 650],
-                                'ms': 2000,
-                                'show_only_true_rect': False,
-                                'show_position': True,
-                                'show_value': False,
-                                'template_path': 'Template/ZA_Story/_1_z_lank/sleep_icon.png',
-                                'threshold': 0.85,
-                                'use_gray': True}],
      'POKEMON_ZA_STARTBTN_SELECT': [{'crop': [120, 520, 500, 610],
                                      'ms': 2000,
                                      'show_only_true_rect': False,
@@ -31162,16 +31421,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                'template_path': 'Template/ZA_Story/Common/z-a_royale.png',
                                'threshold': 0.88,
                                'use_gray': True}],
-     'POKEMON_ZA_ZIGARUDE10_SEARCH': [{'crop': [284, 619, 997, 696],
-                                       'match_color': '#00c853',
-                                       'ms': 2000,
-                                       'no_match_color': '#ff9800',
-                                       'show_only_true_rect': False,
-                                       'show_position': True,
-                                       'show_value': False,
-                                       'template_path': 'Template/ZA_Story/_2_y_lank/POKEMON_ZA_ZIGARUDE10_SEARCH.png',
-                                       'threshold': 0.8,
-                                       'use_gray': False}],
      'POKEMON_ZA_ZONE1': [{'crop': [900, 205, 1235, 345],
                            'ms': 2000,
                            'show_only_true_rect': False,
@@ -31259,285 +31508,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                            'show_value': False,
                            'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone9.png',
                            'threshold': 0.85,
-                           'use_gray': True}],
-     'PS_SSR3_BATTLE_BATTLECARD': [{'crop': [0, 0, 0, 0],
-                                    'match_color': 'blue',
-                                    'ms': 2000,
-                                    'no_match_color': 'red',
-                                    'show_only_true_rect': False,
-                                    'show_position': True,
-                                    'show_value': False,
-                                    'template_path': 'Template/PS_SSR3/battle_battlecard.png',
-                                    'threshold': 0.8,
-                                    'use_gray': False}],
-     'PS_SSR3_BATTLE_TRANING': [{'crop': [0, 0, 0, 0],
-                                 'match_color': 'blue',
-                                 'ms': 2000,
-                                 'no_match_color': 'red',
-                                 'show_only_true_rect': False,
-                                 'show_position': True,
-                                 'show_value': False,
-                                 'template_path': 'Template/PS_SSR3/battle_traning.png',
-                                 'threshold': 0.8,
-                                 'use_gray': False}],
-     'PS_SSR3_BGGRD1': [{'crop': [0, 0, 0, 0],
-                         'match_color': 'blue',
-                         'ms': 2000,
-                         'no_match_color': 'red',
-                         'show_only_true_rect': False,
-                         'show_position': True,
-                         'show_value': False,
-                         'template_path': 'Template/PS_SSR3/bggrd1.png',
-                         'threshold': 0.8,
-                         'use_gray': False}],
-     'PS_SSR3_BGGRD2': [{'crop': [0, 0, 0, 0],
-                         'match_color': 'blue',
-                         'ms': 2000,
-                         'no_match_color': 'red',
-                         'show_only_true_rect': False,
-                         'show_position': True,
-                         'show_value': False,
-                         'template_path': 'Template/PS_SSR3/bggrd2.png',
-                         'threshold': 0.8,
-                         'use_gray': False}],
-     'PS_SSR3_CUSTOM_BATTLECARD': [{'crop': [0, 0, 0, 0],
-                                    'match_color': 'blue',
-                                    'ms': 2000,
-                                    'no_match_color': 'red',
-                                    'show_only_true_rect': False,
-                                    'show_position': True,
-                                    'show_value': False,
-                                    'template_path': 'Template/PS_SSR3/custom_battlecard.png',
-                                    'threshold': 0.8,
-                                    'use_gray': False}],
-     'PS_SSR3_STARICON': [{'crop': [0, 0, 0, 0],
-                           'match_color': 'blue',
-                           'ms': 2000,
-                           'no_match_color': 'red',
-                           'show_only_true_rect': False,
-                           'show_position': True,
-                           'show_value': False,
-                           'template_path': 'Template/PS_SSR3/staricon.png',
-                           'threshold': 0.8,
-                           'use_gray': False}],
-     'SAMPLES_BABY_MSG': [{'crop': [0, 0, 0, 0],
-                           'ms': 2000,
-                           'show_only_true_rect': False,
-                           'show_position': True,
-                           'show_value': False,
-                           'template_path': 'Template/Samples/baby_msg.png',
-                           'threshold': 0.8,
-                           'use_gray': True}],
-     'SAMPLES_DOUGU_TO_BAG': [{'crop': [0, 0, 0, 0],
-                               'ms': 2000,
-                               'show_only_true_rect': False,
-                               'show_position': True,
-                               'show_value': False,
-                               'template_path': 'Template/Samples/dougu_to_bag.png',
-                               'threshold': 0.8,
-                               'use_gray': True}],
-     'SAMPLES_EGG_FOUND': [{'crop': [0, 0, 0, 0],
-                            'ms': 2000,
-                            'show_only_true_rect': False,
-                            'show_position': True,
-                            'show_value': False,
-                            'template_path': 'Template/Samples/egg_found.png',
-                            'threshold': 0.8,
-                            'use_gray': True}],
-     'SAMPLES_EGG_NOTICE': [{'crop': [0, 0, 0, 0],
-                             'ms': 2000,
-                             'show_only_true_rect': False,
-                             'show_position': True,
-                             'show_value': False,
-                             'template_path': 'Template/Samples/egg_notice.png',
-                             'threshold': 0.8,
-                             'use_gray': True}],
-     'SAMPLES_FELL_MESSAGE': [{'crop': [0, 0, 0, 0],
-                               'ms': 2000,
-                               'show_only_true_rect': False,
-                               'show_position': True,
-                               'show_value': False,
-                               'template_path': 'Template/Samples/fell_message.png',
-                               'threshold': 0.8,
-                               'use_gray': True}],
-     'SAMPLES_LOGO_POKEMON_HOME': [{'crop': [0, 0, 0, 0],
-                                    'ms': 2000,
-                                    'show_only_true_rect': False,
-                                    'show_position': True,
-                                    'show_value': False,
-                                    'template_path': 'Template/Samples/logo_pokemon_home.png',
-                                    'threshold': 0.8,
-                                    'use_gray': True}],
-     'SAMPLES_NETWORK_OFFLINE': [{'crop': [0, 0, 0, 0],
-                                  'ms': 2000,
-                                  'show_only_true_rect': False,
-                                  'show_position': True,
-                                  'show_value': False,
-                                  'template_path': 'Template/Samples/Network_Offline.png',
-                                  'threshold': 0.8,
-                                  'use_gray': True}],
-     'SAMPLES_OP': [{'crop': [0, 0, 0, 0],
-                     'ms': 2000,
-                     'show_only_true_rect': False,
-                     'show_position': True,
-                     'show_value': False,
-                     'template_path': 'Template/Samples/OP.png',
-                     'threshold': 0.8,
-                     'use_gray': True}],
-     'SAMPLES_PANNELS': [{'crop': [0, 0, 0, 0],
-                          'ms': 2000,
-                          'show_only_true_rect': False,
-                          'show_position': True,
-                          'show_value': False,
-                          'template_path': 'Template/Samples/pannels.png',
-                          'threshold': 0.8,
-                          'use_gray': True}],
-     'SAMPLES_SAMPLE': [{'crop': [0, 0, 0, 0],
-                         'ms': 2000,
-                         'show_only_true_rect': False,
-                         'show_position': True,
-                         'show_value': False,
-                         'template_path': 'Template/Samples/sample.png',
-                         'threshold': 0.8,
-                         'use_gray': True}],
-     'SAMPLES_SAMPLE_COLOR_HLS': [{'crop': [0, 0, 0, 0],
-                                   'ms': 2000,
-                                   'show_only_true_rect': False,
-                                   'show_position': True,
-                                   'show_value': False,
-                                   'template_path': 'Template/Samples/sample_color_HLS.png',
-                                   'threshold': 0.8,
-                                   'use_gray': True}],
-     'SAMPLES_SHINY_MARK': [{'crop': [0, 0, 0, 0],
-                             'ms': 2000,
-                             'show_only_true_rect': False,
-                             'show_position': True,
-                             'show_value': False,
-                             'template_path': 'Template/Samples/shiny_mark.png',
-                             'threshold': 0.8,
-                             'use_gray': True}],
-     'SAMPLES_STATUS': [{'crop': [0, 0, 0, 0],
-                         'ms': 2000,
-                         'show_only_true_rect': False,
-                         'show_position': True,
-                         'show_value': False,
-                         'template_path': 'Template/Samples/status.png',
-                         'threshold': 0.8,
-                         'use_gray': True}],
-     'SAMPLES_ZACHIAN_PART': [{'crop': [0, 0, 0, 0],
-                               'ms': 2000,
-                               'show_only_true_rect': False,
-                               'show_position': True,
-                               'show_value': False,
-                               'template_path': 'Template/Samples/zachian_part.png',
-                               'threshold': 0.8,
-                               'use_gray': True}],
-     'SSR_BKGRD': [{'crop': [0, 0, 242, 720],
-                    'match_color': 'blue',
-                    'ms': 2000,
-                    'no_match_color': 'red',
-                    'show_only_true_rect': False,
-                    'show_position': True,
-                    'show_value': False,
-                    'template_path': 'Template/PS_SSR3/bggrd.png',
-                    'threshold': 0.8,
-                    'use_gray': False}],
-     'ZA_STORY_COMMON_2026-03-15_15-42-16': [{'crop': [0, 0, 0, 0],
-                                              'ms': 2000,
-                                              'show_only_true_rect': False,
-                                              'show_position': True,
-                                              'show_value': False,
-                                              'template_path': 'Template/ZA_Story/Common/2026-03-15_15-42-16.png',
-                                              'threshold': 0.8,
-                                              'use_gray': True}],
-     'ZA_STORY_COMMON_C+2': [{'crop': [0, 0, 0, 0],
-                              'ms': 2000,
-                              'show_only_true_rect': False,
-                              'show_position': True,
-                              'show_value': False,
-                              'template_path': 'Template/ZA_Story/Common/C+2.png',
-                              'threshold': 0.8,
-                              'use_gray': True}],
-     'ZA_STORY_COMMON_EVENTFLAG': [{'crop': [0, 0, 0, 0],
-                                    'ms': 2000,
-                                    'show_only_true_rect': False,
-                                    'show_position': True,
-                                    'show_value': False,
-                                    'template_path': 'Template/ZA_Story/Common/eventflag.png',
-                                    'threshold': 0.8,
-                                    'use_gray': True}],
-     'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': [{'crop': [0, 0, 0, 0],
-                                             'ms': 2000,
-                                             'show_only_true_rect': False,
-                                             'show_position': True,
-                                             'show_value': False,
-                                             'template_path': 'Template/ZA_Story/ZA_infi/attack_display_c+.png',
-                                             'threshold': 0.8,
-                                             'use_gray': True}],
-     'ZA_STORY_ZA_INFI_MAP': [{'crop': [0, 0, 0, 0],
-                               'ms': 2000,
-                               'show_only_true_rect': False,
-                               'show_position': True,
-                               'show_value': False,
-                               'template_path': 'Template/ZA_Story/ZA_infi/map.png',
-                               'threshold': 0.8,
-                               'use_gray': True}],
-     'ZA_STORY_ZA_INFI_MAP2': [{'crop': [0, 0, 0, 0],
-                                'ms': 2000,
-                                'show_only_true_rect': False,
-                                'show_position': True,
-                                'show_value': False,
-                                'template_path': 'Template/ZA_Story/ZA_infi/map2.png',
-                                'threshold': 0.8,
-                                'use_gray': True}],
-     'ZA_STORY_ZA_INFI_MOVE_COMMENT': [{'crop': [0, 0, 0, 0],
-                                        'ms': 2000,
-                                        'show_only_true_rect': False,
-                                        'show_position': True,
-                                        'show_value': False,
-                                        'template_path': 'Template/ZA_Story/ZA_infi/move_comment.png',
-                                        'threshold': 0.8,
-                                        'use_gray': True}],
-     'ZA_STORY_ZA_INFI_REWORD_END2': [{'crop': [0, 0, 0, 0],
-                                       'ms': 2000,
-                                       'show_only_true_rect': False,
-                                       'show_position': True,
-                                       'show_value': False,
-                                       'template_path': 'Template/ZA_Story/ZA_infi/reword_end2.png',
-                                       'threshold': 0.8,
-                                       'use_gray': True}],
-     'ZA_STORY_ZA_INFI_SELECT_ALL': [{'crop': [0, 0, 0, 0],
-                                      'ms': 2000,
-                                      'show_only_true_rect': False,
-                                      'show_position': True,
-                                      'show_value': False,
-                                      'template_path': 'Template/ZA_Story/ZA_infi/select_all.png',
-                                      'threshold': 0.8,
-                                      'use_gray': True}],
-     'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': [{'crop': [0, 0, 0, 0],
-                                             'ms': 2000,
-                                             'show_only_true_rect': False,
-                                             'show_position': True,
-                                             'show_value': False,
-                                             'template_path': 'Template/ZA_Story/ZA_infi/select_pekecenter.png',
-                                             'threshold': 0.8,
-                                             'use_gray': True}],
-     'ZA_STORY_ZA_INFI_SELECT_ZONE': [{'crop': [0, 0, 0, 0],
-                                       'ms': 2000,
-                                       'show_only_true_rect': False,
-                                       'show_position': True,
-                                       'show_value': False,
-                                       'template_path': 'Template/ZA_Story/ZA_infi/select_zone.png',
-                                       'threshold': 0.8,
-                                       'use_gray': True}],
-     'ZA_STORY__0_START_開始画面': [{'crop': [0, 0, 0, 0],
-                                 'ms': 2000,
-                                 'show_only_true_rect': False,
-                                 'show_position': True,
-                                 'show_value': False,
-                                 'template_path': 'Template/ZA_Story/_0_Start/開始画面.png',
-                                 'threshold': 0.8,
-                                 'use_gray': True}]}
+                           'use_gray': True}]}
     IMAGE_DETECTION_OPERATORS = {'POKEMON_ZA_1_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT_TUTORIAL': 'OR',
@@ -31547,7 +31518,6 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_4_SELECT': 'OR',
      'POKEMON_ZA_ABSOL_ICON': 'OR',
      'POKEMON_ZA_AME_S': 'OR',
-     'POKEMON_ZA_ARROW': 'OR',
      'POKEMON_ZA_ATTACK_C+_DISPLAY': 'OR',
      'POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW': 'OR',
      'POKEMON_ZA_ATTACK_DISPLAY': 'OR',
@@ -31567,7 +31537,6 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_DEAD': 'OR',
      'POKEMON_ZA_DOOR_A': 'OR',
      'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'OR',
-     'POKEMON_ZA_ELEVATOR_ICON': 'OR',
      'POKEMON_ZA_ESCAPE': 'OR',
      'POKEMON_ZA_ESCAPE_COMMENT1': 'OR',
      'POKEMON_ZA_ESCAPE_COMMENT2': 'OR',
@@ -31610,6 +31579,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_FIELD_BACK_W': 'OR',
      'POKEMON_ZA_FIELD_W': 'OR',
      'POKEMON_ZA_FIN': 'OR',
+     'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': 'OR',
      'POKEMON_ZA_FURADARI_MAP': 'OR',
      'POKEMON_ZA_GETCHANCE_ICON4': 'OR',
      'POKEMON_ZA_GET_BALL': 'OR',
@@ -31665,17 +31635,12 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10': 'OR',
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE11': 'OR',
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE12': 'OR',
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE13': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15': 'OR',
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE16': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2': 'OR',
-     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE20': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5': 'OR',
      'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6': 'OR',
@@ -31714,17 +31679,12 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10': 'OR',
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE11': 'OR',
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE12': 'OR',
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE13': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15': 'OR',
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE16': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2': 'OR',
-     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE20': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5': 'OR',
      'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6': 'OR',
@@ -31793,7 +31753,6 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_X': 'OR',
      'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_Y': 'OR',
      'POKEMON_ZA_SKILL_PAGE_WINDOW': 'OR',
-     'POKEMON_ZA_SLEEP_ICON': 'OR',
      'POKEMON_ZA_STARTBTN_SELECT': 'OR',
      'POKEMON_ZA_TAB_FILTER': 'OR',
      'POKEMON_ZA_TARGET_LEFT': 'OR',
@@ -31826,7 +31785,6 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_X_MENU_OPEN': 'OR',
      'POKEMON_ZA_YUBIWA': 'OR',
      'POKEMON_ZA_ZA_ROYALE': 'OR',
-     'POKEMON_ZA_ZIGARUDE10_SEARCH': 'OR',
      'POKEMON_ZA_ZONE1': 'OR',
      'POKEMON_ZA_ZONE10': 'OR',
      'POKEMON_ZA_ZONE11': 'OR',
@@ -31837,40 +31795,7 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ZONE6': 'OR',
      'POKEMON_ZA_ZONE7': 'OR',
      'POKEMON_ZA_ZONE8': 'OR',
-     'POKEMON_ZA_ZONE9': 'OR',
-     'PS_SSR3_BATTLE_BATTLECARD': 'OR',
-     'PS_SSR3_BATTLE_TRANING': 'OR',
-     'PS_SSR3_BGGRD1': 'OR',
-     'PS_SSR3_BGGRD2': 'OR',
-     'PS_SSR3_CUSTOM_BATTLECARD': 'OR',
-     'PS_SSR3_STARICON': 'OR',
-     'SAMPLES_BABY_MSG': 'OR',
-     'SAMPLES_DOUGU_TO_BAG': 'OR',
-     'SAMPLES_EGG_FOUND': 'OR',
-     'SAMPLES_EGG_NOTICE': 'OR',
-     'SAMPLES_FELL_MESSAGE': 'OR',
-     'SAMPLES_LOGO_POKEMON_HOME': 'OR',
-     'SAMPLES_NETWORK_OFFLINE': 'OR',
-     'SAMPLES_OP': 'OR',
-     'SAMPLES_PANNELS': 'OR',
-     'SAMPLES_SAMPLE': 'OR',
-     'SAMPLES_SAMPLE_COLOR_HLS': 'OR',
-     'SAMPLES_SHINY_MARK': 'OR',
-     'SAMPLES_STATUS': 'OR',
-     'SAMPLES_ZACHIAN_PART': 'OR',
-     'SSR_BKGRD': 'OR',
-     'ZA_STORY_COMMON_2026-03-15_15-42-16': 'OR',
-     'ZA_STORY_COMMON_C+2': 'OR',
-     'ZA_STORY_COMMON_EVENTFLAG': 'OR',
-     'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': 'OR',
-     'ZA_STORY_ZA_INFI_MAP': 'OR',
-     'ZA_STORY_ZA_INFI_MAP2': 'OR',
-     'ZA_STORY_ZA_INFI_MOVE_COMMENT': 'OR',
-     'ZA_STORY_ZA_INFI_REWORD_END2': 'OR',
-     'ZA_STORY_ZA_INFI_SELECT_ALL': 'OR',
-     'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': 'OR',
-     'ZA_STORY_ZA_INFI_SELECT_ZONE': 'OR',
-     'ZA_STORY__0_START_開始画面': 'OR'}
+     'POKEMON_ZA_ZONE9': 'OR'}
     IMAGE_DETECTION_DESCRIPTIONS = {'targets': {'POKEMON_ZA_1_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 1_SELECT',
                  'POKEMON_ZA_2_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT',
                  'POKEMON_ZA_2_SELECT_TUTORIAL': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT_TUTORIAL',
@@ -31880,7 +31805,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_4_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 4_SELECT',
                  'POKEMON_ZA_ABSOL_ICON': 'Pokemon ZA image detection migrated from ZA_story: ABSOL_ICON',
                  'POKEMON_ZA_AME_S': 'Pokemon ZA image detection migrated from ZA_story: AME_S',
-                 'POKEMON_ZA_ARROW': 'Pokemon ZA image detection migrated from ZA_story: ARROW',
                  'POKEMON_ZA_ATTACK_C+_DISPLAY': 'Pokemon ZA image detection migrated from ZA_story: ATTACK_C+_DISPLAY',
                  'POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW': 'Pokemon ZA image detection migrated from ZA_story: '
                                                               'ATTACK_C+_DISPLAY_RIHGT_CHECKW',
@@ -31903,7 +31827,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_DOOR_A': 'Pokemon ZA image detection migrated from ZA_story: DOOR_A',
                  'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'Pokemon ZA image detection migrated from ZA_story: '
                                                     'DOWN_SELECT_X_MENU_W',
-                 'POKEMON_ZA_ELEVATOR_ICON': 'Pokemon ZA image detection migrated from ZA_story: ELEVATOR_ICON',
                  'POKEMON_ZA_ESCAPE': 'Pokemon ZAの戦闘中に左端へ表示される逃走アイコン（通常・薄赤・強赤）',
                  'POKEMON_ZA_ESCAPE_COMMENT1': 'Pokemon ZA image detection migrated from ZA_story: ESCAPE_COMMENT1',
                  'POKEMON_ZA_ESCAPE_COMMENT2': 'Pokemon ZA image detection migrated from ZA_story: ESCAPE_COMMENT2',
@@ -31958,6 +31881,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_FIELD_BACK_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK_W',
                  'POKEMON_ZA_FIELD_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_W',
                  'POKEMON_ZA_FIN': 'Pokemon ZA story ending FIN shown at the lower right',
+                 'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': 'FURADARI区間：目の前がまっくらになったComment',
                  'POKEMON_ZA_FURADARI_MAP': 'Pokemon ZA image detection migrated from ZA_story: FURADARI_MAP',
                  'POKEMON_ZA_GETCHANCE_ICON4': 'Pokemon ZA image detection migrated from ZA_story: GETCHANCE_ICON4',
                  'POKEMON_ZA_GET_BALL': 'Area Captureから登録',
@@ -32046,18 +31970,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                          'MOVEPOINT_PIC_ROSE_SQUARE',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: '
                                                       'MOVEPOINT_PIC_W_ZONE10',
-                 'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE11': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                      'MOVEPOINT_PIC_W_ZONE11',
-                 'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE12': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                      'MOVEPOINT_PIC_W_ZONE12',
-                 'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE13': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                      'MOVEPOINT_PIC_W_ZONE13',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': 'Pokemon ZA image detection migrated from ZA_story: '
                                                       'MOVEPOINT_PIC_W_ZONE14',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15': 'Pokemon ZA image detection migrated from ZA_story: '
                                                       'MOVEPOINT_PIC_W_ZONE15',
-                 'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE16': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                      'MOVEPOINT_PIC_W_ZONE16',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': 'Pokemon ZA image detection migrated from ZA_story: '
                                                       'MOVEPOINT_PIC_W_ZONE17',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18': 'Pokemon ZA image detection migrated from ZA_story: '
@@ -32066,8 +31982,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                       'MOVEPOINT_PIC_W_ZONE19',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2': 'Pokemon ZA image detection migrated from ZA_story: '
                                                      'MOVEPOINT_PIC_W_ZONE2',
-                 'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE20': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                      'MOVEPOINT_PIC_W_ZONE20',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': 'Pokemon ZA image detection migrated from ZA_story: '
                                                      'MOVEPOINT_PIC_W_ZONE4',
                  'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5': 'Pokemon ZA image detection migrated from ZA_story: '
@@ -32144,18 +32058,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                             'MOVEPOINT_TARGET_ROSE_SQUARE',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: '
                                                          'MOVEPOINT_TARGET_W_ZONE10',
-                 'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE11': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                         'MOVEPOINT_TARGET_W_ZONE11',
-                 'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE12': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                         'MOVEPOINT_TARGET_W_ZONE12',
-                 'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE13': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                         'MOVEPOINT_TARGET_W_ZONE13',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': 'Pokemon ZA image detection migrated from ZA_story: '
                                                          'MOVEPOINT_TARGET_W_ZONE14',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15': 'Pokemon ZA image detection migrated from ZA_story: '
                                                          'MOVEPOINT_TARGET_W_ZONE15',
-                 'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE16': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                         'MOVEPOINT_TARGET_W_ZONE16',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': 'Pokemon ZA image detection migrated from ZA_story: '
                                                          'MOVEPOINT_TARGET_W_ZONE17',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18': 'Pokemon ZA image detection migrated from ZA_story: '
@@ -32164,8 +32070,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                          'MOVEPOINT_TARGET_W_ZONE19',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2': 'Pokemon ZA image detection migrated from ZA_story: '
                                                         'MOVEPOINT_TARGET_W_ZONE2',
-                 'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE20': 'Pokemon ZA image detection migrated from ZA_story: '
-                                                         'MOVEPOINT_TARGET_W_ZONE20',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': 'Pokemon ZA image detection migrated from ZA_story: '
                                                         'MOVEPOINT_TARGET_W_ZONE4',
                  'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5': 'Pokemon ZA image detection migrated from ZA_story: '
@@ -32269,7 +32173,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_Y': 'Pokemon ZA image detection migrated from ZA_story: '
                                                         'SKILL_PAGE_SIDE_SELECT_Y',
                  'POKEMON_ZA_SKILL_PAGE_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: SKILL_PAGE_WINDOW',
-                 'POKEMON_ZA_SLEEP_ICON': 'Pokemon ZA image detection migrated from ZA_story: SLEEP_ICON',
                  'POKEMON_ZA_STARTBTN_SELECT': 'Pokemon ZA image detection migrated from ZA_story: STARTBTN_SELECT',
                  'POKEMON_ZA_TAB_FILTER': 'Pokemon ZA image detection migrated from ZA_story: TAB_FILTER',
                  'POKEMON_ZA_TARGET_LEFT': 'Pokemon ZA image detection migrated from ZA_story: TARGET_LEFT',
@@ -32310,7 +32213,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_X_MENU_OPEN': 'Pokemon ZA image detection migrated from ZA_story: X_MENU_OPEN',
                  'POKEMON_ZA_YUBIWA': 'Area Captureから登録',
                  'POKEMON_ZA_ZA_ROYALE': 'Pokemon ZA image detection migrated from ZA_story: ZA_ROYALE',
-                 'POKEMON_ZA_ZIGARUDE10_SEARCH': 'Area Captureから登録',
                  'POKEMON_ZA_ZONE1': 'Pokemon ZA image detection migrated from ZA_story: ZONE1',
                  'POKEMON_ZA_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: ZONE10',
                  'POKEMON_ZA_ZONE11': 'Pokemon ZA image detection migrated from ZA_story: ZONE11',
@@ -32321,67 +32223,326 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: ZONE6',
                  'POKEMON_ZA_ZONE7': 'Pokemon ZA image detection migrated from ZA_story: ZONE7',
                  'POKEMON_ZA_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: ZONE8',
-                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9',
-                 'PS_SSR3_BATTLE_BATTLECARD': 'Templateから自動登録',
-                 'PS_SSR3_BATTLE_TRANING': 'Templateから自動登録',
-                 'PS_SSR3_BGGRD1': 'Templateから自動登録',
-                 'PS_SSR3_BGGRD2': 'Templateから自動登録',
-                 'PS_SSR3_CUSTOM_BATTLECARD': 'Templateから自動登録',
-                 'PS_SSR3_STARICON': 'Templateから自動登録',
-                 'SAMPLES_BABY_MSG': 'Templateから自動登録',
-                 'SAMPLES_DOUGU_TO_BAG': 'Templateから自動登録',
-                 'SAMPLES_EGG_FOUND': 'Templateから自動登録',
-                 'SAMPLES_EGG_NOTICE': 'Templateから自動登録',
-                 'SAMPLES_FELL_MESSAGE': 'Templateから自動登録',
-                 'SAMPLES_LOGO_POKEMON_HOME': 'Templateから自動登録',
-                 'SAMPLES_NETWORK_OFFLINE': 'Templateから自動登録',
-                 'SAMPLES_OP': 'Templateから自動登録',
-                 'SAMPLES_PANNELS': 'Templateから自動登録',
-                 'SAMPLES_SAMPLE': 'Templateから自動登録',
-                 'SAMPLES_SAMPLE_COLOR_HLS': 'Templateから自動登録',
-                 'SAMPLES_SHINY_MARK': 'Templateから自動登録',
-                 'SAMPLES_STATUS': 'Templateから自動登録',
-                 'SAMPLES_ZACHIAN_PART': 'Templateから自動登録',
-                 'SSR_BKGRD': '',
-                 'ZA_STORY_COMMON_2026-03-15_15-42-16': 'Templateから自動登録',
-                 'ZA_STORY_COMMON_C+2': 'Templateから自動登録',
-                 'ZA_STORY_COMMON_EVENTFLAG': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_ATTACK_DISPLAY_C+': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_MAP': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_MAP2': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_MOVE_COMMENT': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_REWORD_END2': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_SELECT_ALL': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_SELECT_PEKECENTER': 'Templateから自動登録',
-                 'ZA_STORY_ZA_INFI_SELECT_ZONE': 'Templateから自動登録',
-                 'ZA_STORY__0_START_開始画面': 'Templateから自動登録'}}
+                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9'}}
 
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
     # DevStudioの登録済み画像検知から追加。再生成時も保持されます。
-    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': [{'crop': [350, 100, 950, 350],
-                                                        'ms': 2000,
-                                                        'show_only_true_rect': True,
-                                                        'show_position': True,
-                                                        'show_value': False,
-                                                        'template_path': 'Template/ZA_Story/_1_z_lank/out_hotel_z23_field_white_comment.png',
-                                                        'threshold': 0.8,
-                                                        'use_gray': True}],
-     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [{'crop': [120, 500, 260, 580],
+    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_1_SELECT': [{'crop': [920, 400, 1180, 550],
+                              'match_color': 'blue',
+                              'ms': 2000,
+                              'no_match_color': 'red',
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/1_select.png',
+                              'threshold': 0.75,
+                              'use_gray': False}],
+     'POKEMON_ZA_2_SELECT': [{'crop': [920, 400, 1180, 550],
+                              'match_color': 'blue',
+                              'ms': 2000,
+                              'no_match_color': 'red',
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/2_select.png',
+                              'threshold': 0.75,
+                              'use_gray': False}],
+     'POKEMON_ZA_2_SELECT_TUTORIAL': [{'crop': [920, 400, 1180, 550],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/2_select_tutorial.png',
+                                       'threshold': 0.75,
+                                       'use_gray': True}],
+     'POKEMON_ZA_3_SELECT': [{'crop': [920, 340, 1180, 550],
+                              'match_color': 'blue',
+                              'ms': 2000,
+                              'no_match_color': 'red',
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/3_select.png',
+                              'threshold': 0.75,
+                              'use_gray': False}],
+     'POKEMON_ZA_3_SELECT_SELECT': [{'crop': [920, 340, 1180, 550],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/Common/3_select_select.png',
+                                     'threshold': 0.75,
+                                     'use_gray': True}],
+     'POKEMON_ZA_3_SELECT_TUTORIAL': [{'crop': [900, 320, 1200, 580],
+                                       'match_color': 'blue',
+                                       'ms': 2000,
+                                       'no_match_color': 'red',
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/3_select_tutorial.png',
+                                       'threshold': 0.75,
+                                       'use_gray': False}],
+     'POKEMON_ZA_4_SELECT': [{'crop': [920, 300, 1180, 550],
+                              'match_color': 'blue',
+                              'ms': 2000,
+                              'no_match_color': 'red',
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/4_select.png',
+                              'threshold': 0.75,
+                              'use_gray': False}],
+     'POKEMON_ZA_ABSOL_ICON': [{'crop': [50, 640, 350, 680],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/_4_e_lank/absol_icon.png',
+                                'threshold': 0.8,
+                                'use_gray': True}],
+     'POKEMON_ZA_AME_S': [{'crop': [20, 40, 850, 700],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/ame_s.png',
+                           'threshold': 0.95,
+                           'use_gray': False}],
+     'POKEMON_ZA_ATTACK_C+_DISPLAY': [{'crop': [0, 100, 600, 650],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/ZA_infi/attack_display.png',
+                                       'threshold': 0.7,
+                                       'use_gray': False}],
+     'POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW': [{'crop': [580, 100, 880, 720],
+                                                    'ms': 2000,
+                                                    'show_only_true_rect': False,
+                                                    'show_position': True,
+                                                    'show_value': False,
+                                                    'template_path': 'Template/ZA_Story/ZA_infi/attack_display.png',
+                                                    'threshold': 0.7,
+                                                    'use_gray': False}],
+     'POKEMON_ZA_ATTACK_DISPLAY': [{'crop': [0, 100, 600, 650],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/ZA_Story/ZA_infi/attack_display.png',
+                                    'threshold': 0.7,
+                                    'use_gray': False}],
+     'POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW': [{'crop': [580, 100, 880, 720],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/ZA_infi/attack_display.png',
+                                                 'threshold': 0.7,
+                                                 'use_gray': False}],
+     'POKEMON_ZA_BATTLE': [{'crop': [50, 640, 350, 680],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/battle.png',
+                            'threshold': 0.75,
+                            'use_gray': True}],
+     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [{'crop': [120, 500, 300, 580],
+                                         'match_color': 'blue',
                                          'ms': 2000,
+                                         'no_match_color': 'red',
                                          'show_only_true_rect': False,
                                          'show_position': True,
                                          'show_value': False,
                                          'template_path': 'Template/ZA_Story/Common/battle_active_level.png',
                                          'threshold': 0.75,
-                                         'use_gray': True}],
+                                         'use_gray': False}],
+     'POKEMON_ZA_BATTLE_BALL_CHECK': [{'crop': [500, 30, 850, 70],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/battle_ball_check.png',
+                                       'threshold': 0.95,
+                                       'use_gray': False}],
+     'POKEMON_ZA_BOX_MENU': [{'crop': [20, 40, 850, 700],
+                              'ms': 2000,
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/boxmenu.png',
+                              'threshold': 0.88,
+                              'use_gray': True}],
+     'POKEMON_ZA_BOX_WINDOW': [{'crop': [160, 10, 290, 60],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/Common/boxwindow.png',
+                                'threshold': 0.88,
+                                'use_gray': True}],
+     'POKEMON_ZA_C+': [{'crop': [1000, 565, 1280, 720],
+                        'ms': 2000,
+                        'show_only_true_rect': False,
+                        'show_position': True,
+                        'show_value': False,
+                        'template_path': 'Template/ZA_Story/Common/C+.png',
+                        'threshold': 0.75,
+                        'use_gray': False},
+                       {'crop': [1000, 565, 1280, 720],
+                        'ms': 2000,
+                        'show_only_true_rect': False,
+                        'show_position': True,
+                        'show_value': False,
+                        'template_path': 'Template/ZA_Story/Common/C+_white.png',
+                        'threshold': 0.75,
+                        'use_gray': False}],
+     'POKEMON_ZA_C+_LOW': [{'crop': [1000, 565, 1280, 720],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/C+.png',
+                            'threshold': 0.6,
+                            'use_gray': False},
+                           {'crop': [1000, 565, 1280, 720],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/C+_white.png',
+                            'threshold': 0.6,
+                            'use_gray': False}],
+     'POKEMON_ZA_CHAT_MARKER': [{'crop': [400, 200, 1000, 700],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/chatmarker.png',
+                                 'threshold': 0.75,
+                                 'use_gray': True}],
+     'POKEMON_ZA_CHICKET_MAX': [{'crop': [700, 600, 1000, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/ZA_infi/chicket_max.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True}],
+     'POKEMON_ZA_CHICKET_MAX_RIGHT': [{'crop': [1122, 95, 1268, 118],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/ZA_infi/chicket_95_118x1122_1268.png',
+                                       'threshold': 0.75,
+                                       'use_gray': True}],
+     'POKEMON_ZA_COIN_ICON': [{'crop': [1000, 0, 1200, 100],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/Common/many_icon.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
      'POKEMON_ZA_COMMENT_MARKER': [{'crop': [930, 658, 965, 691],
+                                    'match_color': 'blue',
                                     'ms': 2000,
+                                    'no_match_color': 'red',
                                     'show_only_true_rect': False,
                                     'show_position': True,
-                                    'show_value': False,
+                                    'show_value': True,
                                     'template_path': 'Template/ZA_Story/Common/ZA_COMMENT_MARKER.png',
                                     'threshold': 0.8,
                                     'use_gray': True}],
+     'POKEMON_ZA_DEAD': [{'crop': [50, 640, 350, 680],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/ZA_Story/Common/dead.png',
+                          'threshold': 0.8,
+                          'use_gray': True}],
+     'POKEMON_ZA_DOOR_A': [{'crop': [630, 350, 800, 500],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/ZA_infi/doorA.png',
+                            'threshold': 0.85,
+                            'use_gray': True}],
+     'POKEMON_ZA_DOWN_SELECT_X_MENU_W': [{'crop': [550, 120, 1250, 160],
+                                          'ms': 2000,
+                                          'show_only_true_rect': False,
+                                          'show_position': True,
+                                          'show_value': False,
+                                          'template_path': 'Template/ZA_Story/Common/X_menu/down_select.png',
+                                          'threshold': 0.85,
+                                          'use_gray': True}],
+     'POKEMON_ZA_ESCAPE': [{'crop': [54, 477, 75, 497],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/escape.png',
+                            'threshold': 0.85,
+                            'use_gray': True},
+                           {'crop': [10, 450, 62, 525],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/escape_full_normal.png',
+                            'threshold': 0.85,
+                            'use_gray': True},
+                           {'crop': [10, 450, 62, 525],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/escape_full_thin_red.png',
+                            'threshold': 0.85,
+                            'use_gray': True},
+                           {'crop': [10, 450, 62, 525],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/escape_full_red.png',
+                            'threshold': 0.85,
+                            'use_gray': True}],
+     'POKEMON_ZA_ESCAPE_COMMENT1': [{'crop': [290, 550, 1000, 690],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/ZA_infi/escapecomment1.png',
+                                     'threshold': 0.75,
+                                     'use_gray': True}],
+     'POKEMON_ZA_ESCAPE_COMMENT2': [{'crop': [290, 550, 1000, 690],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/ZA_infi/escapecomment2.png',
+                                     'threshold': 0.75,
+                                     'use_gray': True}],
+     'POKEMON_ZA_ESCAPE_SELECT': [{'crop': [900, 400, 1200, 550],
+                                   'ms': 2000,
+                                   'show_only_true_rect': False,
+                                   'show_position': True,
+                                   'show_value': False,
+                                   'template_path': 'Template/ZA_Story/ZA_infi/escapecommentselect.png',
+                                   'threshold': 0.75,
+                                   'use_gray': True}],
      'POKEMON_ZA_EVENT_MARKER_CENTER': [{'crop': [640, 100, 680, 600],
                                          'match_color': 'blue',
                                          'ms': 2000,
@@ -32542,6 +32703,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             'template_path': 'Template/ZA_Story/Common/event_marker.png',
                                             'threshold': 0.8,
                                             'use_gray': False}],
+     'POKEMON_ZA_EVENT_MARKER_RANGE': [{'crop': [300, 200, 900, 500],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/event_marker.png',
+                                        'threshold': 0.85,
+                                        'use_gray': False}],
      'POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE': [{'crop': [640, 100, 1210, 600],
                                              'match_color': 'blue',
                                              'ms': 2000,
@@ -32552,6 +32721,230 @@ class ZA_story_Base(ImageProcPythonCommand):
                                              'template_path': 'Template/ZA_Story/Common/event_marker.png',
                                              'threshold': 0.8,
                                              'use_gray': False}],
+     'POKEMON_ZA_EVOLUTION_CONFIRM': [{'crop': [880, 380, 1220, 580],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/evolution_2_select.png',
+                                       'threshold': 0.8,
+                                       'use_gray': True}],
+     'POKEMON_ZA_EYE_CHECK': [{'crop': [600, 50, 700, 120],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/Common/eye_check.png',
+                               'threshold': 0.8,
+                               'use_gray': True}],
+     'POKEMON_ZA_EYE_CHECK_HIGH': [{'crop': [400, 50, 900, 120],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/ZA_Story/Common/eye_check_high.png',
+                                    'threshold': 0.8,
+                                    'use_gray': False}],
+     'POKEMON_ZA_EYE_CHECK_HIGH_POKE': [{'crop': [400, 50, 900, 120],
+                                         'ms': 2000,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/eye_check_high_p.png',
+                                         'threshold': 0.8,
+                                         'use_gray': False}],
+     'POKEMON_ZA_FIELD': [{'crop': [50, 680, 97, 720],
+                           'match_color': 'blue',
+                           'ms': 2000,
+                           'no_match_color': 'red',
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/field.png',
+                           'threshold': 0.85,
+                           'use_gray': False}],
+     'POKEMON_ZA_FIELD1': [{'crop': [50, 680, 100, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD2': [{'crop': [100, 680, 150, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD3': [{'crop': [150, 680, 200, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': True,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD4': [{'crop': [200, 680, 250, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD5': [{'crop': [250, 680, 300, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD6': [{'crop': [300, 680, 350, 720],
+                            'match_color': 'blue',
+                            'ms': 2000,
+                            'no_match_color': 'red',
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/field.png',
+                            'threshold': 0.85,
+                            'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK': [{'crop': [50, 680, 97, 720],
+                                'match_color': 'blue',
+                                'ms': 2000,
+                                'no_match_color': 'red',
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                'threshold': 0.85,
+                                'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK1': [{'crop': [50, 680, 100, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK2': [{'crop': [100, 680, 150, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK3': [{'crop': [150, 680, 200, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK4': [{'crop': [200, 680, 250, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK5': [{'crop': [250, 680, 300, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK6': [{'crop': [300, 680, 350, 720],
+                                 'match_color': 'blue',
+                                 'ms': 2000,
+                                 'no_match_color': 'red',
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_FIELD_BACK_W': [{'crop': [50, 680, 350, 720],
+                                  'match_color': 'blue',
+                                  'ms': 2000,
+                                  'no_match_color': 'red',
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/field_back.png',
+                                  'threshold': 0.85,
+                                  'use_gray': False}],
+     'POKEMON_ZA_FIELD_W': [{'crop': [50, 680, 350, 720],
+                             'match_color': 'blue',
+                             'ms': 2000,
+                             'no_match_color': 'red',
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/ZA_Story/Common/field.png',
+                             'threshold': 0.8,
+                             'use_gray': False}],
+     'POKEMON_ZA_FIN': [{'crop': [1000, 565, 1280, 720],
+                         'ms': 2000,
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/ZA_Story/Common/fin.png',
+                         'threshold': 0.8,
+                         'use_gray': True}],
+     'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': [{'crop': [300, 590, 760, 690],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/Common/furadari_eyes_dark_comment.png',
+                                                'threshold': 0.85,
+                                                'use_gray': True}],
+     'POKEMON_ZA_FURADARI_MAP': [{'crop': [20, 0, 300, 70],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/furadari_map.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_GETCHANCE_ICON4': [{'crop': [300, 150, 1000, 720],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/Common/getmerker4.png',
+                                     'threshold': 0.6,
+                                     'use_gray': False}],
      'POKEMON_ZA_GET_BALL': [{'crop': [300, 200, 1000, 700],
                               'match_color': '#00c853',
                               'ms': 2000,
@@ -32562,6 +32955,80 @@ class ZA_story_Base(ImageProcPythonCommand):
                               'template_path': 'Template/ZA_Story/Common/GET_BALL.png',
                               'threshold': 0.8,
                               'use_gray': False}],
+     'POKEMON_ZA_HASHIGO_ICON': [{'crop': [300, 150, 900, 650],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/hashigomarker.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_HELP_MARKER': [{'crop': [300, 50, 500, 110],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/helpmarker.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True}],
+     'POKEMON_ZA_H_BALL_ICON': [{'crop': [610, 595, 670, 650],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/ball_icon/h_ball.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_INVESTIGATE_MARKER': [{'crop': [500, 0, 850, 720],
+                                        'match_color': 'blue',
+                                        'ms': 2000,
+                                        'no_match_color': 'red',
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/investigate_marker.png',
+                                        'threshold': 0.8,
+                                        'use_gray': True}],
+     'POKEMON_ZA_IN_ICON': [{'crop': [300, 150, 900, 350],
+                             'ms': 2000,
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/ZA_Story/Common/in_icon.png',
+                             'threshold': 0.85,
+                             'use_gray': True}],
+     'POKEMON_ZA_IN_MARKER': [{'crop': [600, 300, 850, 500],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/Common/inmarker.png',
+                               'threshold': 0.85,
+                               'use_gray': True}],
+     'POKEMON_ZA_ITEM_WINDOW': [{'crop': [80, 30, 230, 65],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/itemwindow.png',
+                                 'threshold': 0.88,
+                                 'use_gray': True}],
+     'POKEMON_ZA_KOHUKI_ICON_GET4': [{'crop': [200, 640, 250, 680],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/_1_z_lank/kohukiicon.png',
+                                      'threshold': 0.75,
+                                      'use_gray': True}],
+     'POKEMON_ZA_KOHUKI_ICON_GET5': [{'crop': [250, 640, 300, 680],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/_1_z_lank/kohukiicon.png',
+                                      'threshold': 0.75,
+                                      'use_gray': True}],
      'POKEMON_ZA_LAST_BATTLE_CHARGE': [{'crop': [840, 170, 1275, 360],
                                         'ms': 600,
                                         'show_only_true_rect': False,
@@ -32570,6 +33037,38 @@ class ZA_story_Base(ImageProcPythonCommand):
                                         'template_path': 'Template/ZA_Story/Common/last_battle_charge.png',
                                         'threshold': 0.78,
                                         'use_gray': True}],
+     'POKEMON_ZA_LAST_BATTLE_MOVE_UI': [{'crop': [900, 450, 1220, 545],
+                                         'ms': 600,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/last_battle_move_core_enforcer.png',
+                                         'threshold': 0.8,
+                                         'use_gray': True},
+                                        {'crop': [760, 525, 1050, 635],
+                                         'ms': 600,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/last_battle_move_thousand_arrows.png',
+                                         'threshold': 0.8,
+                                         'use_gray': True},
+                                        {'crop': [1030, 525, 1280, 635],
+                                         'ms': 600,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/last_battle_move_thousand_waves.png',
+                                         'threshold': 0.8,
+                                         'use_gray': True},
+                                        {'crop': [890, 615, 1210, 720],
+                                         'ms': 600,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/last_battle_move_lands_wrath.png',
+                                         'threshold': 0.8,
+                                         'use_gray': True}],
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': [{'crop': [840, 170, 1275, 360],
                                               'ms': 600,
                                               'show_only_true_rect': False,
@@ -32578,6 +33077,46 @@ class ZA_story_Base(ImageProcPythonCommand):
                                               'template_path': 'Template/ZA_Story/Common/last_battle_strong_light.png',
                                               'threshold': 0.78,
                                               'use_gray': True}],
+     'POKEMON_ZA_LOSE': [{'crop': [290, 550, 1000, 690],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/ZA_Story/ZA_infi/lose.png',
+                          'threshold': 0.8,
+                          'use_gray': True}],
+     'POKEMON_ZA_MAP': [{'crop': [20, 0, 200, 70],
+                         'ms': 2000,
+                         'show_only_true_rect': False,
+                         'show_position': True,
+                         'show_value': False,
+                         'template_path': 'Template/ZA_Story/Common/map2.png',
+                         'threshold': 0.85,
+                         'use_gray': True}],
+     'POKEMON_ZA_MAP2': [{'crop': [20, 0, 200, 70],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/ZA_Story/Common/map2.png',
+                          'threshold': 0.85,
+                          'use_gray': True}],
+     'POKEMON_ZA_MEGA_ABSOL_BATTLE_NAME': [{'crop': [350, 15, 930, 125],
+                                            'ms': 1000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/_2_y_lank/mega_absol_battle_name.png',
+                                            'threshold': 0.8,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MERIP_ICON_GET5': [{'crop': [250, 640, 300, 680],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/_1_z_lank/meripicon.png',
+                                     'threshold': 0.75,
+                                     'use_gray': True}],
      'POKEMON_ZA_MISSION_COMPLETE': [{'crop': [416, 179, 476, 243],
                                       'match_color': '#00c853',
                                       'ms': 2000,
@@ -32612,6 +33151,742 @@ class ZA_story_Base(ImageProcPythonCommand):
                                       'template_path': 'Template/ZA_Story/Common/POKEMON_ZA_MISSION_COMPLETE_T.png',
                                       'threshold': 0.5,
                                       'use_gray': True}],
+     'POKEMON_ZA_MORNING': [{'crop': [540, 155, 740, 350],
+                             'ms': 2000,
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/ZA_Story/Common/morning.png',
+                             'threshold': 0.85,
+                             'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM': [{'crop': [850, 100, 1270, 450],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/art_museum_pic.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE': [{'crop': [850, 100, 1270, 450],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/bule_square_pic.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE': [{'crop': [850, 100, 1270, 450],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/MovePoint/cafe_alamode_pic.png',
+                                                'threshold': 0.9,
+                                                'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE': [{'crop': [850, 100, 1270, 450],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/cafe_bataille_pic.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR': [{'crop': [850, 100, 1270, 450],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/cafe_cancodor_pic.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE': [{'crop': [850, 100, 1270, 450],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/MovePoint/cafe_cute_pic.png',
+                                             'threshold': 0.9,
+                                             'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS': [{'crop': [850, 100, 1270, 450],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/cafe_focus_pic.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/cafe_man_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2': [{'crop': [850, 100, 1270, 450],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/cafe_nuvo2_pic.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3': [{'crop': [850, 100, 1270, 450],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/cafe_nuvo3_pic.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/cafe_partenaire_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE': [{'crop': [850, 100, 1270, 450],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/cafe_retake_pic.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM': [{'crop': [850, 100, 1270, 450],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/cafe_slalom_pic.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SOLEIL': [{'crop': [850, 100, 1270, 450],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/cafe_soleil_pic.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO': [{'crop': [850, 100, 1270, 450],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/MovePoint/cafe_toto_pic.png',
+                                             'threshold': 0.9,
+                                             'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER': [{'crop': [850, 100, 1270, 450],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/MovePoint/cafe_twister_pic.png',
+                                                'threshold': 0.9,
+                                                'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/cafe_ult_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH': [{'crop': [850, 100, 1270, 450],
+                                                    'ms': 2000,
+                                                    'show_only_true_rect': False,
+                                                    'show_position': True,
+                                                    'show_value': False,
+                                                    'template_path': 'Template/ZA_Story/MovePoint/hotel_surrealish_pic.png',
+                                                    'threshold': 0.9,
+                                                    'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO': [{'crop': [850, 100, 1270, 450],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/MovePoint/justice_dojo_pic.png',
+                                                'threshold': 0.9,
+                                                'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/pokecenter_blue_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/pokecenter_evel_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/pokecenter_jone_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN': [{'crop': [850, 100, 1270, 450],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_prantan_pic.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rose_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S': [{'crop': [850, 100, 1270, 450],
+                                                     'ms': 2000,
+                                                     'show_only_true_rect': False,
+                                                     'show_position': True,
+                                                     'show_value': False,
+                                                     'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rose_square_pic.png',
+                                                     'threshold': 0.9,
+                                                     'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rudu_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_RACINE': [{'crop': [850, 100, 1270, 450],
+                                          'ms': 2000,
+                                          'show_only_true_rect': False,
+                                          'show_position': True,
+                                          'show_value': False,
+                                          'template_path': 'Template/ZA_Story/MovePoint/racine_pic.png',
+                                          'threshold': 0.9,
+                                          'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU': [{'crop': [850, 100, 1270, 450],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/restaurant_2ryu_pic.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU': [{'crop': [850, 100, 1270, 450],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/restaurant_dohutsu_pic.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM': [{'crop': [850, 100, 1270, 450],
+                                                    'ms': 2000,
+                                                    'show_only_true_rect': False,
+                                                    'show_position': True,
+                                                    'show_value': False,
+                                                    'template_path': 'Template/ZA_Story/MovePoint/restaurant_dream_pic.png',
+                                                    'threshold': 0.9,
+                                                    'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME': [{'crop': [850, 100, 1270, 450],
+                                                       'ms': 2000,
+                                                       'show_only_true_rect': False,
+                                                       'show_position': True,
+                                                       'show_value': False,
+                                                       'template_path': 'Template/ZA_Story/MovePoint/restaurant_exterme_pic.png',
+                                                       'threshold': 0.9,
+                                                       'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE': [{'crop': [850, 100, 1270, 450],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/rose_square_pic.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE10_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE14_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE15_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE17_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE18_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19': [{'crop': [850, 100, 1270, 450],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/MovePoint/W_ZONE19_pic.png',
+                                            'threshold': 0.9,
+                                            'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE2_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE4_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE5_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE6_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE8_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9': [{'crop': [850, 100, 1270, 450],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/MovePoint/W_ZONE9_pic.png',
+                                           'threshold': 0.9,
+                                           'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_ART_MUSEUM': [{'crop': [0, 100, 450, 600],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/art_museum_target.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_BLUE_SQUARE': [{'crop': [0, 100, 450, 600],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/MovePoint/bule_square_target.png',
+                                                  'threshold': 0.9,
+                                                  'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ALAMODE': [{'crop': [0, 100, 450, 600],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/cafe_alamode_target.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_BATAILLE': [{'crop': [0, 100, 450, 600],
+                                                    'ms': 2000,
+                                                    'show_only_true_rect': False,
+                                                    'show_position': True,
+                                                    'show_value': False,
+                                                    'template_path': 'Template/ZA_Story/MovePoint/cafe_bataille_target.png',
+                                                    'threshold': 0.9,
+                                                    'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CANCODOR': [{'crop': [0, 100, 450, 600],
+                                                    'ms': 2000,
+                                                    'show_only_true_rect': False,
+                                                    'show_position': True,
+                                                    'show_value': False,
+                                                    'template_path': 'Template/ZA_Story/MovePoint/cafe_cancodor_target.png',
+                                                    'threshold': 0.9,
+                                                    'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CUTE': [{'crop': [0, 100, 450, 600],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/MovePoint/cafe_cute_target.png',
+                                                'threshold': 0.9,
+                                                'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_FOCUS': [{'crop': [0, 100, 450, 600],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/cafe_focus_target.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_MAN': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/cafe_man_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO2': [{'crop': [0, 100, 450, 600],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/cafe_nuvo2_target.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO3': [{'crop': [0, 100, 450, 600],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/MovePoint/cafe_nuvo3_target.png',
+                                                 'threshold': 0.9,
+                                                 'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_PARTENAIRE': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/cafe_partenaire_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_RETAKE': [{'crop': [0, 100, 450, 600],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/MovePoint/cafe_retake_target.png',
+                                                  'threshold': 0.9,
+                                                  'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SLALOM': [{'crop': [0, 100, 450, 600],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/MovePoint/cafe_slalom_target.png',
+                                                  'threshold': 0.9,
+                                                  'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SOLEIL': [{'crop': [0, 100, 450, 600],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/MovePoint/cafe_soleil_target.png',
+                                                  'threshold': 0.9,
+                                                  'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO': [{'crop': [0, 100, 450, 600],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/MovePoint/cafe_toto_target.png',
+                                                'threshold': 0.9,
+                                                'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER': [{'crop': [0, 100, 450, 600],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/cafe_twister_target.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ULT': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/cafe_ult_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_HOTEL_SURREALISH': [{'crop': [0, 100, 450, 600],
+                                                       'ms': 2000,
+                                                       'show_only_true_rect': False,
+                                                       'show_position': True,
+                                                       'show_value': False,
+                                                       'template_path': 'Template/ZA_Story/MovePoint/hotel_surrealish_target.png',
+                                                       'threshold': 0.9,
+                                                       'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_JUSTICE_DOJO': [{'crop': [0, 100, 450, 600],
+                                                   'ms': 2000,
+                                                   'show_only_true_rect': False,
+                                                   'show_position': True,
+                                                   'show_value': False,
+                                                   'template_path': 'Template/ZA_Story/MovePoint/justice_dojo_target.png',
+                                                   'threshold': 0.9,
+                                                   'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_BLUE': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_blue_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_EVEL': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_evel_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_JONE': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_jone_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_PRANTAN': [{'crop': [0, 100, 450, 600],
+                                                         'ms': 2000,
+                                                         'show_only_true_rect': False,
+                                                         'show_position': True,
+                                                         'show_value': False,
+                                                         'template_path': 'Template/ZA_Story/MovePoint/pokecenter_prantan_target.png',
+                                                         'threshold': 0.9,
+                                                         'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rose_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE_S': [{'crop': [0, 100, 450, 600],
+                                                        'ms': 2000,
+                                                        'show_only_true_rect': False,
+                                                        'show_position': True,
+                                                        'show_value': False,
+                                                        'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rose_square_target.png',
+                                                        'threshold': 0.9,
+                                                        'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_RUDU': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/pokecenter_rudu_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_RACINE': [{'crop': [0, 100, 450, 600],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/MovePoint/racine_target.png',
+                                             'threshold': 0.9,
+                                             'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_2RYU': [{'crop': [0, 100, 450, 600],
+                                                      'ms': 2000,
+                                                      'show_only_true_rect': False,
+                                                      'show_position': True,
+                                                      'show_value': False,
+                                                      'template_path': 'Template/ZA_Story/MovePoint/restaurant_2ryu_target.png',
+                                                      'threshold': 0.9,
+                                                      'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DOHUTSU': [{'crop': [0, 100, 450, 600],
+                                                         'ms': 2000,
+                                                         'show_only_true_rect': False,
+                                                         'show_position': True,
+                                                         'show_value': False,
+                                                         'template_path': 'Template/ZA_Story/MovePoint/restaurant_dohutsu_target.png',
+                                                         'threshold': 0.9,
+                                                         'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DREAM': [{'crop': [0, 100, 450, 600],
+                                                       'ms': 2000,
+                                                       'show_only_true_rect': False,
+                                                       'show_position': True,
+                                                       'show_value': False,
+                                                       'template_path': 'Template/ZA_Story/MovePoint/restaurant_dream_target.png',
+                                                       'threshold': 0.9,
+                                                       'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME': [{'crop': [0, 100, 450, 600],
+                                                          'ms': 2000,
+                                                          'show_only_true_rect': False,
+                                                          'show_position': True,
+                                                          'show_value': False,
+                                                          'template_path': 'Template/ZA_Story/MovePoint/restaurant_exterme_target.png',
+                                                          'threshold': 0.9,
+                                                          'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE': [{'crop': [0, 100, 450, 600],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/MovePoint/rose_square_target.png',
+                                                  'threshold': 0.9,
+                                                  'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE10_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE14_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE15_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE17_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE18_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19': [{'crop': [0, 100, 450, 600],
+                                               'ms': 2000,
+                                               'show_only_true_rect': False,
+                                               'show_position': True,
+                                               'show_value': False,
+                                               'template_path': 'Template/ZA_Story/MovePoint/W_ZONE19_target.png',
+                                               'threshold': 0.9,
+                                               'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE2_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE4_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE5_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE6_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE8': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE8_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE9': [{'crop': [0, 100, 450, 600],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/MovePoint/W_ZONE9_target.png',
+                                              'threshold': 0.9,
+                                              'use_gray': True}],
+     'POKEMON_ZA_MOVESPOT_TAB': [{'crop': [30, 120, 220, 250],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/movespot_tab.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_MOVE_COMMENT': [{'crop': [290, 550, 1000, 690],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/move_comment.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_MOVE_COMMENT_BATTLE': [{'crop': [290, 550, 1000, 690],
+                                         'ms': 2000,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/ZA_infi/move_comment_battle.png',
+                                         'threshold': 0.75,
+                                         'use_gray': True}],
      'POKEMON_ZA_MOVE_COMMENT_BATTLE2': [{'crop': [353, 587, 744, 665],
                                           'match_color': '#00c853',
                                           'ms': 2000,
@@ -32622,6 +33897,76 @@ class ZA_story_Base(ImageProcPythonCommand):
                                           'template_path': 'Template/ZA_Story/ZA_infi/POKEMON_ZA_MOVE_COMMENT_BATTLE2.png',
                                           'threshold': 0.8,
                                           'use_gray': False}],
+     'POKEMON_ZA_M_BALL_ICON': [{'crop': [610, 595, 670, 650],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/ball_icon/m_ball.png',
+                                 'threshold': 0.85,
+                                 'use_gray': False}],
+     'POKEMON_ZA_NIGHT': [{'crop': [430, 350, 850, 520],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/night.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ODAIRU_ICON': [{'crop': [50, 640, 350, 680],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/_4_e_lank/Odairu_icon.png',
+                                 'threshold': 0.8,
+                                 'use_gray': True}],
+     'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': [{'crop': [350, 100, 950, 350],
+                                                       'match_color': 'blue',
+                                                       'ms': 2000,
+                                                       'no_match_color': 'red',
+                                                       'show_only_true_rect': True,
+                                                       'show_position': True,
+                                                       'show_value': False,
+                                                       'template_path': 'Template/ZA_Story/_1_z_lank/out_hotel_z23_field_white_comment.png',
+                                                       'threshold': 0.8,
+                                                       'use_gray': True}],
+     'POKEMON_ZA_OUT_HOTEL_Z45_HOTEL_Z_TEXT': [{'crop': [250, 250, 500, 450],
+                                                'match_color': 'blue',
+                                                'ms': 2000,
+                                                'no_match_color': 'red',
+                                                'show_only_true_rect': True,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/_1_z_lank/out_hotel_z45_hotel_z_text.png',
+                                                'threshold': 0.8,
+                                                'use_gray': True}],
+     'POKEMON_ZA_OUT_MARKER': [{'crop': [550, 250, 900, 550],
+                                'match_color': 'blue',
+                                'ms': 2000,
+                                'no_match_color': 'red',
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/Common/outmarker.png',
+                                'threshold': 0.8,
+                                'use_gray': True}],
+     'POKEMON_ZA_PIKA_ICON_BOX6': [{'crop': [450, 80, 550, 200],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/ZA_Story/_2_y_lank/pikaicon_box6.png',
+                                    'threshold': 0.75,
+                                    'use_gray': True}],
+     'POKEMON_ZA_PIKA_ICON_GET6': [{'crop': [300, 640, 350, 680],
+                                    'ms': 2000,
+                                    'show_only_true_rect': False,
+                                    'show_position': True,
+                                    'show_value': False,
+                                    'template_path': 'Template/ZA_Story/_2_y_lank/pikaicon.png',
+                                    'threshold': 0.75,
+                                    'use_gray': True}],
      'POKEMON_ZA_PIN_MARKER_CENTER': [{'crop': [640, 100, 680, 600],
                                        'match_color': 'blue',
                                        'ms': 2000,
@@ -32792,6 +34137,54 @@ class ZA_story_Base(ImageProcPythonCommand):
                                            'template_path': 'Template/ZA_Story/Common/pin_marker.png',
                                            'threshold': 0.8,
                                            'use_gray': True}],
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W': [{'crop': [550, 120, 1250, 500],
+                                           'ms': 2000,
+                                           'show_only_true_rect': False,
+                                           'show_position': True,
+                                           'show_value': False,
+                                           'template_path': 'Template/ZA_Story/Common/X_menu/pokemon_menu.png',
+                                           'threshold': 0.85,
+                                           'use_gray': True}],
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W_SELECT_SKILL': [{'crop': [550, 120, 1250, 500],
+                                                        'ms': 2000,
+                                                        'show_only_true_rect': False,
+                                                        'show_position': True,
+                                                        'show_value': False,
+                                                        'template_path': 'Template/ZA_Story/Common/X_menu/pokemon_menu_select_skill.png',
+                                                        'threshold': 0.85,
+                                                        'use_gray': True}],
+     'POKEMON_ZA_PROFILE': [{'crop': [60, 40, 260, 70],
+                             'ms': 2000,
+                             'show_only_true_rect': False,
+                             'show_position': True,
+                             'show_value': False,
+                             'template_path': 'Template/ZA_Story/_0_Start/Profile.png',
+                             'threshold': 0.8,
+                             'use_gray': True}],
+     'POKEMON_ZA_QUASAR_MOVIE_ICON': [{'crop': [250, 150, 850, 550],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/_1_z_lank/quasar_movie_icon.png',
+                                       'threshold': 0.8,
+                                       'use_gray': True}],
+     'POKEMON_ZA_REIBI_SKILL': [{'crop': [40, 200, 320, 550],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/_4_e_lank/reibi_skill.png',
+                                 'threshold': 0.8,
+                                 'use_gray': True}],
+     'POKEMON_ZA_REWARD_RESULT': [{'crop': [930, 45, 1030, 60],
+                                   'ms': 2000,
+                                   'show_only_true_rect': False,
+                                   'show_position': True,
+                                   'show_value': False,
+                                   'template_path': 'Template/ZA_Story/ZA_infi/REWARD.png',
+                                   'threshold': 0.75,
+                                   'use_gray': True}],
      'POKEMON_ZA_REWORD': [{'crop': [366, 40, 560, 74],
                             'match_color': '#00c853',
                             'ms': 2000,
@@ -32802,6 +34195,46 @@ class ZA_story_Base(ImageProcPythonCommand):
                             'template_path': 'Template/ZA_Story/Common/X_menu/POKEMON_ZA_REWORD.png',
                             'threshold': 0.8,
                             'use_gray': False}],
+     'POKEMON_ZA_REWORD_END': [{'crop': [200, 500, 1080, 720],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/ZA_infi/reword_end.png',
+                                'threshold': 0.85,
+                                'use_gray': True}],
+     'POKEMON_ZA_REWORD_LOSE': [{'crop': [200, 500, 1080, 720],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/ZA_infi/reword_lose.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True}],
+     'POKEMON_ZA_R_push': [{'crop': [1000, 565, 1280, 720],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/ZA_infi/R_push.png',
+                            'threshold': 0.75,
+                            'use_gray': True}],
+     'POKEMON_ZA_SELECT': [{'crop': [80, 640, 135, 695],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/Common/SELECT.png',
+                            'threshold': 0.8,
+                            'use_gray': True}],
+     'POKEMON_ZA_SELECT_ALL': [{'crop': [20, 270, 280, 595],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/Common/select_all.png',
+                                'threshold': 0.75,
+                                'use_gray': True}],
      'POKEMON_ZA_SIDE_MARKER_CENTER': [{'crop': [640, 100, 680, 600],
                                         'match_color': 'blue',
                                         'ms': 2000,
@@ -32972,6 +34405,314 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             'template_path': 'Template/ZA_Story/Common/side_marker.png',
                                             'threshold': 0.8,
                                             'use_gray': False}],
+     'POKEMON_ZA_SIDE_SELECT_TOP_MAP': [{'crop': [20, 160, 100, 230],
+                                         'ms': 2000,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                         'threshold': 0.85,
+                                         'use_gray': True}],
+     'POKEMON_ZA_SIDE_SELECT_X_MENU_W': [{'crop': [30, 150, 100, 700],
+                                          'ms': 2000,
+                                          'show_only_true_rect': False,
+                                          'show_position': True,
+                                          'show_value': False,
+                                          'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                          'threshold': 0.85,
+                                          'use_gray': True}],
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_A': [{'crop': [880, 360, 930, 400],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                              'threshold': 0.92,
+                                              'use_gray': True}],
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_B': [{'crop': [720, 410, 760, 460],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                              'threshold': 0.92,
+                                              'use_gray': True}],
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_X': [{'crop': [720, 300, 760, 350],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                              'threshold': 0.92,
+                                              'use_gray': True}],
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_Y': [{'crop': [560, 360, 600, 400],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/Common/X_menu/side_select.png',
+                                              'threshold': 0.92,
+                                              'use_gray': True}],
+     'POKEMON_ZA_SKILL_PAGE_WINDOW': [{'crop': [550, 170, 750, 250],
+                                       'ms': 2000,
+                                       'show_only_true_rect': False,
+                                       'show_position': True,
+                                       'show_value': False,
+                                       'template_path': 'Template/ZA_Story/Common/X_menu/skillpage.png',
+                                       'threshold': 0.85,
+                                       'use_gray': True}],
+     'POKEMON_ZA_STARTBTN_SELECT': [{'crop': [120, 520, 500, 610],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/_0_Start/startbutton_select.png',
+                                     'threshold': 0.8,
+                                     'use_gray': True}],
+     'POKEMON_ZA_TAB_FILTER': [{'crop': [30, 570, 90, 600],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/Common/tab_filter.png',
+                                'threshold': 0.85,
+                                'use_gray': True}],
+     'POKEMON_ZA_TARGET_LEFT': [{'crop': [0, 100, 600, 550],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                 'threshold': 0.75,
+                                 'use_gray': False}],
+     'POKEMON_ZA_TARGET_LEFT_LOW': [{'crop': [0, 100, 600, 550],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                     'threshold': 0.5,
+                                     'use_gray': False}],
+     'POKEMON_ZA_TARGET_LEFT_MID': [{'crop': [0, 100, 600, 550],
+                                     'ms': 2000,
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                     'threshold': 0.65,
+                                     'use_gray': False}],
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK': [{'crop': [580, 100, 1280, 720],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                             'threshold': 0.75,
+                                             'use_gray': False}],
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW': [{'crop': [580, 100, 1280, 720],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                                 'threshold': 0.5,
+                                                 'use_gray': False}],
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID': [{'crop': [580, 100, 1280, 720],
+                                                 'ms': 2000,
+                                                 'show_only_true_rect': False,
+                                                 'show_position': True,
+                                                 'show_value': False,
+                                                 'template_path': 'Template/ZA_Story/ZA_infi/target_marker_left.png',
+                                                 'threshold': 0.65,
+                                                 'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT': [{'crop': [0, 100, 600, 550],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                  'threshold': 0.75,
+                                  'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT_LOW': [{'crop': [0, 100, 600, 550],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                      'threshold': 0.5,
+                                      'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT_MID': [{'crop': [0, 100, 600, 550],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                      'threshold': 0.65,
+                                      'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK': [{'crop': [580, 100, 1280, 720],
+                                              'ms': 2000,
+                                              'show_only_true_rect': False,
+                                              'show_position': True,
+                                              'show_value': False,
+                                              'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                              'threshold': 0.75,
+                                              'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW': [{'crop': [580, 100, 1280, 720],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                                  'threshold': 0.5,
+                                                  'use_gray': False}],
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID': [{'crop': [580, 100, 1280, 720],
+                                                  'ms': 2000,
+                                                  'show_only_true_rect': False,
+                                                  'show_position': True,
+                                                  'show_value': False,
+                                                  'template_path': 'Template/ZA_Story/ZA_infi/target_marker_right.png',
+                                                  'threshold': 0.65,
+                                                  'use_gray': False}],
+     'POKEMON_ZA_TEXT_2_GETCHANCE': [{'crop': [300, 555, 1000, 700],
+                                      'ms': 2000,
+                                      'show_only_true_rect': False,
+                                      'show_position': True,
+                                      'show_value': False,
+                                      'template_path': 'Template/ZA_Story/_1_z_lank/getchance_comment.png',
+                                      'threshold': 0.9,
+                                      'use_gray': True}],
+     'POKEMON_ZA_TEXT_2_GET_SUCCESS': [{'crop': [300, 555, 1000, 700],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/_1_z_lank/2get_success.png',
+                                        'threshold': 0.9,
+                                        'use_gray': True}],
+     'POKEMON_ZA_TEXT_BLACK_COMMENT': [{'crop': [300, 555, 1000, 700],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/black_comment.png',
+                                        'threshold': 0.9,
+                                        'use_gray': True}],
+     'POKEMON_ZA_TEXT_BOX': [{'crop': [550, 555, 1000, 680],
+                              'ms': 2000,
+                              'show_only_true_rect': False,
+                              'show_position': True,
+                              'show_value': False,
+                              'template_path': 'Template/ZA_Story/Common/text_box.png',
+                              'threshold': 0.8,
+                              'use_gray': True}],
+     'POKEMON_ZA_TEXT_BOX2': [{'crop': [550, 555, 1000, 680],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/Common/text_box2.png',
+                               'threshold': 0.95,
+                               'use_gray': True}],
+     'POKEMON_ZA_TEXT_GREEN_COMMENT': [{'crop': [300, 555, 1000, 700],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/green_comment.png',
+                                        'threshold': 0.9,
+                                        'use_gray': True}],
+     'POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT': [{'crop': [950, 130, 1150, 230],
+                                                'ms': 2000,
+                                                'show_only_true_rect': False,
+                                                'show_position': True,
+                                                'show_value': False,
+                                                'template_path': 'Template/ZA_Story/_1_z_lank/station_leave_comment.png',
+                                                'threshold': 0.8,
+                                                'use_gray': True}],
+     'POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT': [{'crop': [1020, 120, 1210, 190],
+                                            'ms': 2000,
+                                            'show_only_true_rect': False,
+                                            'show_position': True,
+                                            'show_value': False,
+                                            'template_path': 'Template/ZA_Story/_1_z_lank/station_field.png',
+                                            'threshold': 0.8,
+                                            'use_gray': True}],
+     'POKEMON_ZA_TEXT_WHITE_COMMENT': [{'crop': [300, 555, 1000, 700],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/white_comment.png',
+                                        'threshold': 0.85,
+                                        'use_gray': True},
+                                       {'crop': [300, 555, 1000, 700],
+                                        'ms': 2000,
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_path': 'Template/ZA_Story/Common/white_comment2.png',
+                                        'threshold': 0.85,
+                                        'use_gray': True}],
+     'POKEMON_ZA_TEXT_WHITE_COMMENT2': [{'crop': [300, 555, 1000, 700],
+                                         'ms': 2000,
+                                         'show_only_true_rect': False,
+                                         'show_position': True,
+                                         'show_value': False,
+                                         'template_path': 'Template/ZA_Story/Common/white_comment2.png',
+                                         'threshold': 0.85,
+                                         'use_gray': True}],
+     'POKEMON_ZA_UG_SEWER_MAP': [{'crop': [20, 0, 250, 70],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/Common/underground_sewer_map.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_WANINOKO_ICON': [{'crop': [50, 640, 350, 680],
+                                   'match_color': 'blue',
+                                   'ms': 2000,
+                                   'no_match_color': 'red',
+                                   'show_only_true_rect': False,
+                                   'show_position': True,
+                                   'show_value': False,
+                                   'template_path': 'Template/ZA_Story/_1_z_lank/waninokoicon.png',
+                                   'threshold': 0.8,
+                                   'use_gray': False}],
+     'POKEMON_ZA_WATER_ICON': [{'crop': [50, 50, 600, 680],
+                                'ms': 2000,
+                                'show_only_true_rect': False,
+                                'show_position': True,
+                                'show_value': False,
+                                'template_path': 'Template/ZA_Story/_6_c_lank/water_icon.png',
+                                'threshold': 0.9,
+                                'use_gray': True}],
+     'POKEMON_ZA_W_BATTLE_END': [{'crop': [50, 80, 200, 200],
+                                  'ms': 2000,
+                                  'show_only_true_rect': False,
+                                  'show_position': True,
+                                  'show_value': False,
+                                  'template_path': 'Template/ZA_Story/_2_y_lank/Wbattle_end.png',
+                                  'threshold': 0.85,
+                                  'use_gray': True}],
+     'POKEMON_ZA_X_MENU_EVO_MENU': [{'crop': [600, 140, 1280, 400],
+                                     'match_color': '#00c853',
+                                     'ms': 2000,
+                                     'no_match_color': '#ff9800',
+                                     'show_only_true_rect': False,
+                                     'show_position': True,
+                                     'show_value': False,
+                                     'template_path': 'Template/ZA_Story/Common/X_menu/POKEMON_ZA_X_MENU_EVO_MENU.png',
+                                     'threshold': 0.8,
+                                     'use_gray': False}],
+     'POKEMON_ZA_X_MENU_OPEN': [{'crop': [50, 50, 450, 120],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story/Common/X_menu/x_menu_window.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True}],
      'POKEMON_ZA_YUBIWA': [{'crop': [351, 557, 435, 651],
                             'match_color': '#00c853',
                             'ms': 2000,
@@ -32981,10 +34722,147 @@ class ZA_story_Base(ImageProcPythonCommand):
                             'show_value': False,
                             'template_path': 'Template/ZA_Story/_2_y_lank/POKEMON_ZA_YUBIWA.png',
                             'threshold': 0.8,
-                            'use_gray': False}]})
+                            'use_gray': False}],
+     'POKEMON_ZA_ZA_ROYALE': [{'crop': [20, 40, 380, 80],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story/Common/z-a_royale.png',
+                               'threshold': 0.88,
+                               'use_gray': True}],
+     'POKEMON_ZA_ZONE1': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone1.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE10': [{'crop': [900, 205, 1235, 345],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone10.png',
+                            'threshold': 0.85,
+                            'use_gray': True}],
+     'POKEMON_ZA_ZONE11': [{'crop': [900, 205, 1235, 345],
+                            'ms': 2000,
+                            'show_only_true_rect': False,
+                            'show_position': True,
+                            'show_value': False,
+                            'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone11.png',
+                            'threshold': 0.85,
+                            'use_gray': True}],
+     'POKEMON_ZA_ZONE2': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone2.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE3': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone3.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE4': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone4.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE5': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone5.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE6': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone6.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE7': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone7.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE8': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone8.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'POKEMON_ZA_ZONE9': [{'crop': [900, 205, 1235, 345],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/ZA_infi/ZONE/zone9.png',
+                           'threshold': 0.85,
+                           'use_gray': True}],
+     'ZA_STORY_COMMON_ZA_RESEARCH_A': [{'crop': [200, 0, 1080, 720],
+                                        'match_color': 'blue',
+                                        'ms': 2000,
+                                        'no_match_color': 'red',
+                                        'show_only_true_rect': False,
+                                        'show_position': True,
+                                        'show_value': False,
+                                        'template_crop': [0, 0, 0, 0],
+                                        'template_path': 'Template/ZA_Story/Common/ZA_RESEARCH_A.png',
+                                        'threshold': 0.8,
+                                        'use_gray': True}]})
     if 'IMAGE_DETECTION_OPERATORS' in locals():
-        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'OR',
+        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_1_SELECT': 'OR',
+     'POKEMON_ZA_2_SELECT': 'OR',
+     'POKEMON_ZA_2_SELECT_TUTORIAL': 'OR',
+     'POKEMON_ZA_3_SELECT': 'OR',
+     'POKEMON_ZA_3_SELECT_SELECT': 'OR',
+     'POKEMON_ZA_3_SELECT_TUTORIAL': 'OR',
+     'POKEMON_ZA_4_SELECT': 'OR',
+     'POKEMON_ZA_ABSOL_ICON': 'OR',
+     'POKEMON_ZA_AME_S': 'OR',
+     'POKEMON_ZA_ATTACK_C+_DISPLAY': 'OR',
+     'POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW': 'OR',
+     'POKEMON_ZA_ATTACK_DISPLAY': 'OR',
+     'POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW': 'OR',
+     'POKEMON_ZA_BATTLE': 'OR',
+     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'OR',
+     'POKEMON_ZA_BATTLE_BALL_CHECK': 'OR',
+     'POKEMON_ZA_BOX_MENU': 'OR',
+     'POKEMON_ZA_BOX_WINDOW': 'OR',
+     'POKEMON_ZA_C+': 'OR',
+     'POKEMON_ZA_C+_LOW': 'OR',
+     'POKEMON_ZA_CHAT_MARKER': 'OR',
+     'POKEMON_ZA_CHICKET_MAX': 'OR',
+     'POKEMON_ZA_CHICKET_MAX_RIGHT': 'OR',
+     'POKEMON_ZA_COIN_ICON': 'OR',
      'POKEMON_ZA_COMMENT_MARKER': 'OR',
+     'POKEMON_ZA_DEAD': 'OR',
+     'POKEMON_ZA_DOOR_A': 'OR',
+     'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'OR',
+     'POKEMON_ZA_ESCAPE': 'OR',
+     'POKEMON_ZA_ESCAPE_COMMENT1': 'OR',
+     'POKEMON_ZA_ESCAPE_COMMENT2': 'OR',
+     'POKEMON_ZA_ESCAPE_SELECT': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER_LEFT_SIDE': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER_RIGHT_SIDE': 'OR',
@@ -33000,12 +34878,152 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_EVENT_MARKER_CENTER_WIDE_UPPER_RIGHT': 'OR',
      'POKEMON_ZA_EVENT_MARKER_CENTER_WIDE_UPPER_RIGHT_NEAR': 'OR',
      'POKEMON_ZA_EVENT_MARKER_LEFT_WIDE': 'OR',
+     'POKEMON_ZA_EVENT_MARKER_RANGE': 'OR',
      'POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE': 'OR',
+     'POKEMON_ZA_EVOLUTION_CONFIRM': 'OR',
+     'POKEMON_ZA_EYE_CHECK': 'OR',
+     'POKEMON_ZA_EYE_CHECK_HIGH': 'OR',
+     'POKEMON_ZA_EYE_CHECK_HIGH_POKE': 'OR',
+     'POKEMON_ZA_FIELD': 'OR',
+     'POKEMON_ZA_FIELD1': 'OR',
+     'POKEMON_ZA_FIELD2': 'OR',
+     'POKEMON_ZA_FIELD3': 'OR',
+     'POKEMON_ZA_FIELD4': 'OR',
+     'POKEMON_ZA_FIELD5': 'OR',
+     'POKEMON_ZA_FIELD6': 'OR',
+     'POKEMON_ZA_FIELD_BACK': 'OR',
+     'POKEMON_ZA_FIELD_BACK1': 'OR',
+     'POKEMON_ZA_FIELD_BACK2': 'OR',
+     'POKEMON_ZA_FIELD_BACK3': 'OR',
+     'POKEMON_ZA_FIELD_BACK4': 'OR',
+     'POKEMON_ZA_FIELD_BACK5': 'OR',
+     'POKEMON_ZA_FIELD_BACK6': 'OR',
+     'POKEMON_ZA_FIELD_BACK_W': 'OR',
+     'POKEMON_ZA_FIELD_W': 'OR',
+     'POKEMON_ZA_FIN': 'OR',
+     'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': 'OR',
+     'POKEMON_ZA_FURADARI_MAP': 'OR',
+     'POKEMON_ZA_GETCHANCE_ICON4': 'OR',
      'POKEMON_ZA_GET_BALL': 'OR',
+     'POKEMON_ZA_HASHIGO_ICON': 'OR',
+     'POKEMON_ZA_HELP_MARKER': 'OR',
+     'POKEMON_ZA_H_BALL_ICON': 'OR',
+     'POKEMON_ZA_INVESTIGATE_MARKER': 'OR',
+     'POKEMON_ZA_IN_ICON': 'OR',
+     'POKEMON_ZA_IN_MARKER': 'OR',
+     'POKEMON_ZA_ITEM_WINDOW': 'OR',
+     'POKEMON_ZA_KOHUKI_ICON_GET4': 'OR',
+     'POKEMON_ZA_KOHUKI_ICON_GET5': 'OR',
      'POKEMON_ZA_LAST_BATTLE_CHARGE': 'OR',
+     'POKEMON_ZA_LAST_BATTLE_MOVE_UI': 'OR',
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': 'OR',
+     'POKEMON_ZA_LOSE': 'OR',
+     'POKEMON_ZA_MAP': 'OR',
+     'POKEMON_ZA_MAP2': 'OR',
+     'POKEMON_ZA_MEGA_ABSOL_BATTLE_NAME': 'OR',
+     'POKEMON_ZA_MERIP_ICON_GET5': 'OR',
      'POKEMON_ZA_MISSION_COMPLETE': 'AT_LEAST_3',
+     'POKEMON_ZA_MORNING': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SOLEIL': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_RACINE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8': 'OR',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_ART_MUSEUM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_BLUE_SQUARE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ALAMODE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_BATAILLE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CANCODOR': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CUTE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_FOCUS': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_MAN': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO2': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO3': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_PARTENAIRE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_RETAKE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SLALOM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SOLEIL': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ULT': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_HOTEL_SURREALISH': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_JUSTICE_DOJO': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_BLUE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_EVEL': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_JONE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_PRANTAN': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE_S': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_RUDU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RACINE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_2RYU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DOHUTSU': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DREAM': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE8': 'OR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE9': 'OR',
+     'POKEMON_ZA_MOVESPOT_TAB': 'OR',
+     'POKEMON_ZA_MOVE_COMMENT': 'OR',
+     'POKEMON_ZA_MOVE_COMMENT_BATTLE': 'OR',
      'POKEMON_ZA_MOVE_COMMENT_BATTLE2': 'OR',
+     'POKEMON_ZA_M_BALL_ICON': 'OR',
+     'POKEMON_ZA_NIGHT': 'OR',
+     'POKEMON_ZA_ODAIRU_ICON': 'OR',
+     'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': 'OR',
+     'POKEMON_ZA_OUT_HOTEL_Z45_HOTEL_Z_TEXT': 'OR',
+     'POKEMON_ZA_OUT_MARKER': 'OR',
+     'POKEMON_ZA_PIKA_ICON_BOX6': 'OR',
+     'POKEMON_ZA_PIKA_ICON_GET6': 'OR',
      'POKEMON_ZA_PIN_MARKER_CENTER': 'OR',
      'POKEMON_ZA_PIN_MARKER_CENTER_LEFT_SIDE': 'OR',
      'POKEMON_ZA_PIN_MARKER_CENTER_RIGHT_SIDE': 'OR',
@@ -33022,8 +35040,18 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_PIN_MARKER_CENTER_WIDE_UPPER_RIGHT_NEAR': 'OR',
      'POKEMON_ZA_PIN_MARKER_LEFT_WIDE': 'OR',
      'POKEMON_ZA_PIN_MARKER_RIGHT_WIDE': 'OR',
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W': 'OR',
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W_SELECT_SKILL': 'OR',
+     'POKEMON_ZA_PROFILE': 'OR',
+     'POKEMON_ZA_QUASAR_MOVIE_ICON': 'OR',
+     'POKEMON_ZA_REIBI_SKILL': 'OR',
+     'POKEMON_ZA_REWARD_RESULT': 'OR',
      'POKEMON_ZA_REWORD': 'OR',
-     'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': 'OR',
+     'POKEMON_ZA_REWORD_END': 'OR',
+     'POKEMON_ZA_REWORD_LOSE': 'OR',
+     'POKEMON_ZA_R_push': 'OR',
+     'POKEMON_ZA_SELECT': 'OR',
+     'POKEMON_ZA_SELECT_ALL': 'OR',
      'POKEMON_ZA_SIDE_MARKER_CENTER': 'OR',
      'POKEMON_ZA_SIDE_MARKER_CENTER_LEFT_SIDE': 'OR',
      'POKEMON_ZA_SIDE_MARKER_CENTER_RIGHT_SIDE': 'OR',
@@ -33040,10 +35068,97 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_SIDE_MARKER_CENTER_WIDE_UPPER_RIGHT_NEAR': 'OR',
      'POKEMON_ZA_SIDE_MARKER_LEFT_WIDE': 'OR',
      'POKEMON_ZA_SIDE_MARKER_RIGHT_WIDE': 'OR',
-     'POKEMON_ZA_YUBIWA': 'OR'})
+     'POKEMON_ZA_SIDE_SELECT_TOP_MAP': 'OR',
+     'POKEMON_ZA_SIDE_SELECT_X_MENU_W': 'OR',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_A': 'OR',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_B': 'OR',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_X': 'OR',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_Y': 'OR',
+     'POKEMON_ZA_SKILL_PAGE_WINDOW': 'OR',
+     'POKEMON_ZA_STARTBTN_SELECT': 'OR',
+     'POKEMON_ZA_TAB_FILTER': 'OR',
+     'POKEMON_ZA_TARGET_LEFT': 'OR',
+     'POKEMON_ZA_TARGET_LEFT_LOW': 'OR',
+     'POKEMON_ZA_TARGET_LEFT_MID': 'OR',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK': 'OR',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW': 'OR',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT_LOW': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT_MID': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW': 'OR',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID': 'OR',
+     'POKEMON_ZA_TEXT_2_GETCHANCE': 'OR',
+     'POKEMON_ZA_TEXT_2_GET_SUCCESS': 'OR',
+     'POKEMON_ZA_TEXT_BLACK_COMMENT': 'OR',
+     'POKEMON_ZA_TEXT_BOX': 'OR',
+     'POKEMON_ZA_TEXT_BOX2': 'OR',
+     'POKEMON_ZA_TEXT_GREEN_COMMENT': 'OR',
+     'POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT': 'OR',
+     'POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT': 'OR',
+     'POKEMON_ZA_TEXT_WHITE_COMMENT': 'OR',
+     'POKEMON_ZA_TEXT_WHITE_COMMENT2': 'OR',
+     'POKEMON_ZA_UG_SEWER_MAP': 'OR',
+     'POKEMON_ZA_WANINOKO_ICON': 'OR',
+     'POKEMON_ZA_WATER_ICON': 'OR',
+     'POKEMON_ZA_W_BATTLE_END': 'OR',
+     'POKEMON_ZA_X_MENU_EVO_MENU': 'OR',
+     'POKEMON_ZA_X_MENU_OPEN': 'OR',
+     'POKEMON_ZA_YUBIWA': 'OR',
+     'POKEMON_ZA_ZA_ROYALE': 'OR',
+     'POKEMON_ZA_ZONE1': 'OR',
+     'POKEMON_ZA_ZONE10': 'OR',
+     'POKEMON_ZA_ZONE11': 'OR',
+     'POKEMON_ZA_ZONE2': 'OR',
+     'POKEMON_ZA_ZONE3': 'OR',
+     'POKEMON_ZA_ZONE4': 'OR',
+     'POKEMON_ZA_ZONE5': 'OR',
+     'POKEMON_ZA_ZONE6': 'OR',
+     'POKEMON_ZA_ZONE7': 'OR',
+     'POKEMON_ZA_ZONE8': 'OR',
+     'POKEMON_ZA_ZONE9': 'OR',
+     'ZA_STORY_COMMON_ZA_RESEARCH_A': 'OR'})
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
-        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'Pokemon ZAの戦闘中に左下へ表示される操作中ポケモンの固定Lv.表示',
+        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_1_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 1_SELECT',
+     'POKEMON_ZA_2_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT',
+     'POKEMON_ZA_2_SELECT_TUTORIAL': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     '2_SELECT_TUTORIAL',
+     'POKEMON_ZA_3_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 3_SELECT',
+     'POKEMON_ZA_3_SELECT_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 3_SELECT_SELECT',
+     'POKEMON_ZA_3_SELECT_TUTORIAL': 'Pokemon ZA image detection: 3_SELECT内の準備して再挑戦選択肢',
+     'POKEMON_ZA_4_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 4_SELECT',
+     'POKEMON_ZA_ABSOL_ICON': 'Pokemon ZA image detection migrated from ZA_story: ABSOL_ICON',
+     'POKEMON_ZA_AME_S': 'Pokemon ZA image detection migrated from ZA_story: AME_S',
+     'POKEMON_ZA_ATTACK_C+_DISPLAY': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     'ATTACK_C+_DISPLAY',
+     'POKEMON_ZA_ATTACK_C+_DISPLAY_RIHGT_CHECKW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                  'ATTACK_C+_DISPLAY_RIHGT_CHECKW',
+     'POKEMON_ZA_ATTACK_DISPLAY': 'Pokemon ZA image detection migrated from ZA_story: ATTACK_DISPLAY',
+     'POKEMON_ZA_ATTACK_DISPLAY_RIHGT_CHECKW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'ATTACK_DISPLAY_RIHGT_CHECKW',
+     'POKEMON_ZA_BATTLE': 'Pokemon ZA image detection migrated from ZA_story: BATTLE',
+     'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': 'Pokemon ZAの戦闘中に左下へ表示される操作中ポケモンの固定Lv.表示',
+     'POKEMON_ZA_BATTLE_BALL_CHECK': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     'BATTLE_BALL_CHECK',
+     'POKEMON_ZA_BOX_MENU': 'Pokemon ZA image detection migrated from ZA_story: BOX_MENU',
+     'POKEMON_ZA_BOX_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: BOX_WINDOW',
+     'POKEMON_ZA_C+': 'Pokemon ZA image detection migrated from ZA_story: C+',
+     'POKEMON_ZA_C+_LOW': 'Pokemon ZA low-threshold C+ detection',
+     'POKEMON_ZA_CHAT_MARKER': 'Pokemon ZA image detection migrated from ZA_story: CHAT_MARKER',
+     'POKEMON_ZA_CHICKET_MAX': 'Pokemon ZA image detection migrated from ZA_story: CHICKET_MAX',
+     'POKEMON_ZA_CHICKET_MAX_RIGHT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     'CHICKET_MAX_RIGHT',
+     'POKEMON_ZA_COIN_ICON': 'Pokemon ZA image detection migrated from ZA_story: COIN_ICON',
      'POKEMON_ZA_COMMENT_MARKER': '',
+     'POKEMON_ZA_DEAD': 'Pokemon ZA image detection migrated from ZA_story: DEAD',
+     'POKEMON_ZA_DOOR_A': 'Pokemon ZA image detection migrated from ZA_story: DOOR_A',
+     'POKEMON_ZA_DOWN_SELECT_X_MENU_W': 'Pokemon ZA image detection migrated from ZA_story: '
+                                        'DOWN_SELECT_X_MENU_W',
+     'POKEMON_ZA_ESCAPE': 'Pokemon ZAの戦闘中に左端へ表示される逃走アイコン（通常・薄赤・強赤）',
+     'POKEMON_ZA_ESCAPE_COMMENT1': 'Pokemon ZA image detection migrated from ZA_story: ESCAPE_COMMENT1',
+     'POKEMON_ZA_ESCAPE_COMMENT2': 'Pokemon ZA image detection migrated from ZA_story: ESCAPE_COMMENT2',
+     'POKEMON_ZA_ESCAPE_SELECT': 'Pokemon ZA image detection migrated from ZA_story: ESCAPE_SELECT',
      'POKEMON_ZA_EVENT_MARKER_CENTER': 'Pokemon ZA image detection migrated from ZA_story: '
                                        'EVENT_MARKER_CENTER',
      'POKEMON_ZA_EVENT_MARKER_CENTER_LEFT_SIDE': 'Pokemon ZA image detection: '
@@ -33074,13 +35189,248 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                              'EVENT_MARKER_CENTER_WIDE_UPPER_RIGHT_NEAR',
      'POKEMON_ZA_EVENT_MARKER_LEFT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                           'EVENT_MARKER_LEFT_WIDE',
+     'POKEMON_ZA_EVENT_MARKER_RANGE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                      'EVENT_MARKER_RANGE',
      'POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                            'EVENT_MARKER_RIGHT_WIDE',
+     'POKEMON_ZA_EVOLUTION_CONFIRM': 'Pokemon ZA evolution confirmation: watch evolution / cancel',
+     'POKEMON_ZA_EYE_CHECK': 'Pokemon ZA image detection migrated from ZA_story: EYE_CHECK',
+     'POKEMON_ZA_EYE_CHECK_HIGH': 'Pokemon ZA image detection migrated from ZA_story: EYE_CHECK_HIGH',
+     'POKEMON_ZA_EYE_CHECK_HIGH_POKE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                       'EYE_CHECK_HIGH_POKE',
+     'POKEMON_ZA_FIELD': 'Pokemon ZA image detection migrated from ZA_story: FIELD',
+     'POKEMON_ZA_FIELD1': 'Pokemon ZA image detection migrated from ZA_story: FIELD1',
+     'POKEMON_ZA_FIELD2': 'Pokemon ZA image detection migrated from ZA_story: FIELD2',
+     'POKEMON_ZA_FIELD3': 'Pokemon ZA image detection migrated from ZA_story: FIELD3',
+     'POKEMON_ZA_FIELD4': 'Pokemon ZA image detection migrated from ZA_story: FIELD4',
+     'POKEMON_ZA_FIELD5': 'Pokemon ZA image detection migrated from ZA_story: FIELD5',
+     'POKEMON_ZA_FIELD6': 'Pokemon ZA image detection migrated from ZA_story: FIELD6',
+     'POKEMON_ZA_FIELD_BACK': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK',
+     'POKEMON_ZA_FIELD_BACK1': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK1',
+     'POKEMON_ZA_FIELD_BACK2': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK2',
+     'POKEMON_ZA_FIELD_BACK3': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK3',
+     'POKEMON_ZA_FIELD_BACK4': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK4',
+     'POKEMON_ZA_FIELD_BACK5': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK5',
+     'POKEMON_ZA_FIELD_BACK6': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK6',
+     'POKEMON_ZA_FIELD_BACK_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_BACK_W',
+     'POKEMON_ZA_FIELD_W': 'Pokemon ZA image detection migrated from ZA_story: FIELD_W',
+     'POKEMON_ZA_FIN': 'Pokemon ZA story ending FIN shown at the lower right',
+     'POKEMON_ZA_FURADARI_EYES_DARK_COMMENT': 'FURADARI区間：目の前がまっくらになったComment',
+     'POKEMON_ZA_FURADARI_MAP': 'Pokemon ZA image detection migrated from ZA_story: FURADARI_MAP',
+     'POKEMON_ZA_GETCHANCE_ICON4': 'Pokemon ZA image detection migrated from ZA_story: GETCHANCE_ICON4',
      'POKEMON_ZA_GET_BALL': 'Area Captureから登録',
+     'POKEMON_ZA_HASHIGO_ICON': 'Pokemon ZA image detection migrated from ZA_story: HASHIGO_ICON',
+     'POKEMON_ZA_HELP_MARKER': 'Pokemon ZA image detection migrated from ZA_story: HELP_MARKER',
+     'POKEMON_ZA_H_BALL_ICON': 'Pokemon ZA image detection migrated from ZA_story: H_BALL_ICON',
+     'POKEMON_ZA_INVESTIGATE_MARKER': 'Pokemon ZA central vertical A investigate prompt',
+     'POKEMON_ZA_IN_ICON': 'Pokemon ZA image detection migrated from ZA_story: IN_ICON',
+     'POKEMON_ZA_IN_MARKER': 'Pokemon ZA image detection migrated from ZA_story: IN_MARKER',
+     'POKEMON_ZA_ITEM_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: ITEM_WINDOW',
+     'POKEMON_ZA_KOHUKI_ICON_GET4': 'Pokemon ZA image detection migrated from ZA_story: '
+                                    'KOHUKI_ICON_GET4',
+     'POKEMON_ZA_KOHUKI_ICON_GET5': 'Pokemon ZA caught-icon check in party slot 5',
      'POKEMON_ZA_LAST_BATTLE_CHARGE': '最終戦『アンジュフラエッテは 力を溜めている……！』予兆通知',
+     'POKEMON_ZA_LAST_BATTLE_MOVE_UI': '最終戦mode 5専用の4技表示（C+なしの攻撃可能画面）',
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': '最終戦『アンジュフラエッテが 強い光を放つ！』発動通知',
+     'POKEMON_ZA_LOSE': 'Pokemon ZA image detection migrated from ZA_story: LOSE',
+     'POKEMON_ZA_MAP': 'Pokemon ZA image detection migrated from ZA_story: MAP',
+     'POKEMON_ZA_MAP2': 'Pokemon ZA image detection migrated from ZA_story: MAP2',
+     'POKEMON_ZA_MEGA_ABSOL_BATTLE_NAME': 'アブソルMEGA戦専用の画面上部『暴走メガアブソル』名称',
+     'POKEMON_ZA_MERIP_ICON_GET5': 'Pokemon ZA image detection migrated from ZA_story: MERIP_ICON_GET5',
      'POKEMON_ZA_MISSION_COMPLETE': 'COMPLETEを4つの文字領域に分割し、3領域以上の一致で確認',
+     'POKEMON_ZA_MORNING': 'Pokemon ZA image detection migrated from ZA_story: MORNING',
+     'POKEMON_ZA_MOVEPOINT_PIC_ART_MUSEUM': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_PIC_ART_MUSEUM',
+     'POKEMON_ZA_MOVEPOINT_PIC_BLUE_SQUARE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_PIC_BLUE_SQUARE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ALAMODE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'MOVEPOINT_PIC_CAFE_ALAMODE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_BATAILLE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_PIC_CAFE_BATAILLE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CANCODOR': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_PIC_CAFE_CANCODOR',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_CUTE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                           'MOVEPOINT_PIC_CAFE_CUTE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_FOCUS': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_PIC_CAFE_FOCUS',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_MAN': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_CAFE_MAN',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO2': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_PIC_CAFE_NUVO2',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_NUVO3': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_PIC_CAFE_NUVO3',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_PARTENAIRE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_CAFE_PARTENAIRE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_RETAKE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_PIC_CAFE_RETAKE',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SLALOM': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_PIC_CAFE_SLALOM',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_SOLEIL': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_PIC_CAFE_SOLEIL',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TOTO': 'Pokemon ZA image detection migrated from ZA_story: '
+                                           'MOVEPOINT_PIC_CAFE_TOTO',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_TWISTER': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'MOVEPOINT_PIC_CAFE_TWISTER',
+     'POKEMON_ZA_MOVEPOINT_PIC_CAFE_ULT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_CAFE_ULT',
+     'POKEMON_ZA_MOVEPOINT_PIC_HOTEL_SURREALISH': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                  'MOVEPOINT_PIC_HOTEL_SURREALISH',
+     'POKEMON_ZA_MOVEPOINT_PIC_JUSTICE_DOJO': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'MOVEPOINT_PIC_JUSTICE_DOJO',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_BLUE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_POKECENTER_BLUE',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_EVEL': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_POKECENTER_EVEL',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_JONE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_POKECENTER_JONE',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_PRANTAN': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_PIC_POKECENTER_PRANTAN',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_POKECENTER_ROSE',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_ROSE_S': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                   'MOVEPOINT_PIC_POKECENTER_ROSE_S',
+     'POKEMON_ZA_MOVEPOINT_PIC_POKECENTER_RUDU': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_POKECENTER_RUDU',
+     'POKEMON_ZA_MOVEPOINT_PIC_RACINE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                        'MOVEPOINT_PIC_RACINE',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_2RYU': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_PIC_RESTAURANT_2RYU',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DOHUTSU': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_PIC_RESTAURANT_DOHUTSU',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_DREAM': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                  'MOVEPOINT_PIC_RESTAURANT_DREAM',
+     'POKEMON_ZA_MOVEPOINT_PIC_RESTAURANT_EXTREAME': 'Pokemon ZA image detection migrated from '
+                                                     'ZA_story: MOVEPOINT_PIC_RESTAURANT_EXTREAME',
+     'POKEMON_ZA_MOVEPOINT_PIC_ROSE_SQUARE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_PIC_ROSE_SQUARE',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE10',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE14': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE14',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE15',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE17': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE17',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE18',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE19': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'MOVEPOINT_PIC_W_ZONE19',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE2': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE2',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE4': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE4',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE5': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE5',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE6',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE8',
+     'POKEMON_ZA_MOVEPOINT_PIC_W_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'MOVEPOINT_PIC_W_ZONE9',
+     'POKEMON_ZA_MOVEPOINT_TARGET_ART_MUSEUM': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_TARGET_ART_MUSEUM',
+     'POKEMON_ZA_MOVEPOINT_TARGET_BLUE_SQUARE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'MOVEPOINT_TARGET_BLUE_SQUARE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ALAMODE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_TARGET_CAFE_ALAMODE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_BATAILLE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                  'MOVEPOINT_TARGET_CAFE_BATAILLE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CANCODOR': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                  'MOVEPOINT_TARGET_CAFE_CANCODOR',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_CUTE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'MOVEPOINT_TARGET_CAFE_CUTE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_FOCUS': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_TARGET_CAFE_FOCUS',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_MAN': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_CAFE_MAN',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO2': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_TARGET_CAFE_NUVO2',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_NUVO3': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'MOVEPOINT_TARGET_CAFE_NUVO3',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_PARTENAIRE': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_CAFE_PARTENAIRE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_RETAKE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'MOVEPOINT_TARGET_CAFE_RETAKE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SLALOM': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'MOVEPOINT_TARGET_CAFE_SLALOM',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_SOLEIL': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'MOVEPOINT_TARGET_CAFE_SOLEIL',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TOTO': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'MOVEPOINT_TARGET_CAFE_TOTO',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_TWISTER': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_TARGET_CAFE_TWISTER',
+     'POKEMON_ZA_MOVEPOINT_TARGET_CAFE_ULT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_CAFE_ULT',
+     'POKEMON_ZA_MOVEPOINT_TARGET_HOTEL_SURREALISH': 'Pokemon ZA image detection migrated from '
+                                                     'ZA_story: MOVEPOINT_TARGET_HOTEL_SURREALISH',
+     'POKEMON_ZA_MOVEPOINT_TARGET_JUSTICE_DOJO': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                 'MOVEPOINT_TARGET_JUSTICE_DOJO',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_BLUE': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_POKECENTER_BLUE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_EVEL': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_POKECENTER_EVEL',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_JONE': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_POKECENTER_JONE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_PRANTAN': 'Pokemon ZA image detection migrated from '
+                                                       'ZA_story: MOVEPOINT_TARGET_POKECENTER_PRANTAN',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_POKECENTER_ROSE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_ROSE_S': 'Pokemon ZA image detection migrated from '
+                                                      'ZA_story: MOVEPOINT_TARGET_POKECENTER_ROSE_S',
+     'POKEMON_ZA_MOVEPOINT_TARGET_POKECENTER_RUDU': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_POKECENTER_RUDU',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RACINE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                           'MOVEPOINT_TARGET_RACINE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_2RYU': 'Pokemon ZA image detection migrated from '
+                                                    'ZA_story: MOVEPOINT_TARGET_RESTAURANT_2RYU',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DOHUTSU': 'Pokemon ZA image detection migrated from '
+                                                       'ZA_story: MOVEPOINT_TARGET_RESTAURANT_DOHUTSU',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_DREAM': 'Pokemon ZA image detection migrated from '
+                                                     'ZA_story: MOVEPOINT_TARGET_RESTAURANT_DREAM',
+     'POKEMON_ZA_MOVEPOINT_TARGET_RESTAURANT_EXTREAME': 'Pokemon ZA image detection migrated from '
+                                                        'ZA_story: '
+                                                        'MOVEPOINT_TARGET_RESTAURANT_EXTREAME',
+     'POKEMON_ZA_MOVEPOINT_TARGET_ROSE_SQUARE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'MOVEPOINT_TARGET_ROSE_SQUARE',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE10',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE14': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE14',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE15',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE17': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE17',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE18': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE18',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE19': 'Pokemon ZA image detection migrated from ZA_story: '
+                                             'MOVEPOINT_TARGET_W_ZONE19',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE2': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE2',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE4': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE4',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE5': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE5',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE6',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE8',
+     'POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'MOVEPOINT_TARGET_W_ZONE9',
+     'POKEMON_ZA_MOVESPOT_TAB': 'Pokemon ZA image detection migrated from ZA_story: MOVESPOT_TAB',
+     'POKEMON_ZA_MOVE_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: MOVE_COMMENT',
+     'POKEMON_ZA_MOVE_COMMENT_BATTLE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                       'MOVE_COMMENT_BATTLE',
      'POKEMON_ZA_MOVE_COMMENT_BATTLE2': 'Area Captureから登録',
+     'POKEMON_ZA_M_BALL_ICON': 'Pokemon ZA image detection migrated from ZA_story: M_BALL_ICON',
+     'POKEMON_ZA_NIGHT': 'Pokemon ZA image detection migrated from ZA_story: NIGHT',
+     'POKEMON_ZA_ODAIRU_ICON': 'Pokemon ZA image detection migrated from ZA_story: ODAIRU_ICON',
+     'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': 'OUT_HOTEL_Z_23 field NPC white speech captured '
+                                                     'from Switch_No3',
+     'POKEMON_ZA_OUT_HOTEL_Z45_HOTEL_Z_TEXT': 'OUT_HOTEL_Z_45 dedicated Hotel Z text captured from '
+                                              'Switch_No3',
+     'POKEMON_ZA_OUT_MARKER': 'Pokemon ZA image detection migrated from ZA_story: OUT_MARKER',
+     'POKEMON_ZA_PIKA_ICON_BOX6': 'Pokemon ZA image detection migrated from ZA_story: PIKA_ICON_BOX6',
+     'POKEMON_ZA_PIKA_ICON_GET6': 'Pokemon ZA image detection migrated from ZA_story: PIKA_ICON_GET6',
      'POKEMON_ZA_PIN_MARKER_CENTER': 'Pokemon ZA image detection migrated from ZA_story: '
                                      'PIN_MARKER_CENTER',
      'POKEMON_ZA_PIN_MARKER_CENTER_LEFT_SIDE': 'Pokemon ZA image detection: '
@@ -33113,8 +35463,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                                         'PIN_MARKER_LEFT_WIDE',
      'POKEMON_ZA_PIN_MARKER_RIGHT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                          'PIN_MARKER_RIGHT_WIDE',
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W': 'Pokemon ZA image detection migrated from ZA_story: '
+                                         'POKEMON_MENU_X_MENU_W',
+     'POKEMON_ZA_POKEMON_MENU_X_MENU_W_SELECT_SKILL': 'Pokemon ZA image detection migrated from '
+                                                      'ZA_story: POKEMON_MENU_X_MENU_W_SELECT_SKILL',
+     'POKEMON_ZA_PROFILE': 'Pokemon ZA image detection migrated from ZA_story: PROFILE',
+     'POKEMON_ZA_QUASAR_MOVIE_ICON': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     'QUASAR_MOVIE_ICON',
+     'POKEMON_ZA_REIBI_SKILL': 'Pokemon ZA image detection migrated from ZA_story: REIBI_SKILL',
+     'POKEMON_ZA_REWARD_RESULT': 'Pokemon ZA image detection migrated from ZA_story: REWARD_RESULT',
      'POKEMON_ZA_REWORD': 'Area Captureから登録',
-     'POKEMON_ZA_OUT_HOTEL_Z23_FIELD_WHITE_COMMENT': 'OUT_HOTEL_Z_23のフィールド上白コメント',
+     'POKEMON_ZA_REWORD_END': 'Pokemon ZA image detection migrated from ZA_story: REWORD_END',
+     'POKEMON_ZA_REWORD_LOSE': 'Pokemon ZA image detection migrated from ZA_story: REWORD_LOSE',
+     'POKEMON_ZA_R_push': 'Pokemon ZA image detection migrated from ZA_story: R_push',
+     'POKEMON_ZA_SELECT': 'Pokemon ZA image detection migrated from ZA_story: SELECT',
+     'POKEMON_ZA_SELECT_ALL': 'Pokemon ZA image detection migrated from ZA_story: SELECT_ALL',
      'POKEMON_ZA_SIDE_MARKER_CENTER': 'Pokemon ZA image detection migrated from ZA_story: '
                                       'SIDE_MARKER_CENTER',
      'POKEMON_ZA_SIDE_MARKER_CENTER_LEFT_SIDE': 'Pokemon ZA image detection: '
@@ -33147,7 +35510,80 @@ class ZA_story_Base(ImageProcPythonCommand):
                                          'SIDE_MARKER_LEFT_WIDE',
      'POKEMON_ZA_SIDE_MARKER_RIGHT_WIDE': 'Pokemon ZA image detection migrated from ZA_story: '
                                           'SIDE_MARKER_RIGHT_WIDE',
-     'POKEMON_ZA_YUBIWA': 'Area Captureから登録'})
+     'POKEMON_ZA_SIDE_SELECT_TOP_MAP': 'Pokemon ZA image detection migrated from ZA_story: '
+                                       'SIDE_SELECT_TOP_MAP',
+     'POKEMON_ZA_SIDE_SELECT_X_MENU_W': 'Pokemon ZA image detection migrated from ZA_story: '
+                                        'SIDE_SELECT_X_MENU_W',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_A': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'SKILL_PAGE_SIDE_SELECT_A',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_B': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'SKILL_PAGE_SIDE_SELECT_B',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_X': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'SKILL_PAGE_SIDE_SELECT_X',
+     'POKEMON_ZA_SKILL_PAGE_SIDE_SELECT_Y': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'SKILL_PAGE_SIDE_SELECT_Y',
+     'POKEMON_ZA_SKILL_PAGE_WINDOW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                     'SKILL_PAGE_WINDOW',
+     'POKEMON_ZA_STARTBTN_SELECT': 'Pokemon ZA image detection migrated from ZA_story: STARTBTN_SELECT',
+     'POKEMON_ZA_TAB_FILTER': 'Pokemon ZA image detection migrated from ZA_story: TAB_FILTER',
+     'POKEMON_ZA_TARGET_LEFT': 'Pokemon ZA image detection migrated from ZA_story: TARGET_LEFT',
+     'POKEMON_ZA_TARGET_LEFT_LOW': 'Pokemon ZA image detection migrated from ZA_story: TARGET_LEFT_LOW',
+     'POKEMON_ZA_TARGET_LEFT_MID': 'Pokemon ZA image detection migrated from ZA_story: TARGET_LEFT_MID',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK': 'Pokemon ZA image detection migrated from ZA_story: '
+                                           'TARGET_LEFT_RIHGT_CHECK',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_LOW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'TARGET_LEFT_RIHGT_CHECK_LOW',
+     'POKEMON_ZA_TARGET_LEFT_RIHGT_CHECK_MID': 'Pokemon ZA image detection migrated from ZA_story: '
+                                               'TARGET_LEFT_RIHGT_CHECK_MID',
+     'POKEMON_ZA_TARGET_RIGHT': 'Pokemon ZA image detection migrated from ZA_story: TARGET_RIGHT',
+     'POKEMON_ZA_TARGET_RIGHT_LOW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                    'TARGET_RIGHT_LOW',
+     'POKEMON_ZA_TARGET_RIGHT_MID': 'Pokemon ZA image detection migrated from ZA_story: '
+                                    'TARGET_RIGHT_MID',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK': 'Pokemon ZA image detection migrated from ZA_story: '
+                                            'TARGET_RIGHT_RIHGT_CHECK',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_LOW': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'TARGET_RIGHT_RIHGT_CHECK_LOW',
+     'POKEMON_ZA_TARGET_RIGHT_RIHGT_CHECK_MID': 'Pokemon ZA image detection migrated from ZA_story: '
+                                                'TARGET_RIGHT_RIHGT_CHECK_MID',
+     'POKEMON_ZA_TEXT_2_GETCHANCE': 'Pokemon ZA image detection migrated from ZA_story: '
+                                    'TEXT_2_GETCHANCE',
+     'POKEMON_ZA_TEXT_2_GET_SUCCESS': 'Pokemon ZA image detection migrated from ZA_story: '
+                                      'TEXT_2_GET_SUCCESS',
+     'POKEMON_ZA_TEXT_BLACK_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                      'TEXT_BLACK_COMMENT',
+     'POKEMON_ZA_TEXT_BOX': 'Pokemon ZA image detection migrated from ZA_story: TEXT_BOX',
+     'POKEMON_ZA_TEXT_BOX2': 'Pokemon ZA image detection migrated from ZA_story: TEXT_BOX2',
+     'POKEMON_ZA_TEXT_GREEN_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                      'TEXT_GREEN_COMMENT',
+     'POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                              'TEXT_STATION_LEAVE_COMMENT',
+     'POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                          'TEXT_TRAIN_OUT_COMMENT',
+     'POKEMON_ZA_TEXT_WHITE_COMMENT': 'Pokemon ZA image detection migrated from ZA_story: '
+                                      'TEXT_WHITE_COMMENT',
+     'POKEMON_ZA_TEXT_WHITE_COMMENT2': 'Pokemon ZA image detection migrated from ZA_story: '
+                                       'TEXT_WHITE_COMMENT2',
+     'POKEMON_ZA_UG_SEWER_MAP': 'Pokemon ZA image detection migrated from ZA_story: UG_SEWER_MAP',
+     'POKEMON_ZA_WANINOKO_ICON': 'Pokemon ZA image detection migrated from ZA_story: WANINOKO_ICON',
+     'POKEMON_ZA_WATER_ICON': 'Pokemon ZA image detection migrated from ZA_story: WATER_ICON',
+     'POKEMON_ZA_W_BATTLE_END': 'Pokemon ZA image detection migrated from ZA_story: W_BATTLE_END',
+     'POKEMON_ZA_X_MENU_EVO_MENU': 'Area Captureから登録',
+     'POKEMON_ZA_X_MENU_OPEN': 'Pokemon ZA image detection migrated from ZA_story: X_MENU_OPEN',
+     'POKEMON_ZA_YUBIWA': 'Area Captureから登録',
+     'POKEMON_ZA_ZA_ROYALE': 'Pokemon ZA image detection migrated from ZA_story: ZA_ROYALE',
+     'POKEMON_ZA_ZONE1': 'Pokemon ZA image detection migrated from ZA_story: ZONE1',
+     'POKEMON_ZA_ZONE10': 'Pokemon ZA image detection migrated from ZA_story: ZONE10',
+     'POKEMON_ZA_ZONE11': 'Pokemon ZA image detection migrated from ZA_story: ZONE11',
+     'POKEMON_ZA_ZONE2': 'Pokemon ZA image detection migrated from ZA_story: ZONE2',
+     'POKEMON_ZA_ZONE3': 'Pokemon ZA image detection migrated from ZA_story: ZONE3',
+     'POKEMON_ZA_ZONE4': 'Pokemon ZA image detection migrated from ZA_story: ZONE4',
+     'POKEMON_ZA_ZONE5': 'Pokemon ZA image detection migrated from ZA_story: ZONE5',
+     'POKEMON_ZA_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: ZONE6',
+     'POKEMON_ZA_ZONE7': 'Pokemon ZA image detection migrated from ZA_story: ZONE7',
+     'POKEMON_ZA_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: ZONE8',
+     'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9',
+     'ZA_STORY_COMMON_ZA_RESEARCH_A': 'Templateから自動登録'})
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
 
     def _image_check_target(self, targetimage):
@@ -33216,7 +35652,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     # POKECON_IMAGE_CHECK_USER_BEGIN
     def image_check_confirmation(self, targetimage, first_match=False):
-        """Reject numbered SELECT matches while either FIELD HUD is visible."""
+        """Reject numbered SELECT matches on FIELD or battle-level screens."""
         del first_match  # image_check hook compatibility
         select_targets = {
             "POKEMON_ZA_1_SELECT",
@@ -33230,15 +35666,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if str(targetimage) not in select_targets:
             return True
 
-        # FIELD_W／FIELD_BACK_Wは前後向きと手持ち番号を包含するため、
-        # どちらか一方でも存在する画面ではSELECT一致を採用しない。
-        return not any(
-            field_target in self.IMAGE_DETECTION_TARGETS
-            and self._image_check_target(field_target)
-            for field_target in (
-                "POKEMON_ZA_FIELD_W",
-                "POKEMON_ZA_FIELD_BACK_W",
-            )
+        # FIELD_W／FIELD_BACK_Wは前後向きと手持ち番号を包含する。
+        # さらに戦闘中の固定Lv.表示がある画面も選択肢ではないため、
+        # いずれか一つでも存在する間はSELECT一致を採用しない。
+        return not (
+            self.image_check("POKEMON_ZA_FIELD_W")
+            or self.image_check("POKEMON_ZA_FIELD_BACK_W")
+            or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
         )
 
     def image_check_exception(self, targetimage):
