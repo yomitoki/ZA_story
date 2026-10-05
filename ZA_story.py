@@ -3431,7 +3431,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             and nofiled == 0 and field_detected and not choice_guard
             and int(getattr(self, "_za_mega_mode5_start_flag", 0)) == 1
             and getattr(self, "_za_mega_mode5_phase", "") == "RETRY_SELECTION"
-            and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
             and not self.ZA_mega_mode5_event_attack_blocked())
         if not eligible:
             self._za_mega_mode5_retry_field_since=0.0
@@ -7054,11 +7053,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             "BLUE_ABSENCE_FALLBACK_SECONDS": 60.0,
             "BLUE_ABSENCE_CHECK_INTERVAL_SECONDS": 0.30,
             # 8. 青撃破後: 青側障害物から赤側障害物へ固定移動する試案値。
-            #    実機調整はこの3値だけで行える。
             "RED_COVER_MOVE_ANGLE": 60.0,#30.0,
             # 青側の深さを0.5秒増やした分、赤側経路も延長。
             "RED_COVER_MOVE_SECONDS": 6.8,#6.5,
             "RED_FACE_ANGLE": 160.0,#140.0,
+            # 赤側へ到着し、160度移動とL視点合わせを行った後の短い移動。
+            # 赤側攻撃ループのANGLE2とは独立。
+            "BLUE_TO_RED_ARRIVAL_MOVE_ANGLE": 90.0,
+            "BLUE_TO_RED_ARRIVAL_MOVE_SECONDS": 0.2,
+            "BLUE_TO_RED_ARRIVAL_MOVE_REPEAT": 2,
             # 9. 赤側障害物から攻撃する直前の時間指定移動。
             #    力をためた～強い光の最終検知後7秒は入力しない。
             
@@ -7067,7 +7070,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "RED_ATTACK_PREMOVE_ANGLE_SECONDS": 0.8,#0.5,
             "RED_ATTACK_PREMOVE_BLOCK_SECONDS": 7.0,
             
-            "RED_ATTACK_PREMOVE_ANGLE2": 90.0,
+            "RED_ATTACK_PREMOVE_ANGLE2": 95.0,
             "RED_ATTACK_PREMOVE_ANGLE_SECONDS2": 0.2,
             
             "RED_ATTACK_PREMOVE_STAY_SECONDS2": 0.5,
@@ -7082,7 +7085,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 11. 赤側障害物で赤青とも長時間見えない場合の保険。
             #     障害物による一時遮蔽では戻さず、通常mode5へ戻して
             #     次のBLACK_COMMENT／SELECT後にTESTMODE1を再試行する。
-            "RED_COVER_NO_ENEMY_RETURN_SECONDS": 20.0,
+            "RED_COVER_NO_ENEMY_RETURN_SECONDS": 60.0,
             "RED_COVER_NO_ENEMY_MIN_CONFIRMATIONS": 5,
         }
 
@@ -7237,6 +7240,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_reinitialize_pending=True
         self._za_mega_testmode1_resume_hp="PENDING"
         self._za_mega_testmode1_phase="WAIT_RESUME"
+        self._za_mega_testmode1_premove_due=False
         self._za_mega_testmode1_hp_fill_ratio=0.0
         self._za_mega_testmode1_hp_color="NONE"
         self._za_mega_testmode1_hp_frame=None
@@ -7275,7 +7279,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self, "_za_mega_testmode1_existing_charge_latched", False)
             and getattr(
                 self, "_za_mega_testmode1_phase", "")
-            in {"FACE_BLUE", "COVER_ATTACK", "WAIT_RED_COVER_DELAY",
+            in {"WAIT_RESUME", "FACE_BLUE", "COVER_ATTACK",
+                "WAIT_RED_COVER_DELAY",
                 "MOVE_TO_RED_COVER",
                 "FACE_RED", "RED_COVER_ATTACK"})
 
@@ -7558,7 +7563,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_testmode1_red_cover_no_enemy_confirmations=(
                 no_enemy_confirmations)
             no_enemy_seconds=max(0.0, float(settings.get(
-                "RED_COVER_NO_ENEMY_RETURN_SECONDS", 20.0)))
+                "RED_COVER_NO_ENEMY_RETURN_SECONDS", 60.0)))
             no_enemy_min=max(1, int(settings.get(
                 "RED_COVER_NO_ENEMY_MIN_CONFIRMATIONS", 5)))
             no_enemy_elapsed=max(0.0, now - no_enemy_since)
@@ -7703,6 +7708,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         phase=str(getattr(
             self, "_za_mega_testmode1_phase", "FACE_BLUE"))
         now=time.monotonic()
+        if phase == "WAIT_RESUME":
+            # RETRY_SELECTION後のFIELD安定確認中は、通常movemodeへ
+            # フォールスルーして最後の左右方向へ移動し続けない。
+            self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+            self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_ZL_ACTION("END")
+            self.ZA_mega_mode5_trace(
+                "WAIT_RESUME_HOLD",
+                "stop movement while stable FIELD resumes TESTMODE1")
+            return "handled"
         if phase == "WAIT_RED_COVER_DELAY":
             # 2組目の強い光が消えても5秒は青側障害物に留まる。
             # 期限後は追加の上下入力を行わず、赤側障害物へ移動する。
@@ -7763,7 +7779,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_testmode1_phase="FACE_RED"
             self.ZA_mega_mode5_trace(
                 "TESTMODE1_RED_COVER_MOVE",
-                "fixed move {:.0f}deg {:.1f}s; face red {:.0f}deg".format(
+                "fixed move {:.0f}deg {:.1f}s; next face red {:.0f}deg "
+                "then L and arrival adjustment".format(
                     cover_angle, cover_seconds, face_angle),
                 force=True)
             return "handled"
@@ -7788,10 +7805,31 @@ class ZA_story_Base(ImageProcPythonCommand):
                 Button.L, repeat=1, duration=0.04,
                 wait=0.0, interval=0.1)
             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-            self.ZA_ZL_ACTION("")
             red_cover=phase == "FACE_RED"
+            if red_cover:
+                # 赤側を160度へ向いてLで視点を合わせた後、その視点を
+                # 基準に到着位置の90度短距離移動を2回行う。
+                arrival_angle=float(settings[
+                    "BLUE_TO_RED_ARRIVAL_MOVE_ANGLE"])
+                arrival_seconds=max(0.0, float(settings[
+                    "BLUE_TO_RED_ARRIVAL_MOVE_SECONDS"]))
+                arrival_repeat=max(0, int(settings[
+                    "BLUE_TO_RED_ARRIVAL_MOVE_REPEAT"]))
+                for _ in range(arrival_repeat):
+                    self.press(
+                        Direction(Stick.LEFT, arrival_angle, 1.0),
+                        duration=arrival_seconds, wait=0.5)
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_RED_COVER_ARRIVAL",
+                    "after L: move {:.0f}deg {:.1f}s x{}".format(
+                        arrival_angle, arrival_seconds, arrival_repeat),
+                    force=True)
+            self.ZA_ZL_ACTION("")
             self._za_mega_testmode1_phase=(
                 "RED_COVER_ATTACK" if red_cover else "COVER_ATTACK")
+            # 画像検知に2.4秒以上かかっても、障害物到着後の最初の
+            # 攻撃では270度の攻撃前移動をY回避より先に必ず通す。
+            self._za_mega_testmode1_premove_due=True
             if not red_cover:
                 # 青側へ向いてLを入れた時点を潜行猶予の起点にする。
                 # 色が最初の数周で取れなくても即赤側へ切り替えない。
@@ -7821,8 +7859,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 2.4秒ごとだけ前方90度へYを2回送り、直後に再ロックオンする。
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
-        if now < float(getattr(
-                self, "_za_mega_testmode1_next_dodge_at", 0.0)):
+        premove_due=bool(getattr(
+            self, "_za_mega_testmode1_premove_due", False))
+        before_dodge=bool(now < float(getattr(
+            self, "_za_mega_testmode1_next_dodge_at", 0.0)))
+        if before_dodge or premove_due:
             block_until=float(getattr(
                 self,
                 "_za_mega_testmode1_red_premove_block_until", 0.0))
@@ -7843,6 +7884,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                      if waiting_strong_light else
                      "strong-light cooldown {:.1f}s remaining".format(
                          max(0.0, block_until - now))))
+                # 回避期限を過ぎている場合は、予兆中の270度移動だけを
+                # 保留して下のY回避へ進む。予兆解除後もdueを保持する。
+                if not before_dodge:
+                    pass
+                else:
+                    if getattr(self, "ZL_state", 0) == 0:
+                        self.ZA_ZL_ACTION("")
+                    return "attack"
             elif phase == "RED_COVER_ATTACK":
                 self.wait(settings["RED_ATTACK_PREMOVE_STAY_SECONDS"])
                 move_angle=float(settings[
@@ -7852,6 +7901,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(
                     Direction(Stick.LEFT, move_angle, 1.0),
                     duration=move_angle_seconds, wait=0.5)
+                self._za_mega_testmode1_premove_due=False
                 self.ZA_mega_mode5_trace(
                     "TESTMODE1_RED_ATTACK_PREMOVE",
                     "move {:.0f}deg for {:.1f}s before attack".format(
@@ -7886,6 +7936,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(
                     Direction(Stick.LEFT, move_angle, 1.0),
                     duration=move_angle_seconds, wait=0.5)
+                self._za_mega_testmode1_premove_due=False
                 self.ZA_mega_mode5_trace(
                     "TESTMODE1_BLUE_ATTACK_PREMOVE",
                     "move {:.0f}deg for {:.1f}s before attack".format(
@@ -7919,9 +7970,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "handled"
             else:
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
-            if getattr(self, "ZL_state", 0) == 0:
-                self.ZA_ZL_ACTION("")
-            return "attack"
+            if not premove_blocked:
+                if getattr(self, "ZL_state", 0) == 0:
+                    self.ZA_ZL_ACTION("")
+                return "attack"
 
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
@@ -7943,6 +7995,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             time.monotonic()
             + max(0.0, float(
                 settings["COVER_DODGE_INTERVAL_SECONDS"])))
+        self._za_mega_testmode1_premove_due=True
         self.ZA_mega_mode5_trace(
             ("TESTMODE1_RED_COVER" if phase == "RED_COVER_ATTACK"
              else "TESTMODE1_BLUE_COVER"),
@@ -8033,6 +8086,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_blue_scan_attempts=0
         self._za_mega_testmode1_face_attempts=0
         self._za_mega_testmode1_next_dodge_at=0.0
+        self._za_mega_testmode1_premove_due=False
         self._za_mega_testmode1_enemy_check_retry_at=0.0
         self._za_mega_testmode1_red_only_since=0.0
         self._za_mega_testmode1_red_only_last_seen=0.0
@@ -8527,6 +8581,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_cover_angle=90.0
         self._za_mega_testmode1_face_angle=90.0
         self._za_mega_testmode1_next_dodge_at=0.0
+        self._za_mega_testmode1_premove_due=False
         self._za_mega_testmode1_enemy_check_retry_at=0.0
         self._za_mega_testmode1_red_only_since=0.0
         self._za_mega_testmode1_red_only_last_seen=0.0
@@ -9075,7 +9130,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 continue
 
             testmode1_action="none"
-            if self._za_mega_testmode1_enabled:
+            # Comment／SELECT中は、この後段にある既存の再戦入力へ流す。
+            # WAIT_RESUME_HOLDを先に実行するとhandledでcontinueし、
+            # B／A／選択位置の入力へ永久に到達できなくなる。
+            if (self._za_mega_testmode1_enabled
+                    and not choice_input_guard):
                 testmode1_action=self.ZA_mega_mode5_testmode1_combat_update(
                     dir1,dir2,dir3,dir4,see_r)
             if testmode1_action == "restart":
