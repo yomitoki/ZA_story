@@ -3383,6 +3383,189 @@ class ZA_story_Base(ImageProcPythonCommand):
             detection, action, force=(previous != next_flag))
         return next_flag
 
+    def ZA_mega_mode5_attack_watchdog_reset(self):
+        """次の戦闘／会話へ、前戦の無攻撃時間とフリーランを持ち越さない。"""
+        self._za_mega_mode5_no_attack_since=0.0
+        self._za_mega_mode5_battle_seen_at=0.0
+        self._za_mega_mode5_attack_guard_retry_at=0.0
+        self._za_mega_mode5_high_hp_retry_at=0.0
+        self._za_mega_mode5_free_run_active=False
+        self._za_mega_mode5_free_run_started_at=0.0
+        self._za_mega_mode5_free_run_next_attack_at=0.0
+        self._za_mega_mode5_free_run_move_angle=None
+        self._za_mega_mode5_retry_field_since=0.0
+        self._za_mega_mode5_last_warning_seen_at=0.0
+        self._za_mega_mode5_warning_check_retry_at=0.0
+        self._za_mega_mode5_visible_warning=""
+
+    def ZA_mega_mode5_initial_bootstrap_fallback_ready(
+            self, field_detected, escape_detected, choice_guard,
+            event_attack_picture=""):
+        """FIELD/ESCAPEが10周連続でない時だけ先行4技探索を許可。"""
+        if (not getattr(self, "_za_mega_last_battle_mode", False)
+                or choice_guard or event_attack_picture
+                or field_detected or escape_detected):
+            self._za_mega_mode5_missing_field_escape_count=0
+            return False
+        count=min(10, int(getattr(
+            self, "_za_mega_mode5_missing_field_escape_count", 0)) + 1)
+        self._za_mega_mode5_missing_field_escape_count=count
+        if count == 10:
+            self.ZA_mega_mode5_trace(
+                "FIELD_ESCAPE_MISSING_10",
+                "allow ZL and four-move UI fallback", force=True)
+        return count >= 10
+
+    def ZA_mega_mode5_note_attack_input(self, button):
+        """技画像の一致ではなく、実際に送った攻撃入力で120秒を計り直す。"""
+        if not getattr(self, "_za_mega_last_battle_mode", False):
+            return
+        self._za_mega_mode5_no_attack_since=time.monotonic()
+        self._za_mega_mode5_last_attack_button=str(button)
+
+    def ZA_mega_mode5_stale_retry_field(self, nofiled, field_detected,
+                                        choice_guard):
+        """選択肢リセット後もnofiled=0のままFIELDで固まった場合を検出。"""
+        eligible=bool(
+            getattr(self, "_za_mega_last_battle_mode", False)
+            and nofiled == 0 and field_detected and not choice_guard
+            and int(getattr(self, "_za_mega_mode5_start_flag", 0)) == 1
+            and getattr(self, "_za_mega_mode5_phase", "") == "RETRY_SELECTION"
+            and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+            and not self.ZA_mega_mode5_event_attack_blocked())
+        if not eligible:
+            self._za_mega_mode5_retry_field_since=0.0
+            return False
+        now=time.monotonic()
+        since=float(getattr(self, "_za_mega_mode5_retry_field_since", 0.0))
+        if since <= 0.0:
+            self._za_mega_mode5_retry_field_since=now
+            return False
+        if now - since < 2.0:
+            return False
+        self._za_mega_mode5_retry_field_since=0.0
+        self.ZA_mega_mode5_trace(
+            "FIELD_AFTER_RETRY_SELECTION",
+            "repair nofiled state and resume battle phases", force=True)
+        return True
+
+    def ZA_mega_mode5_no_attack_watchdog(
+            self, battle_visible, choice_guard, safe_battle_visible=False):
+        """戦闘画面で攻撃・予兆がともに120秒なければフリーランへ。"""
+        if not getattr(self, "_za_mega_last_battle_mode", False):
+            return False
+        now=time.monotonic()
+        if choice_guard:
+            self.ZA_mega_mode5_attack_watchdog_reset()
+            return False
+        if not battle_visible:
+            if (now - float(getattr(
+                    self, "_za_mega_mode5_battle_seen_at", 0.0)) > 2.0):
+                self.ZA_mega_mode5_attack_watchdog_reset()
+            return False
+        self._za_mega_mode5_battle_seen_at=now
+        if now >= float(getattr(
+                self, "_za_mega_mode5_attack_guard_retry_at", 0.0)):
+            self._za_mega_mode5_attack_guard_retry_at=now + 1.0
+            if self.ZA_mega_mode5_event_attack_blocked():
+                self.ZA_mega_mode5_attack_watchdog_reset()
+                return False
+        if now >= float(getattr(
+                self, "_za_mega_mode5_warning_check_retry_at", 0.0)):
+            self._za_mega_mode5_warning_check_retry_at=now + 0.5
+            warning=(
+                "POKEMON_ZA_LAST_BATTLE_CHARGE"
+                if self.image_check("POKEMON_ZA_LAST_BATTLE_CHARGE")
+                else "POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT"
+                if self.image_check("POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT")
+                else "")
+            if warning:
+                self._za_mega_mode5_last_warning_seen_at=now
+                if warning != getattr(
+                        self, "_za_mega_mode5_visible_warning", ""):
+                    self.ZA_mega_mode5_trace(
+                        warning,
+                        "restart 120s no-warning watch", force=True)
+            self._za_mega_mode5_visible_warning=warning
+        since=float(getattr(self, "_za_mega_mode5_no_attack_since", 0.0))
+        if since <= 0.0:
+            self._za_mega_mode5_no_attack_since=now
+            return False
+        if getattr(self, "_za_mega_mode5_free_run_active", False):
+            return True
+        last_warning=float(getattr(
+            self, "_za_mega_mode5_last_warning_seen_at", 0.0))
+        if (now - max(since, last_warning) < 120.0
+                or now < float(getattr(
+                self, "_za_mega_mode5_high_hp_retry_at", 0.0))):
+            return False
+        if self.ZA_mega_mode5_event_attack_blocked():
+            self.ZA_mega_mode5_attack_watchdog_reset()
+            return False
+        # 120秒境界で予兆が再表示された場合も発動しない。
+        if (self.image_check("POKEMON_ZA_LAST_BATTLE_CHARGE")
+                or self.image_check(
+                    "POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT")):
+            self._za_mega_mode5_last_warning_seen_at=time.monotonic()
+            return False
+        # 以前のHP_RATIOは選択肢リセット後も残り得る。発動時に2枚撮り直す。
+        high_hp=True
+        samples=[]
+        for attempt in range(2):
+            self.ZA_mega_mode5_hp_resume_mode()
+            ratio=float(getattr(
+                self, "_za_mega_testmode1_hp_fill_ratio", 0.0))
+            color=getattr(self, "_za_mega_testmode1_hp_color", "NONE")
+            samples.append((color, ratio))
+            if color != "GREEN" or not 0.80 < ratio <= 1.05:
+                high_hp=False
+                if color != "NONE" or ratio > 0.0:
+                    break
+            if attempt == 0:
+                self.wait(0.1)
+        # 選択位置からHP引継ぎ／全快を推定しない。HPが読めない場合は
+        # FIELD/ESCAPEがあり、かつ予兆2種も120秒なかった時だけ補助判定する。
+        hp_unknown=bool(
+            len(samples) == 2
+            and all(color == "NONE" and ratio <= 0.0
+                    for color, ratio in samples))
+        warning_absent=bool(
+            not self.image_check("POKEMON_ZA_LAST_BATTLE_CHARGE")
+            and not self.image_check(
+                "POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT"))
+        if not warning_absent:
+            self._za_mega_mode5_last_warning_seen_at=time.monotonic()
+            return False
+        unknown_safe=bool(hp_unknown and safe_battle_visible)
+        if not high_hp and not unknown_safe:
+            self._za_mega_mode5_high_hp_retry_at=now + 5.0
+            self.ZA_mega_mode5_trace(
+                "NO_ATTACK_120S_HP_NOT_HIGH",
+                "fresh HP={}; safe FIELD/ESCAPE={}; keep normal mode5".format(
+                    samples, bool(safe_battle_visible)),
+                force=True)
+            return False
+        self._za_mega_mode5_free_run_active=True
+        self._za_mega_mode5_free_run_started_at=time.monotonic()
+        self._za_mega_mode5_free_run_next_attack_at=0.0
+        self._za_mega_mode5_initial_phase_active=False
+        self._za_mega_mode5_green_priority_checks_remaining=0
+        self._za_mega_mode5_view_search_block_until=0.0
+        self._za_mega_mode5_post_move_wait_until=0.0
+        self._za_mega_field_dir5_until=0.0
+        # TESTMODE1の障害物待機が視点と左移動を止めないよう、次のSELECTまで解除。
+        self._za_mega_testmode1_legacy_until_reset=True
+        self._za_mega_testmode1_phase="LEGACY_COMBAT"
+        self.ZA_mega_mode5_transition(
+            "FREE_RUN", "120s without attack/charge/light; {}".format(
+                "fresh HP > 80%" if high_hp
+                else "HP unavailable; safe FIELD/ESCAPE"))
+        self.ZA_mega_mode5_trace(
+            "NO_ATTACK_120S_HIGH_HP" if high_hp
+            else "NO_ATTACK_120S_HP_UNKNOWN_NO_WARNING",
+            "free run; fresh HP={}".format(samples), force=True)
+        return True
+
     def ZA_mega_mode5_event_attack_blocked(self):
         """最終戦の技入力を止める会話・選択・終了画面を返す。"""
         if not getattr(self, "_za_mega_last_battle_mode", False):
@@ -3548,6 +3731,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(
                 Button.A, repeat=1, duration=0.04,
                 wait=0.1, interval=0.1)
+            # UI未確認の暫定Aはゲーム内攻撃の成立を示さない。
+            # 無攻撃120秒の計時をここでは戻さない。
             now=time.monotonic()
             self._za_mega_mode5_lockon_confirmed_until=now + 0.8
             self._za_mega_mode5_visual_lockon_until=now + 0.8
@@ -3599,6 +3784,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(
                 button, repeat=1, duration=0.04,
                 wait=0.1, interval=0.1)
+            note_attack=getattr(
+                self, "ZA_mega_mode5_note_attack_input", None)
+            if callable(note_attack):
+                note_attack(button.name)
             pressed.append(button.name)
         if pressed:
             now=time.monotonic()
@@ -4295,6 +4484,52 @@ class ZA_story_Base(ImageProcPythonCommand):
             trace(
                 "TARGET_MARKER_MISSING",
                 "hold right-stick view angle={:.0f}".format(search_angle))
+        return True
+
+    def ZA_mega_mode5_free_run_update(self, dir1, dir2, dir3, dir4):
+        """120秒無攻撃後だけ、視点探索・連続移動・安全なA攻撃を行う。"""
+        if not getattr(self, "_za_mega_mode5_free_run_active", False):
+            return False
+        if self.ZA_mega_mode5_event_attack_blocked():
+            return False
+        if not self.ZA_mega_mode5_a_attack_ready():
+            return False
+        now=time.monotonic()
+        marker=self.ZA_mega_target_marker_direction()
+        visual_lock=bool(
+            getattr(self, "ZL_state", 0) == 1
+            and now < float(getattr(
+                self, "_za_mega_mode5_visual_lockon_until", 0.0)))
+        if isinstance(marker, Direction) or visual_lock:
+            self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+            if getattr(self, "ZL_state", 0) == 0:
+                self.ZA_ZL_ACTION("")
+        else:
+            # 左右の細かな往復ではなく、同じ向きへの視点探索を続ける。
+            self.ZA_mega_mode5_marker_search_view()
+        elapsed=max(0.0, now - float(getattr(
+            self, "_za_mega_mode5_free_run_started_at", now))) % 9.0
+        move_angle=(20.0 if elapsed < 4.0 else
+                    300.0 if elapsed < 7.0 else 160.0)
+        self.ZA_MOVE_LStick(
+            dir1, dir2, dir3, dir4,
+            Direction(Stick.LEFT, move_angle, 1.0),
+            "RELOAD", force_direction=True)
+        if move_angle != getattr(
+                self, "_za_mega_mode5_free_run_move_angle", None):
+            self._za_mega_mode5_free_run_move_angle=move_angle
+            self.ZA_mega_mode5_trace(
+                "FREE_RUN_MOVE",
+                "continuous move angle={:.0f}; view search".format(
+                    move_angle), force=True)
+        if now >= float(getattr(
+                self, "_za_mega_mode5_free_run_next_attack_at", 0.0)):
+            self.pressRep(
+                Button.A, repeat=1, duration=0.04,
+                wait=0.0, interval=0.1)
+            self.ZA_mega_mode5_note_attack_input("A_FREE_RUN")
+            self._za_mega_mode5_free_run_next_attack_at=(
+                time.monotonic() + 0.6)
         return True
 
     def ZA_mega_movemode_update(
@@ -6530,8 +6765,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         """mode 5のFIELD・緑床・4技UI・BATTLE・選択画面を返す。"""
         field_w_detected=self.image_check("POKEMON_ZA_FIELD_W")
         field_back_w_detected=self.image_check("POKEMON_ZA_FIELD_BACK_W")
+        field_hard_detected=bool(
+            not (field_w_detected or field_back_w_detected)
+            and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))
         field_screen_detected=bool(
-            field_w_detected or field_back_w_detected)
+            field_w_detected or field_back_w_detected
+            or field_hard_detected)
+        escape_detected=bool(
+            not field_screen_detected
+            and self.image_check("POKEMON_ZA_ESCAPE"))
 
         green_resume_detected=False
         if (nofiled==1 and not field_screen_detected
@@ -6549,6 +6791,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             and not field_screen_detected
             and not green_resume_detected
             and (event_attack_picture
+                 or escape_detected
                  or self.image_check("POKEMON_ZA_BATTLE")))
         resume_screen_detected=bool(
             field_screen_detected
@@ -6563,6 +6806,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             resume_reason="green-floor"
         elif event_attack_picture:
             resume_reason="event-attack-ui"
+        elif escape_detected:
+            resume_reason="escape"
         elif battle_screen_detected:
             resume_reason="battle"
         else:
@@ -6570,7 +6815,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return {
             "field_w": field_w_detected,
             "field_back_w": field_back_w_detected,
+            "field_hard": field_hard_detected,
             "field_screen": field_screen_detected,
+            "escape": escape_detected,
             "green_resume": green_resume_detected,
             "battle_screen": battle_screen_detected,
             "event_attack_picture": event_attack_picture,
@@ -6980,12 +7227,19 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_mode5_testmode1_reset_for_selection(self, reason):
         """敗北Comment／選択肢で次ターゲット用TESTMODE1を再準備する。"""
+        watchdog_reset=getattr(
+            self, "ZA_mega_mode5_attack_watchdog_reset", None)
+        if callable(watchdog_reset):
+            watchdog_reset()
         if not getattr(self, "_za_mega_testmode1_enabled", False):
             return False
         self._za_mega_testmode1_legacy_until_reset=False
         self._za_mega_testmode1_reinitialize_pending=True
         self._za_mega_testmode1_resume_hp="PENDING"
         self._za_mega_testmode1_phase="WAIT_RESUME"
+        self._za_mega_testmode1_hp_fill_ratio=0.0
+        self._za_mega_testmode1_hp_color="NONE"
+        self._za_mega_testmode1_hp_frame=None
         self._za_mega_testmode1_enemy_check_retry_at=0.0
         self._za_mega_testmode1_red_only_since=0.0
         self._za_mega_testmode1_red_only_last_seen=0.0
@@ -7613,6 +7867,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_ZL_ACTION("")
                 self.wait(0.2)
                 self.press(Button.A, wait=0.1)
+                note_attack=getattr(
+                    self, "ZA_mega_mode5_note_attack_input", None)
+                if callable(note_attack):
+                    note_attack("A_RED_COVER")
                 self.ZA_ZL_ACTION("END")
                 
                 self.press(
@@ -7643,6 +7901,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_ZL_ACTION("")
                 self.wait(0.2)
                 self.press(Button.A, wait=0.1)
+                note_attack=getattr(
+                    self, "ZA_mega_mode5_note_attack_input", None)
+                if callable(note_attack):
+                    note_attack("A_BLUE_COVER")
                 self.ZA_ZL_ACTION("END")
                 
                 self.press(
@@ -8246,6 +8508,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode4_yellow_hp_roll_trigger=""
         self._za_mega_roll_only_logged=False
         self._za_mega_last_battle_mode=bool(last_battle_mode)
+        if last_battle_mode:
+            self._za_mega_mode5_missing_field_escape_count=0
         self._za_mega_testmode1_enabled=bool(
             last_battle_mode and testmode1)
         self._za_mega_testmode1_resume_hp=(
@@ -8339,6 +8603,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_skill_ready_until=0.0
         self._za_mega_mode5_field_left_attempts=0
         self._za_mega_mode5_field_left_retry_at=0.0
+        if last_battle_mode:
+            watchdog_reset=getattr(
+                self, "ZA_mega_mode5_attack_watchdog_reset", None)
+            if callable(watchdog_reset):
+                watchdog_reset()
         self._za_mega_colored_relock_retry_at=0.0
         self._za_mega_colored_enemy_position=None
         self._za_mega_colored_enemy_color=None
@@ -8418,19 +8687,57 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_mega_mode5_trace(
                     detected_state, "screen-state check")
 
+                # SELECTの一時一致で開始フラグだけ0に戻ると、nofiled=0の
+                # ままFIELDを見続けて攻撃フェーズへ戻れない。安定FIELDだけ復旧。
+                if self.ZA_mega_mode5_stale_retry_field(
+                        nofiled, field_screen_detected, choice_input_guard):
+                    self.ZA_mega_mode5_begin_resume(
+                        Z_Gaurd, field_resume_dir5_seconds, see_r,
+                        "field-after-retry-selection")
+                    nofiled=0
+                if self.ZA_mega_mode5_no_attack_watchdog(
+                        resume_screen_detected, choice_input_guard,
+                        field_screen_detected or mode5_screen["escape"]):
+                    nofiled=0
+                    self._za_mega_mode5_battle_active=True
+                    if field_w_detected:
+                        self.ZA_mega_mode5_transition(
+                            "FIELD_W_INPUT", "120s no attack; send up first")
+                        self.ZA_mega_mode5_set_start_flag(
+                            3, "FREE_RUN_FIELD_W", "send up before attack")
+                    elif int(getattr(
+                            self, "_za_mega_mode5_start_flag", 0)) < 4:
+                        self.ZA_mega_mode5_transition(
+                            "FREE_RUN", "120s no attack; resume attack")
+                        self.ZA_mega_mode5_set_start_flag(
+                            4, "FREE_RUN_BATTLE",
+                            "continuous move/view and FIELD-confirmed A")
+
                 # LAST48には、通常FIELDは見えていてもZLでロックオンする
                 # まで専用4技UIが出ない区間がある。UIを待ってからZLを
                 # 押す循環を避け、この待機画面だけ先にZLを保持する。
+                initial_wait=bool(
+                    nofiled==1 and int(getattr(
+                        self, "_za_mega_mode5_start_flag", 0)) <= 1)
+                bootstrap_fallback_ready=(
+                    self.ZA_mega_mode5_initial_bootstrap_fallback_ready(
+                        field_screen_detected,
+                        mode5_screen["escape"],
+                        choice_input_guard,
+                        event_attack_picture)
+                    if initial_wait else False)
+                # 実際に4技UIが見える場合は即処理。それ以外の先行ZLは
+                # FIELD/ESCAPEの10周連続不一致に限り、再開判定を塞がない。
                 event_lockon_result=(
+                    event_attack_picture if initial_wait
+                    and event_attack_picture else
                     self.ZA_mega_mode5_event_lockon_bootstrap(
                         nofiled,
                         resume_screen_detected=resume_screen_detected,
                         field_screen_detected=field_screen_detected,
                         field_w_detected=field_w_detected,
                         choice_input_guard=choice_input_guard)
-                    if (nofiled==1 and int(getattr(
-                        self, "_za_mega_mode5_start_flag", 0)) <= 1)
-                    else "")
+                    if bootstrap_fallback_ready else "")
                 if event_lockon_result:
                     if (event_lockon_result
                             == "POKEMON_ZA_LAST_BATTLE_MOVE_UI"):
@@ -8692,6 +8999,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             if charge_result in {
                     "search", "green", "dodge", "guard", "complete"}:
+                if last_battle_mode:
+                    self.ZA_mega_mode5_attack_watchdog_reset()
                 if self._za_mega_testmode1_enabled:
                     if charge_result in {"search", "green"}:
                         if not getattr(
@@ -8726,7 +9035,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             if (last_battle_mode and nofiled==0
                     and int(getattr(
                         self, "_za_mega_mode5_start_flag", 0)) == 4):
-                if not event_attack_picture:
+                # フリーラン中は毎秒のZL先行再試行で視点保持を切らない。
+                # 4技UI自体は各周回のscreen-state検知で引き続き優先する。
+                if (not event_attack_picture
+                        and not getattr(
+                            self, "_za_mega_mode5_free_run_active", False)):
                     event_lockon_result=(
                         self.ZA_mega_mode5_event_lockon_bootstrap(
                             nofiled,
@@ -8753,6 +9066,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.ZA_mega_mode5_event_attack_axby(
                             event_attack_picture):
                         continue
+
+            if (last_battle_mode and not choice_input_guard
+                    and nofiled==0 and int(getattr(
+                        self, "_za_mega_mode5_start_flag", 0)) == 4
+                    and self.ZA_mega_mode5_free_run_update(
+                        dir1,dir2,dir3,dir4)):
+                continue
 
             testmode1_action="none"
             if self._za_mega_testmode1_enabled:
@@ -9326,6 +9646,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if last_battle_mode:
+                        self.ZA_mega_mode5_note_attack_input("A")
                         self.ZA_mega_mode5_trace(
                             "BATTLE_SCREEN", "A attack")
                     cplus_active=self.ZA_mega_cplus_after_skill_input(
@@ -9359,6 +9680,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if last_battle_mode:
+                        self.ZA_mega_mode5_note_attack_input("B")
                         self.ZA_mega_mode5_trace(
                             "POKEMON_ZA_C+/C+_LOW", "B skill attack")
                     cplus_active=self.ZA_mega_cplus_after_skill_input(
@@ -9395,6 +9717,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if last_battle_mode:
+                        self.ZA_mega_mode5_note_attack_input("X")
                         self.ZA_mega_mode5_trace(
                             "POKEMON_ZA_C+/C+_LOW", "X skill attack")
                     cplus_active=self.ZA_mega_cplus_after_skill_input(
@@ -9461,6 +9784,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZA_MOVE_SEE(action = "END")
                     self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                     if last_battle_mode:
+                        self.ZA_mega_mode5_note_attack_input("Y")
                         self.ZA_mega_mode5_trace(
                             "POKEMON_ZA_C+/C+_LOW", "Y skill attack")
                     cplus_active=self.ZA_mega_cplus_after_skill_input(
@@ -9702,6 +10026,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 if last_battle_mode:
+                                    self.ZA_mega_mode5_note_attack_input("A")
                                     self.ZA_mega_mode5_trace(
                                         "BATTLE_SCREEN", "A attack")
                                 cplus_active=self.ZA_mega_cplus_after_skill_input(
@@ -9727,6 +10052,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.B, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 if last_battle_mode:
+                                    self.ZA_mega_mode5_note_attack_input("B")
                                     self.ZA_mega_mode5_trace(
                                         "POKEMON_ZA_C+/C+_LOW",
                                         "B skill attack")
@@ -9756,6 +10082,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 if last_battle_mode:
+                                    self.ZA_mega_mode5_note_attack_input("X")
                                     self.ZA_mega_mode5_trace(
                                         "POKEMON_ZA_C+/C+_LOW",
                                         "X skill attack")
@@ -9814,6 +10141,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 self.ZA_MOVE_SEE(action = "END")
                                 self.pressRep(Button.Y, repeat=1, duration=0.04, wait=0.0, interval=0.1)
                                 if last_battle_mode:
+                                    self.ZA_mega_mode5_note_attack_input("Y")
                                     self.ZA_mega_mode5_trace(
                                         "POKEMON_ZA_C+/C+_LOW",
                                         "Y skill attack")
