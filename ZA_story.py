@@ -3027,7 +3027,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def ZA_renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5,timeout_seconds=0.0,detected_action_wait=0.0):
+    def ZA_renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5,timeout_seconds=0.0,detected_action_wait=0.0,interrupt_callback=None):
         started_at = time.monotonic()
 
         try:
@@ -3053,6 +3053,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             while True:
                 if timed_out():
                     return False
+                if callable(interrupt_callback):
+                    interrupt_result=interrupt_callback()
+                    if interrupt_result in {
+                            "defeat",
+                            "POKEMON_ZA_LAST_BATTLE_MOVE_UI"}:
+                        return interrupt_result
+                    if interrupt_result in {"waiting", "x_menu"}:
+                        self.wait(0.1)
+                        continue
                 checkerflg=0
                     
                 #誤判定回避用で指定画面での検知を除外する
@@ -3425,7 +3434,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_mode5_stale_retry_field(self, nofiled, field_detected,
                                         choice_guard):
-        """選択肢リセット後もnofiled=0のままFIELDで固まった場合を検出。"""
+        """選択肢後にnofiled=0でもHARD FIELD／Escape復帰を検出。"""
         eligible=bool(
             getattr(self, "_za_mega_last_battle_mode", False)
             and nofiled == 0 and field_detected and not choice_guard
@@ -3460,6 +3469,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self,
                     "_za_mega_mode5_rpush_post_field_move_pending",
                     False)):
+            self.ZA_mega_mode5_attack_watchdog_reset()
+            return False
+        # TESTMODE1の青側／赤側／青再追跡は、強い光2セットまたは
+        # 同じ側で180秒経過後の
+        # 通常C+不在＋敵色判定だけで遷移する。300秒watchdogから
+        # 赤側やフリーランへ先回りさせない。
+        test_phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "DISABLED"))
+        if (getattr(self, "_za_mega_testmode1_enabled", False)
+                and not (
+                    getattr(
+                        self, "_za_mega_mode5_free_run_active", False)
+                    and test_phase == "EXISTING_CHARGE")
+                and test_phase not in {
+                    "DISABLED", "LEGACY_COMBAT", "FREE_RUN"}):
             self.ZA_mega_mode5_attack_watchdog_reset()
             return False
         now=time.monotonic()
@@ -3647,8 +3671,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return picture
 
     def ZA_mega_mode5_last_name_no_hard_timeout(
-            self, eligible, hard_field_detected, blocked=False):
-        """名称表示中にHARD FIELDが30秒ない開始待ちを検出する。"""
+            self, eligible, hard_field_detected, blocked=False,
+            field_w_detected=False, field_back_w_detected=False,
+            escape_detected=False):
+        """FIELD系／Escapeなしで最終戦名が5秒連続した状態を返す。"""
         since_attr="_za_mega_mode5_last_name_no_hard_since"
         seen_attr="_za_mega_mode5_last_name_last_seen_at"
 
@@ -3657,52 +3683,59 @@ class ZA_story_Base(ImageProcPythonCommand):
             setattr(self, seen_attr, 0.0)
 
         if (not getattr(self, "_za_mega_last_battle_mode", False)
-                or not eligible or hard_field_detected or blocked):
+                or not eligible or hard_field_detected or field_w_detected
+                or field_back_w_detected or escape_detected or blocked):
             reset_timer()
             return False
 
         now=time.monotonic()
         name_visible=self.image_check("POKEMON_ZA_LAST_BATTLE_NAME")
-        if name_visible:
-            setattr(self, seen_attr, now)
-            started_at=float(getattr(self, since_attr, 0.0))
-            if started_at <= 0.0:
-                started_at=now
-                setattr(self, since_attr, started_at)
-                print(
-                    "[MEGA_MODE5_LAST_NAME_FALLBACK] boss name visible; "
-                    "wait 30.0s for HARD FIELD")
-            return bool(now - started_at >= 30.0)
-
-        # 画像検知の単発抜けでは30秒計測を失わない。一方、1秒を
-        # 超えて名称が消えた場合は、別画面への遷移として最初から計る。
-        last_seen_at=float(getattr(self, seen_attr, 0.0))
-        if last_seen_at <= 0.0 or now - last_seen_at > 1.0:
+        if not name_visible:
             reset_timer()
-        return False
+            return False
+        setattr(self, seen_attr, now)
+        started_at=float(getattr(self, since_attr, 0.0))
+        if started_at <= 0.0:
+            started_at=now
+            setattr(self, since_attr, started_at)
+            print(
+                "[MEGA_MODE5_LAST_NAME_LOCKON] boss name visible; "
+                "wait 5.0s with FIELD/Escape absent")
+            return False
+        settings_getter=getattr(
+            self, "ZA_mega_mode5_testmode1_settings", None)
+        settings=settings_getter() if callable(settings_getter) else {}
+        stable_seconds=max(5.0, float(settings.get(
+            "LAST_BATTLE_NAME_LOCKON_SECONDS", 5.0)))
+        return bool(now - started_at >= stable_seconds)
 
     def ZA_mega_mode5_event_lockon_bootstrap(
             self, nofiled, resume_screen_detected=False,
             field_screen_detected=False, field_w_detected=False,
             choice_input_guard=False,
-            allow_missing_field_fallback=False):
-        """LAST48で先にZLを保持し、表示された4技UIを返す。"""
+            allow_missing_field_fallback=False,
+            field_back_w_detected=False, escape_detected=False):
+        """固有4技を優先し、許可済みの名称5秒判定後だけZLする。"""
         start_flag=int(getattr(
             self, "_za_mega_mode5_start_flag", 0))
-        # 選択肢guardからRETRY_SELECTIONへ戻った直後は、ローカル変数
-        # nofiledだけが直前の戦闘値(0)を保持することがある。呼出側で
-        # FIELD/ESCAPE不一致を10周確認済みの場合に限り、この明示的な
-        # 再開待ち状態も初期待機として扱い、ZL再保持へ進める。
-        stale_retry_wait=bool(
-            allow_missing_field_fallback
-            and start_flag <= 1
-            and getattr(
-                self, "_za_mega_mode5_phase", "") == "RETRY_SELECTION"
-            and getattr(
-                self, "_za_mega_testmode1_phase", "") == "WAIT_RESUME")
-        initial_wait=bool(
+        retry_selection_wait=bool(
             start_flag <= 1
-            and (int(nofiled) == 1 or stale_retry_wait))
+            and getattr(self, "_za_mega_mode5_phase", "")
+            == "RETRY_SELECTION"
+            and getattr(self, "_za_mega_testmode1_phase", "")
+            == "WAIT_RESUME")
+        initial_wait_state=bool(
+            start_flag <= 1
+            and (int(nofiled) == 1 or retry_selection_wait))
+        # 初回／再戦のFIELD待機では、別の単調時計で3分経過するまで
+        # 名前画像そのものを確認しない。allow_missing_field_fallbackは
+        # その3分経過を呼出側が確認済みであることを表す。
+        timed_field_wait=bool(allow_missing_field_fallback)
+        initial_wait=bool(
+            timed_field_wait
+            and (initial_wait_state or start_flag == 3
+                 or getattr(
+                     self, "_za_mega_mode5_rpush_wait_field", False)))
         active_wait=bool(
             int(nofiled) == 0 and start_flag == 4
             and getattr(self, "_za_mega_mode5_battle_active", False))
@@ -3723,44 +3756,35 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_mega_mode5_last_name_no_hard_timeout(
                 False, True)
             return picture
+        # 固有4技が見えない場合だけ、FIELD系とEscapeを確認する。
+        # FIELD_W/BACK_Wが同時一致してもHARD FIELDを省略しない。
         hard_field_detected=self.image_check(
             "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        field_w_detected=bool(
+            field_w_detected or self.image_check("POKEMON_ZA_FIELD_W"))
+        field_back_w_detected=bool(
+            field_back_w_detected
+            or self.image_check("POKEMON_ZA_FIELD_BACK_W"))
+        escape_detected=bool(
+            escape_detected or self.image_check("POKEMON_ZA_ESCAPE"))
         name_timeout_due=self.ZA_mega_mode5_last_name_no_hard_timeout(
-            initial_wait,
+            initial_wait or active_wait,
             hard_field_detected,
-            blocked=False)
+            blocked=False,
+            field_w_detected=field_w_detected,
+            field_back_w_detected=field_back_w_detected,
+            escape_detected=escape_detected)
         now=time.monotonic()
         name_timeout_tracking=bool(
-            initial_wait
-            and not hard_field_detected
+            (initial_wait or active_wait)
+            and not (hard_field_detected or field_w_detected
+                     or field_back_w_detected or escape_detected)
             and float(getattr(
                 self, "_za_mega_mode5_last_name_no_hard_since", 0.0))
-            > 0.0
-            and now - float(getattr(
-                self, "_za_mega_mode5_last_name_last_seen_at", 0.0))
-            <= 1.0)
-        if (name_timeout_tracking and not name_timeout_due
-                and not allow_missing_field_fallback):
-            # 名称があるのにHARD FIELDだけ取れない30秒間は、FIELD_Wや
-            # generic BATTLEの単独一致で通常復帰へ流さず、現在位置で
-            # 計時を継続する。返却文字列により呼出元も同周回を終了する。
-            return "WAIT_LAST_BATTLE_NAME_HARD_FIELD"
-        # FIELD_Wは次のポケモンを出す上入力が先。FIELD_BACK_Wおよび
-        # 通常FIELDは、現在位置を動かさずZL先行で4技UIを開いてよい。
-        # ただし名称30秒フォールバック成立時はHARD不成立を優先する。
-        if field_w_detected and not name_timeout_due:
-            return ""
-        if (initial_wait and resume_screen_detected
-                and not field_screen_detected
-                and not name_timeout_due
-                and not allow_missing_field_fallback):
-            return ""
-        # この区間はZLで相手をロックオンするまで4技UIが表示されない。
-        # 通常はHARD FIELD確認時だけ先行入力する。暫定フォローとして、
-        # 最終戦名称が継続表示されHARD FIELDが30秒成立しない場合だけ
-        # 同じZL経路を許可する。戦闘中のflag 4ではこのフォローを使わない。
-        if (not hard_field_detected and not name_timeout_due
-                and not allow_missing_field_fallback):
+            > 0.0)
+        if not name_timeout_due:
+            if name_timeout_tracking:
+                return "WAIT_LAST_BATTLE_NAME_5S"
             return ""
 
         retry_at=float(getattr(
@@ -3777,10 +3801,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(0.1)
         self.ZA_ZL_ACTION("")
         self.wait(0.15)
-        if name_timeout_due:
-            # 高負荷のLAST48ではZL後の4技描画が遅れるため、暫定経路
-            # だけ追加で0.15秒待ち、合計0.30秒後に再照合する。
-            self.wait(0.15)
+        # 高負荷時の4技描画待ちを含め、ZLから合計0.30秒後に再照合する。
+        self.wait(0.15)
         picture=self.ZA_mega_mode5_event_attack_picture()
         self.ZA_mega_mode5_trace(
             picture or "EVENT_ATTACK_UI_MISSING",
@@ -3790,27 +3812,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_mode5_lockon_confirmed_until=now + 0.8
             self._za_mega_mode5_visual_lockon_until=now + 0.8
             return picture
-        if (name_timeout_due
-                and self.image_check("POKEMON_ZA_LAST_BATTLE_NAME")
-                and not self.ZA_mega_mode5_event_attack_blocked()):
-            # 4技UIを取り逃しても、名称が現在も表示されている最終戦に
-            # 限りAを1回送る。X/B/Yの盲入力はメニュー誤操作になるため
-            # UI確認なしでは送らない。既存retry_atにより最大1秒間隔。
-            self.pressRep(
-                Button.A, repeat=1, duration=0.04,
-                wait=0.1, interval=0.1)
-            # UI未確認の暫定Aはゲーム内攻撃の成立を示さない。
-            # 無攻撃300秒の計時をここでは戻さない。
-            now=time.monotonic()
-            self._za_mega_mode5_lockon_confirmed_until=now + 0.8
-            self._za_mega_mode5_visual_lockon_until=now + 0.8
-            self.ZA_mega_mode5_trace(
-                "POKEMON_ZA_LAST_BATTLE_NAME",
-                "30s without HARD FIELD; force ZL + A", force=True)
-            print(
-                "[MEGA_MODE5_LAST_NAME_FALLBACK] 30.0s without HARD "
-                "FIELD -> force ZL + A")
-            return "FORCED_LAST_BATTLE_ATTACK"
+        # 固有4技UIを確認できない限り攻撃しない。通常Aの盲入力も行わず、
+        # 次の1秒周期で名称・FIELD・Escapeから再判定する。
         return "WAIT_EVENT_ATTACK_UI"
 
     def ZA_mega_mode5_event_attack_axby(self, detected_picture=""):
@@ -4482,7 +4485,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return False
         if (getattr(self, "_za_mega_testmode1_enabled", False)
                 and getattr(self, "_za_mega_testmode1_phase", "")
-                not in {"EXISTING_CHARGE", "LEGACY_COMBAT"}):
+                not in {"EXISTING_CHARGE", "FREE_RUN", "LEGACY_COMBAT"}):
             # TESTMODE1は再開準備から障害物攻撃まで視点を固定する。
             # 予兆検知後のcharge処理と赤敵だけになった後の既存mode5は、
             # それぞれの専用／通常右視点確認を許可する。
@@ -5624,6 +5627,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         """RPush後は全入力を止め、FIELDだけを待つ専用状態へ入る。"""
         test_phase=str(getattr(
             self, "_za_mega_testmode1_phase", "COVER_ATTACK"))
+        self._za_mega_mode5_rpush_resume_phase=test_phase
         self._za_mega_mode5_rpush_resume_red=bool(test_phase in {
             "WAIT_RED_COVER_DELAY", "MOVE_TO_RED_COVER",
             "FACE_RED", "RED_COVER_ATTACK",
@@ -5631,6 +5635,23 @@ class ZA_story_Base(ImageProcPythonCommand):
         # RPush前の無攻撃経過時間や、すでに成立したフリーランを
         # イベント演出の後へ持ち越さない。FIELD復帰後に0秒から計り直す。
         self.ZA_mega_mode5_attack_watchdog_reset()
+        self._za_mega_mode5_defeat_sequence_active=False
+        self._za_mega_mode5_defeat_background_since=0.0
+        self._za_mega_mode5_defeat_prompt_logged=False
+        self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
+        self._za_mega_mode5_defeat_candidate_picture=""
+        self._za_mega_mode5_x_menu_b_attempts=0
+        self._za_mega_mode5_last_name_no_hard_since=0.0
+        self._za_mega_mode5_last_name_last_seen_at=0.0
+        self._za_mega_mode5_field_wait_since=time.monotonic()
+        self._za_mega_mode5_field_wait_context="RPUSH"
+        self._za_mega_mode5_field_wait_timeout_logged=False
+        side_cycle_reset=getattr(
+            self, "ZA_mega_mode5_testmode1_side_cycle_reset", None)
+        if callable(side_cycle_reset):
+            side_cycle_reset(test_phase)
+        if test_phase != "FREE_RUN":
+            self._za_mega_mode5_free_run_active=False
         self._za_mega_mode5_rpush_wait_field=True
         self._za_mega_mode5_rpush_field_picture=""
         self._za_mega_mode5_rpush_field_candidate=""
@@ -5750,26 +5771,37 @@ class ZA_story_Base(ImageProcPythonCommand):
         return True
 
     def ZA_mega_mode5_defeat_background_prompt_confirmed(
-            self, stable_seconds=0.35):
-        """SELECT/黒Commentを取りこぼした敗戦プロンプトを黒背景で補完する。"""
+            self, stable_seconds=None):
+        """敗北黒背景を5秒連続確認し、Comment／SELECT許可をラッチする。"""
+        if getattr(self, "_za_mega_mode5_defeat_sequence_active", False):
+            return True
         if not self.ZA_mega_mode5_defeat_background_confirmed():
             self._za_mega_mode5_defeat_background_since=0.0
             self._za_mega_mode5_defeat_prompt_logged=False
             self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
             return False
+        settings=self.ZA_mega_mode5_testmode1_settings()
+        configured_seconds=max(5.0, float(settings.get(
+            "DEFEAT_BLACK_STABLE_SECONDS", 5.0)))
+        required_seconds=(
+            configured_seconds if stable_seconds is None else
+            max(configured_seconds, float(stable_seconds)))
         now=time.monotonic()
         since=float(getattr(
             self, "_za_mega_mode5_defeat_background_since", 0.0))
         if since <= 0.0:
             self._za_mega_mode5_defeat_background_since=now
-            return float(stable_seconds) <= 0.0
-        ready=(now - since) >= max(0.0, float(stable_seconds))
+            return False
+        ready=(now - since) >= required_seconds
         if ready and not getattr(
                 self, "_za_mega_mode5_defeat_prompt_logged", False):
             print(
-                "[MEGA_MODE5_DEFEAT] stable black prompt confirmed; "
-                "allow A/select recovery")
+                "[MEGA_MODE5_DEFEAT] black background stable {:.1f}s; "
+                "allow mode5 Comment/SELECT recovery".format(
+                    required_seconds))
             self._za_mega_mode5_defeat_prompt_logged=True
+        if ready:
+            self._za_mega_mode5_defeat_sequence_active=True
         return ready
 
     def ZA_mega_mode5_defeat_prompt_advance(self, retry_seconds=0.80):
@@ -5796,6 +5828,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         """mode 5敗北時だけRPush除外前のSELECT生照合結果を使用する。"""
         if not getattr(self, "_za_mega_last_battle_mode", False):
             return self.image_check(picture)
+        # za_black_back.pngを5秒連続確認する前はSELECT画像を照合しない。
+        if not getattr(self, "_za_mega_mode5_defeat_sequence_active", False):
+            return False
         raw_check=getattr(self, "_image_check_target", None)
         if callable(raw_check):
             return bool(raw_check(picture))
@@ -5813,6 +5848,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "POKEMON_ZA_FIELD_BACK_W",
             "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
             "POKEMON_ZA_BATTLE_ACTIVE_LEVEL",
+            "POKEMON_ZA_ESCAPE",
         ))
 
     def ZA_mega_mode5_rpush_prompt_confirmed(self):
@@ -5823,18 +5859,211 @@ class ZA_story_Base(ImageProcPythonCommand):
         return not self.ZA_mega_mode5_defeat_background_confirmed()
 
     def ZA_mega_mode5_defeat_select_confirmed(self, picture):
-        """mode 5敗北SELECTを生照合＋黒背景＋FIELD不在で確定する。"""
+        """5秒黒背景ラッチ後のSELECTを生照合＋UI不在で確定する。"""
+        if (getattr(self, "_za_mega_last_battle_mode", False)
+                and not getattr(
+                    self, "_za_mega_mode5_defeat_sequence_active", False)):
+            return False
         if not self.ZA_mega_mode5_defeat_select_check(picture):
             return False
         if not self.ZA_mega_mode5_defeat_ui_clear():
-            return False
-        if not self.ZA_mega_mode5_defeat_background_confirmed():
             return False
         self.wait(0.05)
         return (
             self.ZA_mega_mode5_defeat_select_check(picture)
             and self.ZA_mega_mode5_defeat_ui_clear()
-            and self.ZA_mega_mode5_defeat_background_confirmed())
+            and getattr(
+                self, "_za_mega_mode5_defeat_sequence_active", False))
+
+    def ZA_mega_mode5_defeat_black_comment_confirmed(self):
+        """5秒黒背景ラッチ後の黒CommentをUI不在で二重確認する。"""
+        picture="POKEMON_ZA_TEXT_BLACK_COMMENT"
+        if (not getattr(self, "_za_mega_mode5_defeat_sequence_active", False)
+                or not self.ZA_mega_mode5_defeat_ui_clear()
+                or not self.image_check(picture)):
+            return False
+        self.wait(0.05)
+        return bool(
+            getattr(self, "_za_mega_mode5_defeat_sequence_active", False)
+            and self.ZA_mega_mode5_defeat_ui_clear()
+            and self.image_check(picture))
+
+    def ZA_mega_mode5_defeat_candidate_picture(self):
+        """黒背景5秒と組になった黒Comment／敗戦SELECTだけを返す。"""
+        if (not getattr(self, "_za_mega_mode5_defeat_sequence_active", False)
+                or not self.ZA_mega_mode5_defeat_ui_clear()):
+            return ""
+        if self.ZA_mega_mode5_defeat_black_comment_confirmed():
+            return "POKEMON_ZA_TEXT_BLACK_COMMENT"
+        return next((
+            picture for picture in (
+                "POKEMON_ZA_3_SELECT_TUTORIAL",
+                "POKEMON_ZA_3_SELECT",
+                "POKEMON_ZA_4_SELECT",
+            ) if self.ZA_mega_mode5_defeat_select_confirmed(picture)), "")
+
+    def ZA_mega_mode5_defeat_wait_update(self):
+        """敗戦候補を確認する。黒背景単独では敗戦状態へ遷移しない。"""
+        if not getattr(self, "_za_mega_last_battle_mode", False):
+            return "none"
+        if not self.ZA_mega_mode5_defeat_ui_clear():
+            # FIELD／Lv／Escapeが一度でも戻った区間は、黒背景5秒の
+            # 連続確認にも敗戦ラッチにも流用しない。
+            self._za_mega_mode5_defeat_sequence_active=False
+            self._za_mega_mode5_defeat_background_since=0.0
+            self._za_mega_mode5_defeat_prompt_logged=False
+            self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
+            self._za_mega_mode5_defeat_candidate_picture=""
+            return "none"
+        stable=self.ZA_mega_mode5_defeat_background_prompt_confirmed()
+        confirming=bool(
+            stable
+            or getattr(self, "_za_mega_mode5_defeat_sequence_active", False)
+            or float(getattr(
+                self, "_za_mega_mode5_defeat_background_since", 0.0)) > 0.0)
+        if not stable:
+            return "confirming" if confirming else "none"
+        candidate=self.ZA_mega_mode5_defeat_candidate_picture()
+        if candidate:
+            self._za_mega_mode5_defeat_candidate_picture=candidate
+            return "defeat"
+        # 黒背景を5秒確認できても、それだけでは敗戦にしない。
+        # Aで質問を進め、黒CommentまたはSELECTが描画されるまで待つ。
+        self.ZA_mega_mode5_defeat_prompt_advance()
+        return "confirming"
+
+    def ZA_mega_mode5_x_menu_b_recovery(
+            self, max_attempts=20, before_recovery=None):
+        """mode5 FIELD待機中のXメニューをB最大20回で閉じる。"""
+        if not getattr(self, "_za_mega_last_battle_mode", False):
+            return "none"
+        if not self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            self._za_mega_mode5_x_menu_b_attempts=0
+            return "none"
+        if callable(before_recovery):
+            before_recovery()
+        marker_stop=getattr(
+            self, "ZA_mega_mode5_marker_search_view_stop", None)
+        if callable(marker_stop):
+            marker_stop(relock=False)
+        view_stop=getattr(self, "ZA_MOVE_SEE", None)
+        if callable(view_stop):
+            view_stop(action="END")
+        self.ZA_ZL_ACTION("END")
+        attempt_limit=max(1, int(max_attempts))
+        attempts=max(0, int(getattr(
+            self, "_za_mega_mode5_x_menu_b_attempts", 0)))
+        while (attempts < attempt_limit
+                and self.image_check("POKEMON_ZA_X_MENU_OPEN")):
+            self.checkIfAlive()
+            self.pressRep(
+                Button.B, repeat=1, duration=0.15,
+                wait=0.5, interval=0.1)
+            attempts+=1
+        menu_open=self.image_check("POKEMON_ZA_X_MENU_OPEN")
+        self._za_mega_mode5_x_menu_b_attempts=(
+            attempts if menu_open else 0)
+        self.ZA_mega_mode5_trace(
+            "X_MENU_FIELD_WAIT",
+            "B {}/{}; {}".format(
+                attempts, attempt_limit,
+                "still open" if menu_open else "closed"),
+            force=True)
+        return "x_menu"
+
+    def ZA_mega_mode5_field_wait_reset(self, clear_name=True):
+        """3分FIELD欠落時計を、他のmode5時計と独立して初期化する。"""
+        self._za_mega_mode5_field_wait_since=0.0
+        self._za_mega_mode5_field_wait_context=""
+        self._za_mega_mode5_field_wait_timeout_logged=False
+        if clear_name:
+            self._za_mega_mode5_last_name_no_hard_since=0.0
+            self._za_mega_mode5_last_name_last_seen_at=0.0
+
+    def ZA_mega_mode5_indefinite_field_wait_update(
+            self, active, context, nofiled,
+            dir1=0, dir2=0, dir3=0, dir4=0, see_r=0):
+        """無期限FIELD待機へX／敗戦／3分イベント割込みを追加する。"""
+        if (not getattr(self, "_za_mega_last_battle_mode", False)
+                or not active):
+            return "inactive"
+
+        event_picture=self.ZA_mega_mode5_event_attack_picture()
+        if event_picture:
+            self.ZA_mega_mode5_field_wait_reset()
+            return event_picture
+
+        before_recovery=lambda: self.ZA_MOVE_LStick(
+            dir1,dir2,dir3,dir4,1,"END")
+        x_menu_state=self.ZA_mega_mode5_x_menu_b_recovery(
+            max_attempts=20, before_recovery=before_recovery)
+        if x_menu_state != "none":
+            return x_menu_state
+
+        field_w=self.image_check("POKEMON_ZA_FIELD_W")
+        field_back=self.image_check("POKEMON_ZA_FIELD_BACK_W")
+        field_hard=self.image_check(
+            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        escape=self.image_check("POKEMON_ZA_ESCAPE")
+        battle_level=self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+        if field_w or field_back or field_hard or escape or battle_level:
+            self.ZA_mega_mode5_field_wait_reset()
+            return "none"
+
+        defeat_state=self.ZA_mega_mode5_defeat_wait_update()
+        if defeat_state == "defeat":
+            self.ZA_mega_mode5_field_wait_reset()
+            return "defeat"
+        if defeat_state == "confirming":
+            # 黒背景単独では敗戦へ移さないが、イベント時計も進めない。
+            self._za_mega_mode5_field_wait_since=time.monotonic()
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_MOVE_SEE(action="END",in_see_r=see_r)
+            self.ZA_ZL_ACTION("END")
+            return "waiting"
+
+        wait_context=str(context or "FIELD_WAIT")
+        now=time.monotonic()
+        previous_context=str(getattr(
+            self, "_za_mega_mode5_field_wait_context", ""))
+        since=float(getattr(
+            self, "_za_mega_mode5_field_wait_since", 0.0))
+        if previous_context != wait_context or since <= 0.0:
+            self._za_mega_mode5_field_wait_context=wait_context
+            self._za_mega_mode5_field_wait_since=now
+            self._za_mega_mode5_field_wait_timeout_logged=False
+            self._za_mega_mode5_last_name_no_hard_since=0.0
+            self._za_mega_mode5_last_name_last_seen_at=0.0
+            return "none"
+        settings=self.ZA_mega_mode5_testmode1_settings()
+        timeout_seconds=max(180.0, float(settings.get(
+            "FIELD_WAIT_EVENT_TIMEOUT_SECONDS", 180.0)))
+        if now - since < timeout_seconds:
+            return "none"
+        if not getattr(
+                self, "_za_mega_mode5_field_wait_timeout_logged", False):
+            self._za_mega_mode5_field_wait_timeout_logged=True
+            self.ZA_mega_mode5_trace(
+                "FIELD_WAIT_EVENT_TIMEOUT",
+                "FIELD absent {:.1f}s; begin boss-name event check".format(
+                    timeout_seconds),
+                force=True)
+        result=self.ZA_mega_mode5_event_lockon_bootstrap(
+            nofiled,
+            field_screen_detected=False,
+            field_w_detected=False,
+            field_back_w_detected=False,
+            escape_detected=False,
+            choice_input_guard=False,
+            allow_missing_field_fallback=True)
+        if result == "POKEMON_ZA_LAST_BATTLE_MOVE_UI":
+            self.ZA_mega_mode5_field_wait_reset()
+            return result
+        if result in {"WAIT_LAST_BATTLE_NAME_5S", "WAIT_EVENT_ATTACK_UI"}:
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_MOVE_SEE(action="END",in_see_r=see_r)
+            return "waiting"
+        return "none"
 
     def ZA_mega_last_battle_tutorial_confirmed(
             self, initial_wait=0.4, attempts=5, interval=0.2):
@@ -5846,7 +6075,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             if (self.ZA_mega_mode5_defeat_select_check(
                     "POKEMON_ZA_3_SELECT_TUTORIAL")
                     and self.ZA_mega_mode5_defeat_ui_clear()
-                    and self.ZA_mega_mode5_defeat_background_confirmed()
+                    and getattr(
+                        self, "_za_mega_mode5_defeat_sequence_active", False)
                     ):
                 return True
             if attempt + 1 < attempts:
@@ -6275,7 +6505,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                             "CHARGE_WARNING_SKIP_COUNT", -1))
                 testmode1_phase=str(getattr(
                     self, "_za_mega_testmode1_phase", ""))
-                if skip_limit < 0 and testmode1_phase != "LEGACY_COMBAT":
+                if (skip_limit < 0
+                        and testmode1_phase not in {
+                            "FREE_RUN", "LEGACY_COMBAT"}):
                     # -1は予兆をTESTMODE1終了条件にしない。表示が残る間の
                     # 重複判定だけ抑止する。赤色の直接確認、または予兆
                     # セット間の青不在による赤側障害物移行を待つ。
@@ -6312,7 +6544,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     phase_before_charge=str(getattr(
                         self, "_za_mega_testmode1_phase", "COVER_ATTACK"))
                     if phase_before_charge in {
-                            "COVER_ATTACK", "RED_COVER_ATTACK"}:
+                            "COVER_ATTACK", "RED_COVER_ATTACK", "FREE_RUN"}:
                         self._za_mega_testmode1_phase_before_charge=(
                             phase_before_charge)
                     self._za_mega_testmode1_existing_charge_latched=True
@@ -6526,59 +6758,26 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_choice_input_guard(self):
         # 最終戦モードでは通常の2体／3体選択を3体／4体選択へ読み替える。
-        if getattr(self, "_za_mega_last_battle_mode", False):
-            select_pictures = (
-                "POKEMON_ZA_3_SELECT_TUTORIAL",
-                "POKEMON_ZA_3_SELECT",
-                "POKEMON_ZA_4_SELECT")
-            # mode5はSELECTの生照合を使うため、共通の
-            # image_check_confirmation()で行うFIELD／Lv除外を
-            # この専用guardで必ず先に確認する。
-            if not self.ZA_mega_mode5_defeat_ui_clear():
-                return False
-        else:
-            select_pictures = (
-                "POKEMON_ZA_2_SELECT", "POKEMON_ZA_3_SELECT")
+        mode5=bool(getattr(self, "_za_mega_last_battle_mode", False))
+        if mode5:
+            # 黒背景だけではRETRY_SELECTIONへ入らない。5秒黒背景と
+            # 黒Comment／敗戦SELECTのANDが成立した場合だけ入力を許可する。
+            return self.ZA_mega_mode5_defeat_wait_update() == "defeat"
+        select_pictures = (
+            "POKEMON_ZA_2_SELECT", "POKEMON_ZA_3_SELECT")
         # FIELD表示中は選択肢テンプレートの残像／誤一致を無効化する。
         # 復帰直後にSELECT側へ入ると、緑床確認と上入力が数秒遅れる。
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
             return False
-        select_check=(
-            getattr(
-                self, "ZA_mega_mode5_defeat_select_check", self.image_check)
-            if getattr(self, "_za_mega_last_battle_mode", False)
-            else self.image_check)
+        select_check=self.image_check
         select_matched_picture=next((
             picture for picture in select_pictures
             if select_check(picture)), "")
         select_matched=bool(select_matched_picture)
-        if (getattr(self, "_za_mega_last_battle_mode", False)
-                and select_matched):
-            # RPush後の一瞬の暗転を敗北SELECTにしない。
-            # SELECT前後で黒背景とFIELD／Lv不在を再確認し、
-            # ここで確定した場合だけ再開状態を初期化する。
-            if not self.ZA_mega_mode5_defeat_select_confirmed(
-                    select_matched_picture):
-                return False
-            self._za_mega_mode5_color_field_until=0.0
-            return True
         black_comment=(
             False if select_matched
             else self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"))
         if not select_matched and not black_comment:
-            # 敗戦直後の「再挑戦しますか？」は、選択肢の
-            # 描画前に黒Commentテンプレートも外れることがある。
-            # mode5だけ安定した黒背景を補助guardとして使用する。
-            if (getattr(self, "_za_mega_last_battle_mode", False)
-                    and self.ZA_mega_mode5_defeat_background_prompt_confirmed()):
-                self._za_mega_mode5_color_field_until=0.0
-                return True
-            return False
-        # mode 5の敗北SELECT／黒コメントは、右側のイベントUIなどでも
-        # 形だけ誤一致する。候補が出た時だけ敗北画面用の黒背景を追加確認し、
-        # 再戦入力と開始フラグ初期化を許可する。
-        if (getattr(self, "_za_mega_last_battle_mode", False)
-                and not self.ZA_mega_mode5_defeat_background_confirmed()):
             return False
         self._za_mega_mode5_color_field_until=0.0
         return True
@@ -6864,13 +7063,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                         alive_check()
                     self.wait(0.1)
 
-            close_count=0
-            while menu_open and close_count < 3:
-                self.checkIfAlive()
-                self.pressRep(
-                    Button.B, repeat=1, duration=0.15,
-                    wait=0.5, interval=0.1)
-                close_count+=1
+            if menu_open:
+                # 共通のFIELD欠落復旧と同じ上限で閉じる。連続検知中に
+                # outer loopから再び呼ばれても20回を超えてBを送らない。
+                self._za_mega_mode5_x_menu_b_attempts=0
+                self.ZA_mega_mode5_x_menu_b_recovery(
+                    max_attempts=20, before_recovery=None)
                 menu_open=self.image_check("POKEMON_ZA_X_MENU_OPEN")
 
             self._za_mega_field_w_up_attempts=0
@@ -6883,17 +7081,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_mega_mode5_set_start_flag(
                 3, "FIELD_W_X_MENU_RECOVERY",
                 "retry Lbutton_up after X menu open/close")
-            if close_count:
-                result_text=(
-                    "closed" if not menu_open
-                    else "still detected after B x{}".format(close_count))
+            if not menu_open:
                 print(
                     "[MEGA_FIELD_W_RECOVERY] X menu {} ; "
-                    "reset up retry".format(result_text))
+                    "reset up retry".format("closed"))
             else:
                 print(
-                    "[MEGA_FIELD_W_RECOVERY] X menu was not detected; "
-                    "do not press B; reset up retry")
+                    "[MEGA_FIELD_W_RECOVERY] X menu still detected after "
+                    "B x20; reset up retry without further B")
             trace=getattr(self, "ZA_mega_mode5_trace", None)
             if callable(trace):
                 trace(
@@ -7223,43 +7418,48 @@ class ZA_story_Base(ImageProcPythonCommand):
         return False
 
     def ZA_mega_mode5_detect_screen_state(self, nofiled):
-        """mode 5のFIELD・緑床・4技UI・BATTLE・選択画面を返す。"""
+        """mode 5画面を固有4技→HARD/Escape→黒背景の順で判定する。"""
+        # 固有4技はすべてのFIELD系誤一致より先に確定する。
+        event_attack_picture=self.ZA_mega_mode5_event_attack_picture()
         field_w_detected=self.image_check("POKEMON_ZA_FIELD_W")
         field_back_w_detected=self.image_check("POKEMON_ZA_FIELD_BACK_W")
-        field_hard_detected=bool(
-            not (field_w_detected or field_back_w_detected)
-            and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))
+        # FIELD_W/BACK_Wが見えていてもHARD FIELDを必ず独立照合する。
+        field_hard_detected=bool(self.image_check(
+            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))
+        escape_detected=bool(self.image_check("POKEMON_ZA_ESCAPE"))
         field_screen_detected=bool(
             field_w_detected or field_back_w_detected
             or field_hard_detected)
+        retry_resume_detected=bool(
+            not event_attack_picture
+            and (field_hard_detected or escape_detected))
         start_flag=int(getattr(
             self, "_za_mega_mode5_start_flag", 0))
-        # WAIT_RESUME中はSELECT/BLACKCOMMENTの候補を待たず、
-        # 指定za_black_back.pngを画面判定の先頭で直接照合する。
-        # これによりBATTLEの誤一致や後段guardに遮られない。
-        defeat_prompt_check=getattr(
-            self, "ZA_mega_mode5_defeat_background_prompt_confirmed", None)
-        defeat_background_prompt_detected=bool(
-            nofiled==1 and start_flag <= 1
-            and not field_screen_detected
-            and self.ZA_mega_mode5_defeat_ui_clear()
-            and callable(defeat_prompt_check)
-            and defeat_prompt_check())
+        # 固有4技もFIELD／Escapeもない時だけ敗戦候補を監視する。
+        # 黒背景単独は入力を止めて確認するが、黒Comment／SELECTとの
+        # ANDが成立するまでRETRY_SELECTIONへは移さない。
+        defeat_state=(
+            self.ZA_mega_mode5_defeat_wait_update()
+            if (not event_attack_picture
+                and not retry_resume_detected
+                and not field_screen_detected) else "none")
+        defeat_background_prompt_detected=(defeat_state != "none")
+        defeat_waiting=(defeat_state == "confirming")
+        defeat_confirmed=(defeat_state == "defeat")
         normal_comment_check=getattr(
             self, "ZA_mega_mode5_normal_black_comment_confirmed", None)
         normal_black_comment_detected=bool(
-            not field_screen_detected
+            not event_attack_picture
+            and not retry_resume_detected
+            and not field_screen_detected
             and not defeat_background_prompt_detected
             and callable(normal_comment_check)
             and normal_comment_check())
-        escape_detected=bool(
-            not field_screen_detected
-            and not defeat_background_prompt_detected
-            and not normal_black_comment_detected
-            and self.image_check("POKEMON_ZA_ESCAPE"))
 
         green_resume_detected=False
-        if (nofiled==1 and not field_screen_detected
+        if (nofiled==1 and not event_attack_picture
+                and not retry_resume_detected
+                and not field_screen_detected
                 and not defeat_background_prompt_detected
                 and self._za_mega_z_guard_enabled):
             on_green,green_direction,_=(
@@ -7267,39 +7467,37 @@ class ZA_story_Base(ImageProcPythonCommand):
             green_resume_detected=bool(
                 on_green or isinstance(green_direction, Direction))
 
-        event_attack_picture=(
-            "" if (defeat_background_prompt_detected
-                   or normal_black_comment_detected)
-            else self.ZA_mega_mode5_event_attack_picture())
         battle_screen_detected=bool(
             (nofiled==1 or start_flag < 4)
-            and not field_screen_detected
+            and not retry_resume_detected
             and not defeat_background_prompt_detected
             and not normal_black_comment_detected
             and not green_resume_detected
             and (event_attack_picture
-                 or escape_detected
                  or self.image_check("POKEMON_ZA_BATTLE")))
         resume_screen_detected=bool(
-            field_screen_detected
+            retry_resume_detected
+            or event_attack_picture
+            or field_screen_detected
             or green_resume_detected
             or battle_screen_detected)
-        choice_input_guard=bool(
-            defeat_background_prompt_detected
-            or (not resume_screen_detected
-                and self.ZA_mega_choice_input_guard()))
-        if field_screen_detected:
-            resume_reason="field"
-        elif green_resume_detected:
-            resume_reason="green-floor"
-        elif event_attack_picture:
+        choice_input_guard=bool(defeat_confirmed)
+        if event_attack_picture:
             resume_reason="event-attack-ui"
+        elif field_hard_detected:
+            resume_reason="hard-field"
         elif escape_detected:
             resume_reason="escape"
+        elif field_w_detected or field_back_w_detected:
+            resume_reason="field-indicator"
+        elif green_resume_detected:
+            resume_reason="green-floor"
         elif battle_screen_detected:
             resume_reason="battle"
-        elif defeat_background_prompt_detected:
-            resume_reason="defeat-black-background"
+        elif defeat_confirmed:
+            resume_reason="defeat-black-and-choice"
+        elif defeat_waiting:
+            resume_reason="defeat-black-confirming"
         elif normal_black_comment_detected:
             resume_reason="normal-black-comment"
         else:
@@ -7314,8 +7512,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             "battle_screen": battle_screen_detected,
             "event_attack_picture": event_attack_picture,
             "resume_screen": resume_screen_detected,
+            "retry_resume": retry_resume_detected,
             "choice_guard": choice_input_guard,
             "defeat_background_prompt": defeat_background_prompt_detected,
+            "defeat_waiting": defeat_waiting,
+            "defeat_confirmed": defeat_confirmed,
             "normal_black_comment": normal_black_comment_detected,
             "resume_reason": resume_reason,
         }
@@ -7531,9 +7732,28 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 6. 予兆を無視する回数。-1は既存の予兆回避へ移行せず、
             #    7の赤のみ判定または予兆セット間の青不在で赤側へ移る。
             "CHARGE_WARNING_SKIP_COUNT": -1,
+            # 敗北黒背景は5秒連続確認できた場合だけComment／SELECTを扱う。
+            "DEFEAT_BLACK_STABLE_SECONDS": 5.0,
+            # FIELD系／Escapeを一度も確認できない待機がこの時間続いた時だけ、
+            # 最終戦名をイベント判定として初めて照合する。
+            "FIELD_WAIT_EVENT_TIMEOUT_SECONDS": 180.0,
+            # FIELD系とEscapeがなく、最終戦名がこの時間連続表示された時だけ
+            # ZLを入れて固有4技UIを再確認する。
+            "LAST_BATTLE_NAME_LOCKON_SECONDS": 5.0,
+            # 青／赤側の移行判定は、強い光の表示→消失を1セットとし、
+            # 2セット、または同じ側で3分経過した後に既存の5秒待機、
+            # 各側角度のY2回、3秒待機を行う。
+            "SIDE_TRANSITION_STRONG_LIGHT_SETS": 2,
+            "SIDE_TRANSITION_TIMEOUT_SECONDS": 180.0,
+            "SIDE_TRANSITION_STRONG_LIGHT_CLEAR_SECONDS": 0.5,
+            "SIDE_TRANSITION_WAIT_SECONDS": 5.0,
+            "SIDE_TRANSITION_POST_DODGE_WAIT_SECONDS": 3.0,
+            "SIDE_TRANSITION_DODGE_REPEAT": 2,
+            "BLUE_SIDE_TRANSITION_DODGE_ANGLE": 90.0,
+            "RED_SIDE_TRANSITION_DODGE_ANGLE": 90.0,
             # 予兆1組目の終了から次の予兆開始まで青敵を確認できなければ、
             # 赤色を直接取れなくても青撃破・赤敵ありとして扱う。
-            "WARNING_BLUE_FALLBACK_ENABLED": True,
+            "WARNING_BLUE_FALLBACK_ENABLED": False,
             # 2組目の強い光が消えてから、青側でポケモンを
             # 戻す判定と赤側障害物への移動を始めるまでの待機。
             "WARNING_RED_COVER_DELAY_SECONDS": 5.0,
@@ -7550,7 +7770,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 8. 青撃破後: 青側障害物から赤側障害物へ固定移動する試案値。
             "RED_COVER_MOVE_ANGLE": 60.0,#30.0,
             # 青側の深さを0.5秒増やした分、赤側経路も延長。
-            "RED_COVER_MOVE_SECONDS": 6.5,
+            "RED_COVER_MOVE_SECONDS": 7.5,
             "RED_FACE_ANGLE": 160.0,#140.0,
             # 赤側へ到着し、160度移動とL視点合わせを行った後の短い移動。
             # 赤側攻撃ループのANGLE2とは独立。
@@ -7577,7 +7797,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 10. 赤側障害物で青を再確認した場合は通常mode5へ戻す。
             #     赤と青は同時に存在し得るため、途中の赤検知では青確認を
             #     取り消さず、確定青を複数回確認してから復帰する。
-            "BLUE_RETURN_TO_LEGACY_ENABLED": True,
+            "BLUE_RETURN_TO_LEGACY_ENABLED": False,
             "BLUE_RETURN_SECONDS": 1.0,
             "BLUE_RETURN_CHECK_INTERVAL_SECONDS": 0.30,
             "BLUE_RETURN_GAP_TOLERANCE_SECONDS": 10.0,
@@ -7691,10 +7911,319 @@ class ZA_story_Base(ImageProcPythonCommand):
             force=True)
         return False
 
+    def ZA_mega_mode5_testmode1_side_cycle_reset(self, phase=""):
+        """青／赤側遷移用の強い光セットと3分時計を初期化する。"""
+        self._za_mega_testmode1_side_cycle_phase=str(phase or "")
+        self._za_mega_testmode1_side_strong_visible=False
+        self._za_mega_testmode1_side_strong_clear_since=0.0
+        self._za_mega_testmode1_side_strong_sets=0
+        self._za_mega_testmode1_side_decision_not_before=0.0
+        self._za_mega_testmode1_side_timeout_started_at=-1.0
+
+    def ZA_mega_mode5_testmode1_enter_free_run(self, reason):
+        """青／赤確認の結果から明示的に実フリーランへ入る。"""
+        self.ZA_mega_mode5_attack_watchdog_reset()
+        now=time.monotonic()
+        self._za_mega_mode5_free_run_active=True
+        self._za_mega_mode5_free_run_started_at=now
+        self._za_mega_mode5_free_run_next_attack_at=0.0
+        self._za_mega_mode5_free_run_move_angle=None
+        self._za_mega_mode5_battle_active=True
+        legacy_latched=bool(getattr(
+            self, "_za_mega_testmode1_legacy_until_reset", False))
+        self._za_mega_testmode1_phase=(
+            "LEGACY_COMBAT" if legacy_latched else "FREE_RUN")
+        self._za_mega_testmode1_legacy_until_reset=False
+        self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_returned_to_blue=False
+        self.ZA_mega_mode5_testmode1_side_cycle_reset("FREE_RUN")
+        self.ZA_mega_mode5_transition("FREE_RUN", str(reason))
+        self.ZA_mega_mode5_trace(
+            "TESTMODE1_FREE_RUN",
+            "{}; enable move/view/attack and free-run strong-light action".format(
+                reason),
+            force=True)
+        return True
+
+    def ZA_mega_mode5_resume_free_run_after_charge(self, charge_result):
+        """FREE_RUN中の緑床／回避完了後もFIELD待機へ戻さず継続する。"""
+        if charge_result not in {"dodge", "complete"}:
+            return False
+        saved_phase=str(getattr(
+            self, "_za_mega_testmode1_phase_before_charge", ""))
+        current_phase=str(getattr(
+            self, "_za_mega_testmode1_phase", ""))
+        if (not getattr(
+                self, "_za_mega_mode5_free_run_active", False)
+                or (saved_phase != "FREE_RUN"
+                    and current_phase != "EXISTING_CHARGE")):
+            return False
+        self._za_mega_testmode1_phase="FREE_RUN"
+        self._za_mega_mode5_free_run_active=True
+        self._za_mega_mode5_battle_active=True
+        self._za_mega_last_charge_attack_suspended=False
+        self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_phase_before_charge=""
+        self._za_mega_mode5_no_attack_since=time.monotonic()
+        self.ZA_mega_mode5_trace(
+            "FREE_RUN_CHARGE_COMPLETE",
+            "{}; resume rotating view, movement and attack".format(
+                charge_result),
+            force=True)
+        return True
+
+    def ZA_mega_mode5_testmode1_side_transition_update(
+            self, dir1, dir2, dir3, dir4, see_r):
+        """強い光2セットまたは3分後、通常C+不在と敵色を確認する。"""
+        phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "DISABLED"))
+        tracked_phases={
+            "COVER_ATTACK": "BLUE",
+            "RED_COVER_ATTACK": "RED",
+            "BLUE_CHASE_ATTACK": "BLUE_RETURN",
+        }
+        if (not getattr(self, "_za_mega_testmode1_enabled", False)
+                or phase not in tracked_phases):
+            return "none"
+
+        settings=self.ZA_mega_mode5_testmode1_settings()
+        required=max(1, int(settings.get(
+            "SIDE_TRANSITION_STRONG_LIGHT_SETS", 2)))
+        timeout_seconds=max(180.0, float(settings.get(
+            "SIDE_TRANSITION_TIMEOUT_SECONDS", 180.0)))
+        if str(getattr(
+                self, "_za_mega_testmode1_side_cycle_phase", "")) != phase:
+            self.ZA_mega_mode5_testmode1_side_cycle_reset(phase)
+
+        now=time.monotonic()
+        decision_not_before=float(getattr(
+            self, "_za_mega_testmode1_side_decision_not_before", 0.0))
+        if decision_not_before <= 0.0:
+            timeout_started_at=float(getattr(
+                self, "_za_mega_testmode1_side_timeout_started_at", -1.0))
+            if timeout_started_at < 0.0:
+                timeout_started_at=now
+                self._za_mega_testmode1_side_timeout_started_at=now
+            if now - timeout_started_at >= timeout_seconds:
+                # HP最大などでCHARGEだけが見え、STRONG_LIGHTが出ない場合も
+                # 180秒判定後へ「強い光待ち」を持ち越して攻撃を止めない。
+                self._za_mega_testmode1_red_premove_waiting_strong_light=(
+                    False)
+                self._za_mega_testmode1_red_premove_block_until=0.0
+                wait_seconds=max(0.0, float(settings.get(
+                    "SIDE_TRANSITION_WAIT_SECONDS", 5.0)))
+                decision_not_before=now + wait_seconds
+                self._za_mega_testmode1_side_decision_not_before=(
+                    decision_not_before)
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_SIDE_TIMEOUT_DECISION_WAIT",
+                    "{} side {:.1f}s elapsed before {} sets; "
+                    "wait {:.1f}s".format(
+                        tracked_phases[phase], timeout_seconds, required,
+                        wait_seconds),
+                    force=True)
+        if decision_not_before <= 0.0:
+            charge_visible=self.image_check(
+                "POKEMON_ZA_LAST_BATTLE_CHARGE")
+            strong_visible=self.image_check(
+                "POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT")
+            if phase in {"COVER_ATTACK", "RED_COVER_ATTACK"}:
+                warning_started=False
+                if charge_visible and not strong_visible:
+                    warning_started=not bool(getattr(
+                        self,
+                        "_za_mega_testmode1_red_premove_waiting_strong_light",
+                        False))
+                    self._za_mega_testmode1_red_premove_waiting_strong_light=(
+                        True)
+                if strong_visible:
+                    warning_started=bool(
+                        not getattr(
+                            self,
+                            "_za_mega_testmode1_side_strong_visible", False)
+                        or getattr(
+                            self,
+                            "_za_mega_testmode1_red_premove_waiting_strong_light",
+                            False))
+                    self._za_mega_testmode1_red_premove_waiting_strong_light=(
+                        False)
+                    block_seconds=max(0.0, float(settings.get(
+                        "RED_ATTACK_PREMOVE_BLOCK_SECONDS", 7.0)))
+                    self._za_mega_testmode1_red_premove_block_until=max(
+                        float(getattr(
+                            self,
+                            "_za_mega_testmode1_red_premove_block_until", 0.0)),
+                        now + block_seconds)
+                if warning_started:
+                    # 既存の障害物内仕様を維持する。フリーラン用の緑床探索や
+                    # 遠距離回避には入らず、通常攻撃／攻撃前移動を止めて
+                    # 障害物方向の定期Y×2を直ちに開始する。
+                    self._za_mega_testmode1_next_dodge_at=now
+                    self.ZA_mega_mode5_trace(
+                        "TESTMODE1_SIDE_WARNING_ROLL_ONLY",
+                        "{}; hold normal attack/premove and keep cover Y rolls".format(
+                            "strong light" if strong_visible
+                            else "charge warning"),
+                        force=True)
+            if strong_visible:
+                if not getattr(
+                        self, "_za_mega_testmode1_side_strong_visible", False):
+                    self._za_mega_testmode1_side_strong_visible=True
+                    self.ZA_mega_mode5_trace(
+                        "TESTMODE1_SIDE_STRONG_LIGHT",
+                        "{} side set started; count only, no dodge/green action".format(
+                            tracked_phases[phase]),
+                        force=True)
+                self._za_mega_testmode1_side_strong_clear_since=0.0
+                return "none"
+            if not getattr(
+                    self, "_za_mega_testmode1_side_strong_visible", False):
+                return "none"
+            clear_since=float(getattr(
+                self, "_za_mega_testmode1_side_strong_clear_since", 0.0))
+            if clear_since <= 0.0:
+                self._za_mega_testmode1_side_strong_clear_since=now
+                clear_since=now
+            clear_seconds=max(0.0, float(settings.get(
+                "SIDE_TRANSITION_STRONG_LIGHT_CLEAR_SECONDS", 0.5)))
+            if now - clear_since < clear_seconds:
+                return "none"
+            self._za_mega_testmode1_side_strong_visible=False
+            self._za_mega_testmode1_side_strong_clear_since=0.0
+            completed=int(getattr(
+                self, "_za_mega_testmode1_side_strong_sets", 0)) + 1
+            self._za_mega_testmode1_side_strong_sets=completed
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_SIDE_STRONG_LIGHT_SET_COMPLETE",
+                "{} side set {}/{} complete".format(
+                    tracked_phases[phase], completed, required),
+                force=True)
+            if completed < required:
+                return "none"
+            wait_seconds=max(0.0, float(settings.get(
+                "SIDE_TRANSITION_WAIT_SECONDS", 5.0)))
+            decision_not_before=now + wait_seconds
+            self._za_mega_testmode1_side_decision_not_before=(
+                decision_not_before)
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_SIDE_DECISION_WAIT",
+                "{} side two sets complete; wait {:.1f}s".format(
+                    tracked_phases[phase], wait_seconds),
+                force=True)
+
+        self.ZA_mega_mode5_marker_search_view_stop(relock=False)
+        self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        self.ZA_ZL_ACTION("END")
+        now=time.monotonic()
+        if now < decision_not_before:
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_SIDE_DECISION_WAIT",
+                "{} side {:.1f}s remaining".format(
+                    tracked_phases[phase],
+                    max(0.0, decision_not_before - now)))
+            return "handled"
+
+        angle_key=(
+            "RED_SIDE_TRANSITION_DODGE_ANGLE"
+            if phase == "RED_COVER_ATTACK" else
+            "BLUE_SIDE_TRANSITION_DODGE_ANGLE")
+        dodge_angle=float(settings.get(angle_key, 90.0))
+        dodge_repeat=max(1, int(settings.get(
+            "SIDE_TRANSITION_DODGE_REPEAT", 2)))
+        self.ZA_MOVE_LStick(
+            dir1,dir2,dir3,dir4,
+            Direction(Stick.LEFT, dodge_angle, 1.0),
+            "RELOAD", force_direction=True)
+        self.pressRep(
+            Button.Y, repeat=dodge_repeat, duration=0.04,
+            wait=0.0, interval=0.12)
+        self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+        self.ZA_ZL_ACTION("")
+        post_wait=max(0.0, float(settings.get(
+            "SIDE_TRANSITION_POST_DODGE_WAIT_SECONDS", 3.0)))
+        self.wait(post_wait)
+
+        direction=self.ZA_mega_mode5_colored_enemy_direction(
+            allow_resume=True, refresh_frame=True)
+        stable_color=(str(getattr(
+            self, "_za_mega_colored_enemy_color", "") or "").lower()
+            if isinstance(direction, Direction) else "")
+        observed_color=str(getattr(
+            self, "_za_mega_colored_enemy_observed_color", "") or "").lower()
+        blue_visible=(
+            stable_color == "blue" or observed_color == "blue")
+        red_visible=(
+            stable_color == "red" or observed_color == "red")
+        # 固有4技ではなく、通常技のC+／C+_LOWだけを遷移確認に使う。
+        skill_ready=self.ZA_mega_mode5_skill_attack_ready()
+        completed_sets=int(getattr(
+            self, "_za_mega_testmode1_side_strong_sets", 0))
+        transition_trigger=(
+            "{} strong-light sets".format(required)
+            if completed_sets >= required else
+            "{:.0f}s side timeout".format(timeout_seconds))
+        self.ZA_mega_mode5_trace(
+            "TESTMODE1_SIDE_DECISION_CHECK",
+            "{}; {} side roll {:.0f}deg x{}; wait {:.1f}s; "
+            "blue={} red={} normal_skill={}".format(
+                transition_trigger, tracked_phases[phase],
+                dodge_angle, dodge_repeat, post_wait,
+                blue_visible, red_visible, skill_ready),
+            force=True)
+
+        if phase == "COVER_ATTACK" and not skill_ready and not blue_visible:
+            self._za_mega_testmode1_phase="MOVE_TO_RED_COVER"
+            self._za_mega_testmode1_returned_to_blue=False
+            self._za_mega_testmode1_premove_due=False
+            self.ZA_mega_mode5_testmode1_side_cycle_reset(
+                "MOVE_TO_RED_COVER")
+            self.ZA_mega_mode5_trace(
+                "TESTMODE1_BLUE_TO_RED_READY",
+                "{}; blue absent and normal C+ absent".format(
+                    transition_trigger),
+                force=True)
+            return "handled"
+
+        if phase == "RED_COVER_ATTACK" and not skill_ready and not red_visible:
+            if blue_visible:
+                self._za_mega_testmode1_phase="BLUE_CHASE_ATTACK"
+                self._za_mega_testmode1_returned_to_blue=True
+                self._za_mega_testmode1_premove_due=False
+                self.ZA_mega_mode5_testmode1_side_cycle_reset(
+                    "BLUE_CHASE_ATTACK")
+                self.ZA_mega_mode5_attack_watchdog_reset()
+                self.ZA_mega_mode5_trace(
+                    "TESTMODE1_RED_TO_BLUE_CHASE",
+                    "red absent, blue visible and normal C+ absent; "
+                    "resume view/move/attack",
+                    force=True)
+                return "handled"
+            self.ZA_mega_mode5_testmode1_enter_free_run(
+                "red absent, blue absent and normal C+ absent after "
+                "{}".format(transition_trigger))
+            return "handled"
+
+        if phase == "BLUE_CHASE_ATTACK" and not blue_visible:
+            self.ZA_mega_mode5_testmode1_enter_free_run(
+                "returned blue absent after {}".format(
+                    transition_trigger))
+            return "handled"
+
+        self.ZA_mega_mode5_testmode1_enter_free_run(
+            "{} side condition not met after {}".format(
+                phase, transition_trigger))
+        return "handled"
+
     def ZA_mega_mode5_testmode1_enter_legacy(self, reason):
         """通常mode5をBLACK_COMMENT／SELECTまで維持する。"""
         if not getattr(self, "_za_mega_testmode1_enabled", False):
             return False
+        resume_free_run_after_charge=bool(
+            getattr(self, "_za_mega_mode5_free_run_active", False)
+            and str(getattr(
+                self, "_za_mega_testmode1_phase_before_charge", ""))
+            == "FREE_RUN")
         already_latched=bool(getattr(
             self, "_za_mega_testmode1_legacy_until_reset", False))
         self._za_mega_testmode1_legacy_until_reset=True
@@ -7714,12 +8243,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_red_cover_no_enemy_since=0.0
         self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_existing_charge_latched=False
+        if not resume_free_run_after_charge:
+            self._za_mega_testmode1_phase_before_charge=""
         self._za_mega_testmode1_warning_cycle_active=False
         self._za_mega_testmode1_warning_cycle_saw_strong=False
         self._za_mega_testmode1_warning_interval_active=False
         self._za_mega_testmode1_warning_interval_blue_seen=False
         self._za_mega_testmode1_warning_red_pending=False
         self._za_mega_testmode1_red_cover_move_not_before=0.0
+        self.ZA_mega_mode5_testmode1_side_cycle_reset("LEGACY_COMBAT")
         if not already_latched:
             self.ZA_mega_mode5_trace(
                 "TESTMODE1_LEGACY_LATCH",
@@ -7734,8 +8266,29 @@ class ZA_story_Base(ImageProcPythonCommand):
             self, "ZA_mega_mode5_attack_watchdog_reset", None)
         if callable(watchdog_reset):
             watchdog_reset()
+        self.ZA_mega_mode5_field_wait_reset()
+        self._za_mega_mode5_x_menu_b_attempts=0
         if not getattr(self, "_za_mega_testmode1_enabled", False):
             return False
+        # 再戦選択へ入った時だけ、FREE_RUNと緑床／予兆の途中状態を
+        # 完全に破棄する。次のFIELD復帰で新しい戦闘として初期化する。
+        self._za_mega_mode5_free_run_active=False
+        self._za_mega_last_charge_state="IDLE"
+        self._za_mega_last_charge_check_retry_at=0.0
+        self._za_mega_last_charge_search_deadline=0.0
+        self._za_mega_last_charge_cooldown_until=0.0
+        self._za_mega_last_charge_skip_count=0
+        self._za_mega_last_charge_attack_suspended=False
+        self._za_mega_z_guard_active=False
+        self._za_mega_z_guard_holding=False
+        self._za_mega_z_guard_hold_until=0.0
+        self._za_mega_z_guard_hold_until_disappears=False
+        self._za_mega_z_guard_normal_hold_completed=False
+        self._za_mega_z_guard_on_green_count=0
+        self._za_mega_z_guard_skip_current_floor=False
+        self._za_mega_z_guard_skip_last_seen=0.0
+        self._za_mega_z_guard_direction=None
+        self._za_mega_z_guard_direction_until=0.0
         self._za_mega_testmode1_legacy_until_reset=False
         self._za_mega_testmode1_reinitialize_pending=True
         self._za_mega_testmode1_resume_hp="PENDING"
@@ -7757,12 +8310,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_red_cover_no_enemy_since=0.0
         self._za_mega_testmode1_red_cover_no_enemy_confirmations=0
         self._za_mega_testmode1_existing_charge_latched=False
+        self._za_mega_testmode1_phase_before_charge=""
         self._za_mega_testmode1_warning_cycle_active=False
         self._za_mega_testmode1_warning_cycle_saw_strong=False
         self._za_mega_testmode1_warning_interval_active=False
         self._za_mega_testmode1_warning_interval_blue_seen=False
         self._za_mega_testmode1_warning_red_pending=False
         self._za_mega_testmode1_red_cover_move_not_before=0.0
+        self._za_mega_testmode1_returned_to_blue=False
+        side_cycle_reset=getattr(
+            self, "ZA_mega_mode5_testmode1_side_cycle_reset", None)
+        if callable(side_cycle_reset):
+            side_cycle_reset("WAIT_RESUME")
         self.ZA_mega_mode5_trace(
             "TESTMODE1_SELECTION_RESET",
             "{}; next FIELD may initialize TESTMODE1".format(reason),
@@ -8186,6 +8745,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self, dir1, dir2, dir3, dir4, see_r):
         """障害物から青敵へL正面化し、攻撃間に非ロックオンYを行う。"""
         settings=self.ZA_mega_mode5_testmode1_settings()
+        phase=str(getattr(
+            self, "_za_mega_testmode1_phase", "FACE_BLUE"))
+        side_transition_action=(
+            self.ZA_mega_mode5_testmode1_side_transition_update(
+                dir1,dir2,dir3,dir4,see_r))
+        if side_transition_action == "handled":
+            return "handled"
         if not self.ZA_mega_mode5_testmode1_controls_cover():
             if (getattr(self, "_za_mega_testmode1_enabled", False)
                     and getattr(
@@ -8205,8 +8771,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "restart"
             return "none"
 
-        phase=str(getattr(
-            self, "_za_mega_testmode1_phase", "FACE_BLUE"))
         now=time.monotonic()
         if phase == "WAIT_RESUME":
             # RETRY_SELECTION後のFIELD安定確認中は、通常movemodeへ
@@ -8242,10 +8806,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "5.0s delay complete; begin fixed red-cover move",
                 force=True)
         if phase == "MOVE_TO_RED_COVER":
-            # 青撃破後は通常探索へ戻さず、現在の青側障害物から
-            # Yを3回障害物に当てて開始点を揃え、赤側障害物へ
-            # 手動設定の固定経路で一度だけ移動する。
-            self.wait(1.0)
+            # 強い光2セット後の判定用Y×2＋3秒待機とは別に、
+            # 従来の赤側固定経路の開始点調整を保つ。青側障害物へ
+            # Yを3回当てて位置を揃えた後、赤側障害物へ固定移動する。
             cover_angle=float(settings["RED_COVER_MOVE_ANGLE"])
             cover_seconds=float(settings["RED_COVER_MOVE_SECONDS"])
             face_angle=float(settings["RED_FACE_ANGLE"])
@@ -8263,7 +8826,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "RELOAD", force_direction=True)
             self.pressRep(
                 Button.Y, repeat=anchor_repeat, duration=0.04,
-                wait=0.0, interval=0.0)
+                wait=0.0, interval=0.12)
             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             self.ZA_mega_mode5_trace(
                 "TESTMODE1_BLUE_COVER_ANCHOR",
@@ -8347,16 +8910,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 force=True)
             return "handled"
 
-        if (phase == "RED_COVER_ATTACK"
-                and self.ZA_mega_mode5_testmode1_blue_return_update()):
-            # 設定で明示的に自動復帰を有効化した場合だけ到達する。
-            return "fallback"
-
         # 障害物位置から通常movemodeへ戻ると敵へ接近して遮蔽物を離れる。
-        # 「力をためた／強い光」通知までは視点と通常左入力を止め、
-        # 障害物内から攻撃する。通常時の緑床はここへ割り込ませず、
-        # 予兆検知後のcharge処理だけが緑床探索・移動を開始する。
-        # 2.4秒ごとだけ前方90度へYを2回送り、直後に再ロックオンする。
+        # 通常は障害物内から攻撃し、2.4秒ごとに前方90度へ
+        # Yを2回送って再ロックオンする。「力をためている」から
+        # 強い光後7秒の間は通常攻撃／攻撃前移動も止め、このY×2だけを
+        # 継続する。緑床探索・遠距離回避は実フリーランだけで行う。
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
         premove_due=bool(getattr(
@@ -8391,7 +8949,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 else:
                     if getattr(self, "ZL_state", 0) == 0:
                         self.ZA_ZL_ACTION("")
-                    return "attack"
+                    # 「力をためている」から強い光後の猶予までは、通常攻撃へ
+                    # 戻さず障害物方向の定期Yローリングだけを待つ。
+                    return "handled"
             elif phase == "RED_COVER_ATTACK":
                 self.wait(settings["RED_ATTACK_PREMOVE_STAY_SECONDS"])
                 move_angle=float(settings[
@@ -8464,12 +9024,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                     Direction(Stick.LEFT, move_angle, 1.0),
                     duration=move_angle_seconds, wait=0.5)
 
-                # 障害物内では敵本体が隠れるため、存在確認を先に行うと
-                # 青の生存／赤だけの状態を判定できない。270度移動後の
-                # 視界が開いた最新フレームで判定し、両方見えない場合は
-                # red_only helper側で青側を維持する。
-                if self.ZA_mega_mode5_testmode1_red_only_fallback_update():
-                    return "handled"
             else:
                 self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             if not premove_blocked:
@@ -8539,6 +9093,20 @@ class ZA_story_Base(ImageProcPythonCommand):
         """戦闘再開時に前ターゲット状態を破棄し、HP別開始経路へ遷移する。"""
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
+        # HARD FIELD／Escapeで再戦開始を確定した時点で、直前の敗北画面と
+        # 強い光2セットの途中状態を次戦へ持ち越さない。
+        self._za_mega_mode5_defeat_sequence_active=False
+        self._za_mega_mode5_defeat_background_since=0.0
+        self._za_mega_mode5_defeat_prompt_logged=False
+        self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
+        self._za_mega_mode5_defeat_candidate_picture=""
+        self._za_mega_mode5_x_menu_b_attempts=0
+        self.ZA_mega_mode5_field_wait_reset()
+        side_cycle_reset=getattr(
+            self, "ZA_mega_mode5_testmode1_side_cycle_reset", None)
+        if callable(side_cycle_reset):
+            side_cycle_reset("WAIT_RESUME")
+        self._za_mega_testmode1_returned_to_blue=False
         testmode1_configured=bool(getattr(
             self, "_za_mega_testmode1_enabled", False))
         legacy_latched=bool(getattr(
@@ -8608,6 +9176,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_warning_interval_blue_seen=False
         self._za_mega_testmode1_warning_red_pending=False
         self._za_mega_testmode1_red_cover_move_not_before=0.0
+        self._za_mega_testmode1_side_cycle_phase=""
+        self._za_mega_testmode1_side_strong_visible=False
+        self._za_mega_testmode1_side_strong_clear_since=0.0
+        self._za_mega_testmode1_side_strong_sets=0
+        self._za_mega_testmode1_side_decision_not_before=0.0
+        self._za_mega_testmode1_side_timeout_started_at=-1.0
+        self._za_mega_testmode1_returned_to_blue=False
         if testmode1_enabled:
             # TESTMODE1の固定移動はBLACK_COMMENT／SELECTの後の
             # 最初のFIELDでだけ1度初期化する。
@@ -9060,6 +9635,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_rpush_field_confirmations=0
         self._za_mega_mode5_rpush_post_field_move_pending=False
         self._za_mega_mode5_rpush_resume_red=False
+        self._za_mega_mode5_rpush_resume_phase=""
         self._za_mega_attack_unavailable_y_dodge_retry_at=0.0
         self._za_mega_field_w_up_latched=False
         self._za_mega_field_w_up_attempts=0
@@ -9113,6 +9689,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_testmode1_warning_interval_blue_seen=False
         self._za_mega_testmode1_warning_red_pending=False
         self._za_mega_testmode1_red_cover_move_not_before=0.0
+        self._za_mega_testmode1_side_cycle_phase=""
+        self._za_mega_testmode1_side_strong_visible=False
+        self._za_mega_testmode1_side_strong_clear_since=0.0
+        self._za_mega_testmode1_side_strong_sets=0
+        self._za_mega_testmode1_side_decision_not_before=0.0
+        self._za_mega_testmode1_side_timeout_started_at=-1.0
+        self._za_mega_testmode1_returned_to_blue=False
         # movemode／Z_Gaurdは最終戦(mode 5)専用。直接呼び出しで値が
         # 混入しても、既存mode 0～4の移動・視点経路を変更しない。
         self._za_mega_movemode=(int(movemode) if last_battle_mode else 0)
@@ -9152,6 +9735,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_event_lockon_retry_at=0.0
         self._za_mega_mode5_last_name_no_hard_since=0.0
         self._za_mega_mode5_last_name_last_seen_at=0.0
+        self._za_mega_mode5_defeat_sequence_active=False
+        self._za_mega_mode5_defeat_background_since=0.0
+        self._za_mega_mode5_defeat_prompt_logged=False
+        self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
+        self._za_mega_mode5_defeat_candidate_picture=""
+        self._za_mega_mode5_x_menu_b_attempts=0
+        self._za_mega_mode5_field_wait_since=0.0
+        self._za_mega_mode5_field_wait_context=""
+        self._za_mega_mode5_field_wait_timeout_logged=False
         self._za_mega_mode5_y_skip_logged=False
         self._za_mega_mode5_a_block_logged=False
         self._za_mega_mode5_battle_active=False
@@ -9228,6 +9820,56 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         while True:
             if last_battle_mode:
+                mode5_wait_flag=int(getattr(
+                    self, "_za_mega_mode5_start_flag", 0))
+                mode5_indefinite_wait=bool(
+                    getattr(self, "_za_mega_mode5_rpush_wait_field", False)
+                    or nofiled==1
+                    or mode5_wait_flag == 3
+                    or (mode5_wait_flag <= 1
+                        and getattr(
+                            self, "_za_mega_mode5_phase", "")
+                        == "RETRY_SELECTION"))
+                mode5_wait_context=(
+                    "RPUSH" if getattr(
+                        self, "_za_mega_mode5_rpush_wait_field", False)
+                    else "FIELD_INPUT" if mode5_wait_flag == 3
+                    else "RETRY_WAIT")
+                field_wait_interrupt=(
+                    self.ZA_mega_mode5_indefinite_field_wait_update(
+                        mode5_indefinite_wait,
+                        mode5_wait_context,
+                        nofiled,
+                        dir1,dir2,dir3,dir4,see_r))
+                if field_wait_interrupt in {"waiting", "x_menu"}:
+                    continue
+                if field_wait_interrupt == "defeat":
+                    # RPush専用待機も解除し、同じ敗戦候補を通常の
+                    # Comment／SELECT入力処理へ渡す。
+                    self._za_mega_mode5_rpush_wait_field=False
+                    self._za_mega_mode5_rpush_field_candidate=""
+                    self._za_mega_mode5_rpush_field_confirmations=0
+                    self._za_mega_mode5_rpush_post_field_move_pending=False
+                    nofiled=1
+                elif (field_wait_interrupt
+                        == "POKEMON_ZA_LAST_BATTLE_MOVE_UI"):
+                    # FIELDを待って3分後に名前を5秒確認し、ZLで4技UIが
+                    # 出た場合はイベント戦としてFIELD復帰を迂回する。
+                    self._za_mega_mode5_rpush_wait_field=False
+                    self._za_mega_mode5_rpush_field_candidate=""
+                    self._za_mega_mode5_rpush_field_confirmations=0
+                    self._za_mega_mode5_rpush_post_field_move_pending=False
+                    nofiled=0
+                    self._za_mega_mode5_battle_active=True
+                    self.ZA_mega_mode5_transition(
+                        "TARGET_ATTACK",
+                        "3-minute FIELD timeout; boss-name event confirmed")
+                    self.ZA_mega_mode5_set_start_flag(
+                        4, field_wait_interrupt,
+                        "event lockon complete; attack without FIELD")
+                    self.ZA_mega_mode5_event_attack_axby(
+                        field_wait_interrupt)
+                    continue
                 rpush_wait_state=self.ZA_mega_mode5_rpush_field_wait_update(
                     dir1,dir2,dir3,dir4,see_r)
                 if rpush_wait_state == "waiting":
@@ -9240,12 +9882,29 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self._za_mega_field_w_up_retry_at=0.0
                     self._za_mega_field_w_up_latched=False
                     # RPush演出後は再戦ではない。TESTMODE1の初期障害物
-                    # 経路（0～30度、L、青側行動）へ戻さず通常戦闘へ合流する。
+                    # 経路をやり直さず、RPush直前の青／赤／青追跡へ戻す。
                     if self._za_mega_testmode1_enabled:
-                        self._za_mega_testmode1_legacy_until_reset=True
+                        resume_phase=str(getattr(
+                            self, "_za_mega_mode5_rpush_resume_phase", ""))
+                        allowed_phases={
+                            "COVER_ATTACK", "RED_COVER_ATTACK",
+                            "BLUE_CHASE_ATTACK", "FREE_RUN",
+                            "LEGACY_COMBAT",
+                        }
+                        if resume_phase not in allowed_phases:
+                            resume_phase=(
+                                "RED_COVER_ATTACK"
+                                if getattr(
+                                    self,
+                                    "_za_mega_mode5_rpush_resume_red",
+                                    False)
+                                else "COVER_ATTACK")
+                        self._za_mega_testmode1_legacy_until_reset=(
+                            resume_phase == "LEGACY_COMBAT")
                         self._za_mega_testmode1_reinitialize_pending=False
-                        self._za_mega_testmode1_phase="LEGACY_COMBAT"
-                        self._za_mega_testmode1_resume_hp="LEGACY"
+                        self._za_mega_testmode1_phase=resume_phase
+                        if resume_phase == "FREE_RUN":
+                            self._za_mega_mode5_free_run_active=True
                     field_w_after_rpush=(
                         field_picture == "POKEMON_ZA_FIELD_W")
                     self._za_mega_mode5_battle_active=(
@@ -9283,15 +9942,30 @@ class ZA_story_Base(ImageProcPythonCommand):
                 event_attack_picture=mode5_screen[
                     "event_attack_picture"]
                 resume_screen_detected=mode5_screen["resume_screen"]
+                retry_resume_detected=mode5_screen["retry_resume"]
                 choice_input_guard=mode5_screen["choice_guard"]
                 normal_black_comment=bool(mode5_screen.get(
                     "normal_black_comment", False))
                 detected_state=(
-                    "CHOICE_OR_BLACK_COMMENT" if choice_input_guard
-                    else "EVENT_ATTACK_UI" if event_attack_picture
+                    "EVENT_ATTACK_UI" if event_attack_picture
+                    else "RETRY_RESUME" if retry_resume_detected
+                    else "CHOICE_OR_BLACK_COMMENT" if choice_input_guard
                     else mode5_screen["resume_reason"].upper())
                 self.ZA_mega_mode5_trace(
                     detected_state, "screen-state check")
+
+                if mode5_screen.get("defeat_waiting", False):
+                    # 黒背景だけでは敗戦処理へ移らない。5秒維持後も
+                    # 黒Comment／SELECTが出るまでは全入力を止める。
+                    self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+                    self.ZA_MOVE_SEE(action="END",in_see_r=see_r)
+                    self.ZA_ZL_ACTION("END")
+                    self.ZA_mega_mode5_trace(
+                        "DEFEAT_BLACK_CONFIRMING",
+                        "wait for black Comment or defeat SELECT",
+                        force=True)
+                    self.wait(0.1)
+                    continue
 
                 if normal_black_comment:
                     # 後段のWAIT_RESUME／復旧／攻撃分岐へ渡すと、別の
@@ -9303,10 +9977,43 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZA_mega_mode5_normal_black_comment_advance()
                     continue
 
-                # SELECTの一時一致で開始フラグだけ0に戻ると、nofiled=0の
-                # ままFIELDを見続けて攻撃フェーズへ戻れない。安定FIELDだけ復旧。
+                # 再戦待ちではHARD FIELD／Escapeが実際の再開条件。
+                # ただしHARD FIELD判定は正常なFIELD_Wとも同時成立する。
+                # FIELD_W中は従来どおり「次のポケモンを出す」上入力を
+                # 先に間欠再試行し、FIELD_Wが消えた次周回でHARD FIELDの
+                # 再戦処理へ進む。固有4技UIは引き続き上位。Escapeは
+                # 戦闘中の通常アイコンとしてFIELD_Wと共存するため、
+                # FIELD_Wがある間は上入力を先に行い、単独時だけ再戦へ渡す。
+                mode5_retry_field_input_wait=bool(
+                    nofiled==1 or (
+                        int(getattr(
+                            self, "_za_mega_mode5_start_flag", 0)) <= 1
+                        and getattr(
+                            self, "_za_mega_mode5_phase", "")
+                        == "RETRY_SELECTION"))
+                if (mode5_retry_field_input_wait
+                        and not choice_input_guard
+                        and not event_attack_picture):
+                    if field_w_detected:
+                        field_w_action=self.ZA_mega_mode5_field_w_up_retry(
+                            True, False,
+                            before_recovery=lambda: self.ZA_MOVE_LStick(
+                                dir1,dir2,dir3,dir4,1,"END"))
+                        self.ZA_mega_mode5_trace(
+                            "POKEMON_ZA_FIELD_W",
+                            "retry wait; Lbutton_up only without resume transition",
+                            force=True)
+                        if field_w_action == "menu_recovery":
+                            continue
+                        self.wait(0.1)
+                        continue
+                    if field_back_w_detected:
+                        self.ZA_mega_mode5_field_w_up_retry(False, True)
+
+                # SELECT後にnofiled=0が残っても、HARD FIELD／Escapeだけで
+                # 再戦復帰する。FIELD_W／BACK_W単独ではここへ渡さない。
                 if self.ZA_mega_mode5_stale_retry_field(
-                        nofiled, field_screen_detected, choice_input_guard):
+                        nofiled, retry_resume_detected, choice_input_guard):
                     self.ZA_mega_mode5_begin_resume(
                         Z_Gaurd, field_resume_dir5_seconds, see_r,
                         "field-after-retry-selection")
@@ -9334,9 +10041,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 # 押す循環を避け、この待機画面だけ先にZLを保持する。
                 mode5_start_flag=int(getattr(
                     self, "_za_mega_mode5_start_flag", 0))
-                # RETRY_SELECTIONへ戻した周回では、ローカルのnofiledが
-                # 直前値0のままでもWAIT_RESUMEが継続する。この状態を
-                # 初期待機に含め、従来どおり10周確認してからだけZLする。
                 initial_wait=bool(
                     mode5_start_flag <= 1
                     and (nofiled==1 or (
@@ -9346,29 +10050,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                         and getattr(
                             self, "_za_mega_testmode1_phase", "")
                         == "WAIT_RESUME")))
-                bootstrap_fallback_ready=(
-                    self.ZA_mega_mode5_initial_bootstrap_fallback_ready(
-                        field_screen_detected,
-                        mode5_screen["escape"],
-                        choice_input_guard or normal_black_comment,
-                        event_attack_picture)
-                    if initial_wait else False)
-                # 実際に4技UIが見える場合は即処理。それ以外の先行ZLは
-                # FIELD/ESCAPEの10周連続不一致に限り、再開判定を塞がない。
                 event_lockon_result=(
-                    event_attack_picture if initial_wait
-                    and event_attack_picture else
+                    event_attack_picture
+                    if initial_wait and event_attack_picture else
                     self.ZA_mega_mode5_event_lockon_bootstrap(
                         nofiled,
                         resume_screen_detected=resume_screen_detected,
                         field_screen_detected=field_screen_detected,
                         field_w_detected=field_w_detected,
+                        field_back_w_detected=field_back_w_detected,
+                        escape_detected=mode5_screen["escape"],
                         choice_input_guard=(
                             choice_input_guard
-                            or normal_black_comment),
-                        allow_missing_field_fallback=(
-                            bootstrap_fallback_ready))
-                    if bootstrap_fallback_ready else "")
+                            or normal_black_comment))
+                    if initial_wait else "")
                 if event_lockon_result:
                     if (event_lockon_result
                             == "POKEMON_ZA_LAST_BATTLE_MOVE_UI"):
@@ -9389,6 +10084,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                         # 流さず、同じ位置で次のZL再試行を待つ。
                         self.wait(0.1)
                         continue
+                # 固有4技UIはHARD FIELD／Escape、緑床、強い光、
+                # TESTMODE1より先に処理し、同じ周回の別遷移へ流さない。
+                if (event_attack_picture and nofiled==0
+                        and int(getattr(
+                            self, "_za_mega_mode5_start_flag", 0)) == 4
+                        and self.ZA_mega_mode5_event_attack_axby(
+                            event_attack_picture)):
+                    continue
             else:
                 # mode 0～4はmode 5追加前の順序へ戻す。選択画面を先に
                 # 確認し、選択中はFIELD画像の追加照合を行わない。
@@ -9404,6 +10107,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 battle_screen_detected = False
                 event_attack_picture = ""
                 resume_screen_detected = field_screen_detected
+                retry_resume_detected = False
                 normal_black_comment = False
             if choice_input_guard:
                 # 選択画面へ方向入力を持ち越さないよう、ループの最初に停止する。
@@ -9476,7 +10180,19 @@ class ZA_story_Base(ImageProcPythonCommand):
                         return "BATTLE_IDENTITY_MISMATCH"
                     return True
 
-            field_resume_detected = nofiled==1 and resume_screen_detected
+            if last_battle_mode:
+                mode5_retry_wait=bool(
+                    nofiled==1 or (
+                        int(getattr(
+                            self, "_za_mega_mode5_start_flag", 0)) <= 1
+                        and getattr(
+                            self, "_za_mega_mode5_phase", "")
+                        == "RETRY_SELECTION"))
+                field_resume_detected=bool(
+                    mode5_retry_wait and retry_resume_detected)
+            else:
+                field_resume_detected=(
+                    nofiled==1 and resume_screen_detected)
             if field_resume_detected and last_battle_mode:
                 self.ZA_mega_mode5_begin_resume(
                     Z_Gaurd,
@@ -9523,7 +10239,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             if (last_battle_mode and not choice_input_guard and nofiled==0
                     and int(getattr(
                         self, "_za_mega_mode5_start_flag", 0)) == 3):
-                if field_w_detected:
+                if (field_w_detected
+                        and not event_attack_picture):
                     field_w_action=self.ZA_mega_mode5_field_w_up_retry(
                         True, False,
                         before_recovery=lambda: self.ZA_MOVE_LStick(
@@ -9537,7 +10254,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     # 上書きしない。FIELD_Wが消えた次周回で先へ進む。
                     self.wait(0.1)
                     continue
-                elif field_back_w_detected or battle_screen_detected:
+                elif (mode5_screen["field_hard"]
+                        or mode5_screen["escape"]
+                        or field_back_w_detected or battle_screen_detected):
                     self.ZA_mega_mode5_field_w_up_retry(
                         False, field_back_w_detected)
                     self.ZA_mega_mode5_trace(
@@ -9592,7 +10311,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             if (last_battle_mode and nofiled==0
                     and int(getattr(
                         self, "_za_mega_mode5_start_flag", 0)) == 4):
-                if field_w_detected:
+                if (field_w_detected
+                        and not event_attack_picture):
                     # 戦闘処理中に倒れた場合もFIELD_Wを最優先する。
                     # BACK_Wが重なっても上入力を省略せず、表示が消えるまで
                     # 攻撃・移動・ロックオン処理へ流さない。
@@ -9644,8 +10364,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
             if charge_result in {
                     "search", "green", "dodge", "guard", "complete"}:
-                if last_battle_mode:
-                    self.ZA_mega_mode5_attack_watchdog_reset()
+                free_run_charge_resumed=(
+                    self.ZA_mega_mode5_resume_free_run_after_charge(
+                        charge_result))
                 if self._za_mega_testmode1_enabled:
                     if charge_result in {"search", "green"}:
                         if not getattr(
@@ -9658,19 +10379,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                             "testmode1 suspended; existing charge/green action",
                             force=True)
                     elif charge_result in {"dodge", "complete"}:
-                        if not getattr(
+                        if (not free_run_charge_resumed
+                                and not getattr(
                                 self,
                                 "_za_mega_testmode1_legacy_until_reset",
-                                False):
+                                False)):
                             self._za_mega_testmode1_phase=str(getattr(
                                 self,
                                 "_za_mega_testmode1_phase_before_charge",
                                 "COVER_ATTACK"))
-                        nofiled=1
-                        self.ZA_mega_mode5_set_start_flag(
-                            0, "CHARGE_" + charge_result.upper(),
-                            "existing charge action complete; retain phase until "
-                            "BLACK_COMMENT/SELECT")
+                        if not free_run_charge_resumed:
+                            nofiled=1
+                            self.ZA_mega_mode5_set_start_flag(
+                                0, "CHARGE_" + charge_result.upper(),
+                                "existing charge action complete; retain phase "
+                                "until BLACK_COMMENT/SELECT")
                 continue
 
             # mode 5の専用4技画面はC+を表示しない。緑床をもう一度
@@ -10125,6 +10848,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return True
                 if charge_result in {
                         "search", "green", "dodge", "guard", "complete"}:
+                    free_run_charge_resumed=(
+                        self.ZA_mega_mode5_resume_free_run_after_charge(
+                            charge_result))
                     if self._za_mega_testmode1_enabled:
                         if charge_result in {"search", "green"}:
                             if not getattr(
@@ -10137,19 +10863,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 "testmode1 suspended inside attack loop",
                                 force=True)
                         elif charge_result in {"dodge", "complete"}:
-                            if not getattr(
+                            if (not free_run_charge_resumed
+                                    and not getattr(
                                     self,
                                     "_za_mega_testmode1_legacy_until_reset",
-                                    False):
+                                    False)):
                                 self._za_mega_testmode1_phase=str(getattr(
                                     self,
                                     "_za_mega_testmode1_phase_before_charge",
                                     "COVER_ATTACK"))
-                            nofiled=1
-                            self.ZA_mega_mode5_set_start_flag(
-                                0, "CHARGE_" + charge_result.upper(),
-                                "charge action complete; retain phase until "
-                                "BLACK_COMMENT/SELECT")
+                            if not free_run_charge_resumed:
+                                nofiled=1
+                                self.ZA_mega_mode5_set_start_flag(
+                                    0, "CHARGE_" + charge_result.upper(),
+                                    "charge action complete; retain phase until "
+                                    "BLACK_COMMENT/SELECT")
                     charge_interrupted=True
                     break
                 testmode1_action="none"
@@ -10590,6 +11318,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                             if charge_result in {
                                     "search", "green", "dodge", "guard",
                                     "complete"}:
+                                free_run_charge_resumed=(
+                                    self.ZA_mega_mode5_resume_free_run_after_charge(
+                                        charge_result))
                                 if self._za_mega_testmode1_enabled:
                                     if charge_result in {"search", "green"}:
                                         if not getattr(
@@ -10604,21 +11335,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                                             "target-marker attack loop",
                                             force=True)
                                     elif charge_result in {"dodge", "complete"}:
-                                        if not getattr(
+                                        if (not free_run_charge_resumed
+                                                and not getattr(
                                                 self,
                                                 "_za_mega_testmode1_legacy_until_reset",
-                                                False):
+                                                False)):
                                             self._za_mega_testmode1_phase=str(
                                                 getattr(
                                                     self,
                                                     "_za_mega_testmode1_phase_before_charge",
                                                     "COVER_ATTACK"))
-                                        nofiled=1
-                                        self.ZA_mega_mode5_set_start_flag(
-                                            0,
-                                            "CHARGE_" + charge_result.upper(),
-                                            "charge action complete; retain "
-                                            "phase until BLACK_COMMENT/SELECT")
+                                        if not free_run_charge_resumed:
+                                            nofiled=1
+                                            self.ZA_mega_mode5_set_start_flag(
+                                                0,
+                                                "CHARGE_" + charge_result.upper(),
+                                                "charge action complete; retain "
+                                                "phase until BLACK_COMMENT/SELECT")
                                 red_edge_interrupted=True
                                 break
                             red_edge_result = (
@@ -10895,8 +11628,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             black_comment = raw_black_comment
             if last_battle_mode:
                 black_comment=(
-                    black_comment
-                    and self.ZA_mega_mode5_defeat_background_confirmed())
+                    raw_black_comment
+                    and self.ZA_mega_mode5_defeat_black_comment_confirmed())
             normal_black_comment_confirmed=bool(
                 last_battle_mode
                 and raw_black_comment
@@ -11034,7 +11767,34 @@ class ZA_story_Base(ImageProcPythonCommand):
             elif (not choice_input_guard
                     and not self.ZA_mega_choice_input_guard()
                     and self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-                self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture=select2_picture,sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER") #FIELDから変更
+                green_wait_result=self.ZA_renda_button(
+                    rendabutton="B",
+                    endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+                    sub_button="A", sub_picture="POKEMON_ZA_1_SELECT",
+                    sub2_button="A", sub2_picture=select2_picture,
+                    sub3_button="A", sub3_picture="POKEMON_ZA_HELP_MARKER",
+                    interrupt_callback=lambda:
+                    self.ZA_mega_mode5_indefinite_field_wait_update(
+                        True, "GREEN_COMMENT", nofiled,
+                        dir1,dir2,dir3,dir4,see_r)
+                    if last_battle_mode else "none") #FIELDから変更
+                if green_wait_result == "defeat":
+                    nofiled=1
+                    self._za_mega_mode5_battle_active=False
+                    continue
+                if (green_wait_result
+                        == "POKEMON_ZA_LAST_BATTLE_MOVE_UI"):
+                    nofiled=0
+                    self._za_mega_mode5_battle_active=True
+                    self.ZA_mega_mode5_transition(
+                        "TARGET_ATTACK",
+                        "green Comment FIELD timeout; event confirmed")
+                    self.ZA_mega_mode5_set_start_flag(
+                        4, green_wait_result,
+                        "event lockon complete; attack without FIELD")
+                    self.ZA_mega_mode5_event_attack_axby(
+                        green_wait_result)
+                    continue
 
             elif (
                     last_battle_mode
@@ -11175,7 +11935,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.ZA_battle_reword_recovery():
             setattr(self, count_name, 0)
             return True
-        if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+        if getattr(self, "_za_mega_last_battle_mode", False):
+            menu_result=self.ZA_mega_mode5_x_menu_b_recovery(
+                max_attempts=20, before_recovery=before_recovery)
+            if menu_result != "none":
+                setattr(self, count_name, 0)
+                return True
+        elif self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             setattr(self, count_name, 0)
             self.pressRep(
                 Button.B, repeat=1, duration=0.15,
@@ -11217,10 +11983,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 復帰用XによってXメニューが開いた場合は、背後のFIELD表示で
             # 復帰済みと誤判定する前にBで閉じる。
             if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
-                self.checkIfAlive()
-                self.pressRep(
-                    Button.B, repeat=1, duration=0.15,
-                    wait=0.5, interval=0.1)
+                if getattr(self, "_za_mega_last_battle_mode", False):
+                    self.ZA_mega_mode5_x_menu_b_recovery(
+                        max_attempts=20,
+                        before_recovery=before_recovery)
+                else:
+                    self.checkIfAlive()
+                    self.pressRep(
+                        Button.B, repeat=1, duration=0.15,
+                        wait=0.5, interval=0.1)
                 return True
             if self.image_check("POKEMON_ZA_HELP_MARKER"):
                 if help_press_count >= 10:
@@ -26824,12 +27595,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "8_STORY_STORY_LAST_32")
             return "8_STORY_STORY_LAST_32"
 
-        target = "ZA_STORY_KARASUBA_ENDRESET_MAP"
-        if self.image_check(target):
+        if self.image_check("ZA_STORY_KARASUBA_ENDRESET_MAP"):
             print(
                 "[STORY_LAST_32_0_MAP] fixed map matched -> "
                 "8_STORY_STORY_LAST_36")
             return "8_STORY_STORY_LAST_36"
+        if self.image_check("ZA_STORY_KARASUBA_ENDRESET_MAP2"):
+            print(
+                "[STORY_LAST_32_0_MAP] fixed map matched -> "
+                "8_STORY_STORY_LAST_38")
+            return "8_STORY_STORY_LAST_38"
         print(
             "[STORY_LAST_32_0_MAP] fixed map not matched -> "
             "8_STORY_STORY_LAST_32")
@@ -37357,7 +38132,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             'show_position': True,
             'show_value': True,
             'template_path': 'Template/ZA_Story/_8_last/ZA_STORY_KARASUBA_ENDRESET_MAP.png',
-            'threshold': 0.8,
+            'threshold': 0.9,
+            'use_gray': True,
+        }],
+        'ZA_STORY_KARASUBA_ENDRESET_MAP2': [{
+            'crop': [0, 0, 200, 200],
+            'match_color': 'blue',
+            'ms': 2000,
+            'no_match_color': 'red',
+            'show_only_true_rect': False,
+            'show_position': True,
+            'show_value': True,
+            'template_path': 'Template/ZA_Story/_8_last/ZA_STORY_KARASUBA_ENDRESET_MAP2.png',
+            'threshold': 0.9,
             'use_gray': True,
         }],
     })
@@ -37365,6 +38152,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         IMAGE_DETECTION_OPERATORS.update({
             'POKEMON_ZA_LAST_BATTLE_NAME': 'OR',
             'ZA_STORY_KARASUBA_ENDRESET_MAP': 'OR',
+            'ZA_STORY_KARASUBA_ENDRESET_MAP2': 'OR',
         })
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
         IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({
@@ -37372,6 +38160,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 '最終戦の画面上部「超大暴走アンジュフラエッテ」名称',
             'ZA_STORY_KARASUBA_ENDRESET_MAP':
                 '最終戦リセット後：左上ミニマップ（！／☆を含めない）',
+            'ZA_STORY_KARASUBA_ENDRESET_MAP2':
+                '最終戦リセット後：左上ミニマップ2（！／☆を含めない）',
         })
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
 
