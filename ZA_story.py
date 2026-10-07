@@ -7741,16 +7741,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             # ZLを入れて固有4技UIを再確認する。
             "LAST_BATTLE_NAME_LOCKON_SECONDS": 5.0,
             # 青／赤側の移行判定は、強い光の表示→消失を1セットとし、
-            # 2セット、または同じ側で3分経過した後に既存の5秒待機、
+            # 2セット、または同じ側で5分経過した後に既存の5秒待機、
             # 各側角度のY2回、3秒待機を行う。
             "SIDE_TRANSITION_STRONG_LIGHT_SETS": 2,
-            "SIDE_TRANSITION_TIMEOUT_SECONDS": 180.0,
+            "SIDE_TRANSITION_TIMEOUT_SECONDS": 300.0,
             "SIDE_TRANSITION_STRONG_LIGHT_CLEAR_SECONDS": 0.5,
             "SIDE_TRANSITION_WAIT_SECONDS": 5.0,
             "SIDE_TRANSITION_POST_DODGE_WAIT_SECONDS": 3.0,
             "SIDE_TRANSITION_DODGE_REPEAT": 2,
             "BLUE_SIDE_TRANSITION_DODGE_ANGLE": 90.0,
-            "RED_SIDE_TRANSITION_DODGE_ANGLE": 90.0,
+            "RED_SIDE_TRANSITION_DODGE_ANGLE": 100.0,
             # 予兆1組目の終了から次の予兆開始まで青敵を確認できなければ、
             # 赤色を直接取れなくても青撃破・赤敵ありとして扱う。
             "WARNING_BLUE_FALLBACK_ENABLED": False,
@@ -7770,8 +7770,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 8. 青撃破後: 青側障害物から赤側障害物へ固定移動する試案値。
             "RED_COVER_MOVE_ANGLE": 60.0,#30.0,
             # 青側の深さを0.5秒増やした分、赤側経路も延長。
-            "RED_COVER_MOVE_SECONDS": 7.5,
-            "RED_FACE_ANGLE": 160.0,#140.0,
+            "RED_COVER_MOVE_SECONDS": 7.2,
+            "RED_FACE_ANGLE": 170.0,#160.0,#140.0,
             # 赤側へ到着し、160度移動とL視点合わせを行った後の短い移動。
             # 赤側攻撃ループのANGLE2とは独立。
             "BLUE_TO_RED_ARRIVAL_MOVE_ANGLE": 90.0,
@@ -7785,12 +7785,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             "RED_ATTACK_PREMOVE_ANGLE_SECONDS": 0.8,#0.5,
             "RED_ATTACK_PREMOVE_BLOCK_SECONDS": 7.0,
             
-            "RED_ATTACK_PREMOVE_ANGLE2": 90.0,
+            "RED_ATTACK_PREMOVE_ANGLE2": 100.0,
             "RED_ATTACK_PREMOVE_ANGLE_SECONDS2": 0.2,
             # RPush演出からFIELDへ戻った時だけ使う短い敵側移動。
             # 0～30度の向き直し、L入力、障害物初期化は再実行しない。
             "RPUSH_FIELD_BLUE_MOVE_ANGLE": 90.0,
-            "RPUSH_FIELD_RED_MOVE_ANGLE": 90.0,
+            "RPUSH_FIELD_RED_MOVE_ANGLE": 100.0,
             "RPUSH_FIELD_MOVE_SECONDS": 0.2,
             
             "RED_ATTACK_PREMOVE_STAY_SECONDS2": 0.5,
