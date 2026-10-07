@@ -24431,7 +24431,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_48(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
-                return "5_STORY_KARASUBA_50"#49"
+                return "5_STORY_KARASUBA_49"
         return "5_STORY_KARASUBA_48"
     
     def _5_story_karasuba_49(self):#TODO デンリュウアリの場合
