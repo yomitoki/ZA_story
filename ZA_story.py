@@ -24435,7 +24435,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_48"
     
     def _5_story_karasuba_49(self):#TODO デンリュウアリの場合
-        self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=2)
+        self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=6,target1=4,target2=2)
         if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
             return "5_STORY_KARASUBA_50"
         else:
