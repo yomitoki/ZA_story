@@ -3663,6 +3663,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         """C+が出ない最終戦の4技表示をmode 5だけで確認する。"""
         if not getattr(self, "_za_mega_last_battle_mode", False):
             return ""
+        # 固有4技を1つ以上入力した後は、同じUIが演出中に残っていても
+        # 再攻撃しない。次のHARD FIELD／Escapeで再戦処理へ入るまで、
+        # FIELD待ち専用状態を維持する。
+        if getattr(
+                self, "_za_mega_mode5_event_attack_wait_field", False):
+            return ""
         picture="POKEMON_ZA_LAST_BATTLE_MOVE_UI"
         if not self.image_check(picture):
             return ""
@@ -3716,6 +3722,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             allow_missing_field_fallback=False,
             field_back_w_detected=False, escape_detected=False):
         """固有4技を優先し、許可済みの名称5秒判定後だけZLする。"""
+        if getattr(
+                self, "_za_mega_mode5_event_attack_wait_field", False):
+            self._za_mega_mode5_last_name_no_hard_since=0.0
+            self._za_mega_mode5_last_name_last_seen_at=0.0
+            return ""
         start_flag=int(getattr(
             self, "_za_mega_mode5_start_flag", 0))
         retry_selection_wait=bool(
@@ -3819,6 +3830,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_mega_mode5_event_attack_axby(self, detected_picture=""):
         """最終戦4技UIではC+に依存せずZL保持後A/X/B/Yを送る。"""
         if (not getattr(self, "_za_mega_last_battle_mode", False)
+                or getattr(
+                    self, "_za_mega_mode5_event_attack_wait_field", False)
                 or int(getattr(
                     self, "_za_mega_mode5_start_flag", 0)) != 4
                 or not getattr(
@@ -3865,7 +3878,80 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_mega_mode5_lockon_confirmed_until=now + 0.8
             self._za_mega_mode5_visual_lockon_until=now + 0.8
             self._za_mega_mode5_event_lockon_retry_at=now + 0.5
+            self.ZA_mega_mode5_event_attack_enter_field_wait(
+                detected_picture, pressed)
         return bool(pressed)
+
+    def ZA_mega_mode5_event_attack_enter_field_wait(
+            self, detected_picture="", pressed_buttons=()):
+        """固有4技入力後を敗戦相当のFIELD再戦待ちへ切り替える。"""
+        if (not getattr(self, "_za_mega_last_battle_mode", False)
+                or not pressed_buttons):
+            return False
+
+        # 黒背景5秒確認済みを意味する敗戦ラッチ自体は捏造しない。
+        # 再戦待ちに必要な状態だけを敗戦時と同じ値へそろえる。
+        self._za_mega_mode5_defeat_sequence_active=False
+        self._za_mega_mode5_defeat_background_since=0.0
+        self._za_mega_mode5_defeat_prompt_logged=False
+        self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
+        self._za_mega_mode5_defeat_candidate_picture=""
+        self._za_mega_mode5_battle_active=False
+        self._za_mega_mode5_post_move_wait_until=0.0
+        self._za_mega_mode5_lockon_confirmed_until=0.0
+        self._za_mega_mode5_visual_lockon_until=0.0
+        self._za_mega_mode5_event_lockon_retry_at=0.0
+        self._za_mega_colored_enemy_track_position=None
+        self._za_mega_colored_enemy_track_seen_at=0.0
+        self._za_mega_colored_enemy_candidate_position=None
+        self._za_mega_colored_enemy_candidate_color=None
+        self._za_mega_colored_enemy_candidate_pixels=0.0
+        self._za_mega_colored_enemy_candidate_seen_at=0.0
+        self._za_mega_colored_enemy_candidate_hits=0
+        self._za_mega_field_w_up_attempts=0
+        self._za_mega_field_w_up_retry_at=0.0
+        self._za_mega_field_w_up_latched=False
+        self._za_mega_mode5_field_left_attempts=0
+        self._za_mega_mode5_field_left_retry_at=0.0
+        self._za_mega_rclick_dir3_until=0.0
+        self._za_mega_field_dir5_until=0.0
+        self._za_mega_field_dir4_until=0.0
+
+        post_roll_reset=getattr(
+            self, "ZA_mega_field_post_attack_roll_reset", None)
+        if callable(post_roll_reset):
+            post_roll_reset()
+        self.ZA_mega_mode5_transition(
+            "RETRY_SELECTION",
+            "fixed four-move attack complete; wait for FIELD retry")
+        reset_for_selection=getattr(
+            self, "ZA_mega_mode5_testmode1_reset_for_selection", None)
+        if callable(reset_for_selection):
+            reset_for_selection("EVENT_FIXED4_ATTACK_COMPLETE")
+        else:
+            watchdog_reset=getattr(
+                self, "ZA_mega_mode5_attack_watchdog_reset", None)
+            if callable(watchdog_reset):
+                watchdog_reset()
+            field_wait_reset=getattr(
+                self, "ZA_mega_mode5_field_wait_reset", None)
+            if callable(field_wait_reset):
+                field_wait_reset()
+
+        # selection reset内では通常の再戦選択としてラッチを解除するため、
+        # 固有4技完了の専用待ちはreset後に立てる。
+        self._za_mega_mode5_event_attack_wait_field=True
+        self.ZA_ZL_ACTION("END")
+        self.ZA_mega_mode5_set_start_flag(
+            0,
+            "EVENT_ATTACK_COMPLETE",
+            "{} input complete; enter defeat-equivalent FIELD wait".format(
+                "/".join(str(button) for button in pressed_buttons)))
+        self.ZA_mega_mode5_trace(
+            "EVENT_ATTACK_WAIT_FIELD",
+            "ignore remaining move UI; wait for FIELD retry",
+            force=True)
+        return True
 
     def ZA_mega_target_marker_direction(self, include_upper=False):
         # 画面下中央をプレイヤー位置とし、検出したマーカー中心までの
@@ -5640,6 +5726,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_defeat_prompt_logged=False
         self._za_mega_mode5_defeat_prompt_a_retry_at=0.0
         self._za_mega_mode5_defeat_candidate_picture=""
+        self._za_mega_mode5_event_attack_wait_field=False
         self._za_mega_mode5_x_menu_b_attempts=0
         self._za_mega_mode5_last_name_no_hard_since=0.0
         self._za_mega_mode5_last_name_last_seen_at=0.0
@@ -6020,6 +6107,23 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
             self.ZA_MOVE_SEE(action="END",in_see_r=see_r)
             self.ZA_ZL_ACTION("END")
+            return "waiting"
+
+        if getattr(
+                self, "_za_mega_mode5_event_attack_wait_field", False):
+            # 固有4技を入力済みなら、残った4技UIや180秒後の名称判定で
+            # 再攻撃せず、敗戦後と同じくFIELD復帰だけを待つ。
+            self._za_mega_mode5_field_wait_since=0.0
+            self._za_mega_mode5_field_wait_context="EVENT_ATTACK_WAIT_FIELD"
+            self._za_mega_mode5_field_wait_timeout_logged=False
+            self._za_mega_mode5_last_name_no_hard_since=0.0
+            self._za_mega_mode5_last_name_last_seen_at=0.0
+            self.ZA_MOVE_LStick(dir1,dir2,dir3,dir4,1,"END")
+            self.ZA_MOVE_SEE(action="END",in_see_r=see_r)
+            self.ZA_ZL_ACTION("END")
+            self.ZA_mega_mode5_trace(
+                "EVENT_ATTACK_WAIT_FIELD",
+                "fixed four-move input complete; hold until FIELD retry")
             return "waiting"
 
         wait_context=str(context or "FIELD_WAIT")
@@ -8267,6 +8371,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if callable(watchdog_reset):
             watchdog_reset()
         self.ZA_mega_mode5_field_wait_reset()
+        self._za_mega_mode5_event_attack_wait_field=False
         self._za_mega_mode5_x_menu_b_attempts=0
         if not getattr(self, "_za_mega_testmode1_enabled", False):
             return False
@@ -9091,6 +9196,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self, z_guard_enabled, initial_approach_seconds, see_r,
             resume_reason):
         """戦闘再開時に前ターゲット状態を破棄し、HP別開始経路へ遷移する。"""
+        # 固有4技後の専用待機は、実FIELD再開を確認したここでだけ解除する。
+        self._za_mega_mode5_event_attack_wait_field=False
         self.ZA_mega_mode5_marker_search_view_stop(relock=False)
         self.ZA_MOVE_SEE(action="END", in_see_r=see_r)
         # HARD FIELD／Escapeで再戦開始を確定した時点で、直前の敗北画面と
@@ -9733,6 +9840,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_mode5_color_field_until=0.0
         self._za_mega_mode5_attack_fallback_logged=False
         self._za_mega_mode5_event_lockon_retry_at=0.0
+        self._za_mega_mode5_event_attack_wait_field=False
         self._za_mega_mode5_last_name_no_hard_since=0.0
         self._za_mega_mode5_last_name_last_seen_at=0.0
         self._za_mega_mode5_defeat_sequence_active=False
@@ -9820,6 +9928,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         while True:
             if last_battle_mode:
+                # 固有4技入力後はローカルnofiledも敗戦後と同じ待機値へ
+                # 揃え、FIELD検知時だけ既存の再戦初期化へ進める。
+                if getattr(
+                        self,
+                        "_za_mega_mode5_event_attack_wait_field",
+                        False):
+                    nofiled=1
                 mode5_wait_flag=int(getattr(
                     self, "_za_mega_mode5_start_flag", 0))
                 mode5_indefinite_wait=bool(
