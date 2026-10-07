@@ -1048,6 +1048,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_SKILL_CHANGE8": self._2_story_skill_change8,
             "2_STORY_SKILL_CHANGE9": self._2_story_skill_change9,
             "2_STORY_SKILL_CHANGE10": self._2_story_skill_change10,
+            "2_STORY_SKILL_CHANGE10_1": self._2_story_skill_change10_1,
             "2_STORY_SKILL_CHANGE11": self._2_story_skill_change11,
             "2_STORY_SKILL_CHANGE12": self._2_story_skill_change12,
             "2_STORY_SKILL_CHANGE13": self._2_story_skill_change13,
@@ -1301,6 +1302,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_80": self._4_story_shiro_80,       
             "4_STORY_SHIRO_81": self._4_story_shiro_81,       
             "4_STORY_SHIRO_82": self._4_story_shiro_82,       
+            "4_STORY_SHIRO_83_0": self._4_story_shiro_83_0,       
             "4_STORY_SHIRO_83": self._4_story_shiro_83,       
             "4_STORY_SHIRO_84": self._4_story_shiro_84,       
             "4_STORY_SHIRO_85": self._4_story_shiro_85,       
@@ -21867,13 +21869,22 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_SKILL_CHANGE9" 
           
     def _2_story_skill_change10(self):
-        #ホルード
-        ret = self.ZA_common_skill_change_function(3,2,"Y",0)
+        #ホルード 必殺前歯(最終戦の1発火力用)
+        ret = self.ZA_common_skill_change_function(3,2,"A",0)
+        #if self.common_skill_change_current_state
+        if ret == "COMMON_SKILL_CHANGE_START":
+            return "2_STORY_SKILL_CHANGE10_1"
+        else: 
+            return "2_STORY_SKILL_CHANGE10" 
+        
+    def _2_story_skill_change10_1(self):
+        #ホルード じならし
+        ret = self.ZA_common_skill_change_function(3,0,"Y",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE11"
         else: 
-            return "2_STORY_SKILL_CHANGE10" 
+            return "2_STORY_SKILL_CHANGE10_1" 
         
     def _2_story_skill_change11(self):
         #ホルード ぶんまわす
@@ -21940,7 +21951,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_skill_change18(self):
         #デンリュウ 10まんボルト
-        ret = self.ZA_common_skill_change_function(5,5,"X",0)
+        ret = self.ZA_common_skill_change_function(5,5,"A",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE19"
@@ -21958,7 +21969,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         
     def _2_story_skill_change20(self):
         #デンリュウ パワージェム
-        ret = self.ZA_common_skill_change_function(5,6,"A",0)
+        ret = self.ZA_common_skill_change_function(5,6,"X",0)
         #if self.common_skill_change_current_state
         if ret == "COMMON_SKILL_CHANGE_START":
             return "2_STORY_SKILL_CHANGE21"
@@ -23514,15 +23525,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_51(self):
         return "4_STORY_SHIRO_52"#TODO ボックス操作は敵に見つかっていると操作できないため移動すべき
-        
-        # 手持5番目（x=4, y=-1）をBOX側の空き枠（x=1, y=0）へ移す。
-        self.common_box_change_current_state = (
-            self.ZA_common_box_change_function(
-                target1=4, target2=1,
-                target1_high=-1, target2_high=0))
-        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
-            return "4_STORY_SHIRO_52"
-        return "4_STORY_SHIRO_51"
     
     def _4_story_shiro_52(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -23645,8 +23647,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,220), duration=0.3, wait=1.0)
             self.wait(0.5)
-            #self.press(Direction(Stick.LEFT,270), duration=0.2, wait=1.0)
-            #self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_67"
         return "4_STORY_SHIRO_66"
@@ -23751,7 +23751,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="4_STORY_SHIRO_80",prg_ret="4_STORY_SHIRO_82",noprg_ret="4_STORY_SHIRO_81",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
     
     def _4_story_shiro_82(self):
-        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="4_STORY_SHIRO_81",prg_ret="4_STORY_SHIRO_83_0")
+ 
+    def _4_story_shiro_83_0(self):
+         # 手持6番目（x=5, y=-1）をBOX側の空き枠（x=1, y=0）へ移す。
+        self.common_box_change_current_state = (
+            self.ZA_common_box_change_function(
+                target1=5, target2=1,
+                target1_high=-1, target2_high=0))
+        if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
+            return "4_STORY_SHIRO_83"
+        return "4_STORY_SHIRO_83_0"
  
     def _4_story_shiro_83(self):
         ### AUTO_SAVE_POINT
