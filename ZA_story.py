@@ -23764,6 +23764,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.ZA_markerdir("EVENT"):
                 return "4_STORY_SHIRO_25"
+
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_24"
     
     def _4_story_shiro_25(self):
@@ -23771,6 +23775,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,120), duration=3.5, wait=1.0)
             return "4_STORY_SHIRO_26"
+
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_25"
     
     def _4_story_shiro_26(self):
@@ -23786,6 +23794,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.etc_sendCommand("Lbutton_left")
                 self.wait(1.0)
 
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_26"
     
     def _4_story_shiro_27(self):
@@ -23795,12 +23806,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "4_STORY_SHIRO_28"
+
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_27"
     
     def _4_story_shiro_28(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.ZA_markerdir("EVENT"):
                 return "4_STORY_SHIRO_29"
+            
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_28"
     
     def _4_story_shiro_29(self):
@@ -23812,6 +23831,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             self.ZA_ROTOM_GLIDE(dir=90,a_count=30)
             return "4_STORY_SHIRO_30"
+
+        elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            return "4_STORY_SHIRO_31"
         return "4_STORY_SHIRO_29"
     
     def _4_story_shiro_30(self):
