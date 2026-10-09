@@ -17499,7 +17499,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_1"
     
     def _1_story_out_hotel_z_2(self):
-        #self.press(Direction(Stick.LEFT,90), duration=7.0, wait=1.0)
         return "1_STORY_OUT_HOTEL_Z_3"
     
     def _1_story_out_hotel_z_3(self):
@@ -17835,7 +17834,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,40), duration=7.0, wait=1.0)
             self.press(Direction(Stick.LEFT,280), duration=3.0, wait=1.0)
             self.press(Direction(Stick.LEFT,40), duration=3.0, wait=1.0)
-            #self.press(Direction(Stick.LEFT,220), duration=0.5, wait=1.0)
             self.press(Direction(Stick.LEFT,190), duration=0.9, wait=1.0)#TODO
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "1_STORY_OUT_HOTEL_Z_20" 
@@ -17999,7 +17997,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             #方向が不明のため、出口右の隅にオーバーラン
-            #self.press(Direction(Stick.LEFT,250), duration=5.0, wait=1.0)
             self.press(Direction(Stick.LEFT,10), duration=5.0, wait=1.0)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             if self.image_check("POKEMON_ZA_OUT_MARKER"):
@@ -18614,7 +18611,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_72(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,20), duration=13.0, wait=0.5)
-            #self.press(Direction(Stick.LEFT,130), duration=1.3, wait=0.5)
             self.press(Direction(Stick.LEFT,270), duration=0.3, wait=0.5)
             self.press(Direction(Stick.LEFT,320), duration=3.0, wait=0.5)
             self.press(Direction(Stick.LEFT,300), duration=3.0, wait=0.5)
@@ -19457,7 +19453,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,90), duration=20.0, wait=0.5)
             self.wait(1.0)
-            #self.press(Direction(Stick.LEFT,105), duration=2.0, wait=0.5) 
             return "2_STORY_MAPPING_15"
         return "2_STORY_MAPPING_14"
     
@@ -19601,8 +19596,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,180), duration=6.0, wait=0.5) 
             self.wait(1.0)
-            #self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5) 
-            #self.wait(1.0)
             return "2_STORY_MAPPING_24"
         return "2_STORY_MAPPING_23"
     
@@ -19670,8 +19663,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,90), duration=10.0, wait=0.5) 
             self.wait(1.0)
-            #self.press(Direction(Stick.LEFT,0), duration=4.0, wait=0.5) 
-            #self.wait(1.0)
             return "2_STORY_MAPPING_27"
         return "2_STORY_MAPPING_26"
     
@@ -21236,7 +21227,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_YUBIWA"):
                         return "2_STORY_TOWER_61"
                 else:
-                    #self.press(Direction(Stick.LEFT,280), duration=9.0, wait=0.0)-
                     self.press(Direction(Stick.LEFT,260), duration=17.0, wait=0.0)
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                     return self._2_story_tower_55_or_61()
@@ -22305,7 +22295,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                #self.wait(0.3)
                 self._2_story_restaurant_dohutsu_white_check=1
                 if (self._2_story_restaurant_dohutsu_black_check >= 3):
                     self._2_story_restaurant_dohutsu_battle_count+=1
@@ -23208,7 +23197,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,70), duration=3.0, wait=1.0)
             self.wait(0.5)
-            #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "3_STORY_CANARI_48"
         return "3_STORY_CANARI_47"
     
@@ -23552,7 +23540,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,90), duration=7.0, wait=1.0)
             self.wait(0.5)
-            #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "4_STORY_SHIRO_5"
         return "4_STORY_SHIRO_4"
             
@@ -23671,10 +23658,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.wait(0.5)
             self.press(Direction(Stick.LEFT,120), duration=2.0, wait=1.0)
-            #self.press(Direction(Stick.LEFT,180), duration=3.0, wait=1.0)#3.0
-            #self.press(Direction(Stick.LEFT,120), duration=4.5, wait=1.0)
-            
-
             self.press(Direction(Stick.LEFT,175), duration=3.0, wait=1.0)
             self.press(Direction(Stick.LEFT,125), duration=4.4, wait=1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -23824,11 +23807,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_29(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            #self.wait(0.5)
-            #self.press(Direction(Stick.LEFT,90), duration=3.2, wait=1.0)
-            #self.wait(0.5)
-            #self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            
             self.ZA_ROTOM_GLIDE(dir=90,a_count=30)
             return "4_STORY_SHIRO_30"
 
@@ -24895,15 +24873,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             self.press(Direction(Stick.LEFT,130), duration=3.0, wait=2.0)
             self.press(Direction(Stick.LEFT,110), duration=2.0, wait=2.0)
-            #self.press(Direction(Stick.LEFT,115), duration=2.0, wait=2.0)
-            
-            #self.press(Direction(Stick.LEFT,53), duration=2.5, wait=2.0)
-            
             self.press(Direction(Stick.LEFT,115), duration=2.2, wait=2.0)
             
             self.press(Direction(Stick.LEFT,53), duration=2.5, wait=2.0)
-            
-            
             
             self.press(Direction(Stick.LEFT,320), duration=4.0, wait=2.0)
             self.press(Direction(Stick.LEFT,340), duration=10.0, wait=2.0)
@@ -27557,8 +27529,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _7_story_guri_88(self):
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
-            #self.press(Direction(Stick.LEFT,0), duration=0.1, wait=0.1)
-            #self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.0, interval=0.0)
             return "7_STORY_GURI_89"
         return "7_STORY_GURI_88"
     
@@ -27584,8 +27554,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,180), duration=1.5, wait=0.0)
             self.ZA_ROTOM_GLIDE(dir=90,a_count=43)
             self.ZA_ROTOM_GLIDE(dir=270,a_count=43)#マップを開くために逃げる
-            #self.press(Direction(Stick.LEFT,0), duration=2.0, wait=1.0)
-            #self.ROTOM_GLIDE(dir=270,a_count=10)
             return "7_STORY_GURI_91"
         return "7_STORY_GURI_90"
     
@@ -28203,13 +28171,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             #はしご終わり
             self.press(Direction(Stick.LEFT,90), duration=0.3, wait=1.0)
             self.press(Direction(Stick.LEFT,180), duration=0.5, wait=1.0)
-            
-            #self.press(Direction(Stick.LEFT,270), duration=1.0, wait=1.0)
+
             self.press(Direction(Stick.LEFT,270), duration=1.2, wait=1.0)
             
             self.wait(2.0)
             #壁のぼり
-            #self.press(Direction(Stick.LEFT,270), duration=0.2, wait=1.0)#移動しすぎると引っかかる
             self.press(Direction(Stick.LEFT,350), duration=5.0, wait=1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
@@ -28227,12 +28193,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=0.25, wait=1.0)
             self.wait(2.0)
             
-            #self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
             self.press(Direction(Stick.LEFT,0), duration=1.1, wait=1.0)
             
             self.wait(2.0)
             #壁のぼり
-            #self.press(Direction(Stick.LEFT,0), duration=2.0, wait=1.0)#14
             self.press(Direction(Stick.LEFT,10), duration=2.0, wait=1.0)#14
             
             self.ZA_ROTOM_GLIDE(dir=310,a_count=5)
@@ -28240,7 +28204,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "8_STORY_STORY_LAST_26_0"
             self.wait(5.0)
             #ジャンプ
-            #self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
             self.press(Direction(Stick.LEFT,290), duration=8.0, wait=1.0)#オーバーランで場所を確定させる
             self.press(Direction(Stick.LEFT,320), duration=2.0, wait=1.0)#オーバーランで場所を確定させる
             self.press(Direction(Stick.LEFT,200), duration=0.2, wait=1.0)#オーバーランで場所を確定させる
@@ -28249,16 +28212,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,190), duration=0.1, wait=1.0)
             self.press(Direction(Stick.LEFT,200), duration=0.1, wait=1.0)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            #self.press(Direction(Stick.LEFT,0), duration=0.0.5, wait=1.0)
             self.press(Direction(Stick.LEFT,90), duration=1.0, wait=1.0)
             
-            #self.press(Direction(Stick.LEFT,10), duration=1.3, wait=1.0)
             self.press(Direction(Stick.LEFT,20), duration=1.3, wait=1.0)
             
-            
             self.press(Direction(Stick.LEFT,10), duration=0.7, wait=1.0)
-            
-            
             
             self.press(Direction(Stick.LEFT,300), duration=0.5, wait=1.0)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -28500,11 +28458,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,60), duration=6.0, wait=1.0)
             self.press(Direction(Stick.LEFT,50), duration=4.0, wait=1.0)
             
-            #self.press(Direction(Stick.LEFT,70), duration=4.0, wait=1.0)
-            #self.press(Direction(Stick.LEFT,50), duration=4.0, wait=1.0)
-            
             self.press(Direction(Stick.LEFT,30), duration=4.0, wait=1.0)
-            #self.press(Direction(Stick.LEFT,50), duration=4.0, wait=1.0)
             
             self.press(Direction(Stick.LEFT,120), duration=6.0, wait=1.0)
             self.press(Direction(Stick.LEFT,150), duration=4.0, wait=1.0)
