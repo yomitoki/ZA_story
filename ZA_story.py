@@ -325,8 +325,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_TOWER_12": "2_STORY_TOWER_12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_14": "2_STORY_TOWER_13_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_TOWER_16": "2_STORY_TOWER_16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_20": "2_STORY_TOWER_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_22": "2_STORY_TOWER_22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        #"2_STORY_TOWER_22": "2_STORY_TOWER_22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "2_STORY_TOWER_43": "2_STORY_TOWER_43",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_45": "2_STORY_TOWER_45",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_49": "2_STORY_TOWER_49",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -339,32 +338,31 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         "2_STORY_X_LANK_MOVE8": "2_STORY_X_LANK_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "2_STORY_ABSOL_MOVE2":"2_STORY_ABSOL_MOVE0",
+        "2_STORY_ABSOL_MOVE2":"2_STORY_ABSOL_MOVE0",# TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_ABSOL_MOVE22": "2_STORY_ABSOL_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE24": "2_STORY_ABSOL_MOVE24",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE26": "2_STORY_ABSOL_MOVE26",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE28": "2_STORY_ABSOL_MOVE28",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE31": "2_STORY_ABSOL_MOVE31",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_ABSOL_MOVE35": "2_STORY_ABSOL_MOVE35",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_MEGA_MOVE6": "2_STORY_MEGA_MOVE6",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "2_STORY_MEGA_MOVE14": "2_STORY_MEGA_MOVE13_0", 
-        "2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+       
+        #"2_STORY_MEGA_MOVE6": "2_STORY_MEGA_MOVE6",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        
+        #"2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        "2_STORY_MEGA_MOVE20": "2_STORY_MEGA_MOVE17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        #"2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "3_STORY_CANARI_10": "3_STORY_CANARI_2_RECOVERY1",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_16": "3_STORY_CANARI_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_18": "3_STORY_CANARI_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_20": "3_STORY_CANARI_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE2": "3_STORY_MEGA_MOVE2",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_MEGA_MOVE8": "3_STORY_MEGA_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        
-        "3_STORY_MEGA_MOVE10": "3_STORY_MEGA_MOVE9_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        
-        "3_STORY_MEGA_MOVE12": "3_STORY_MEGA_MOVE12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_MEGA_MOVE16": "3_STORY_MEGA_MOVE13",
-        "3_STORY_MEGA_MOVE18": "3_STORY_MEGA_MOVE18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_MEGA_MOVE23": "3_STORY_MEGA_MOVE23",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+
+        #"3_STORY_MEGA_MOVE12": "3_STORY_MEGA_MOVE12",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        #"3_STORY_MEGA_MOVE18": "3_STORY_MEGA_MOVE18",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        "3_STORY_MEGA_MOVE23": "3_STORY_MEGA_MOVE19",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        #"3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "3_STORY_MEGA_MOVE30": "3_STORY_MEGA_MOVE30",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_12": "4_STORY_SHIRO_12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_15": "4_STORY_SHIRO_13",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -389,26 +387,41 @@ class ZA_story_Base(ImageProcPythonCommand):
         "5_STORY_KARASUBA_14": "5_STORY_KARASUBA_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_18": "5_STORY_KARASUBA_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_20": "5_STORY_KARASUBA_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_26": "5_STORY_KARASUBA_26",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_32": "5_STORY_KARASUBA_32",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_33": "5_STORY_KARASUBA_33",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_37": "5_STORY_KARASUBA_37",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        #"5_STORY_KARASUBA_26": "5_STORY_KARASUBA_26",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        #"5_STORY_KARASUBA_32": "5_STORY_KARASUBA_32",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
+        #"5_STORY_KARASUBA_33": "5_STORY_KARASUBA_33",  # TODO_EVENT_ENTRY_RECOVERY[未実行]
+        "5_STORY_KARASUBA_37": "5_STORY_KARASUBA_34",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_46": "5_STORY_KARASUBA_46_RECOVERY",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_48": "5_STORY_KARASUBA_48",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        #"5_STORY_KARASUBA_48": "5_STORY_KARASUBA_48",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "5_STORY_KARASUBA_52": "5_STORY_KARASUBA_52",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_55": "5_STORY_KARASUBA_55",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_57": "5_STORY_KARASUBA_57",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_62": "5_STORY_KARASUBA_62",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_66": "5_STORY_KARASUBA_66",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_66": "5_STORY_KARASUBA_63",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_68": "5_STORY_KARASUBA_68",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_98": "5_STORY_KARASUBA_98",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_116": "5_STORY_KARASUBA_116",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        
+        "5_STORY_KARASUBA_104": "5_STORY_KARASUBA_99",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_116": "5_STORY_KARASUBA_111",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_120": "5_STORY_KARASUBA_120",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "6_STORY_YUKARI_32": "6_STORY_YUKARI_29", 
+        "6_STORY_YUKARI_4": "6_STORY_YUKARI_1", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_14": "6_STORY_YUKARI_11", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_20": "6_STORY_YUKARI_17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        #"6_STORY_YUKARI_26": "6_STORY_YUKARI_23", # TODO_EVENT_ENTRY_RECOVERY[確認中] 26にコメントチェックが必要、（28も）なため追加
+        "6_STORY_YUKARI_58": "6_STORY_YUKARI_55", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_65": "6_STORY_YUKARI_61", # TODO_EVENT_ENTRY_RECOVERY[確認中]
         # FURADARI_MAP区間はComment_Outを取り逃がしても停止し続けないよう、
         
         # 30秒間Commentを確認できなければ一旦次Stepへ進める。
+        "7_STORY_GURI_4": "7_STORY_GURI_1",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_11": "7_STORY_GURI_8",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_17": "7_STORY_GURI_14",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_23": "7_STORY_GURI_20",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_50": "7_STORY_GURI_47",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_58": "7_STORY_GURI_55",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_74": "7_STORY_GURI_71",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_78": "7_STORY_GURI_75",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_88": "7_STORY_GURI_89",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_96": "7_STORY_GURI_97",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_103": "7_STORY_GURI_104",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -417,6 +430,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_120": "7_STORY_GURI_121",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_122": "7_STORY_GURI_123",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_128": "7_STORY_GURI_129",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        
+        "7_STORY_GURI_133": "7_STORY_GURI_129",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_139": "7_STORY_GURI_136",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "8_STORY_STORY_LAST_9":"8_STORY_STORY_LAST_8_0",
         "8_STORY_STORY_LAST_23":"8_STORY_STORY_LAST_21_0",
         "8_STORY_STORY_LAST_27":"8_STORY_STORY_LAST_26_0",
@@ -425,14 +441,31 @@ class ZA_story_Base(ImageProcPythonCommand):
         "8_STORY_STORY_LAST_40_1":"8_STORY_STORY_LAST_40_0",
         "8_STORY_STORY_LAST_41":"8_STORY_STORY_LAST_40_0",
         "8_STORY_STORY_LAST_46":"8_STORY_STORY_LAST_44",
-
     }
 
     # Mega戦前に白／緑Commentへ入れなかった場合は、位置を確定し直せる
     # 直前の時間変更Stepへ戻す。
     ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS = {
+        
+        "2_STORY_MEGA_MOVE4": "2_STORY_MEGA_MOVE1", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE14": "2_STORY_MEGA_MOVE13_0", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE20": "2_STORY_MEGA_MOVE17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        
+        "3_STORY_MEGA_MOVE10": "3_STORY_MEGA_MOVE9_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE16": "3_STORY_MEGA_MOVE13", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE25": "2_STORY_MEGA_MOVE24_0", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        
+        "5_STORY_KARASUBA_24": "5_STORY_KARASUBA_21",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_30": "5_STORY_KARASUBA_27",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        #"5_STORY_KARASUBA_46": "5_STORY_KARASUBA_46_RECOVERY",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+
+        "6_STORY_YUKARI_32": "6_STORY_YUKARI_29",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "6_STORY_YUKARI_39": "6_STORY_YUKARI_35",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "6_STORY_YUKARI_52": "6_STORY_YUKARI_42",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+
+        "7_STORY_GURI_17": "7_STORY_GURI_14",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_34": "7_STORY_GURI_33_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_44": "7_STORY_GURI_37",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
     }
 
     # 値は (復帰先, battle_before成功時の遷移先)。第1要素は30秒待機と
@@ -1225,6 +1258,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "3_STORY_MEGA_MOVE21": self._3_story_mega_move21,  
             "3_STORY_MEGA_MOVE22": self._3_story_mega_move22,  
             "3_STORY_MEGA_MOVE23": self._3_story_mega_move23,  
+            "3_STORY_MEGA_MOVE24_0": self._3_story_mega_move24_0,  
             "3_STORY_MEGA_MOVE24": self._3_story_mega_move24,  
             "3_STORY_MEGA_MOVE25": self._3_story_mega_move25,  
             "3_STORY_MEGA_MOVE26": self._3_story_mega_move26,  
@@ -1650,6 +1684,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "7_STORY_GURI_30": self._7_story_guri_30, 
             "7_STORY_GURI_31": self._7_story_guri_31, 
             "7_STORY_GURI_32": self._7_story_guri_32, 
+            "7_STORY_GURI_33_0": self._7_story_guri_33_0,  
             "7_STORY_GURI_33": self._7_story_guri_33, 
             "7_STORY_GURI_34": self._7_story_guri_34, 
             "7_STORY_GURI_35": self._7_story_guri_35, 
@@ -19195,8 +19230,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_40"
     
     def _2_story_tower_41(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "2_STORY_TOWER_42"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "2_STORY_TOWER_42"
         return "2_STORY_TOWER_41"
     
     def _2_story_tower_42(self):
@@ -21256,8 +21292,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_62"
     
     def _2_story_tower_63(self): 
-        if self.ZA_story_Template_Comment_Out():
-            return "2_STORY_TOWER_64"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "2_STORY_TOWER_64"
         return "2_STORY_TOWER_61"
     
     def _2_story_tower_64(self): 
@@ -22644,7 +22681,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move4(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE5"
         return "2_STORY_MEGA_MOVE4"
@@ -22729,7 +22765,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move14(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
@@ -22775,7 +22810,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move20(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
@@ -23310,7 +23344,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_mega_move10(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
@@ -23365,7 +23398,6 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE15"
     
     def _3_story_mega_move16(self):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE17"
@@ -23428,6 +23460,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
                 return "3_STORY_MEGA_MOVE24"
         return "3_STORY_MEGA_MOVE23"
+
+    def _3_story_mega_move24_0(self):
+        self.ZA_gamereset()
+        return "3_STORY_MEGA_MOVE24"
     
     def _3_story_mega_move24(self):
         #AUTOSAVE
@@ -23450,7 +23486,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_mega_move25(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "3_STORY_MEGA_MOVE26"
         return "3_STORY_MEGA_MOVE25"
@@ -24702,7 +24737,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_23"
     
     def _5_story_karasuba_24(self):
-        if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
             if self.ZA_story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_25"
         return "5_STORY_KARASUBA_24"
@@ -24756,7 +24792,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_30(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "5_STORY_KARASUBA_31"
         elif self.ZA_markerdir("EVENT", 1):
@@ -24904,7 +24939,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_46(self):#TODO リカバリープランが必要？
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 self._5_story_karasuba_46_recovery_reset()
                 return "5_STORY_KARASUBA_47"
@@ -26225,8 +26259,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_25"
     
     def _6_story_yukari_26(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "6_STORY_YUKARI_27"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
     def _6_story_yukari_27(self):
@@ -26238,8 +26274,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_27"
     
     def _6_story_yukari_28(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "6_STORY_YUKARI_29"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_29"
         return "6_STORY_YUKARI_28"
     
     def _6_story_yukari_29(self):
@@ -26276,7 +26314,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_32(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
@@ -26287,8 +26324,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_33"
 
     def _6_story_yukari_34(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "6_STORY_YUKARI_35"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_35"
         return "6_STORY_YUKARI_34"
     
     def _6_story_yukari_35(self):
@@ -26348,8 +26387,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_40"
     
     def _6_story_yukari_41(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "6_STORY_YUKARI_42"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_42"
         return "6_STORY_YUKARI_41"
     
     def _6_story_yukari_42(self):
@@ -26379,7 +26420,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_44"
     
     def _6_story_yukari_45(self):
-        if self.ZA_story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out():#リカバリーあり
             return "6_STORY_YUKARI_46"
         return "6_STORY_YUKARI_45"
     
@@ -26576,8 +26617,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_53"
 
     def _6_story_yukari_54(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "6_STORY_YUKARI_55"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "6_STORY_YUKARI_55"
         return "6_STORY_YUKARI_54"
     
     def _6_story_yukari_55(self):
@@ -26929,8 +26972,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_3"
 
     def _7_story_guri_4(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_5"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_5"
         return "7_STORY_GURI_4"
             
     def _7_story_guri_5(self):
@@ -26941,8 +26986,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_5"
     
     def _7_story_guri_6(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_7"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_7"
         return "7_STORY_GURI_6"
 
     def _7_story_guri_7(self):
@@ -26983,8 +27030,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_10"
     
     def _7_story_guri_11(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_12"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_12"
         return "7_STORY_GURI_11"
     
     def _7_story_guri_12(self):
@@ -26996,8 +27045,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_12"
     
     def _7_story_guri_13(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_14"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_14"
         return "7_STORY_GURI_13"
     
     def _7_story_guri_14(self):
@@ -27028,7 +27079,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_17(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-        #if (not (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))): #FIELDから変更
             if self.ZA_story_Template_Comment_Out():
                 return "7_STORY_GURI_18"
         return "7_STORY_GURI_17"
@@ -27039,8 +27089,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_18"
     
     def _7_story_guri_19(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_20"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_20"
         return "7_STORY_GURI_19"
     
     def _7_story_guri_20(self):
@@ -27067,8 +27119,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_22"
     
     def _7_story_guri_23(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_24"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_24"
         return "7_STORY_GURI_23"
     
     def _7_story_guri_24(self):
@@ -27113,7 +27167,11 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _7_story_guri_32(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
-
+    
+    def _7_story_guri_33_0(self):
+        self.ZA_gamereset()
+        return "7_STORY_GURI_33"
+    
     def _7_story_guri_33(self):
         #AUTOSAVE
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -27122,8 +27180,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_33"
 
     def _7_story_guri_34(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_35"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_35"
         return "7_STORY_GURI_34"
     
     def _7_story_guri_35(self):
@@ -27132,8 +27192,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_35"
         
     def _7_story_guri_36(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_37"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_37"
         return "7_STORY_GURI_36"
     
     def _7_story_guri_37(self):
@@ -27237,8 +27299,10 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     
     def _7_story_guri_44(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_45"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_45"
         return "7_STORY_GURI_44"
     
     def _7_story_guri_45(self):
@@ -27247,8 +27311,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_45"
     
     def _7_story_guri_46(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_47"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_47"
         return "7_STORY_GURI_46"
 
     def _7_story_guri_47(self):
@@ -27274,8 +27340,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_49"
     
     def _7_story_guri_50(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_51"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_51"
         return "7_STORY_GURI_50"
     
     def _7_story_guri_51(self):
@@ -27447,8 +27515,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_73"
     
     def _7_story_guri_74(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_75"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_75"
         return "7_STORY_GURI_74"
     
     def _7_story_guri_75(self):
@@ -27491,6 +27561,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_81"
     
     def _7_story_guri_82(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_83"
         return "7_STORY_GURI_82"
@@ -27503,6 +27575,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_83"
     
     def _7_story_guri_84(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_85"
         return "7_STORY_GURI_84"
@@ -27528,6 +27602,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_87"
     
     def _7_story_guri_88(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_89"
         return "7_STORY_GURI_88"
@@ -27622,6 +27698,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_95"
     
     def _7_story_guri_96(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_97"
         return "7_STORY_GURI_96"
@@ -27681,6 +27759,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_102"
     
     def _7_story_guri_103(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_104"
         return "7_STORY_GURI_103"
@@ -27721,6 +27801,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_106" 
        
     def _7_story_guri_107(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_108"
         return "7_STORY_GURI_107" 
@@ -27779,6 +27861,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_111" 
        
     def _7_story_guri_112(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(sleeptime=0.0):
             return "7_STORY_GURI_113"
         return "7_STORY_GURI_112" 
@@ -27829,6 +27913,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_119" 
        
     def _7_story_guri_120(self):
+        #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
+        #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(selected_pic="POKEMON_ZA_3_SELECT",selected_target=1,sleeptime=1.0):
             return "7_STORY_GURI_121"
         return "7_STORY_GURI_120" 
@@ -27841,6 +27927,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_121" 
        
     def _7_story_guri_122(self):
+        #リカバリー付近だが次で終わりなのであってもよさそうだが
         if self.ZA_story_Template_Comment_Out():
             return "7_STORY_GURI_123"
         return "7_STORY_GURI_122" 
@@ -27877,8 +27964,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_127"  
        
     def _7_story_guri_128(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_129"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_129"
         return "7_STORY_GURI_128"  
        
     def _7_story_guri_129(self):
@@ -27911,8 +28000,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_132"
        
     def _7_story_guri_133(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_134"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_134"
         return "7_STORY_GURI_133"  
        
     def _7_story_guri_134(self):
@@ -27978,10 +28069,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_1" 
     
     def _8_story_story_last_2(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_3" 
-        else:
-            return "8_STORY_STORY_LAST_2"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_3" 
+        return "8_STORY_STORY_LAST_2"
     
     def _8_story_story_last_3(self):
         ret = self.ZA_Common_goto(1,0,0)#プリズムタワーへ移動
@@ -28035,10 +28127,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_8"
     
     def _8_story_story_last_9(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_10_0" 
-        else:
-            return "8_STORY_STORY_LAST_9"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_10_0" 
+        return "8_STORY_STORY_LAST_9"
         
     def _8_story_story_last_10_0(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -28106,8 +28198,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_19"
     
     def _8_story_story_last_20(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_21"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_21"
         return "8_STORY_STORY_LAST_20"
     
     def _8_story_story_last_21_0(self):
@@ -28245,8 +28338,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_26"
     
     def _8_story_story_last_27(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_28"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_28"
         return "8_STORY_STORY_LAST_27"
     
     def _8_story_story_last_28(self):
@@ -28427,8 +28521,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_36"
     
     def _8_story_story_last_37(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_38_0"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_38_0"
         return "8_STORY_STORY_LAST_37"
 
     def _8_story_story_last_38_0(self):
@@ -28444,8 +28539,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_38"
     
     def _8_story_story_last_39(self):
-        if self.ZA_story_Template_Comment_Out():
-            return "8_STORY_STORY_LAST_40"
+        if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if self.ZA_story_Template_Comment_Out():
+                return "8_STORY_STORY_LAST_40"
         return "8_STORY_STORY_LAST_39"
     
     def _8_story_story_last_40_0(self):
