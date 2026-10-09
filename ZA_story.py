@@ -24744,7 +24744,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "5_STORY_KARASUBA_24"
     
     def _5_story_karasuba_25(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=8):#mode0でもいけなくはない
             return "5_STORY_KARASUBA_26"
         return "5_STORY_KARASUBA_25"
     
