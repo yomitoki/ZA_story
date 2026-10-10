@@ -295,181 +295,185 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_128": "7_STORY_GURI_129",
     }
 
+    # 値は (復帰先Step, ジャンプ前処理)。前処理は次の通り。
+    # 0=そのまま、1=朝へ時間変更、2=夜へ時間変更、
+    # 3=朝・夜のどちらでもよいので1回のベンチで終了、4=ゲーム再起動。
+    # 旧形式の文字列値は互換用に前処理0として扱う。
     # 検索用ステータス（各対象行には該当する1つだけを残す）:
     # 状態を進める時は旧コメントを消し、次の状態コメントへ置き換える。
     # TODO_EVENT_ENTRY_RECOVERY[未対応] = 復帰先未決定（現在Stepのまま）
     # TODO_EVENT_ENTRY_RECOVERY[確認中] = 復帰先を設定し、実機確認待ち
     # EVENT_ENTRY_RECOVERY[完了] = 実機確認済み（TODOを外す）
     ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS = {
-        "1_STORY_FARST_MOVIE_END": "1_STORY_FARST_MOVIE_END",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_FARST_BATTLE_ZONE_OUT": "1_STORY_FARST_BATTLE_ZONE_OUT",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_HOTEL_Z_ARRIVAL": "1_STORY_HOTEL_Z_ARRIVAL",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_HOTEL_Z_FAST_IN": "1_STORY_HOTEL_Z_FAST_IN",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_AZ_CHAT": "1_STORY_AZ_CHAT",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_HOTEL_Z_MOVE10": "1_STORY_HOTEL_Z_MOVE10",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_3": "1_STORY_OUT_HOTEL_Z_3",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_5": "1_STORY_OUT_HOTEL_Z_5",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_5_2": "1_STORY_OUT_HOTEL_Z_5_2",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_7": "1_STORY_OUT_HOTEL_Z_7",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_9": "1_STORY_OUT_HOTEL_Z_9",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_11": "1_STORY_OUT_HOTEL_Z_11",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_13": "1_STORY_OUT_HOTEL_Z_13",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_15": "1_STORY_OUT_HOTEL_Z_15",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_24": "1_STORY_OUT_HOTEL_Z_24",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_26": "1_STORY_OUT_HOTEL_Z_26",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_31": "1_STORY_OUT_HOTEL_Z_31",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_34": "1_STORY_OUT_HOTEL_Z_34",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_38": "1_STORY_OUT_HOTEL_Z_38",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_47": "1_STORY_OUT_HOTEL_Z_47",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_50": "1_STORY_OUT_HOTEL_Z_50",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_52": "1_STORY_OUT_HOTEL_Z_52",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "1_STORY_OUT_HOTEL_Z_63": "1_STORY_OUT_HOTEL_Z_63",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_8": "2_STORY_TOWER_8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_12": "2_STORY_TOWER_12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_14": "2_STORY_TOWER_13_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_TOWER_16": "2_STORY_TOWER_16",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_FARST_MOVIE_END": ("1_STORY_FARST_MOVIE_END", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_FARST_BATTLE_ZONE_OUT": ("1_STORY_FARST_BATTLE_ZONE_OUT", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_HOTEL_Z_ARRIVAL": ("1_STORY_HOTEL_Z_ARRIVAL", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_HOTEL_Z_FAST_IN": ("1_STORY_HOTEL_Z_FAST_IN", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_AZ_CHAT": ("1_STORY_AZ_CHAT", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_HOTEL_Z_MOVE10": ("1_STORY_HOTEL_Z_MOVE10", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_3": ("1_STORY_OUT_HOTEL_Z_3", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_5": ("1_STORY_OUT_HOTEL_Z_5", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_5_2": ("1_STORY_OUT_HOTEL_Z_5_2", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_7": ("1_STORY_OUT_HOTEL_Z_7", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_9": ("1_STORY_OUT_HOTEL_Z_9", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_11": ("1_STORY_OUT_HOTEL_Z_11", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_13": ("1_STORY_OUT_HOTEL_Z_13", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_15": ("1_STORY_OUT_HOTEL_Z_15", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_24": ("1_STORY_OUT_HOTEL_Z_24", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_26": ("1_STORY_OUT_HOTEL_Z_26", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_31": ("1_STORY_OUT_HOTEL_Z_31", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_34": ("1_STORY_OUT_HOTEL_Z_34", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_38": ("1_STORY_OUT_HOTEL_Z_38", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_47": ("1_STORY_OUT_HOTEL_Z_47", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_50": ("1_STORY_OUT_HOTEL_Z_50", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_52": ("1_STORY_OUT_HOTEL_Z_52", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "1_STORY_OUT_HOTEL_Z_63": ("1_STORY_OUT_HOTEL_Z_63", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_8": ("2_STORY_TOWER_8", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_12": ("2_STORY_TOWER_12", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_14": ("2_STORY_TOWER_13_0", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_TOWER_16": ("2_STORY_TOWER_16", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         #"2_STORY_TOWER_22": "2_STORY_TOWER_22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "2_STORY_TOWER_43": "2_STORY_TOWER_43",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_45": "2_STORY_TOWER_45",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_49": "2_STORY_TOWER_49",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_51": "2_STORY_TOWER_51",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_68": "2_STORY_TOWER_68",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_43": ("2_STORY_TOWER_43", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_45": ("2_STORY_TOWER_45", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_49": ("2_STORY_TOWER_49", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_51": ("2_STORY_TOWER_51", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_TOWER_68": ("2_STORY_TOWER_68", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "2_STORY_TOWER_58": "2_STORY_TOWER_69",  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
+        "2_STORY_TOWER_58": ("2_STORY_TOWER_69", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
 
-        "2_STORY_TOWER_72": "2_STORY_TOWER_74",  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
+        "2_STORY_TOWER_72": ("2_STORY_TOWER_74", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
         
-        "2_STORY_X_LANK_MOVE8": "2_STORY_X_LANK_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_X_LANK_MOVE8": ("2_STORY_X_LANK_MOVE8", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "2_STORY_ABSOL_MOVE2":"2_STORY_ABSOL_MOVE0",# TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_ABSOL_MOVE22": "2_STORY_ABSOL_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE24": "2_STORY_ABSOL_MOVE24",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE26": "2_STORY_ABSOL_MOVE26",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE28": "2_STORY_ABSOL_MOVE28",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE31": "2_STORY_ABSOL_MOVE31",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_ABSOL_MOVE35": "2_STORY_ABSOL_MOVE35",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE2":("2_STORY_ABSOL_MOVE0", 0),# TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_ABSOL_MOVE22": ("2_STORY_ABSOL_MOVE22", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE24": ("2_STORY_ABSOL_MOVE24", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE26": ("2_STORY_ABSOL_MOVE26", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE28": ("2_STORY_ABSOL_MOVE28", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE31": ("2_STORY_ABSOL_MOVE31", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "2_STORY_ABSOL_MOVE35": ("2_STORY_ABSOL_MOVE35", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
        
         #"2_STORY_MEGA_MOVE6": "2_STORY_MEGA_MOVE6",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         
         #"2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "2_STORY_MEGA_MOVE20": "2_STORY_MEGA_MOVE17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE20": ("2_STORY_MEGA_MOVE17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "3_STORY_CANARI_10": "3_STORY_CANARI_2_RECOVERY1",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_CANARI_16": "3_STORY_CANARI_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_CANARI_18": "3_STORY_CANARI_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_CANARI_20": "3_STORY_CANARI_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_MEGA_MOVE2": "3_STORY_MEGA_MOVE2",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "3_STORY_MEGA_MOVE8": "3_STORY_MEGA_MOVE8",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_10": ("3_STORY_CANARI_2_RECOVERY1", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_16": ("3_STORY_CANARI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_18": ("3_STORY_CANARI_18", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_CANARI_20": ("3_STORY_CANARI_20", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_MEGA_MOVE2": ("3_STORY_MEGA_MOVE2", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_MEGA_MOVE8": ("3_STORY_MEGA_MOVE8", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
 
         #"3_STORY_MEGA_MOVE12": "3_STORY_MEGA_MOVE12",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"3_STORY_MEGA_MOVE18": "3_STORY_MEGA_MOVE18",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "3_STORY_MEGA_MOVE23": "3_STORY_MEGA_MOVE19",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE23": ("3_STORY_MEGA_MOVE19", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "3_STORY_MEGA_MOVE30": "3_STORY_MEGA_MOVE30",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_12": "4_STORY_SHIRO_12",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_15": "4_STORY_SHIRO_13",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_17": "4_STORY_SHIRO_16",  # TODO_EVENT_ENTRY_RECOVERY[確認中] リセット後に移動をやり直す
-        "4_STORY_SHIRO_20": "4_STORY_SHIRO_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_41": "4_STORY_SHIRO_41",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_44": "4_STORY_SHIRO_43",  # TODO_EVENT_ENTRY_RECOVERY[確認中] 戦闘処理からやり直す
-        "4_STORY_SHIRO_46": "4_STORY_SHIRO_46",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_48": "4_STORY_SHIRO_48",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_50": "4_STORY_SHIRO_50",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_53": "4_STORY_SHIRO_53",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_62": "4_STORY_SHIRO_62",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "3_STORY_MEGA_MOVE30": ("3_STORY_MEGA_MOVE30", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_12": ("4_STORY_SHIRO_12", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_15": ("4_STORY_SHIRO_13", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_17": ("4_STORY_SHIRO_16", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中] リセット後に移動をやり直す
+        "4_STORY_SHIRO_20": ("4_STORY_SHIRO_20", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_41": ("4_STORY_SHIRO_41", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_44": ("4_STORY_SHIRO_43", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] 戦闘処理からやり直す
+        "4_STORY_SHIRO_46": ("4_STORY_SHIRO_46", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_48": ("4_STORY_SHIRO_48", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_50": ("4_STORY_SHIRO_50", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_53": ("4_STORY_SHIRO_53", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_62": ("4_STORY_SHIRO_62", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "4_STORY_SHIRO_64": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "4_STORY_SHIRO_67": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "4_STORY_SHIRO_70": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "4_STORY_SHIRO_73": "4_STORY_SHIRO_63_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_64": ("4_STORY_SHIRO_63", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_67": ("4_STORY_SHIRO_63", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_70": ("4_STORY_SHIRO_63", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "4_STORY_SHIRO_73": ("4_STORY_SHIRO_63", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
 
-        "4_STORY_SHIRO_75": "4_STORY_SHIRO_75",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_77": "4_STORY_SHIRO_77",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "4_STORY_SHIRO_79": "4_STORY_SHIRO_79",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_14": "5_STORY_KARASUBA_14",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_18": "5_STORY_KARASUBA_18",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_20": "5_STORY_KARASUBA_20",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_75": ("4_STORY_SHIRO_75", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_77": ("4_STORY_SHIRO_77", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "4_STORY_SHIRO_79": ("4_STORY_SHIRO_79", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_14": ("5_STORY_KARASUBA_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_18": ("5_STORY_KARASUBA_18", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_20": ("5_STORY_KARASUBA_20", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         #"5_STORY_KARASUBA_26": "5_STORY_KARASUBA_26",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"5_STORY_KARASUBA_32": "5_STORY_KARASUBA_32",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"5_STORY_KARASUBA_33": "5_STORY_KARASUBA_33",  # TODO_EVENT_ENTRY_RECOVERY[未実行]
-        "5_STORY_KARASUBA_37": "5_STORY_KARASUBA_34",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_46": "5_STORY_KARASUBA_46_RECOVERY",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_37": ("5_STORY_KARASUBA_34", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_46": ("5_STORY_KARASUBA_46_RECOVERY", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"5_STORY_KARASUBA_48": "5_STORY_KARASUBA_48",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "5_STORY_KARASUBA_52": "5_STORY_KARASUBA_52",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_55": "5_STORY_KARASUBA_55",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_57": "5_STORY_KARASUBA_57",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_62": "5_STORY_KARASUBA_62",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_66": "5_STORY_KARASUBA_63",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_68": "5_STORY_KARASUBA_68",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_98": "5_STORY_KARASUBA_98",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_52": ("5_STORY_KARASUBA_52", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_55": ("5_STORY_KARASUBA_55", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_57": ("5_STORY_KARASUBA_57", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_62": ("5_STORY_KARASUBA_62", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_66": ("5_STORY_KARASUBA_63", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_68": ("5_STORY_KARASUBA_68", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_98": ("5_STORY_KARASUBA_98", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "5_STORY_KARASUBA_104": "5_STORY_KARASUBA_99",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_116": "5_STORY_KARASUBA_111",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_120": "5_STORY_KARASUBA_120",  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "5_STORY_KARASUBA_104": ("5_STORY_KARASUBA_99", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_116": ("5_STORY_KARASUBA_111", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_120": ("5_STORY_KARASUBA_120", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "6_STORY_YUKARI_4": "6_STORY_YUKARI_1", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_14": "6_STORY_YUKARI_11", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_20": "6_STORY_YUKARI_17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_4": ("6_STORY_YUKARI_1", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_14": ("6_STORY_YUKARI_11", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_20": ("6_STORY_YUKARI_17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"6_STORY_YUKARI_26": "6_STORY_YUKARI_23", # TODO_EVENT_ENTRY_RECOVERY[確認中] 26にコメントチェックが必要、（28も）なため追加
-        "6_STORY_YUKARI_28": "6_STORY_YUKARI_27_0", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_58": "6_STORY_YUKARI_55", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_65": "6_STORY_YUKARI_61", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_28": ("6_STORY_YUKARI_27", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_58": ("6_STORY_YUKARI_55", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_65": ("6_STORY_YUKARI_61", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         # FURADARI_MAP区間はComment_Outを取り逃がしても停止し続けないよう、
         
         # 30秒間Commentを確認できなければ一旦次Stepへ進める。
-        "7_STORY_GURI_4": "7_STORY_GURI_1",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_11": "7_STORY_GURI_8",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_17": "7_STORY_GURI_14",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_23": "7_STORY_GURI_20",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_50": "7_STORY_GURI_47",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_58": "7_STORY_GURI_55",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_74": "7_STORY_GURI_71",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_78": "7_STORY_GURI_75",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_88": "7_STORY_GURI_89",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_96": "7_STORY_GURI_97",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_103": "7_STORY_GURI_104",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_107": "7_STORY_GURI_108",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_112": "7_STORY_GURI_113",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_120": "7_STORY_GURI_121",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_122": "7_STORY_GURI_123",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_128": "7_STORY_GURI_129",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_4": ("7_STORY_GURI_1", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_11": ("7_STORY_GURI_8", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_17": ("7_STORY_GURI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_23": ("7_STORY_GURI_20", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_50": ("7_STORY_GURI_47", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_58": ("7_STORY_GURI_55", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_74": ("7_STORY_GURI_71", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_78": ("7_STORY_GURI_75", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_88": ("7_STORY_GURI_89", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_96": ("7_STORY_GURI_97", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_103": ("7_STORY_GURI_104", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_107": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_112": ("7_STORY_GURI_113", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_120": ("7_STORY_GURI_121", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_122": ("7_STORY_GURI_123", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_128": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
-        "7_STORY_GURI_133": "7_STORY_GURI_129",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_139": "7_STORY_GURI_136",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "8_STORY_STORY_LAST_9":"8_STORY_STORY_LAST_8_0",
-        "8_STORY_STORY_LAST_23":"8_STORY_STORY_LAST_21_0",
-        "8_STORY_STORY_LAST_27":"8_STORY_STORY_LAST_26_0",
-        "8_STORY_STORY_LAST_33":"8_STORY_STORY_LAST_32_0",
-        "8_STORY_STORY_LAST_39":"8_STORY_STORY_LAST_38_0",
-        "8_STORY_STORY_LAST_40_1":"8_STORY_STORY_LAST_40_0",
-        "8_STORY_STORY_LAST_41":"8_STORY_STORY_LAST_40_0",
-        "8_STORY_STORY_LAST_46":"8_STORY_STORY_LAST_44",
+        "7_STORY_GURI_133": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_139": ("7_STORY_GURI_136", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "8_STORY_STORY_LAST_9":("8_STORY_STORY_LAST_8_0", 0),
+        "8_STORY_STORY_LAST_23":("8_STORY_STORY_LAST_21_0", 0),
+        "8_STORY_STORY_LAST_27":("8_STORY_STORY_LAST_26", 4),
+        "8_STORY_STORY_LAST_33":("8_STORY_STORY_LAST_32_0", 0),
+        "8_STORY_STORY_LAST_39":("8_STORY_STORY_LAST_38", 4),
+        "8_STORY_STORY_LAST_40_1":("8_STORY_STORY_LAST_40", 4),
+        "8_STORY_STORY_LAST_41":("8_STORY_STORY_LAST_40", 4),
+        "8_STORY_STORY_LAST_46":("8_STORY_STORY_LAST_45", 4),
     }
 
     # Mega戦前に白／緑Commentへ入れなかった場合は、位置を確定し直せる
     # 直前の時間変更Stepへ戻す。
     ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS = {
         
-        "2_STORY_MEGA_MOVE4": "2_STORY_MEGA_MOVE1", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_MEGA_MOVE14": "2_STORY_MEGA_MOVE13_0", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_MEGA_MOVE20": "2_STORY_MEGA_MOVE17", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE4": ("2_STORY_MEGA_MOVE1", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE14": ("2_STORY_MEGA_MOVE13", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE20": ("2_STORY_MEGA_MOVE17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
-        "3_STORY_MEGA_MOVE10": "3_STORY_MEGA_MOVE9_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "3_STORY_MEGA_MOVE16": "3_STORY_MEGA_MOVE13", # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "3_STORY_MEGA_MOVE25": "2_STORY_MEGA_MOVE24_0", # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE10": ("3_STORY_MEGA_MOVE9", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE16": ("3_STORY_MEGA_MOVE13", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE25": ("3_STORY_MEGA_MOVE24", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
-        "5_STORY_KARASUBA_24": "5_STORY_KARASUBA_21",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_30": "5_STORY_KARASUBA_27",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_24": ("5_STORY_KARASUBA_21", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_30": ("5_STORY_KARASUBA_27", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"5_STORY_KARASUBA_46": "5_STORY_KARASUBA_46_RECOVERY",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
 
-        "6_STORY_YUKARI_32": "6_STORY_YUKARI_29",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_39": "6_STORY_YUKARI_35",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_52": "6_STORY_YUKARI_42",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_32": ("6_STORY_YUKARI_29", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_39": ("6_STORY_YUKARI_35", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_52": ("6_STORY_YUKARI_42", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
 
-        "7_STORY_GURI_17": "7_STORY_GURI_14",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_34": "7_STORY_GURI_33_0",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_44": "7_STORY_GURI_37",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_17": ("7_STORY_GURI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_34": ("7_STORY_GURI_33", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_44": ("7_STORY_GURI_37", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
     }
 
     # 値は (復帰先, battle_before成功時の遷移先)。第1要素は30秒待機と
@@ -1142,7 +1146,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_MEGA_MOVE10": self._2_story_mega_move10,
             "2_STORY_MEGA_MOVE11": self._2_story_mega_move11,
             "2_STORY_MEGA_MOVE12": self._2_story_mega_move12,
-            "2_STORY_MEGA_MOVE13_0": self._2_story_mega_move13_0,
             "2_STORY_MEGA_MOVE13": self._2_story_mega_move13,
             "2_STORY_MEGA_MOVE14": self._2_story_mega_move14,
             "2_STORY_MEGA_MOVE15": self._2_story_mega_move15,
@@ -1246,7 +1249,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "3_STORY_MEGA_MOVE6": self._3_story_mega_move6, 
             "3_STORY_MEGA_MOVE7": self._3_story_mega_move7, 
             "3_STORY_MEGA_MOVE8": self._3_story_mega_move8,
-            "3_STORY_MEGA_MOVE9_0": self._3_story_mega_move9_0, 
             "3_STORY_MEGA_MOVE9": self._3_story_mega_move9,
             "3_STORY_MEGA_MOVE10": self._3_story_mega_move10,
             "3_STORY_MEGA_MOVE11": self._3_story_mega_move11, 
@@ -1262,7 +1264,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "3_STORY_MEGA_MOVE21": self._3_story_mega_move21,  
             "3_STORY_MEGA_MOVE22": self._3_story_mega_move22,  
             "3_STORY_MEGA_MOVE23": self._3_story_mega_move23,  
-            "3_STORY_MEGA_MOVE24_0": self._3_story_mega_move24_0,  
             "3_STORY_MEGA_MOVE24": self._3_story_mega_move24,  
             "3_STORY_MEGA_MOVE25": self._3_story_mega_move25,  
             "3_STORY_MEGA_MOVE26": self._3_story_mega_move26,  
@@ -1346,7 +1347,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_60": self._4_story_shiro_60,        
             "4_STORY_SHIRO_61": self._4_story_shiro_61,        
             "4_STORY_SHIRO_62": self._4_story_shiro_62,        
-            "4_STORY_SHIRO_63_0": self._4_story_shiro_63_0,         
             "4_STORY_SHIRO_63": self._4_story_shiro_63,        
             "4_STORY_SHIRO_64": self._4_story_shiro_64,        
             "4_STORY_SHIRO_65": self._4_story_shiro_65,        
@@ -1563,7 +1563,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "6_STORY_YUKARI_24": self._6_story_yukari_24, 
             "6_STORY_YUKARI_25": self._6_story_yukari_25, 
             "6_STORY_YUKARI_26": self._6_story_yukari_26, 
-            "6_STORY_YUKARI_27_0": self._6_story_yukari_27_0, 
             "6_STORY_YUKARI_27": self._6_story_yukari_27, 
             "6_STORY_YUKARI_28": self._6_story_yukari_28, 
             "6_STORY_YUKARI_29": self._6_story_yukari_29, 
@@ -1689,7 +1688,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             "7_STORY_GURI_30": self._7_story_guri_30, 
             "7_STORY_GURI_31": self._7_story_guri_31, 
             "7_STORY_GURI_32": self._7_story_guri_32, 
-            "7_STORY_GURI_33_0": self._7_story_guri_33_0,  
             "7_STORY_GURI_33": self._7_story_guri_33, 
             "7_STORY_GURI_34": self._7_story_guri_34, 
             "7_STORY_GURI_35": self._7_story_guri_35, 
@@ -1854,13 +1852,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             "8_STORY_STORY_LAST_38": self._8_story_story_last_38, 
             "8_STORY_STORY_LAST_38_0": self._8_story_story_last_38_0, 
             "8_STORY_STORY_LAST_39": self._8_story_story_last_39, 
-            "8_STORY_STORY_LAST_40_0": self._8_story_story_last_40_0, 
             "8_STORY_STORY_LAST_40": self._8_story_story_last_40, 
             "8_STORY_STORY_LAST_40_1": self._8_story_story_last_40_1, 
             "8_STORY_STORY_LAST_41": self._8_story_story_last_41, 
             "8_STORY_STORY_LAST_42": self._8_story_story_last_42, 
             "8_STORY_STORY_LAST_43": self._8_story_story_last_43,  
-            "8_STORY_STORY_LAST_44": self._8_story_story_last_44,  
             "8_STORY_STORY_LAST_45": self._8_story_story_last_45,  
             "8_STORY_STORY_LAST_46": self._8_story_story_last_46,  
             "8_STORY_STORY_LAST_47": self._8_story_story_last_47,  
@@ -3408,7 +3404,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             testmode1=0,
             battle_identity_picture="",
             red_edge_y_renda_seconds=0.0,
-            attack_unavailable_y_dodge=1):
+            attack_unavailable_y_dodge=1,
+            red_edge_before_rclick=1,
+            lockon_unchecked_a=1,
+            choice_black_background_guard=1):
         #アブソル Bはまもるのため選ばない。
         #if mode == 0 and self.mega_evolution_battle(Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=320,dir2=20,see_r=0.20, endpicture="TEXT_WHITE_COMMENT"):
         if mode == 0:
@@ -3421,19 +3420,22 @@ class ZA_story_Base(ImageProcPythonCommand):
                 endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT",
                 red_edge_y_renda_seconds=red_edge_y_renda_seconds,
                 attack_unavailable_y_dodge=0,
-                battle_identity_picture=battle_identity_picture)
+                battle_identity_picture=battle_identity_picture,
+                red_edge_before_rclick=red_edge_before_rclick,
+                lockon_unchecked_a=lockon_unchecked_a,
+                choice_black_background_guard=choice_black_background_guard)
             if battle_result == "BATTLE_IDENTITY_MISMATCH":
                 return battle_result
             if battle_result:
                 return True
-        elif mode == 1 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, attack_unavailable_y_dodge=0):
+        elif mode == 1 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=20,dir4=340,see_r=0.24, escape_flag=2, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, attack_unavailable_y_dodge=0, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
-        elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=0, red_edge_roll_with_view=0):
+        elif mode == 2 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=3, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=0, red_edge_roll_with_view=0, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
-        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.35, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=1.5, field_resume_attack_only_seconds=4.0, field_resume_post_attack_roll_seconds=18.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=1, lockon_unchecked_a=1, choice_black_background_guard=1):
+        elif mode == 3 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.35, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=1.5, field_resume_attack_only_seconds=4.0, field_resume_post_attack_roll_seconds=18.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
                             #self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=red_edge_y_renda_seconds, dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, red_edge_roll_with_view=1):
             return True
-        elif mode == 4 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=40,dir2=20,dir3=20,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=15.0, dir5=90, field_resume_dir5_seconds=2.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, mode4_view_nudge=1, mode4_yellow_hp_roll_seconds=30.0, mode4_yellow_hp_attack_wait_seconds=5.0, red_edge_roll_angle=20.0):
+        elif mode == 4 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=1,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=40,dir2=20,dir3=20,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=15.0, dir5=90, field_resume_dir5_seconds=2.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, mode4_view_nudge=1, mode4_yellow_hp_roll_seconds=30.0, mode4_yellow_hp_attack_wait_seconds=5.0, red_edge_roll_angle=20.0, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
         # mode 5はAを常時使い、通常画面のB/X/YはC+確認時だけ使用する。
         # 最終戦の専用4技UIだけはC+がないため、別経路でA/X/B/Yを送る。
@@ -3445,13 +3447,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         # mode 6は戦闘状態になった後、攻撃を行わず非ロックオンYを
         # 送り続けるローリング専用の退避用モード。
         # 他メンバ0でのとどめができないため廃止
-        elif mode == 6 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=1):
+        elif mode == 6 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
         # mode 7はmode 3の攻撃・移動構成に、赤端検知時の
         # 15秒非ロックオンY回避を追加するGURI_35用モード。
-        elif mode == 7 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
+        elif mode == 7 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
-        elif mode == 8 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.40, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1):
+        elif mode == 8 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.40, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
     def ZA_mega_evolution_battle_mode5(
             self, usenum=1, movemode=0, Z_Gaurd=0, Cplus_attack=0,
@@ -14457,6 +14459,19 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_story_event_entry_recovery_step(
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
+        pending_recovery = getattr(
+            self, "_za_story_event_entry_pending_recovery", None)
+        if isinstance(pending_recovery, dict):
+            if pending_recovery.get("current_state") == current_state:
+                # 時間変更は複数周回にまたがるため、完了まで元Step本体を
+                # 再実行せず、前処理だけを進める。
+                return self._ZA_story_event_entry_pending_recovery_step(
+                    current_state)
+            print(
+                "[EVENT_ENTRY_RECOVERY_PRE_ACTION] discard stale {} for "
+                "current_state={}".format(
+                    pending_recovery.get("current_state"), current_state))
+            self._za_story_event_entry_pending_recovery = None
         last_dispatch_state = getattr(
             self, "_za_story_pre_step_gate_last_dispatch_state", None)
         if last_dispatch_state != current_state:
@@ -14690,11 +14705,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             if next_state != current_state or white_comment_matched[0] is not False:
                 timers.pop(current_state, None)
                 return next_state
-            recovery_target = (
+            recovery_setting = (
                 self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS[current_state])
+            if (isinstance(recovery_setting, (tuple, list))
+                    and len(recovery_setting) == 2):
+                recovery_target, recovery_action = recovery_setting
+            else:
+                recovery_target, recovery_action = recovery_setting, 0
             return self._ZA_story_event_entry_recovery_timeout(
                 current_state, recovery_target, next_state,
-                "white_comment", timers)
+                "white_comment", timers, recovery_action)
 
         if observe_mega_before_comment:
             # 両方を実際に確認して不一致だった周回だけを未突入として数える。
@@ -14707,12 +14727,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             if next_state != current_state or not comment_missing:
                 timers.pop(current_state, None)
                 return next_state
+            recovery_setting = mega_before_comment_targets[current_state]
+            if (isinstance(recovery_setting, (tuple, list))
+                    and len(recovery_setting) == 2):
+                recovery_target, recovery_action = recovery_setting
+            else:
+                recovery_target, recovery_action = recovery_setting, 0
             return self._ZA_story_event_entry_recovery_timeout(
-                current_state,
-                mega_before_comment_targets[current_state],
-                next_state,
-                "mega_before_comment",
-                timers)
+                current_state, recovery_target, next_state,
+                "mega_before_comment", timers, recovery_action)
 
         battle_before = (
             self.ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS.get(current_state))
@@ -14795,9 +14818,57 @@ class ZA_story_Base(ImageProcPythonCommand):
         if getattr(self, "_za_story_active_infi_step", None) == str(step_name):
             self._za_story_active_infi_step = None
 
+    def _ZA_story_event_entry_pending_recovery_step(self, current_state):
+        """ジャンプ前処理を完了させてから復帰先Stepを返す。"""
+        pending = getattr(
+            self, "_za_story_event_entry_pending_recovery", None)
+        if (not isinstance(pending, dict)
+                or pending.get("current_state") != current_state):
+            return current_state
+
+        recovery_target = pending["recovery_target"]
+        recovery_action = int(pending["recovery_action"])
+        if recovery_action in (1, 2, 3):
+            check_timing = {
+                1: "POKEMON_ZA_MORNING",
+                2: "POKEMON_ZA_NIGHT",
+                3: "POKEMON_ZA_OTHER",
+            }[recovery_action]
+            if not pending.get("initialized", False):
+                # 通常Stepが使ったCommon状態を引き継がず、地図移動から
+                # ベンチ・時刻確認までを1セットとしてやり直す。
+                self.Common_current_state = "COMMON_START"
+                self.timecount = 0
+                self.changetimecount = 0
+                self.sleepcount = 0
+                pending["initialized"] = True
+                print(
+                    "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action={} "
+                    "check_timing={} start".format(
+                        current_state, recovery_action, check_timing))
+            result = self.ZA_Common_change_time_set(
+                check_timing=check_timing)
+            if result != "START":
+                return current_state
+        elif recovery_action == 4:
+            print(
+                "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action=4 "
+                "game reset start".format(current_state))
+            self.ZA_gamereset()
+        elif recovery_action != 0:
+            raise ValueError(
+                "Unknown event entry recovery pre-action: {}".format(
+                    recovery_action))
+
+        self._za_story_event_entry_pending_recovery = None
+        print(
+            "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action={} complete -> {}".
+            format(current_state, recovery_action, recovery_target))
+        return recovery_target
+
     def _ZA_story_event_entry_recovery_timeout(
             self, current_state, recovery_target, normal_return,
-            recovery_kind, timers):
+            recovery_kind, timers, recovery_action=0):
         now = time.monotonic()
         started = timers.get(current_state)
         if started is None:
@@ -14838,9 +14909,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 and recovery_target == "2_STORY_ABSOL_MOVE14"):
             self._ZA_story_reset_absol_infi_reentry(
                 "battle_before_timeout")
+        recovery_action = int(recovery_action)
+        if recovery_action not in (0, 1, 2, 3, 4):
+            raise ValueError(
+                "Unknown event entry recovery pre-action: {}".format(
+                    recovery_action))
         if (recovery_kind == "white_comment"
                 and current_state == "4_STORY_SHIRO_17"
-                and recovery_target == "4_STORY_SHIRO_16"):
+                and recovery_target == "4_STORY_SHIRO_16"
+                and recovery_action == 0):
             # SHIRO_16の移動はセーブ位置基準。現在位置のまま
             # Stepだけ戻すと方向がずれるため、ゲームを復元する。
             # 再度SHIRO_17へ入った時は30秒を最初から計る。
@@ -14858,6 +14935,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[SHIRO_44_WHITE_TIMEOUT] white comment missing -> "
                 "return to 4_STORY_SHIRO_43")
+        if recovery_action != 0:
+            self._za_story_event_entry_pending_recovery = {
+                "current_state": current_state,
+                "recovery_target": recovery_target,
+                "recovery_kind": recovery_kind,
+                "recovery_action": recovery_action,
+            }
+            return self._ZA_story_event_entry_pending_recovery_step(
+                current_state)
         print(
             "[EVENT_ENTRY_RECOVERY] {}: {} -> {}".format(
                 recovery_kind, current_state, recovery_target))
@@ -17202,6 +17288,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_story_pre_step_gate_started_at = None
         self._za_story_pre_step_gate_completed = False
         self._za_story_pre_step_gate_last_dispatch_state = None
+        self._za_story_event_entry_pending_recovery = None
         while True:
             
             self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
@@ -23045,10 +23132,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move12(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_MEGA_MOVE11",prg_ret="2_STORY_MEGA_MOVE13")
     
-    def _2_story_mega_move13_0(self):
-        self.ZA_gamereset()
-        return "2_STORY_MEGA_MOVE13"
-    
     def _2_story_mega_move13(self):
         ###AUTO SAVE アスレチックのため、ミスがあった場合はセーブポイントから開始とする。
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -23630,10 +23713,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "3_STORY_MEGA_MOVE9"
         return "3_STORY_MEGA_MOVE8"
     
-    def _3_story_mega_move9_0(self):
-        self.ZA_gamereset()
-        return "3_STORY_MEGA_MOVE9"
-    
     def _3_story_mega_move9(self):
         #AUTOSAVE
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -23778,10 +23857,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "3_STORY_MEGA_MOVE24"
         return "3_STORY_MEGA_MOVE23"
 
-    def _3_story_mega_move24_0(self):
-        self.ZA_gamereset()
-        return "3_STORY_MEGA_MOVE24"
-    
     def _3_story_mega_move24(self):
         #AUTOSAVE
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -24569,10 +24644,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
                 return "4_STORY_SHIRO_63"
         return "4_STORY_SHIRO_62"
-    
-    def _4_story_shiro_63_0(self):
-        self.ZA_gamereset()
-        return "4_STORY_SHIRO_63"
     
     def _4_story_shiro_63(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -26582,10 +26653,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
-    def _6_story_yukari_27_0(self):
-        self.ZA_gamereset()
-        return "6_STORY_YUKARI_27"
-    
     def _6_story_yukari_27(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,92), duration=1.0, wait=1.0)
@@ -26640,7 +26707,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_32"
     
     def _6_story_yukari_33(self):
-        if self.ZA_mega_evolution_battle_mode_select(mode=0):
+        if self.ZA_mega_evolution_battle_mode_select(mode=8):
             return "6_STORY_YUKARI_34"
         return "6_STORY_YUKARI_33"
 
@@ -27488,10 +27555,6 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _7_story_guri_32(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="7_STORY_GURI_31",prg_ret= "7_STORY_GURI_33")
-    
-    def _7_story_guri_33_0(self):
-        self.ZA_gamereset()
-        return "7_STORY_GURI_33"
     
     def _7_story_guri_33(self):
         #AUTOSAVE
@@ -28865,10 +28928,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "8_STORY_STORY_LAST_40"
         return "8_STORY_STORY_LAST_39"
     
-    def _8_story_story_last_40_0(self):
-        self.ZA_gamereset()
-        return "8_STORY_STORY_LAST_40"
-    
     def _8_story_story_last_40(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,20), duration=4.0, wait=1.0)
@@ -28903,10 +28962,6 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_43(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_42",prg_ret="8_STORY_STORY_LAST_45")
-    
-    def _8_story_story_last_44(self):
-        self.ZA_gamereset()
-        return "8_STORY_STORY_LAST_45"
     
     def _8_story_story_last_45(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -30455,7 +30510,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1") or self.image_check("POKEMON_ZA_DEAD"): #FIELDから変更
                     self.timecount=0
                     self.changetimecount+=1
-                    if check_timing != "POKEMON_ZA_MORNING":
+                    if check_timing not in (
+                            "POKEMON_ZA_MORNING", "POKEMON_ZA_OTHER"):
                         self.sleepcount=1
                         return "COMMON_CHANGE_TIME"
                     else:
@@ -30471,7 +30527,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1") or self.image_check("POKEMON_ZA_DEAD"): #FIELDから変更
                     self.timecount=0
                     self.changetimecount+=1
-                    if check_timing != "POKEMON_ZA_NIGHT":
+                    if check_timing not in (
+                            "POKEMON_ZA_NIGHT", "POKEMON_ZA_OTHER"):
                         self.sleepcount=1
                         return "COMMON_CHANGE_TIME"
                     else:
