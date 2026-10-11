@@ -2665,7 +2665,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(wait)
         self.checkIfAlive()
 
-    def etc_sendCommand(self, command_name, wait: float = 0.04):
+    def etc_sendCommand(self, command_name, wait: float = 0.04, duration=None):
+        # DevStudioの操作記録は、編集しやすい可読形式として押下時間を
+        # 明示する。既存呼出し（duration未指定）の送信順・待機時間は
+        # 下の従来処理をそのまま維持する。
+        if duration is not None:
+            readable_hats = {
+                "Lbutton_down": Hat.BTM,
+                "Lbutton_up": Hat.TOP,
+                "Lbutton_left": Hat.LEFT,
+                "Lbutton_right": Hat.RIGHT,
+                "Lbutton_up_right": Hat.TOP_RIGHT,
+                "Lbutton_down_right": Hat.BTM_RIGHT,
+                "Lbutton_down_left": Hat.BTM_LEFT,
+                "Lbutton_up_left": Hat.TOP_LEFT,
+            }
+            if command_name in readable_hats:
+                self.press(
+                    readable_hats[command_name],
+                    duration=max(0.0, float(duration)),
+                    wait=max(0.0, float(wait)))
+                return
         Lbutton_down1 = "0x0000 4"
         Lbutton_down2 = "0x0000 8"
         Lbutton_up1 = "0x0000 0"
