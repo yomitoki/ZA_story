@@ -1856,6 +1856,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "8_STORY_STORY_LAST_38": self._8_story_story_last_38, 
             "8_STORY_STORY_LAST_38_0": self._8_story_story_last_38_0, 
             "8_STORY_STORY_LAST_39": self._8_story_story_last_39, 
+            "8_STORY_STORY_LAST_40_0": self._8_story_story_last_40_0,
             "8_STORY_STORY_LAST_40": self._8_story_story_last_40, 
             "8_STORY_STORY_LAST_40_1": self._8_story_story_last_40_1, 
             "8_STORY_STORY_LAST_41": self._8_story_story_last_41, 
@@ -29243,6 +29244,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "8_STORY_STORY_LAST_40"
         return "8_STORY_STORY_LAST_39"
     
+    def _8_story_story_last_40_0(self):
+        self.ZA_gamereset()
+        return "8_STORY_STORY_LAST_40"
+
     def _8_story_story_last_40(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.press(Direction(Stick.LEFT,20), duration=4.0, wait=1.0)
@@ -29276,7 +29281,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             green_check=0,
             event_marker_missing_sets=(
                 self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
-            event_marker_missing_fallback="8_STORY_STORY_LAST_38_0",
+            event_marker_missing_fallback="8_STORY_STORY_LAST_40_0",
             event_marker_seen_resets_missing_sets=False)
 
     def _8_story_story_last_42(self):
