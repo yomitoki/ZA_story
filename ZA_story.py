@@ -438,7 +438,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_107": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_112": ("7_STORY_GURI_113", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_120": ("7_STORY_GURI_121", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_122": ("7_STORY_GURI_123", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_122": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] フラダリラボ地下の判定ミス？
         "7_STORY_GURI_128": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
         "7_STORY_GURI_133": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -28549,6 +28549,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_119" 
        
     def _7_story_guri_120(self):
+        #エレベーター
         #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
         #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
         if self.ZA_story_Template_Comment_Out(selected_pic="POKEMON_ZA_3_SELECT",selected_target=1,sleeptime=1.0):
@@ -28564,8 +28565,10 @@ class ZA_story_Base(ImageProcPythonCommand):
        
     def _7_story_guri_122(self):
         #リカバリー付近だが次で終わりなのであってもよさそうだが
-        if self.ZA_story_Template_Comment_Out():
-            return "7_STORY_GURI_123"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            if self.ZA_story_Template_Comment_Out():
+                return "7_STORY_GURI_123"
         return "7_STORY_GURI_122" 
        
     def _7_story_guri_123(self):#おわってもどり
