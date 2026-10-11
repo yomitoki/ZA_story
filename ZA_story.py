@@ -153,6 +153,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         },
     }
     ZA_STORY_BATTLE_RETURN_RECOVERY_COUNT = 3
+    ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS = 5
     ZA_STORY_SHIRO_WHITE_COMMENT_RECOVERY_COUNT = 3
     RESET_TEMPLATE_RESTART_DELAY_AFTER_HOME = 5.0
     RESET_TEMPLATE_GAME_START_CHECK_INTERVAL = 1.0
@@ -530,12 +531,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_114": ("7_STORY_GURI_114", "7_STORY_GURI_115"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "7_STORY_GURI_139": ("7_STORY_GURI_139", "7_STORY_GURI_140"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "8_STORY_STORY_LAST_5": ("8_STORY_STORY_LAST_5", "8_STORY_STORY_LAST_6"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_11": ("8_STORY_STORY_LAST_11", "8_STORY_STORY_LAST_12"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_16": ("8_STORY_STORY_LAST_16", "8_STORY_STORY_LAST_17"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_23": ("8_STORY_STORY_LAST_23", "8_STORY_STORY_LAST_24"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_29": ("8_STORY_STORY_LAST_29", "8_STORY_STORY_LAST_30"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_33": ("8_STORY_STORY_LAST_33", "8_STORY_STORY_LAST_34"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "8_STORY_STORY_LAST_41": ("8_STORY_STORY_LAST_41", "8_STORY_STORY_LAST_42"),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
+        "8_STORY_STORY_LAST_11": ("8_STORY_STORY_LAST_11", "8_STORY_STORY_LAST_12"),  # EVENT_ENTRY_RECOVERY[対応済]
+        "8_STORY_STORY_LAST_16": ("8_STORY_STORY_LAST_16", "8_STORY_STORY_LAST_17"),  # EVENT_ENTRY_RECOVERY[対応済]
+        "8_STORY_STORY_LAST_23": ("8_STORY_STORY_LAST_23", "8_STORY_STORY_LAST_24"),  # EVENT_ENTRY_RECOVERY[対応済]
+        "8_STORY_STORY_LAST_29": ("8_STORY_STORY_LAST_29", "8_STORY_STORY_LAST_30"),  # EVENT_ENTRY_RECOVERY[対応済]
+        "8_STORY_STORY_LAST_33": ("8_STORY_STORY_LAST_33", "8_STORY_STORY_LAST_34"),  # EVENT_ENTRY_RECOVERY[対応済]
+        "8_STORY_STORY_LAST_41": ("8_STORY_STORY_LAST_41", "8_STORY_STORY_LAST_42"),  # EVENT_ENTRY_RECOVERY[対応済]
     }
 
     def _read_camera_frame(self):
@@ -1824,6 +1825,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "8_STORY_STORY_LAST_11": self._8_story_story_last_11, 
             "8_STORY_STORY_LAST_12": self._8_story_story_last_12, 
             "8_STORY_STORY_LAST_13": self._8_story_story_last_13, 
+            "8_STORY_STORY_LAST_14_0": self._8_story_story_last_14_0,
             "8_STORY_STORY_LAST_14": self._8_story_story_last_14, 
             "8_STORY_STORY_LAST_15": self._8_story_story_last_15, 
             "8_STORY_STORY_LAST_16": self._8_story_story_last_16, 
@@ -15525,6 +15527,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             print("[BATTLE_FLOW] {}: reset ({})".format(
                 battle_flow_key, reason))
             del flows[battle_flow_key]
+        marker_missing_counts = getattr(
+            self, "_za_story_event_marker_missing_counts", None)
+        if isinstance(marker_missing_counts, dict):
+            marker_missing_counts.pop(str(battle_flow_key), None)
 
     def _ZA_story_guri_select_defeat_reset(self, reason):
         """GURI_114／116で共有する敗戦選択肢の累計を破棄する。"""
@@ -16240,6 +16246,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             event_move_attempts=1, rebattle=1,
             event_marker_missing_sets=0,
             event_marker_missing_fallback="",
+            event_marker_seen_resets_missing_sets=True,
             guri_select_defeat_state=""):
         """B基準の1入力Rendaで戦闘開始または結果候補まで進める。"""
         del no_filed  # 呼び出し互換用。従来のactive_level版でも未使用。
@@ -16261,11 +16268,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             and state["phase"] not in {"RESULT_CANDIDATE", "RESULT_SEEN"}
             and not state["result_seen"])
 
-        def event_marker_missing_fallback_for_search(event_marker_seen):
+        def event_marker_missing_fallback_for_search(
+                event_marker_seen, count_seen_as_no_progress=False):
             """Return the configured fallback after one complete EVENT search set."""
             if not (marker_missing_limit > 0 and marker_missing_fallback):
                 return ""
-            if event_marker_seen:
+            if event_marker_seen and not count_seen_as_no_progress:
                 previous_missing = marker_missing_counts.pop(
                     marker_missing_key, 0)
                 if previous_missing:
@@ -16279,21 +16287,32 @@ class ZA_story_Base(ImageProcPythonCommand):
             missing_sets = int(marker_missing_counts.get(
                 marker_missing_key, 0)) + 1
             marker_missing_counts[marker_missing_key] = missing_sets
-            print(
-                "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-                "EVENT not found set={}/{}".format(
-                    battle_flow_key, missing_sets, marker_missing_limit))
+            if event_marker_seen:
+                print(
+                    "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+                    "EVENT found but FIELD no progress set={}/{}".format(
+                        battle_flow_key, missing_sets,
+                        marker_missing_limit))
+            else:
+                print(
+                    "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
+                    "EVENT not found set={}/{}".format(
+                        battle_flow_key, missing_sets,
+                        marker_missing_limit))
             if missing_sets < marker_missing_limit:
                 return ""
 
             marker_missing_counts.pop(marker_missing_key, None)
+            reset_reason = "event_marker_missing_{}_sets".format(
+                marker_missing_limit)
+            if event_marker_seen:
+                reset_reason = "event_marker_field_no_progress_{}_sets".format(
+                    marker_missing_limit)
             self._ZA_story_battle_flow_reset(
-                battle_flow_key,
-                "event_marker_missing_{}_sets".format(
-                    marker_missing_limit))
+                battle_flow_key, reset_reason)
             print(
                 "[BATTLE_EVENT_MARKER_FALLBACK] {}: "
-                "EVENT missing for {} sets -> {}".format(
+                "EVENT entry stalled for {} sets -> {}".format(
                     battle_flow_key, marker_missing_limit,
                     marker_missing_fallback))
             return marker_missing_fallback
@@ -16425,7 +16444,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
                     event_marker_aligned))
                 missing_fallback = event_marker_missing_fallback_for_search(
-                    event_marker_seen)
+                    event_marker_seen,
+                    count_seen_as_no_progress=(
+                        not bool(event_marker_seen_resets_missing_sets)))
                 if missing_fallback:
                     return missing_fallback
             if (event_reacquire_allowed
@@ -19792,6 +19813,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
             else:
                 self.ZA_ZL_ACTION("END")
+                self.wait(0.5)
                 return "2_STORY_TOWER_37"
         if ((not self.image_check("POKEMON_ZA_PIKA_ICON_GET6")) and self.image_check("POKEMON_ZA_GETCHANCE_ICON4")):
             self.ZA_get_pokemon()
@@ -28792,13 +28814,26 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_10"
     
     def _8_story_story_last_11(self):
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_12",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="8_STORY_STORY_LAST_11",
+            prg_ret="8_STORY_STORY_LAST_12",
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_10_0",
+            event_marker_seen_resets_missing_sets=False)
     
     def _8_story_story_last_12(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_11",prg_ret="8_STORY_STORY_LAST_13",noprg_ret="8_STORY_STORY_LAST_12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
     
     def _8_story_story_last_13(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_12",prg_ret="8_STORY_STORY_LAST_14")
+
+    def _8_story_story_last_14_0(self):
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
+            self.ZA_gamereset()
+            return "8_STORY_STORY_LAST_14"
+        return "8_STORY_STORY_LAST_14_0"
 
     def _8_story_story_last_14(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
@@ -28820,7 +28855,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_15"
     
     def _8_story_story_last_16(self):
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_15",prg_ret="8_STORY_STORY_LAST_17",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="8_STORY_STORY_LAST_15",
+            prg_ret="8_STORY_STORY_LAST_17",
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_14_0",
+            event_marker_seen_resets_missing_sets=False)
     
     def _8_story_story_last_17(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_16",prg_ret="8_STORY_STORY_LAST_18",noprg_ret="8_STORY_STORY_LAST_17",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
@@ -28877,7 +28919,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_22"
     
     def _8_story_story_last_23(self):
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_22",prg_ret="8_STORY_STORY_LAST_24",green_check=0,event_marker_missing_fallback="8_STORY_STORY_LAST_21_0")
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="8_STORY_STORY_LAST_22",
+            prg_ret="8_STORY_STORY_LAST_24",
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_21_0",
+            event_marker_seen_resets_missing_sets=False)
 
     def _8_story_story_last_24(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_23",prg_ret="8_STORY_STORY_LAST_25",noprg_ret="8_STORY_STORY_LAST_24",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
@@ -28997,7 +29046,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_28"
     
     def _8_story_story_last_29(self):
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_28",prg_ret="8_STORY_STORY_LAST_30",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="8_STORY_STORY_LAST_28",
+            prg_ret="8_STORY_STORY_LAST_30",
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_26_0",
+            event_marker_seen_resets_missing_sets=False)
 
     def _8_story_story_last_30(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_29",prg_ret="8_STORY_STORY_LAST_31",noprg_ret="8_STORY_STORY_LAST_30",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
@@ -29088,7 +29144,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         next_state = self.ZA_story_Template_battle_before_renda_route(
             noprg_ret="8_STORY_STORY_LAST_32",
             prg_ret="8_STORY_STORY_LAST_34",
-            green_check=0)
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_32_0",
+            event_marker_seen_resets_missing_sets=False)
         self._za_story_last_33_entered_from_field = False
 
         observation = getattr(
@@ -29210,7 +29270,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_40_1"
      
     def _8_story_story_last_41(self):#TODO 再戦時処理はEVENT不要でまっすぐ進むのがよい
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_42",green_check=0)
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="8_STORY_STORY_LAST_41",
+            prg_ret="8_STORY_STORY_LAST_42",
+            green_check=0,
+            event_marker_missing_sets=(
+                self.ZA_STORY_EVENT_MARKER_NO_PROGRESS_SETS),
+            event_marker_missing_fallback="8_STORY_STORY_LAST_38_0",
+            event_marker_seen_resets_missing_sets=False)
 
     def _8_story_story_last_42(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="8_STORY_STORY_LAST_41",prg_ret="8_STORY_STORY_LAST_43",noprg_ret="8_STORY_STORY_LAST_42",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0,markertype=-1,battle_mode=1,move=1)
