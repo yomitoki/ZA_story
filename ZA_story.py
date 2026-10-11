@@ -203,10 +203,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     ZA_STORY_FURADARI_BLACK_RECOVERY_MAX_INPUTS = 30
     ZA_STORY_FURADARI_EYES_DARK_RECOVERY_MAX_INPUTS = 70
     ZA_STORY_FURADARI_EYES_DARK_B_INTERVAL_SECONDS = 1.0
-    # この区間での「目の前がまっくらになった！」だけはマップ復帰せず、
-    # FIELDから前進してGURI_114を再実行する。
+    # ギルガルド区間での「目の前がまっくらになった！」だけは、敗戦後も
+    # フラダリラボ内へ戻されるためマップ復帰しない。FIELDから左90度へ3秒移動して
+    # GURI_114を再実行する。
     ZA_STORY_FURADARI_EYES_DARK_FIELD_RETURN_STATES = frozenset({
-        "7_STORY_GURI_114", "7_STORY_GURI_115", "7_STORY_GURI_116"})
+        "7_STORY_GURI_114", "7_STORY_GURI_115", "7_STORY_GURI_116",
+        "7_STORY_GURI_117", "7_STORY_GURI_118"})
     ZA_STORY_FURADARI_EYES_DARK_FIELD_RETURN_TARGET = "7_STORY_GURI_114"
     # ギルガルド戦の敗戦選択肢は、114／116をまたいで累計する。
     # 同じ画面の連続一致だけに限定せず、2～4択を合計3回確認した時点で
@@ -3496,8 +3498,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif mode == 6 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=20,dir2=340,dir3=40,dir4=300,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), attack_unavailable_y_dodge=0, battle_roll_only=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
         # mode 7はmode 3の攻撃・移動構成に、赤端検知時の
-        # 15秒非ロックオンY回避を追加するGURI_35用モード。
-        elif mode == 7 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
+        # 15秒非ロックオンY回避を追加するGURI_18／35用モード。
+        elif mode == 7 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.24, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, field_resume_roll_suppress_seconds=5.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
         elif mode == 8 and self.ZA_mega_evolution_battle(usenum=usenum,Xaction=0,Aaction=1,Yaction=1,Baction=0,mode=0,dir1=20,dir2=0,dir3=40,dir4=0,see_r=0.40, escape_flag=0, endpicture="POKEMON_ZA_TEXT_WHITE_COMMENT", red_edge_y_renda_seconds=(red_edge_y_renda_seconds if float(red_edge_y_renda_seconds) > 0.0 else 15.0), dir5=90, field_resume_dir5_seconds=4.0, attack_unavailable_y_dodge=attack_unavailable_y_dodge, battle_roll_only=0, red_edge_roll_with_view=1, red_edge_before_rclick=red_edge_before_rclick, lockon_unchecked_a=lockon_unchecked_a, choice_black_background_guard=choice_black_background_guard):
             return True
@@ -10465,7 +10467,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return False
 
-    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0,field_resume_attack_only_seconds=0.0,field_resume_roll_suppress_seconds=0.0,field_resume_post_attack_roll_seconds=0.0,red_edge_before_rclick=0,lockon_unchecked_a=0,choice_black_background_guard=0,lockon_unchecked_ay_loop=0,red_edge_relock_view_seconds=0.0,red_edge_relock_view_strength=1.0):
+    def ZA_mega_evolution_battle(self,usenum=1,Xaction=0,Aaction=0,Yaction=0,Baction=0,mode=0,dir1=0,dir2=0,dir3=0,dir4=0,see_r=0, escape_flag=0,target_count_threshold_arg=15,no_target_count_threshold_arg=15,endpicture="",end2picture="",lockon_rclick=1,field_resume_dir4_seconds=10.0,red_edge_y_renda_seconds=0.0,dir5=-1,field_resume_dir5_seconds=4.0,attack_unavailable_y_dodge=0,mode4_view_nudge=0,last_battle_mode=0,movemode=0,Z_Gaurd=0,Cplus_attack=0,red_edge_y_repeat=0,testmode1=0,battle_identity_picture="",mode4_yellow_hp_roll_seconds=0.0,mode4_yellow_hp_attack_wait_seconds=5.0,red_edge_roll_angle=-1.0,battle_roll_only=0,red_edge_roll_with_view=0,field_resume_attack_only_seconds=0.0,field_resume_roll_suppress_seconds=2.0,field_resume_post_attack_roll_seconds=0.0,red_edge_before_rclick=0,lockon_unchecked_a=0,choice_black_background_guard=0,lockon_unchecked_ay_loop=0,red_edge_relock_view_seconds=0.0,red_edge_relock_view_strength=1.0):
         if last_battle_mode:
             # AはC+画像がなくても戦闘画面なら使用する。B/X/Yは呼び出し値を
             # 保持し、後段でC+画像を確認できた時だけ技入力として許可する。
@@ -11451,8 +11453,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     field_y_dodge_suppress_until=(
                         self._za_mega_field_dir5_until
                         + field_roll_suppress_seconds)
-                    if (field_roll_suppress_seconds > 0.0
-                            and field_y_dodge_suppress_until
+                    # dir5固定移動中と終了後2秒は全mode共通で禁止する。
+                    # mode3等のより長い指定はmaxで優先する。
+                    if (field_y_dodge_suppress_until
                             > field_resume_started_at):
                         self._za_mega_field_y_dodge_suppress_start=(
                             field_resume_started_at)
@@ -12269,7 +12272,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 elif count==3 and Yaction==1 and current_attack_ready:
                     if (self.ZA_mega_field_y_dodge_suppression_active()
                             and getattr(self, "ZL_state", 0) != 1):
-                        # dir5移動中／攻撃専用区間では、非ロックオンYがローリングへ
+                        # 固定移動／追加抑止区間では、非ロックオンYがローリングへ
                         # 化ける場合だけスキップし、次のA攻撃へ進める。
                         self.ZA_mega_field_attack_only_suppress_y_dodge()
                         count=advance_attack_count(count)
@@ -13588,6 +13591,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                     current_state, recovery_target,
                     ",".join(sorted(retry_states))))
 
+    def _ZA_story_furadari_release_held_recovery_controls(
+            self, reason):
+        """FURADARI復帰に割り込む前に保持入力を解除する。"""
+        released = False
+        if (getattr(self, "_za_furadari_map_view_active", False)
+                or getattr(self, "Rstick_state", 0) == 1):
+            self.holdEnd(Direction(Stick.RIGHT, 180))
+            self.Rstick_state = 0
+            self._za_furadari_map_view_active = False
+            released = True
+        if getattr(self, "ZL_state", 0) == 1:
+            self.ZA_ZL_ACTION("END")
+            released = True
+        if released:
+            print(
+                "[FURADARI_RECOVERY_INPUT_RELEASE] reason={} "
+                "right_stick=END zl=END".format(reason))
+        return released
+
     def ZA_story_furadari_section_recovery_step(
             self, current_state, normal_return):
         """暗転した区間を、2つ前のFURADARI_MAP gotoから再開する。"""
@@ -13709,6 +13731,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "30 times and check FIELD after every input, then return "
                 "to {}".format(current_state, reason, recovery_target),
                 level="warning")
+
+        release_controls = getattr(
+            self, "_ZA_story_furadari_release_held_recovery_controls", None)
+        if callable(release_controls):
+            release_controls("section_dark:{}".format(current_state))
 
         b_count = int(getattr(
             self, "_za_furadari_section_recovery_b_count", 0))
@@ -14005,6 +14032,12 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         def reserve_eyes_dark_recovery():
             """Keep all FURADARI recovery input in the eyes-dark route."""
+            release_controls = getattr(
+                self,
+                "_ZA_story_furadari_release_held_recovery_controls",
+                None)
+            if callable(release_controls):
+                release_controls("eyes_dark:{}".format(current_state))
             self._za_furadari_eyes_dark_recovery_lock_state = current_state
             # 既に作られた周辺暗転候補も含めて破棄する。これを残すと、
             # 初回Bのロード後に周辺処理が2回目の黒Commentへ入力し得る。
@@ -14194,6 +14227,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     level="warning")
 
         holding_state = recovery.get("holding_state", current_state)
+        release_controls = getattr(
+            self, "_ZA_story_furadari_release_held_recovery_controls", None)
+        if callable(release_controls):
+            release_controls("black_comment:{}".format(holding_state))
         phase = recovery.get("phase", "CLOSE_COMMENT")
 
         def cancel_guri_recovery_to_origin(cancel_reason):
@@ -14403,7 +14440,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     recovery["phase"] = "RETURN_GURI_114_FROM_FIELD"
                     recovery_log(
                         "[FURADARI_BLACK_RECOVERY] FIELD restored after B "
-                        "count={}; skip goto, move left90 4.0s and return "
+                        "count={}; skip goto, move left90 3.0s and return "
                         "to 7_STORY_GURI_114".format(close_count))
                 else:
                     recovery["phase"] = "ALTERNATE_GOTO"
@@ -14424,7 +14461,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         if phase == "RETURN_GURI_114_FROM_FIELD":
             self.press(
-                Direction(Stick.LEFT, 90), duration=4.0, wait=1.0)
+                Direction(Stick.LEFT, 90), duration=3.0, wait=1.0)
             resume_state = recovery.get(
                 "recovery_target", "7_STORY_GURI_114")
             if resume_state not in state_functions:
@@ -14439,7 +14476,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 allow_comment_retry(resume_state, holding_state)
             recovery_log(
                 "[FURADARI_BLACK_RECOVERY] skip goto complete; moved "
-                "left90 4.0s and return to {}".format(resume_state))
+                "left90 3.0s and return to {}".format(resume_state))
             return resume_state
 
         if phase == "ALTERNATE_GOTO":
@@ -16517,8 +16554,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return "endpicture", picture
             if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
                 return "black_comment", "POKEMON_ZA_TEXT_BLACK_COMMENT"
-            if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
-                return "active_level", "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"
+            active_pictures = ["POKEMON_ZA_BATTLE_ACTIVE_LEVEL"]
+            if guri_select_defeat_state:
+                # GURI_116実録画では戦闘中もFIELDが一致した一方、
+                # ESCAPEは0.99で成立していた。FIELDより先に戦闘継続へ
+                # 戻し、117／118へ誤って進めない。
+                active_pictures.extend((
+                    "POKEMON_ZA_BATTLE_BALL_CHECK",
+                    "POKEMON_ZA_ESCAPE",
+                ))
+            active_picture = next((
+                picture for picture in active_pictures
+                if self.image_check(picture)
+            ), None)
+            if active_picture is not None:
+                return "active_level", active_picture
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
                 return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
 
