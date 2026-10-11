@@ -2859,10 +2859,6 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.holdEnd(Direction(Stick.RIGHT, 180))
             self.Rstick_state = 0
     def ZA_MOVE_SEE(self,action = "RELOAD",in_see_r=0.0):
-        if in_see_r==0.0:
-            local_see_r = self.see_r
-        else:
-            local_see_r = in_see_r
         cover_guard=getattr(
             self, "ZA_mega_mode5_testmode1_controls_cover", None)
         if (action != "END" and callable(cover_guard)
@@ -2870,6 +2866,26 @@ class ZA_story_Base(ImageProcPythonCommand):
             # TESTMODE1は青側障害物へ入った後、力をためた／強い光まで
             # 通常の右スティック視点回転を再開しない。
             action="END"
+
+        # 明示的な終了要求は、C+／QUASARの開始抑止条件より先に処理する。
+        # 終了側まで同じguardでreturnすると、保持済みの右スティックが
+        # 戦闘状態をまたいで残るため、ENDは常に冪等な全視点解除とする。
+        if action == "END":
+            if self.Rstick_state == 1:
+                self.holdEnd(Direction(Stick.RIGHT, 180))
+                self.Rstick_state = 0
+            # mode 5のマーカー探索は通常のRstick_stateと分けて
+            # 任意方向を保持するため、終了経路ではそちらも解除する。
+            stop_search=getattr(
+                self, "ZA_mega_mode5_marker_search_view_stop", None)
+            if callable(stop_search):
+                stop_search(relock=False)
+            return
+
+        if in_see_r==0.0:
+            local_see_r = self.see_r
+        else:
+            local_see_r = in_see_r
             
         if (self.no_Cplus==1 and (not self.image_check("POKEMON_ZA_ESCAPE"))):#一旦視点移動はC+がない時のみ
             self.notargetcount=0
@@ -2884,25 +2900,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.quasar_current_state=="QUASAR_BATTLE_LOOP" and self.no_Cplus==0 and self.ZA_infi_attack_ready():
             self.notargetcount=0
             return
-        if action != "END":
-            if self.Rstick_state == 0:
-                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
-                self.Rstick_state = 1
-            else:
-                self.holdEnd(Direction(Stick.RIGHT, 180))
-                self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
-                self.hold(Direction(Stick.RIGHT, 180,local_see_r))
-                self.Rstick_state = 1
-        elif action == "END":
-            if self.Rstick_state == 1:
-                self.holdEnd(Direction(Stick.RIGHT, 180))
-                self.Rstick_state = 0
-            # mode 5のマーカー探索は通常のRstick_stateと分けて
-            # 任意方向を保持するため、終了経路ではそちらも解除する。
-            stop_search=getattr(
-                self, "ZA_mega_mode5_marker_search_view_stop", None)
-            if callable(stop_search):
-                stop_search(relock=False)
+        if self.Rstick_state == 0:
+            self.hold(Direction(Stick.RIGHT, 180,local_see_r))
+            self.Rstick_state = 1
+        else:
+            self.holdEnd(Direction(Stick.RIGHT, 180))
+            self.wait(0.1)#self.wait(self.SLEEPLIST[4][2])
+            self.hold(Direction(Stick.RIGHT, 180,local_see_r))
+            self.Rstick_state = 1
         #else:
         #    print(f"MOVE_SEE_CHECK:{action}:{self.Rstick_state}:")
 
@@ -9857,14 +9862,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 move_angle_seconds=float(settings[
                     "RED_ATTACK_PREMOVE_ANGLE_SECONDS2"])
                 
-                #他動作に影響ないAボタンで攻撃
+                #技表示を確認せず、他動作に影響しないA→Bで攻撃
                 self.ZA_ZL_ACTION("")
                 self.wait(0.2)
                 self.press(Button.A, wait=0.1)
+                self.press(Button.B, wait=0.1)
                 note_attack=getattr(
                     self, "ZA_mega_mode5_note_attack_input", None)
                 if callable(note_attack):
-                    # Unconfirmed cover A must not reset the no-attack timer.
+                    # Unconfirmed cover A/B must not reset the no-attack timer.
                     pass
                 self.ZA_ZL_ACTION("END")
                 
@@ -9893,14 +9899,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                 move_angle_seconds=float(settings[
                     "BLUE_ATTACK_PREMOVE_ANGLE_SECONDS2"])
                 
-                #他動作に影響ないAボタンで攻撃
+                #技表示を確認せず、他動作に影響しないA→Bで攻撃
                 self.ZA_ZL_ACTION("")
                 self.wait(0.2)
                 self.press(Button.A, wait=0.1)
+                self.press(Button.B, wait=0.1)
                 note_attack=getattr(
                     self, "ZA_mega_mode5_note_attack_input", None)
                 if callable(note_attack):
-                    # Unconfirmed cover A must not reset the no-attack timer.
+                    # Unconfirmed cover A/B must not reset the no-attack timer.
                     pass
                 self.ZA_ZL_ACTION("END")
                 
@@ -13075,8 +13082,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         while press_count < max_press_count:
             if not self.image_check("POKEMON_ZA_REWORD"):
                 break
-            # 報酬画面のB送りへ入る前に、戦闘中のZL保持を必ず解除する。
-            # lockon_endskip経路から来てもZL+Bを送らない。
+            # 報酬画面のB送りへ入る前に、戦闘中の視点回転とZL保持を
+            # 必ず解除する。lockon_endskip経路から来ても保持入力を残さない。
+            self.ZA_MOVE_SEE("END")
             self.ZA_ZL_ACTION("END")
             self.checkIfAlive()
             self.pressRep(
@@ -13103,6 +13111,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return True
         elif self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             setattr(self, count_name, 0)
+            self.ZA_MOVE_SEE("END")
             self.ZA_ZL_ACTION("END")
             self.pressRep(
                 Button.B, repeat=1, duration=0.15,
@@ -29457,7 +29466,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_60(self):
         if self.ZA_markerdir("EVENT", 1, nofiled=False):
-            return "8_STORY_STORY_LAST_61"
+            if self.image_check("POKEMON_ZA_EVENT_MARKER_CENTER"):
+                self.press(Direction(Stick.LEFT,90), duration=3.4, wait=1.0)
+                return "8_STORY_STORY_LAST_62"
         return "8_STORY_STORY_LAST_60"
     
     def _8_story_story_last_61(self):
@@ -32063,6 +32074,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.battle_current_state=="BATTLE_MOVE" and self.battle_step != 1 and self.image_check("POKEMON_ZA_CHICKET_MAX_RIGHT"):
                 print("CHICKET_MAX2")
                 self.chicketmaxflag = 1
+                # 前周期の探索視点とロックオンをBATTLE_STARTへ持ち越さない。
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
                 self.pressRep(Button.PLUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
                 self.battlecount=3
                 return "BATTLE_START"   
@@ -32900,6 +32914,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Button.A, wait=0.0)
                     
             if elapsed >= 20:
+                # 探索中に開始した視点回転をtimeout先へ残さない。
+                # ZLは同じ戦闘ループで再利用するため、ここでは維持する。
+                self.ZA_MOVE_SEE("END")
                 return
                     
             
