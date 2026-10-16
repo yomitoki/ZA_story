@@ -109,9 +109,19 @@ class ZA_story_Base(ImageProcPythonCommand):
             "CANARIのバトルゾーン処理から開始します。チケット判定は初回に初期化します。"),
     }
     ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 120.0
+    ZA_STORY_MAPPING_GOTO_BLACK_RECOVERY_SECONDS = 90.0
     ZA_OUT_HOTEL_Z_40_STALL_TIMEOUT_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_RESTART_SECONDS = 5.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_GAP_SECONDS = 2.0
+    ZA_OUT_HOTEL_Z_17_18_DEAD_CHECK_SECONDS = 3.0
+    ZA_PARTY_DEAD_TARGETS = (
+        "POKEMON_ZA_DEAD1",
+        "POKEMON_ZA_DEAD2",
+        "POKEMON_ZA_DEAD3",
+        "POKEMON_ZA_DEAD4",
+        "POKEMON_ZA_DEAD5",
+        "POKEMON_ZA_DEAD6",
+    )
     ZA_STORY_TOWER_34_38_BLACK_RECOVERY_SECONDS = 5.0
     ZA_STORY_TOWER_34_38_BLACK_GAP_SECONDS = 2.0
     ZA_STORY_TOWER_38_ELSE_RESET_COUNT = 30
@@ -585,6 +595,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 37～39 のWゾーン2登録確認へ戻す。MAPPING_52単体の滞留は数えない。
         self._2_story_mapping_52_54_loop_count = 0
         self._2_story_mapping_52_recovery_active = False
+        self._za_story_mapping_goto_watch = None
+        self._za_story_mapping_goto_recovery = None
 
         # ポケモン選択間隔 ,マップ選択間隔 ,ZL間隔 ,バトルゾーン判断開始までの猶予期間 ,RIGHT_Stick間隔
         #self.sleetimes = [0.25,0.2,0.01,0.4,0,13]
@@ -1315,10 +1327,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             "4_STORY_SHIRO_26": self._4_story_shiro_26,        
             "4_STORY_SHIRO_27": self._4_story_shiro_27,        
             "4_STORY_SHIRO_28": self._4_story_shiro_28,        
-            "4_STORY_SHIRO_29": self._4_story_shiro_29,        
+            "4_STORY_SHIRO_29": self._4_story_shiro_29,       
             "4_STORY_SHIRO_30": self._4_story_shiro_30,        
             "4_STORY_SHIRO_31": self._4_story_shiro_31,        
             "4_STORY_SHIRO_32": self._4_story_shiro_32,        
+            "4_STORY_SHIRO_32_0": self._4_story_shiro_32_0,       
             "4_STORY_SHIRO_33": self._4_story_shiro_33,        
             "4_STORY_SHIRO_34": self._4_story_shiro_34,        
             "4_STORY_SHIRO_35": self._4_story_shiro_35,        
@@ -2779,9 +2792,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         
         if log:
             print(f'window info: {ret}')
-            print(  f" Target_Window:{result}\n"
-                    f" Location:{x} {y}\n"
-                    f" Size:{w} {h}\n"
+            print(  f" Target_Window:{result}\r\n"
+                    f" Location:{x} {y}\r\n"
+                    f" Size:{w} {h}\r\n"
                     f" Center:{x_center,y_center}" )
 
         return ret
@@ -14886,6 +14899,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 else:
                     del self.image_check
 
+        mapping_goto_recovery_override = getattr(
+            self, "_ZA_story_mapping_goto_recovery_override", None)
+        if callable(mapping_goto_recovery_override):
+            next_state = mapping_goto_recovery_override(
+                current_state, next_state)
+
         # 対象FIELD Stepが通常遷移できず、正面視界が暗い時だけ復帰を開始。
         # 正常に次Stepへ進んだ場合やFURADARI区間外には影響させない。
         furadari_section_recovery = getattr(
@@ -17404,42 +17423,42 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(self.SLEEPLIST[9][2])
             self.out_str = (
                 f'----------------------------'
-                f'\n STATE_MAIN_FUNCTION   :: {self.za_infi_main_current_state}'
-                f'\n'
-                f'\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
-                f'\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
-                f'\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
-                f'\n battlecount::{self.battlecount}'
-                f'\n battle_step::{self.battle_step}'      
-                f'\n chicketmaxflag::{self.chicketmaxflag}'
-                f'\n ZL_state::{self.ZL_state}'  
-                f'\n'  
-                f'\n ZONECOUNT'
-                f'\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
+                f'\r\n STATE_MAIN_FUNCTION   :: {self.za_infi_main_current_state}'
+                f'\r\n'
+                f'\r\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
+                f'\r\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
+                f'\r\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
+                f'\r\n battlecount::{self.battlecount}'
+                f'\r\n battle_step::{self.battle_step}'      
+                f'\r\n chicketmaxflag::{self.chicketmaxflag}'
+                f'\r\n ZL_state::{self.ZL_state}'  
+                f'\r\n'  
+                f'\r\n ZONECOUNT'
+                f'\r\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
                 f'[ 2 :{self.zonemisscount[1]}/{self.zonecount[1]}] '
                 f'[ 3 :{self.zonemisscount[2]}/{self.zonecount[2]}] '
                 f'[ 4 :{self.zonemisscount[3]}/{self.zonecount[3]}] '
                 f'[ 5 :{self.zonemisscount[4]}/{self.zonecount[4]}] '
                 f'[ 6 :{self.zonemisscount[5]}/{self.zonecount[5]}] '
-                f'\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
+                f'\r\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
                 f'[ 8 :{self.zonemisscount[7]}/{self.zonecount[7]}] '
                 f'[ 9 :{self.zonemisscount[8]}/{self.zonecount[8]}] '
                 f'[10 :{self.zonemisscount[9]}/{self.zonecount[9]}] '
                 f'[11 :{self.zonemisscount[10]}/{self.zonecount[10]}] '
                 f'[12 :{self.zonemisscount[11]}/{self.zonecount[11]}]'
-                f'\n'  
-                f'\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
-                f'\n battle_escape_count::{self.battleescapecount}'
-                f'\n inactioncount::{self.inactioncount}'
-                f'\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
-                f'\n'
-                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\n'
-                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\n'
-                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\n'
-                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\n'
-                f'\n'
-                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\n'  
-                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\n'
+                f'\r\n'  
+                f'\r\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
+                f'\r\n battle_escape_count::{self.battleescapecount}'
+                f'\r\n inactioncount::{self.inactioncount}'
+                f'\r\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
+                f'\r\n'
+                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\r\n'
+                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\r\n'
+                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\r\n'
+                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\r\n'
+                f'\r\n'
+                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\r\n'  
+                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\r\n'
                 f'[left ::'
                 f'[{self.target_left_max_val_list[0]:03d}]'
                 f'[{self.target_left_max_val_list[1]:03d}]'
@@ -17452,7 +17471,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'[{self.target_left_max_val_list[8]:03d}]'
                 f'[{self.target_left_max_val_list[9]:03d}]'
                 f'[{self.target_left_max_val_list[10]:03d}]'
-                f']\n'
+                f']\r\n'
                 f'[right::'
                 f'[{self.target_right_max_val_list[0]:03d}]'
                 f'[{self.target_right_max_val_list[1]:03d}]'
@@ -17465,8 +17484,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'[{self.target_right_max_val_list[8]:03d}]'
                 f'[{self.target_right_max_val_list[9]:03d}]'
                 f'[{self.target_right_max_val_list[10]:03d}]'
-                f']\n'
-                f'\n----------------------------'
+                f']\r\n'
+                f'\r\n----------------------------'
                 )
 
             self.print_tb("d"); self.print_t(f'{self.out_str}')
@@ -17543,41 +17562,41 @@ class ZA_story_Base(ImageProcPythonCommand):
         game_reset_status = ""
         if game_reset_state != "IDLE":
             game_reset_status = (
-                f'\n GAME_RESET_FUNCTION   :: {game_reset_state}')
+                f'\r\n GAME_RESET_FUNCTION   :: {game_reset_state}')
         mega_mode5_status = ""
         if getattr(self, "_za_mega_last_battle_mode", False):
             hp_ratio=float(getattr(
                 self, "_za_mega_testmode1_hp_fill_ratio", 0.0))
             mega_mode5_status = (
-                f'\n MEGA_MODE5_TESTMODE1  :: '
+                f'\r\n MEGA_MODE5_TESTMODE1  :: '
                 f'{int(bool(getattr(self, "_za_mega_testmode1_enabled", False)))}'
-                f'\n MEGA_MODE5_RESUME_HP  :: '
+                f'\r\n MEGA_MODE5_RESUME_HP  :: '
                 f'{getattr(self, "_za_mega_testmode1_resume_hp", "LEGACY")}'
                 f' :: {getattr(self, "_za_mega_testmode1_hp_color", "NONE")}'
                 f' :: ratio={hp_ratio:.3f}'
-                f'\n MEGA_MODE5_TEST_PHASE :: '
+                f'\r\n MEGA_MODE5_TEST_PHASE :: '
                 f'{getattr(self, "_za_mega_testmode1_phase", "DISABLED")}'
-                f'\n MEGA_MODE5_START_FLAG :: '
+                f'\r\n MEGA_MODE5_START_FLAG :: '
                 f'{getattr(self, "_za_mega_mode5_start_flag", 0)}'
                 f' :: {getattr(self, "_za_mega_mode5_phase", "WAIT_RESUME")}'
-                f'\n MEGA_MODE5_DETECTION  :: '
+                f'\r\n MEGA_MODE5_DETECTION  :: '
                 f'{getattr(self, "_za_mega_mode5_last_detection", "NONE")}'
-                f'\n MEGA_MODE5_ACTION     :: '
+                f'\r\n MEGA_MODE5_ACTION     :: '
                 f'{getattr(self, "_za_mega_mode5_last_action", "NONE")}')
 
         return (
             f'----------------------------'
-            f'\n{main_status}'
-            f'\n'
-            f'\n ### STATE_2_VAR ###'
-            f'\n'
-            f'\n SKILL_CHANGE_FUNCTION :: {self.common_skill_change_current_state}'
-            f'\n BOX_CHANGE_FUNCTION   :: {self.common_box_change_current_state}'
-            f'\n ITEM_GIVE_FUNCTION    :: {self.common_item_give_current_state}'
-            f'\n EVOLUTION_FUNCTION    :: {self.common_evolution_current_state}'
+            f'\r\n{main_status}'
+            f'\r\n'
+            f'\r\n ### STATE_2_VAR ###'
+            f'\r\n'
+            f'\r\n SKILL_CHANGE_FUNCTION :: {self.common_skill_change_current_state}'
+            f'\r\n BOX_CHANGE_FUNCTION   :: {self.common_box_change_current_state}'
+            f'\r\n ITEM_GIVE_FUNCTION    :: {self.common_item_give_current_state}'
+            f'\r\n EVOLUTION_FUNCTION    :: {self.common_evolution_current_state}'
             f'{game_reset_status}'
             f'{mega_mode5_status}'
-            f'\n----------------------------'
+            f'\r\n----------------------------'
         )
 
     def ZA_story_main(self):
@@ -17592,6 +17611,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_story_pre_step_gate_completed = False
         self._za_story_pre_step_gate_last_dispatch_state = None
         self._za_story_event_entry_pending_recovery = None
+        self._za_story_mapping_goto_watch = None
+        self._za_story_mapping_goto_recovery = None
         while True:
             
             self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
@@ -18389,6 +18410,73 @@ class ZA_story_Base(ImageProcPythonCommand):
  
         return "1_STORY_OUT_HOTEL_Z_16"
         
+    def ZA_count_dead_party_icons(self):
+        """Return the number of DEAD icons across the six party slots."""
+        return sum(
+            1 for target in self.ZA_PARTY_DEAD_TARGETS
+            if self.image_check(target))
+
+    def _1_story_out_hotel_z_17_18_dead_recovery(self, current_state):
+        """Confirm a missing Kohuki with a DEAD slot, then restart at Z_17."""
+        if not self.image_check("POKEMON_ZA_FIELD_W"):
+            return None
+        if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
+            return None
+        dead_count = self.ZA_count_dead_party_icons()
+        if dead_count < 1:
+            return None
+
+        check_seconds = max(0.0, float(getattr(
+            self, "ZA_OUT_HOTEL_Z_17_18_DEAD_CHECK_SECONDS", 3.0)))
+        deadline = time.monotonic() + check_seconds
+        while True:
+            self.checkIfAlive()
+            if not self.image_check("POKEMON_ZA_FIELD_W"):
+                print(
+                    "[OUT_HOTEL_Z_17_18_DEAD] FIELD_W cleared during "
+                    "check state={}".format(current_state))
+                return None
+            if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
+                print(
+                    "[OUT_HOTEL_Z_17_18_DEAD] KOHUKI detected during "
+                    "check state={}".format(current_state))
+                return None
+            dead_count = self.ZA_count_dead_party_icons()
+            if dead_count < 1:
+                print(
+                    "[OUT_HOTEL_Z_17_18_DEAD] DEAD cleared during "
+                    "check state={}".format(current_state))
+                return None
+            now = time.monotonic()
+            if now >= deadline:
+                break
+            self.wait(min(0.1, max(0.0, deadline - now)))
+
+        print(
+            "[OUT_HOTEL_Z_17_18_DEAD] state={} dead_count={} "
+            "KOHUKI missing for {:.1f}s -> game reset and Z_17".format(
+                current_state, dead_count, check_seconds))
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        self.ZA_gamereset()
+        return "1_STORY_OUT_HOTEL_Z_17"
+
+    def _1_story_out_hotel_z_20_dead_recovery(self):
+        """Restart the Mareep search when four or more party slots are DEAD."""
+        dead_count = self.ZA_count_dead_party_icons()
+        if dead_count < 4:
+            return None
+        if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
+            return None
+        print(
+            "[OUT_HOTEL_Z_20_DEAD] dead_count={} MERIP missing -> "
+            "game reset and Z_19".format(dead_count))
+        self._1_story_out_hotel_z_20_not_eyecheck_count = 0
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        self.ZA_gamereset()
+        return "1_STORY_OUT_HOTEL_Z_19"
+
     def _1_story_out_hotel_z_17_22_black_comment_recovery(
             self, current_state):
         """Z_17～22の黒Commentが継続した場合だけ再起動する。"""
@@ -18458,6 +18546,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "1_STORY_OUT_HOTEL_Z_17"))
         if black_recovery is not None:
             return black_recovery
+        dead_recovery = self._1_story_out_hotel_z_17_18_dead_recovery(
+            "1_STORY_OUT_HOTEL_Z_17")
+        if dead_recovery is not None:
+            return dead_recovery
         ### AUTO_SAVE_POINT
         #コフキムシを探索
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -18473,6 +18565,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "1_STORY_OUT_HOTEL_Z_18"))
         if black_recovery is not None:
             return black_recovery
+        dead_recovery = self._1_story_out_hotel_z_17_18_dead_recovery(
+            "1_STORY_OUT_HOTEL_Z_18")
+        if dead_recovery is not None:
+            return dead_recovery
         if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
             self.ZA_ZL_ACTION("END")
             
@@ -18484,6 +18580,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_get_pokemon()
                 self.wait(3.0)
                 for i in range(6):
+                    dead_recovery = (
+                        self._1_story_out_hotel_z_17_18_dead_recovery(
+                            "1_STORY_OUT_HOTEL_Z_18"))
+                    if dead_recovery is not None:
+                        return dead_recovery
                     if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
                         self.ZA_ZL_ACTION("END")
                         return "1_STORY_OUT_HOTEL_Z_19"
@@ -18498,6 +18599,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                             "1_STORY_OUT_HOTEL_Z_18"))
                     if black_recovery is not None:
                         return black_recovery
+                    dead_recovery = (
+                        self._1_story_out_hotel_z_17_18_dead_recovery(
+                            "1_STORY_OUT_HOTEL_Z_18"))
+                    if dead_recovery is not None:
+                        return dead_recovery
                     if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
                         self.ZA_ZL_ACTION("END")
                         return "1_STORY_OUT_HOTEL_Z_19"
@@ -18523,6 +18629,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "1_STORY_OUT_HOTEL_Z_18_1"))
         if black_recovery is not None:
             return black_recovery
+        dead_recovery = self._1_story_out_hotel_z_17_18_dead_recovery(
+            "1_STORY_OUT_HOTEL_Z_18_1")
+        if dead_recovery is not None:
+            return dead_recovery
         ### AUTO_SAVE_POINT
         #コフキムシを探索
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -18536,6 +18646,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "1_STORY_OUT_HOTEL_Z_18_2"))
         if black_recovery is not None:
             return black_recovery
+        dead_recovery = self._1_story_out_hotel_z_17_18_dead_recovery(
+            "1_STORY_OUT_HOTEL_Z_18_2")
+        if dead_recovery is not None:
+            return dead_recovery
         if (self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4")
                 and self.image_check("POKEMON_ZA_KOHUKI_ICON_GET5")):
             self.ZA_ZL_ACTION("END")
@@ -18584,6 +18698,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 前処理でEVENT正面から固定経路を移動し、再度EVENTを
         # 合わせてから右スティック180度・0.8秒を含む
         # 従来のメリープ探索経路へ入る。
+        dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+        if dead_recovery is not None:
+            return dead_recovery
         attempt_count = 1
         self.ZA_ZL_ACTION("END")
         for attempt in range(1, attempt_count + 1):
@@ -18595,6 +18712,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print(
                     "[OUT_HOTEL_Z_20] lockon recheck: "
                     "EVENT alignment failed")
+                dead_recovery = (
+                    self._1_story_out_hotel_z_20_dead_recovery())
+                if dead_recovery is not None:
+                    return dead_recovery
                 return False
             self.press(
                 Direction(Stick.LEFT, 300),
@@ -18606,6 +18727,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print(
                     "[OUT_HOTEL_Z_20] lockon recheck: "
                     "EVENT realignment failed")
+                dead_recovery = (
+                    self._1_story_out_hotel_z_20_dead_recovery())
+                if dead_recovery is not None:
+                    return dead_recovery
                 return False
             self.press(
                 Direction(Stick.RIGHT, 180),
@@ -18624,6 +18749,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 Xaction=0, Aaction=1, Yaction=0, Baction=1,
                 lockon_endskip=1)
             self.wait(0.1)
+            dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+            if dead_recovery is not None:
+                return dead_recovery
             if self.image_check("POKEMON_ZA_EYE_CHECK"):
                 print(
                     "[OUT_HOTEL_Z_20] lockon recheck: success "
@@ -18637,6 +18765,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 次周へ岩側の向きを持ち越さない。
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
             self.ZA_markerdir("EVENT")
+        dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+        if dead_recovery is not None:
+            return dead_recovery
         print(
             "[OUT_HOTEL_Z_20] lockon recheck: failed; "
             "restored EVENT direction")
@@ -18648,6 +18779,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "1_STORY_OUT_HOTEL_Z_20"))
         if black_recovery is not None:
             return black_recovery
+        dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+        if dead_recovery is not None:
+            return dead_recovery
         if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
             self.ZA_ZL_ACTION("END")
             return "1_STORY_OUT_HOTEL_Z_20_1"
@@ -18659,6 +18793,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.25)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
             for i in range(6):
+                dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+                if dead_recovery is not None:
+                    return dead_recovery
                 if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
                     self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_20_1"
@@ -18673,6 +18810,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                         "1_STORY_OUT_HOTEL_Z_20"))
                 if black_recovery is not None:
                     return black_recovery
+                dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
+                if dead_recovery is not None:
+                    return dead_recovery
                 if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
                     self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_20_1"
@@ -18712,7 +18852,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._1_story_out_hotel_z_20_not_eyecheck_count+=1
                 if self._1_story_out_hotel_z_20_not_eyecheck_count >= 10:
                     self._1_story_out_hotel_z_20_not_eyecheck_count=0
-                    self._1_story_out_hotel_z_20_lockon_recheck()
+                    lockon_result = (
+                        self._1_story_out_hotel_z_20_lockon_recheck())
+                    if lockon_result == "1_STORY_OUT_HOTEL_Z_19":
+                        return lockon_result
                     return "1_STORY_OUT_HOTEL_Z_20"
                 
             self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
@@ -19837,7 +19980,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.B, repeat=5, duration=0.04, wait=0.0, interval=0.1)
             self.wait(30.0)
         if self.image_check("POKEMON_ZA_PIKA_ICON_GET6"):
-            if self.image_check("POKEMON_ZA_EYE_CHECK"):
+            if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
                 self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
@@ -19862,7 +20005,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "2_STORY_TOWER_37"))
         if black_recovery is not None:
             return black_recovery
-        if self.image_check("POKEMON_ZA_EYE_CHECK"):
+        if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
             return "2_STORY_TOWER_36"
         #elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
         #    if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"): #FIELDから変更
@@ -24517,7 +24660,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.wait(1.0)
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             for i in range(1,5):
-                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=0,Yaction=0,Baction=1)
             if not self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
                 return "4_STORY_SHIRO_28"
 
@@ -24551,6 +24694,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
             return "4_STORY_SHIRO_31"
+        eye_count=0
+        for i in range(0,5):
+            if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
+                eye_count += 1
+                self.wait(0.5)
+                self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1)
+            elif ((eye_count == 0) and i == 4):
+                return "4_STORY_SHIRO_31"
+                
         return "4_STORY_SHIRO_30"
         
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -24561,13 +24713,27 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "4_STORY_SHIRO_30"
     
     def _4_story_shiro_31(self):
+        ret = "START"
+        if ret == "START":
+            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+
         if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
             return "4_STORY_SHIRO_30"
         ret = self.ZA_Common_goto(1,0,4)#ラシーヌ工務店へ移動
         if ret == "START":
-            return "4_STORY_SHIRO_32"
+            return "4_STORY_SHIRO_32_0"
         else:
             return "4_STORY_SHIRO_31"
+    
+    def _4_story_shiro_32_0(self):
+        self.wait(5.0)
+        if self.image_check("POKEMON_ZA_MOVE_COMMENT_BATTLE2"):
+            self.pressRep(Button.A, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            self.pressRep(Button.B, repeat=20, duration=0.04, wait=0.0, interval=0.1)
+            self.wait(10.0)
+            return "4_STORY_SHIRO_30"
+        return "4_STORY_SHIRO_32"
     
     def _4_story_shiro_32(self):
         ret = self.ZA_common_skill_change_function(1,1,"X",1,targetskill_pic="POKEMON_ZA_REIBI_SKILL")
@@ -30938,6 +31104,187 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_Common_false_return(self,othermap="POKEMON_ZA_FALSE_RETURN"):#dummy
         return "COMMON_FALSE_RETURN"
 
+    def _ZA_story_mapping_goto_recovery_context(self):
+        """Return the current segment's MORNING Step or preceding goto."""
+        story_tables = (
+            ("MAIN_1_Z_LANK", "_1_story_current_state",
+             "STATE_1_STORY_FUNCTION"),
+            ("MAIN_2_Y_V_LANK", "_2_story_current_state",
+             "STATE_2_STORY_FUNCTION"),
+            ("MAIN_3_F_LANK", "_3_story_current_state",
+             "STATE_3_STORY_FUNCTION"),
+            ("MAIN_4_E_LANK", "_4_story_current_state",
+             "STATE_4_STORY_FUNCTION"),
+            ("MAIN_5_D_LANK", "_5_story_current_state",
+             "STATE_5_STORY_FUNCTION"),
+            ("MAIN_6_C_LANK", "_6_story_current_state",
+             "STATE_6_STORY_FUNCTION"),
+            ("MAIN_7_B_LANK", "_7_story_current_state",
+             "STATE_7_STORY_FUNCTION"),
+            ("MAIN_8_STORY_LAST", "_8_story_current_state",
+             "STATE_8_STORY_FUNCTION"),
+        )
+        active_main = getattr(self, "main_current_state", None)
+        candidates = tuple(
+            item for item in story_tables if item[0] == active_main)
+        if not candidates:
+            return None
+
+        for _main_state, state_attribute, table_attribute in candidates:
+            current_state = getattr(self, state_attribute, None)
+            state_functions = getattr(self, table_attribute, None)
+            if (not isinstance(current_state, str)
+                    or "_STORY_MAPPING_" not in current_state
+                    or not isinstance(state_functions, dict)
+                    or current_state not in state_functions):
+                continue
+
+            current_function = state_functions[current_state]
+            current_code = getattr(
+                getattr(current_function, "__func__", current_function),
+                "__code__", None)
+            # ZA_Common_change_time_set()内から間接的に呼ばれたgotoは
+            # mapping本体のgotoではないため監視を開始しない。
+            if (current_code is None
+                    or "ZA_Common_goto" not in current_code.co_names):
+                continue
+
+            states = tuple(state_functions)
+            current_index = states.index(current_state)
+            if current_index <= 0:
+                return None
+            mapping_prefix = (
+                current_state.split("_STORY_MAPPING_", 1)[0]
+                + "_STORY_MAPPING_")
+            previous_goto_state = None
+            for previous_state in reversed(states[:current_index]):
+                # 別のStory区間を越えて古いMORNINGへ戻さない。
+                if not str(previous_state).startswith(mapping_prefix):
+                    break
+                previous_function = state_functions[previous_state]
+                previous_code = getattr(
+                    getattr(previous_function, "__func__", previous_function),
+                    "__code__", None)
+                # 直前のmovepoint確認までを1つのmapping区間とする。
+                # それより前のMORNINGへは戻さず、この区間内にある
+                # 直前gotoをfallbackにする。
+                previous_is_movepoint_goto = (
+                    previous_code is not None
+                    and "ZA_Common_goto" in previous_code.co_names
+                    and any(
+                        isinstance(constant, tuple)
+                        and "movepoint_check" in constant
+                        for constant in previous_code.co_consts))
+                if previous_is_movepoint_goto:
+                    break
+                if (previous_code is not None
+                        and "ZA_Common_change_time_set"
+                        in previous_code.co_names
+                        and "POKEMON_ZA_MORNING"
+                        in previous_code.co_consts):
+                    return {
+                        "current_state": current_state,
+                        "recovery_target": previous_state,
+                    }
+                if (previous_goto_state is None
+                        and previous_code is not None
+                        and "ZA_Common_goto" in previous_code.co_names):
+                    previous_goto_state = previous_state
+            if previous_goto_state is not None:
+                return {
+                    "current_state": current_state,
+                    "recovery_target": previous_goto_state,
+                }
+            return None
+        return None
+
+    def ZA_Common_mapping_goto_black_recovery(self, movepoint_check=0):
+        """Recover a mapping movepoint check stuck on black Comment."""
+        if movepoint_check != 1:
+            self._za_story_mapping_goto_watch = None
+            return False
+        context = self._ZA_story_mapping_goto_recovery_context()
+        if context is None:
+            self._za_story_mapping_goto_watch = None
+            return False
+
+        current_state = context["current_state"]
+        recovery_target = context["recovery_target"]
+        now = time.monotonic()
+        watch = getattr(self, "_za_story_mapping_goto_watch", None)
+        if (not isinstance(watch, dict)
+                or watch.get("current_state") != current_state
+                or watch.get("recovery_target") != recovery_target):
+            self._za_story_mapping_goto_watch = {
+                "current_state": current_state,
+                "recovery_target": recovery_target,
+                "started_at": now,
+            }
+            return False
+
+        timeout_seconds = float(getattr(
+            self, "ZA_STORY_MAPPING_GOTO_BLACK_RECOVERY_SECONDS", 90.0))
+        if now - float(watch["started_at"]) < timeout_seconds:
+            return False
+
+        black_background_check = getattr(
+            self, "ZA_mega_mode5_defeat_background_confirmed", None)
+        black_background = (
+            bool(black_background_check(force=True))
+            if callable(black_background_check) else False)
+        black_comment = self.image_check(
+            "POKEMON_ZA_TEXT_BLACK_COMMENT")
+        if not (black_background and black_comment):
+            return False
+
+        print(
+            "[MAPPING_GOTO_BLACK_RECOVERY] {} stuck {:.1f}s; "
+            "black background + black Comment -> A/B until FIELD, then {}".format(
+                current_state, now - float(watch["started_at"]),
+                recovery_target))
+        field_restored = self.ZA_renda_button(
+            rendabutton="B",
+            endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+            sub_button="A",
+            sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+            sleeptime=0.3)
+        if not field_restored:
+            return True
+
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        self.timecount = 0
+        self.changetimecount = 0
+        self.sleepcount = 0
+        self._za_story_mapping_goto_recovery = {
+            "current_state": current_state,
+            "recovery_target": recovery_target,
+        }
+        return True
+
+    def _ZA_story_mapping_goto_recovery_override(
+            self, current_state, next_state):
+        """Apply a completed goto recovery after the mapping Step returns."""
+        recovery = getattr(
+            self, "_za_story_mapping_goto_recovery", None)
+        if isinstance(recovery, dict):
+            if recovery.get("current_state") == current_state:
+                recovery_target = recovery["recovery_target"]
+                self._za_story_mapping_goto_recovery = None
+                self._za_story_mapping_goto_watch = None
+                print(
+                    "[MAPPING_GOTO_BLACK_RECOVERY] FIELD restored: "
+                    "{} -> {}".format(current_state, recovery_target))
+                return recovery_target
+            self._za_story_mapping_goto_recovery = None
+
+        watch = getattr(self, "_za_story_mapping_goto_watch", None)
+        if (next_state != current_state
+                and isinstance(watch, dict)
+                and watch.get("current_state") == current_state):
+            self._za_story_mapping_goto_watch = None
+        return next_state
+
     def ZA_Common_goto(
             self, position1, position2left, position2down,
             movepoint_check=0,
@@ -30948,6 +31295,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             battle_recovery_mode=0,
             use_text_box2=True):
         #type=0:ポケセンブルーにて実施(バトルゾーンに影響あり)
+        mapping_goto_black_recovery = getattr(
+            self, "ZA_Common_mapping_goto_black_recovery", None)
+        if (callable(mapping_goto_black_recovery)
+                and mapping_goto_black_recovery(
+                    movepoint_check=movepoint_check)):
+            return "EXEC"
         if self.Common_current_state == "COMMON_MAP_OPEN":
             self.Common_current_state = self.ZA_Common_map_open(
                 check_pic1=check_pic1, check_pic2=check_pic2,
@@ -31889,42 +32242,42 @@ class ZA_story_Base(ImageProcPythonCommand):
                 continue
             self.out_str = (
                 f'----------------------------'
-                f'\n STATE_MAIN_FUNCTION   :: {self.main_current_state}'
-                f'\n'
-                f'\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
-                f'\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
-                f'\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
-                f'\n battlecount::{self.battlecount}'
-                f'\n battle_step::{self.battle_step}'      
-                f'\n chicketmaxflag::{self.chicketmaxflag}'
-                f'\n ZL_state::{self.ZL_state}'  
-                f'\n'  
-                f'\n ZONECOUNT'
-                f'\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
+                f'\r\n STATE_MAIN_FUNCTION   :: {self.main_current_state}'
+                f'\r\n'
+                f'\r\n STATE_BENCH_FUNCTION  :: {self.bench_current_state}'
+                f'\r\n STATE_BATTLE_FUNCTION :: {self.battle_current_state}'
+                f'\r\n STATE_QUASAR_FUNCTION :: {self.quasar_current_state}'
+                f'\r\n battlecount::{self.battlecount}'
+                f'\r\n battle_step::{self.battle_step}'      
+                f'\r\n chicketmaxflag::{self.chicketmaxflag}'
+                f'\r\n ZL_state::{self.ZL_state}'  
+                f'\r\n'  
+                f'\r\n ZONECOUNT'
+                f'\r\n[ 1 :{self.zonemisscount[0]}/{self.zonecount[0]}] '
                 f'[ 2 :{self.zonemisscount[1]}/{self.zonecount[1]}] '
                 f'[ 3 :{self.zonemisscount[2]}/{self.zonecount[2]}] '
                 f'[ 4 :{self.zonemisscount[3]}/{self.zonecount[3]}] '
                 f'[ 5 :{self.zonemisscount[4]}/{self.zonecount[4]}] '
                 f'[ 6 :{self.zonemisscount[5]}/{self.zonecount[5]}] '
-                f'\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
+                f'\r\n[ 7 :{self.zonemisscount[6]}/{self.zonecount[6]}] '
                 f'[ 8 :{self.zonemisscount[7]}/{self.zonecount[7]}] '
                 f'[ 9 :{self.zonemisscount[8]}/{self.zonecount[8]}] '
                 f'[10 :{self.zonemisscount[9]}/{self.zonecount[9]}] '
                 f'[11 :{self.zonemisscount[10]}/{self.zonecount[10]}] '
                 f'[12 :{self.zonemisscount[11]}/{self.zonecount[11]}]'
-                f'\n'  
-                f'\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
-                f'\n battle_escape_count::{self.battleescapecount}'
-                f'\n inactioncount::{self.inactioncount}'
-                f'\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
-                f'\n'
-                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\n'
-                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\n'
-                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\n'
-                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\n'
-                f'\n'
-                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\n'  
-                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\n'
+                f'\r\n'  
+                f'\r\n QUASAR_LOSE_COUNT::{self.quasarlosecount}/{self.quasarcount}'
+                f'\r\n battle_escape_count::{self.battleescapecount}'
+                f'\r\n inactioncount::{self.inactioncount}'
+                f'\r\n timechangemiss_count::{self.changetimemisscount}/{self.changetimecount}'
+                f'\r\n'
+                f' target_maker low:{self.target_end_low_count}/{self.target_start_low_count} mid:{self.target_end_mid_count}/{self.target_start_mid_count} normal:{self.target_end_count}/{self.target_start_count}\r\n'
+                f' quasar_target_maker low:{self.quasar_target_end_low_count}/{self.quasar_target_start_low_count} mid:{self.quasar_target_end_mid_count}/{self.quasar_target_start_mid_count} normal:{self.quasar_target_end_count}/{self.quasar_target_start_count}\r\n'
+                f' quasar_battle_display :{self.quasar_battle_display_end_count}/{self.quasar_battle_display_start_count}\r\n'
+                f' battlemarker_skipcount {self.battlemarker_skipcount}/{self.battlemarker_skipcount_threshold}\r\n'
+                f'\r\n'
+                f'以下はTESTCODE=1でチェック {self.TESTADDCODE} ※PythonCommandBaseの編集が必要なため0とすること\r\n'  
+                f'--------[ 50][ 55][ 60][ 65][ 70][ 75][ 80][ 85][ 90][ 95][100]\r\n'
                 f'[left ::'
                 f'[{self.target_left_max_val_list[0]:03d}]'
                 f'[{self.target_left_max_val_list[1]:03d}]'
@@ -31937,7 +32290,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'[{self.target_left_max_val_list[8]:03d}]'
                 f'[{self.target_left_max_val_list[9]:03d}]'
                 f'[{self.target_left_max_val_list[10]:03d}]'
-                f']\n'
+                f']\r\n'
                 f'[right::'
                 f'[{self.target_right_max_val_list[0]:03d}]'
                 f'[{self.target_right_max_val_list[1]:03d}]'
@@ -31950,8 +32303,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f'[{self.target_right_max_val_list[8]:03d}]'
                 f'[{self.target_right_max_val_list[9]:03d}]'
                 f'[{self.target_right_max_val_list[10]:03d}]'
-                f']\n'
-                f'\n----------------------------'
+                f']\r\n'
+                f'\r\n----------------------------'
                 )
             self.print_tb("d"); self.print_t(f'{self.out_str}')
             
@@ -39717,6 +40070,72 @@ class ZA_story_Base(ImageProcPythonCommand):
         })
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
 
+    # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
+    # DevStudioの登録済み画像検知から追加。再生成時も保持されます。
+    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_DEAD1': [{'crop': [50, 640, 100, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'POKEMON_ZA_DEAD2': [{'crop': [100, 640, 150, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'POKEMON_ZA_DEAD3': [{'crop': [150, 640, 200, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'POKEMON_ZA_DEAD4': [{'crop': [200, 640, 250, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'POKEMON_ZA_DEAD5': [{'crop': [250, 640, 300, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}],
+     'POKEMON_ZA_DEAD6': [{'crop': [300, 640, 350, 680],
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story/Common/dead.png',
+                           'threshold': 0.8,
+                           'use_gray': True}]})
+    if 'IMAGE_DETECTION_OPERATORS' in locals():
+        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_DEAD1': 'OR',
+     'POKEMON_ZA_DEAD2': 'OR',
+     'POKEMON_ZA_DEAD3': 'OR',
+     'POKEMON_ZA_DEAD4': 'OR',
+     'POKEMON_ZA_DEAD5': 'OR',
+     'POKEMON_ZA_DEAD6': 'OR'})
+    if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
+        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_DEAD1': 'Pokemon ZA party slot 1 DEAD icon',
+     'POKEMON_ZA_DEAD2': 'Pokemon ZA party slot 2 DEAD icon',
+     'POKEMON_ZA_DEAD3': 'Pokemon ZA party slot 3 DEAD icon',
+     'POKEMON_ZA_DEAD4': 'Pokemon ZA party slot 4 DEAD icon',
+     'POKEMON_ZA_DEAD5': 'Pokemon ZA party slot 5 DEAD icon',
+     'POKEMON_ZA_DEAD6': 'Pokemon ZA party slot 6 DEAD icon'})
+    # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
+
     def _image_check_target(self, targetimage):
         variants = self.IMAGE_DETECTION_TARGETS.get(str(targetimage), [])
         if not hasattr(self, '_image_similarity_history'):
@@ -40105,7 +40524,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 except (AttributeError, TypeError, ValueError) as error:
                     messagebox.showerror(
                         "ZA_story Step実行設定",
-                        "開始位置を設定できませんでした。\n{}".format(error),
+                        "開始位置を設定できませんでした。\r\n{}".format(error),
                         parent=dialog)
                     return
                 print(
