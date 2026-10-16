@@ -75,6 +75,36 @@ import os
 ######################################################
 class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
+    # 明示設定を追加すると自動検出された従来項目を置き換えるため、
+    # ResetDebugだけでなく既存の3項目もここへ残す。
+    COMMAND_DEBUG_OPTIONS = (
+        {
+            "attribute": "ResetDebug",
+            "label": "ResetDebug（リセット復帰確認）",
+            "description": (
+                "復帰設定済みのComment Stepで、初回だけ20秒静止してから"
+                "ゲーム再起動／時刻変更を実行します。再訪時は通常判定へ戻ります。"),
+            "default": False,
+        },
+        {
+            "attribute": "fastread",
+            "label": "fastread",
+            "description": "ZA_INFI開始時に設定ファイルを再読込します。",
+            "default": True,
+        },
+        {
+            "attribute": "TESTADDCODE",
+            "label": "TESTADDCODE",
+            "description": "既存の開発用デバッグ設定です。",
+            "default": False,
+        },
+        {
+            "attribute": "testcode",
+            "label": "testcode",
+            "description": "既存のTest()実行用設定です。通常実行では無効にします。",
+            "default": False,
+        },
+    )
     # Start画面に公開するのは、単独開始時の親経路が明確なStory Stepだけ。
     # ZA_INFI内部Stateは複数のStory Stepから共有されるため直接選択せず、
     # STATE_MAIN_FUNCTIONのMAIN_ZA_BATTLE_INFIから単独モードを開始する。
@@ -109,6 +139,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             "CANARIのバトルゾーン処理から開始します。チケット判定は初回に初期化します。"),
     }
     ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS = 120.0
+    ZA_RESET_DEBUG_SAVE_WAIT_SECONDS = 20.0
+    RESET_TEMPLATE_WAIT_TIMEOUT_SECONDS = 180.0
+    ZA_STORY_RECOVERY_PRE_ACTION_TIMEOUT_SECONDS = 180.0
     ZA_STORY_MAPPING_GOTO_BLACK_RECOVERY_SECONDS = 90.0
     ZA_OUT_HOTEL_Z_40_STALL_TIMEOUT_SECONDS = 120.0
     ZA_OUT_HOTEL_Z_17_22_BLACK_RESTART_SECONDS = 5.0
@@ -343,7 +376,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "1_STORY_OUT_HOTEL_Z_63": ("1_STORY_OUT_HOTEL_Z_63", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_8": ("2_STORY_TOWER_8", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_12": ("2_STORY_TOWER_12", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_14": ("2_STORY_TOWER_13_0", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_TOWER_14": ("2_STORY_TOWER_13", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_TOWER_16": ("2_STORY_TOWER_16", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         #"2_STORY_TOWER_22": "2_STORY_TOWER_22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "2_STORY_TOWER_43": ("2_STORY_TOWER_43", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -370,7 +403,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         #"2_STORY_MEGA_MOVE6": "2_STORY_MEGA_MOVE6",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         
         #"2_STORY_MEGA_MOVE16": "2_STORY_MEGA_MOVE16",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "2_STORY_MEGA_MOVE20": ("2_STORY_MEGA_MOVE17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        # MEGA前は白／緑のどちらかを成功とするため、
+        # ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS側だけで管理する。
         #"2_STORY_MEGA_MOVE22": "2_STORY_MEGA_MOVE22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "3_STORY_CANARI_10": ("3_STORY_CANARI_2_RECOVERY1", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "3_STORY_CANARI_16": ("3_STORY_CANARI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -381,7 +415,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         #"3_STORY_MEGA_MOVE12": "3_STORY_MEGA_MOVE12",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"3_STORY_MEGA_MOVE18": "3_STORY_MEGA_MOVE18",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
-        "3_STORY_MEGA_MOVE23": ("3_STORY_MEGA_MOVE19", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE23": ("3_STORY_MEGA_MOVE20", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中] 朝へ変更後に移動Stepから再開
         #"3_STORY_MEGA_MOVE27": "3_STORY_MEGA_MOVE27",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "3_STORY_MEGA_MOVE30": ("3_STORY_MEGA_MOVE30", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "4_STORY_SHIRO_12": ("4_STORY_SHIRO_12", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -410,39 +444,39 @@ class ZA_story_Base(ImageProcPythonCommand):
         #"5_STORY_KARASUBA_26": "5_STORY_KARASUBA_26",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"5_STORY_KARASUBA_32": "5_STORY_KARASUBA_32",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         #"5_STORY_KARASUBA_33": "5_STORY_KARASUBA_33",  # TODO_EVENT_ENTRY_RECOVERY[未実行]
-        "5_STORY_KARASUBA_37": ("5_STORY_KARASUBA_34", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_37": ("5_STORY_KARASUBA_35", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_46": ("5_STORY_KARASUBA_46_RECOVERY", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"5_STORY_KARASUBA_48": "5_STORY_KARASUBA_48",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "5_STORY_KARASUBA_52": ("5_STORY_KARASUBA_52", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_55": ("5_STORY_KARASUBA_55", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_57": ("5_STORY_KARASUBA_57", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_62": ("5_STORY_KARASUBA_62", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "5_STORY_KARASUBA_66": ("5_STORY_KARASUBA_63", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_66": ("5_STORY_KARASUBA_64", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_68": ("5_STORY_KARASUBA_68", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "5_STORY_KARASUBA_98": ("5_STORY_KARASUBA_98", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "5_STORY_KARASUBA_104": ("5_STORY_KARASUBA_99", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_116": ("5_STORY_KARASUBA_111", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_104": ("5_STORY_KARASUBA_100", 2),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_116": ("5_STORY_KARASUBA_112", 2),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "5_STORY_KARASUBA_120": ("5_STORY_KARASUBA_120", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "6_STORY_YUKARI_4": ("6_STORY_YUKARI_1", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_14": ("6_STORY_YUKARI_11", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_20": ("6_STORY_YUKARI_17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_4": ("6_STORY_YUKARI_2", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_14": ("6_STORY_YUKARI_12", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_20": ("6_STORY_YUKARI_18", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"6_STORY_YUKARI_26": "6_STORY_YUKARI_23", # TODO_EVENT_ENTRY_RECOVERY[確認中] 26にコメントチェックが必要、（28も）なため追加
         "6_STORY_YUKARI_28": ("6_STORY_YUKARI_27", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_58": ("6_STORY_YUKARI_55", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_65": ("6_STORY_YUKARI_61", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_58": ("6_STORY_YUKARI_56", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_65": ("6_STORY_YUKARI_62", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         # FURADARI_MAP区間はComment_Outを取り逃がしても停止し続けないよう、
         
         # 30秒間Commentを確認できなければ一旦次Stepへ進める。
-        "7_STORY_GURI_4": ("7_STORY_GURI_1", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_11": ("7_STORY_GURI_8", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_17": ("7_STORY_GURI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_23": ("7_STORY_GURI_20", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_50": ("7_STORY_GURI_47", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_58": ("7_STORY_GURI_55", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_74": ("7_STORY_GURI_71", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_78": ("7_STORY_GURI_75", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_4": ("7_STORY_GURI_2", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_11": ("7_STORY_GURI_9", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        # GURI_17はMEGA前の白／緑Comment判定なのでMEGA表だけで管理。
+        "7_STORY_GURI_23": ("7_STORY_GURI_21", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_50": ("7_STORY_GURI_48", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_58": ("7_STORY_GURI_56", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_74": ("7_STORY_GURI_72", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_78": ("7_STORY_GURI_76", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_88": ("7_STORY_GURI_89", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_96": ("7_STORY_GURI_97", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_103": ("7_STORY_GURI_104", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -452,8 +486,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_122": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] フラダリラボ地下の判定ミス？
         "7_STORY_GURI_128": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
-        "7_STORY_GURI_133": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_139": ("7_STORY_GURI_136", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_133": ("7_STORY_GURI_130", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_139": ("7_STORY_GURI_137", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "8_STORY_STORY_LAST_9":("8_STORY_STORY_LAST_8_0", 0),
         "8_STORY_STORY_LAST_23":("8_STORY_STORY_LAST_21_0", 0),
         "8_STORY_STORY_LAST_27":("8_STORY_STORY_LAST_26", 4),
@@ -468,26 +502,48 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 直前の時間変更Stepへ戻す。
     ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS = {
         
-        "2_STORY_MEGA_MOVE4": ("2_STORY_MEGA_MOVE1", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE4": ("2_STORY_MEGA_MOVE2", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_MEGA_MOVE14": ("2_STORY_MEGA_MOVE13", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "2_STORY_MEGA_MOVE20": ("2_STORY_MEGA_MOVE17", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_MEGA_MOVE20": ("2_STORY_MEGA_MOVE18", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
         "3_STORY_MEGA_MOVE10": ("3_STORY_MEGA_MOVE9", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "3_STORY_MEGA_MOVE16": ("3_STORY_MEGA_MOVE13", 0), # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "3_STORY_MEGA_MOVE16": ("3_STORY_MEGA_MOVE14", 1), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "3_STORY_MEGA_MOVE25": ("3_STORY_MEGA_MOVE24", 4), # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
-        "5_STORY_KARASUBA_24": ("5_STORY_KARASUBA_21", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "5_STORY_KARASUBA_30": ("5_STORY_KARASUBA_27", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_24": ("5_STORY_KARASUBA_22", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "5_STORY_KARASUBA_30": ("5_STORY_KARASUBA_28", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         #"5_STORY_KARASUBA_46": "5_STORY_KARASUBA_46_RECOVERY",  # TODO_EVENT_ENTRY_RECOVERY[確認中]
 
-        "6_STORY_YUKARI_32": ("6_STORY_YUKARI_29", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_39": ("6_STORY_YUKARI_35", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "6_STORY_YUKARI_52": ("6_STORY_YUKARI_42", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_32": ("6_STORY_YUKARI_30", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_39": ("6_STORY_YUKARI_36", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "6_STORY_YUKARI_52": ("6_STORY_YUKARI_43", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
 
-        "7_STORY_GURI_17": ("7_STORY_GURI_14", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_17": ("7_STORY_GURI_15", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_34": ("7_STORY_GURI_33", 4),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_44": ("7_STORY_GURI_37", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_44": ("7_STORY_GURI_38", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
     }
+
+    # timechange relayを前処理へ移した際も、元Stepが持っていた
+    # 誤検知回避オプションを保持する。
+    ZA_STORY_EVENT_ENTRY_PRE_ACTION_OPTIONS = {
+        ("white_comment", "6_STORY_YUKARI_14"): {
+            "use_text_box2": False,
+        },
+        ("white_comment", "7_STORY_GURI_58"): {
+            "check_pic1": "POKEMON_ZA_FILED_HARD_CHECK_1",
+        },
+    }
+    # 複合判定があるため、復帰先Step自身にtimechangeを任せる例外。
+    # ジャンプ前にCommon状態だけは必ず初期化する。
+    ZA_STORY_EVENT_ENTRY_TARGET_OWNS_TIMECHANGE = frozenset({
+        ("white_comment", "3_STORY_CANARI_10"),
+        ("white_comment", "7_STORY_GURI_128"),
+    })
+    # GURI_128は正常進行方向へCommentをskipする例外で、
+    # 同じStepの2回目へ戻らないため強制ResetDebug対象にしない。
+    ZA_RESET_DEBUG_EXCLUDED_CHECKPOINTS = frozenset({
+        ("white_comment", "7_STORY_GURI_128"),
+    })
 
     # 値は (復帰先, battle_before成功時の遷移先)。第1要素は30秒待機と
     # battle_functionから連続3回戻った場合の両方で使用する。
@@ -582,6 +638,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.commandWaitTime = 0.02
         self.frameWaitTime = 1.0/30.0
         self.testcode=0
+        self.ResetDebug=False
         self.show_value_bool = False
         self.ZA_gamereset_current_state = "IDLE"
         
@@ -2369,18 +2426,37 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _reset_wait_until(
             self, label, predicate, poll_interval=0.1,
             previous_predicate=None, retry_action=None, retry_state="RETRY",
-            state_callback=None):
-        """指定画面を待ち、直前画面が残る場合だけ入力を再送する。"""
+            state_callback=None, timeout_seconds=None):
+        """指定画面を待ち、直前画面が残る場合だけ入力を再送する。
+
+        直前画面も目的画面も検出できない場合を無期限に待たないよう、
+        再送判定とは別に待機全体の上限を持つ。
+        """
         retry_enabled = (callable(previous_predicate)
                          and callable(retry_action))
         if ((previous_predicate is None) != (retry_action is None)):
             raise TypeError(
                 "previous_predicate and retry_action must be used together")
         tracker = self._reset_retry_tracker()
+        wait_started_at = time.monotonic()
+        if timeout_seconds is None:
+            timeout_seconds = getattr(
+                self, "RESET_TEMPLATE_WAIT_TIMEOUT_SECONDS", 180.0)
+        timeout_seconds = max(0.1, float(timeout_seconds))
         while True:
             self.checkIfAlive()
             if predicate():
                 return True
+            elapsed = time.monotonic() - wait_started_at
+            if elapsed >= timeout_seconds:
+                state = "{}_TIMEOUT".format(retry_state)
+                if callable(state_callback):
+                    state_callback(state)
+                message = (
+                    "[ZAゲーム再起動] {}: 目的画面も直前画面も確認できず "
+                    "{:.1f}秒で待機を中止".format(label, elapsed))
+                print(message)
+                raise RuntimeError(message)
             if retry_enabled:
                 self._reset_maybe_retry(
                     label, tracker, previous_predicate, retry_action,
@@ -2493,7 +2569,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _reset_wait_for_screen(
             self, game_screen_detector, allow_user_select=True,
             state_callback=None, previous_predicate=None, retry_action=None,
-            retry_state="RETRY_START_GAME"):
+            retry_state="RETRY_START_GAME", timeout_seconds=None):
         """ユーザー選択、または呼出側が指定したゲーム画面を待つ。"""
         retry_enabled = (callable(previous_predicate)
                          and callable(retry_action))
@@ -2501,6 +2577,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             raise TypeError(
                 "previous_predicate and retry_action must be used together")
         tracker = self._reset_retry_tracker()
+        wait_started_at = time.monotonic()
+        if timeout_seconds is None:
+            timeout_seconds = getattr(
+                self, "RESET_TEMPLATE_WAIT_TIMEOUT_SECONDS", 180.0)
+        timeout_seconds = max(0.1, float(timeout_seconds))
         while True:
             self.checkIfAlive()
             if self._reset_handle_switch_update_prompt(state_callback):
@@ -2515,6 +2596,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             game_state = game_screen_detector()
             if game_state:
                 return game_state
+            elapsed = time.monotonic() - wait_started_at
+            if elapsed >= timeout_seconds:
+                state = "{}_TIMEOUT".format(retry_state)
+                if callable(state_callback):
+                    state_callback(state)
+                message = (
+                    "[ZAゲーム再起動] ゲーム画面待機: 既知画面を確認できず "
+                    "{:.1f}秒で待機を中止".format(elapsed))
+                print(message)
+                raise RuntimeError(message)
             if retry_enabled:
                 self._reset_maybe_retry(
                     "ゲーム画面待機", tracker, previous_predicate,
@@ -2636,38 +2727,130 @@ class ZA_story_Base(ImageProcPythonCommand):
             # ZA_story初期化前や単体テストでは状態値の保持だけを行う。
             pass
 
-    def ZA_gamereset(self):
-        """Pokemon ZAを終了・再起動し、通常フィールド復帰まで待つ。"""
-        self._ZA_gamereset_set_state("START")
-        state = self.ResetTemplate(
-            self._ZA_gamereset_home_selected,
-            self._ZA_gamereset_game_screen,
-            state_callback=self._ZA_gamereset_set_state)
+    def _ZA_story_release_recovery_controls(self, reason):
+        """再起動・時刻復帰へ入る前に保持入力を中央で解除する。"""
+        released = []
+        stop_view = getattr(self, "ZA_MOVE_SEE", None)
+        if callable(stop_view):
+            try:
+                stop_view(action="END")
+                released.append("RIGHT_STICK")
+            except (AttributeError, TypeError):
+                # 初期化途中や単体test stubでは対象stateが無い場合がある。
+                pass
+        stop_lockon = getattr(self, "ZA_ZL_ACTION", None)
+        if callable(stop_lockon):
+            try:
+                stop_lockon("END")
+                released.append("ZL")
+            except (AttributeError, TypeError):
+                pass
 
-        # PRESS A BUTTONは表示直後に入力を受け付けない場合がある。
-        # 少し待って同じ画面を再確認してからAを送り、未反映なら再試行する。
-        while state == "title":
-            self._ZA_gamereset_set_state("WAIT_TITLE_STABLE")
-            self.wait(self.RESET_TEMPLATE_TITLE_CONFIRM_DELAY)
-            if not self._reset_template_matches("ZA_TITLE_PRESS_A"):
-                self._ZA_gamereset_set_state("RECHECK_GAME_SCREEN")
+        keys = getattr(self, "keys", None)
+        held_buttons = list(getattr(keys, "holdButton", ()) or ())
+        hold_end = getattr(self, "holdEnd", None)
+        for held in held_buttons:
+            if (isinstance(held, Direction)
+                    and getattr(held, "stick", None) == Stick.LEFT
+                    and callable(hold_end)):
+                hold_end(held)
+                released.append("LEFT_STICK")
+        for attribute in (
+                "Lstick_state", "Lstick_state2", "Lstick_state3",
+                "Lstick_state4", "Lstick_state5", "Lstick_state_m1",
+                "Lstick_state_m2"):
+            if hasattr(self, attribute):
+                setattr(self, attribute, 0)
+        if released:
+            print(
+                "[RECOVERY_INPUT_RELEASE] reason={} controls={}".format(
+                    reason, ",".join(sorted(set(released)))))
+
+    def _ZA_reset_debug_wait_before_game_reset(self, reset_debug_site):
+        """専用失敗経路は自然発火した初回だけ20秒の保存待ちを入れる。"""
+        site = str(reset_debug_site or "")
+        if not bool(getattr(self, "ResetDebug", False)) or not site:
+            return False
+        completed = getattr(
+            self, "_za_reset_debug_direct_sites_completed", None)
+        if completed is None:
+            completed = set()
+            self._za_reset_debug_direct_sites_completed = completed
+        if site in completed:
+            return False
+
+        wait_seconds = max(0.0, float(getattr(
+            self, "ZA_RESET_DEBUG_SAVE_WAIT_SECONDS", 20.0)))
+        started_at = time.monotonic()
+        print(
+            "[RESET_DEBUG] WAIT direct_site={} seconds={:.1f}".format(
+                site, wait_seconds))
+        while True:
+            self.checkIfAlive()
+            remaining = wait_seconds - (time.monotonic() - started_at)
+            if remaining <= 0.0:
+                break
+            self.wait(min(0.1, remaining))
+        print("[RESET_DEBUG] EXECUTE direct_site={} action=4".format(site))
+        return True
+
+    def ZA_gamereset(self, reset_debug_site=None):
+        """Pokemon ZAを終了・再起動し、通常フィールド復帰まで待つ。"""
+        queued_debug_site = getattr(
+            self, "_za_reset_debug_next_game_reset_site", None)
+        if "_za_reset_debug_next_game_reset_site" in getattr(
+                self, "__dict__", {}):
+            del self._za_reset_debug_next_game_reset_site
+        if reset_debug_site is None:
+            reset_debug_site = queued_debug_site
+        self._ZA_story_release_recovery_controls(
+            "game_reset:{}".format(reset_debug_site or "shared"))
+        debug_waited = self._ZA_reset_debug_wait_before_game_reset(
+            reset_debug_site)
+        self._ZA_gamereset_set_state("START")
+        try:
+            state = self.ResetTemplate(
+                self._ZA_gamereset_home_selected,
+                self._ZA_gamereset_game_screen,
+                state_callback=self._ZA_gamereset_set_state)
+
+            # PRESS A BUTTONは表示直後に入力を受け付けない場合がある。
+            # 少し待って同じ画面を再確認してからAを送り、未反映なら再試行する。
+            while state == "title":
+                self._ZA_gamereset_set_state("WAIT_TITLE_STABLE")
+                self.wait(self.RESET_TEMPLATE_TITLE_CONFIRM_DELAY)
+                if not self._reset_template_matches("ZA_TITLE_PRESS_A"):
+                    self._ZA_gamereset_set_state("RECHECK_GAME_SCREEN")
+                    state = self._reset_wait_for_screen(
+                        self._ZA_gamereset_game_screen,
+                        allow_user_select=False,
+                        state_callback=self._ZA_gamereset_set_state)
+                    continue
+
+                self._ZA_gamereset_set_state("PRESS_TITLE_A")
+                self.press(Button.A, duration=0.15, wait=0.1)
+                self._ZA_gamereset_set_state("WAIT_TITLE_RESPONSE")
+                self.wait(self.RESET_TEMPLATE_TITLE_RESPONSE_WAIT)
+                self._ZA_gamereset_set_state("WAIT_FIELD")
                 state = self._reset_wait_for_screen(
                     self._ZA_gamereset_game_screen,
                     allow_user_select=False,
                     state_callback=self._ZA_gamereset_set_state)
-                continue
-
-            self._ZA_gamereset_set_state("PRESS_TITLE_A")
-            self.press(Button.A, duration=0.15, wait=0.1)
-            self._ZA_gamereset_set_state("WAIT_TITLE_RESPONSE")
-            self.wait(self.RESET_TEMPLATE_TITLE_RESPONSE_WAIT)
-            self._ZA_gamereset_set_state("WAIT_FIELD")
-            state = self._reset_wait_for_screen(
-                self._ZA_gamereset_game_screen,
-                allow_user_select=False,
-                state_callback=self._ZA_gamereset_set_state)
+        except BaseException as error:
+            self._ZA_gamereset_set_state(
+                "FAILED_{}".format(type(error).__name__))
+            print(
+                "[ZAゲーム再起動] failed site={}: {}".format(
+                    reset_debug_site or "shared", error))
+            raise
 
         self._ZA_gamereset_set_state("COMPLETE")
+        if debug_waited:
+            self._za_reset_debug_direct_sites_completed.add(
+                str(reset_debug_site))
+            print(
+                "[RESET_DEBUG] COMPLETE direct_site={}".format(
+                    reset_debug_site))
         return True
 
     ######################################################
@@ -14740,9 +14923,220 @@ class ZA_story_Base(ImageProcPythonCommand):
         # FIELD不成立だけでComment画像が無い場合は入力せず待機する。
         return False
 
+    def _ZA_story_event_entry_unpack_recovery_setting(self, setting):
+        """旧文字列形式と(target, action)形式を同じ形へ揃える。"""
+        if isinstance(setting, (tuple, list)) and len(setting) == 2:
+            return setting[0], setting[1]
+        return setting, 0
+
+    def _ZA_story_event_entry_recovery_actions(self, recovery_action):
+        """単一actionと将来の複合action列を検証してtuple化する。"""
+        raw_actions = (
+            recovery_action if isinstance(recovery_action, (tuple, list))
+            else (recovery_action,))
+        if not raw_actions:
+            raw_actions = (0,)
+        actions = tuple(int(action) for action in raw_actions)
+        if any(action not in (0, 1, 2, 3, 4) for action in actions):
+            raise ValueError(
+                "Unknown event entry recovery pre-action: {}".format(
+                    recovery_action))
+        if len(actions) > 1 and 0 in actions:
+            raise ValueError(
+                "Recovery action 0 cannot be combined: {}".format(actions))
+        return actions
+
+    def _ZA_story_reset_common_navigation_state(self, reason):
+        """timechange/gotoの共有途中状態を復帰元から引き継がない。"""
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        self.timecount = 0
+        self.changetimecount = 0
+        self.sleepcount = 0
+        self.battlecheck = 0
+        self.battle_step_return = 0
+        self.inactioncount = 0
+        print("[EVENT_ENTRY_RECOVERY_COMMON_RESET] reason={}".format(reason))
+
+    def _ZA_story_event_entry_pre_action_options(
+            self, recovery_kind, current_state):
+        options = getattr(
+            self, "ZA_STORY_EVENT_ENTRY_PRE_ACTION_OPTIONS", {}).get(
+                (str(recovery_kind), str(current_state)), {})
+        return dict(options) if isinstance(options, dict) else {}
+
+    def _ZA_story_schedule_event_entry_recovery(
+            self, current_state, recovery_target, recovery_kind,
+            recovery_action, reset_debug_key=None):
+        actions = self._ZA_story_event_entry_recovery_actions(
+            recovery_action)
+        pending = {
+            "current_state": current_state,
+            "recovery_target": recovery_target,
+            "recovery_kind": recovery_kind,
+            "recovery_action": (
+                actions[0] if len(actions) == 1 else actions),
+            "recovery_actions": actions,
+            "action_index": 0,
+            "timechange_options": (
+                self._ZA_story_event_entry_pre_action_options(
+                    recovery_kind, current_state)),
+        }
+        if reset_debug_key is not None:
+            pending["reset_debug_key"] = reset_debug_key
+        self._za_story_event_entry_recovery_failure = None
+        self._za_story_event_entry_pending_recovery = pending
+        return pending
+
+    def _ZA_story_reset_debug_recovery_spec(self, current_state):
+        """通常dispatcherと同じ優先順位で強制検証対象を1件選ぶ。"""
+        catalogs = (
+            ("white_comment", getattr(
+                self, "ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS", {})),
+            ("mega_before_comment", getattr(
+                self, "ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS", {})),
+        )
+        excluded = getattr(
+            self, "ZA_RESET_DEBUG_EXCLUDED_CHECKPOINTS", frozenset())
+        for recovery_kind, catalog in catalogs:
+            if current_state not in catalog:
+                continue
+            if (recovery_kind, current_state) in excluded:
+                return None
+            recovery_target, recovery_action = (
+                self._ZA_story_event_entry_unpack_recovery_setting(
+                    catalog[current_state]))
+            actions = self._ZA_story_event_entry_recovery_actions(
+                recovery_action)
+            if actions == (0,):
+                return None
+            key = (
+                str(recovery_kind), str(current_state),
+                str(recovery_target), actions)
+            return {
+                "key": key,
+                "recovery_kind": recovery_kind,
+                "current_state": current_state,
+                "recovery_target": recovery_target,
+                "recovery_action": (
+                    actions[0] if len(actions) == 1 else actions),
+            }
+        return None
+
+    def _ZA_story_reset_debug_checkpoint_step(self, current_state):
+        """初回だけ20秒静止して復帰前処理を強制し、再訪は通常判定へ戻す。"""
+        if not bool(getattr(self, "ResetDebug", False)):
+            return None
+        spec = self._ZA_story_reset_debug_recovery_spec(current_state)
+        wait_state = getattr(self, "_za_reset_debug_wait_state", None)
+        if spec is None:
+            if (isinstance(wait_state, dict)
+                    and wait_state.get("current_state") != current_state):
+                print(
+                    "[RESET_DEBUG] CANCEL stale_wait={} current={}".format(
+                        wait_state.get("current_state"), current_state))
+                self._za_reset_debug_wait_state = None
+            return None
+
+        key = spec["key"]
+        completed = getattr(self, "_za_reset_debug_completed", None)
+        if completed is None:
+            completed = set()
+            self._za_reset_debug_completed = completed
+        if key in completed:
+            revisited = getattr(self, "_za_reset_debug_revisited", None)
+            if revisited is None:
+                revisited = set()
+                self._za_reset_debug_revisited = revisited
+            if key not in revisited:
+                revisited.add(key)
+                print(
+                    "[RESET_DEBUG] NORMAL_REVISIT kind={} state={} "
+                    "target={} actions={}".format(
+                        key[0], key[1], key[2], key[3]))
+            return None
+
+        now = time.monotonic()
+        if (not isinstance(wait_state, dict)
+                or wait_state.get("key") != key):
+            self._ZA_story_release_recovery_controls(
+                "reset_debug:{}:{}".format(key[0], key[1]))
+            wait_state = {
+                "key": key,
+                "current_state": current_state,
+                "started_at": now,
+            }
+            self._za_reset_debug_wait_state = wait_state
+            print(
+                "[RESET_DEBUG] WAIT kind={} state={} target={} "
+                "actions={} seconds={:.1f}".format(
+                    key[0], key[1], key[2], key[3],
+                    float(getattr(
+                        self, "ZA_RESET_DEBUG_SAVE_WAIT_SECONDS", 20.0))))
+
+        wait_seconds = max(0.0, float(getattr(
+            self, "ZA_RESET_DEBUG_SAVE_WAIT_SECONDS", 20.0)))
+        elapsed = now - float(wait_state["started_at"])
+        if elapsed < wait_seconds:
+            return current_state
+
+        self._za_reset_debug_wait_state = None
+        self._ZA_story_schedule_event_entry_recovery(
+            current_state=spec["current_state"],
+            recovery_target=spec["recovery_target"],
+            recovery_kind=spec["recovery_kind"],
+            recovery_action=spec["recovery_action"],
+            reset_debug_key=key)
+        print(
+            "[RESET_DEBUG] EXECUTE kind={} state={} target={} actions={} "
+            "elapsed={:.1f}".format(
+                key[0], key[1], key[2], key[3], elapsed))
+        return self._ZA_story_event_entry_pending_recovery_step(
+            current_state)
+
+    def _ZA_story_reset_debug_note_normal_result(
+            self, recovery_kind, current_state, outcome):
+        """録画ログへ2回目の通常判定結果を一度だけ残す。"""
+        if not bool(getattr(self, "ResetDebug", False)):
+            return
+        completed = getattr(self, "_za_reset_debug_completed", set())
+        matching = next((
+            key for key in completed
+            if key[0] == recovery_kind and key[1] == current_state), None)
+        if matching is None:
+            return
+        results = getattr(self, "_za_reset_debug_normal_results", None)
+        if results is None:
+            results = set()
+            self._za_reset_debug_normal_results = results
+        result_key = (matching, str(outcome))
+        if result_key in results:
+            return
+        results.add(result_key)
+        print(
+            "[RESET_DEBUG] NORMAL_RESULT kind={} state={} outcome={}".format(
+                recovery_kind, current_state, outcome))
+
     def ZA_story_event_entry_recovery_step(
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
+        def unpack_recovery_setting(setting):
+            # このdispatcherだけをASTで取り出す旧テスト／外部拡張でも、
+            # 新helperが未取込みなら従来の文字列形式として扱えるようにする。
+            unpacker = getattr(
+                self, "_ZA_story_event_entry_unpack_recovery_setting", None)
+            if callable(unpacker):
+                return unpacker(setting)
+            if isinstance(setting, (tuple, list)) and len(setting) == 2:
+                return setting[0], setting[1]
+            return setting, 0
+
+        def note_reset_debug_result(recovery_kind, outcome):
+            note_result = getattr(
+                self, "_ZA_story_reset_debug_note_normal_result", None)
+            if callable(note_result):
+                note_result(recovery_kind, current_state, outcome)
+
         pending_recovery = getattr(
             self, "_za_story_event_entry_pending_recovery", None)
         if isinstance(pending_recovery, dict):
@@ -14751,11 +15145,39 @@ class ZA_story_Base(ImageProcPythonCommand):
                 # 再実行せず、前処理だけを進める。
                 return self._ZA_story_event_entry_pending_recovery_step(
                     current_state)
+            stale_state = pending_recovery.get("current_state")
+            release_controls = getattr(
+                self, "_ZA_story_release_recovery_controls", None)
+            if callable(release_controls):
+                release_controls(
+                    "discard_stale_recovery:{}->{}".format(
+                        stale_state, current_state))
+            reset_common = getattr(
+                self, "_ZA_story_reset_common_navigation_state", None)
+            if callable(reset_common):
+                reset_common(
+                    "discard_stale_recovery:{}->{}".format(
+                        stale_state, current_state))
+            else:
+                self.Common_current_state = "COMMON_START"
+                self.map_cursor_reset = 0
+                self.timecount = 0
+                self.changetimecount = 0
+                self.sleepcount = 0
+                self.battlecheck = 0
+                self.battle_step_return = 0
+                self.inactioncount = 0
             print(
                 "[EVENT_ENTRY_RECOVERY_PRE_ACTION] discard stale {} for "
                 "current_state={}".format(
-                    pending_recovery.get("current_state"), current_state))
+                    stale_state, current_state))
             self._za_story_event_entry_pending_recovery = None
+        reset_debug_step = getattr(
+            self, "_ZA_story_reset_debug_checkpoint_step", None)
+        if callable(reset_debug_step):
+            reset_debug_return = reset_debug_step(current_state)
+            if reset_debug_return is not None:
+                return reset_debug_return
         last_dispatch_state = getattr(
             self, "_za_story_pre_step_gate_last_dispatch_state", None)
         if last_dispatch_state != current_state:
@@ -14994,14 +15416,15 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 前回分の経過時間を引き継いで即リカバリーが発火してしまう。
             if next_state != current_state or white_comment_matched[0] is not False:
                 timers.pop(current_state, None)
+                if white_comment_matched[0] is True:
+                    note_reset_debug_result("white_comment", "COMMENT_OK")
+                elif next_state != current_state:
+                    note_reset_debug_result("white_comment", "PROGRESSED")
                 return next_state
             recovery_setting = (
                 self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS[current_state])
-            if (isinstance(recovery_setting, (tuple, list))
-                    and len(recovery_setting) == 2):
-                recovery_target, recovery_action = recovery_setting
-            else:
-                recovery_target, recovery_action = recovery_setting, 0
+            recovery_target, recovery_action = (
+                unpack_recovery_setting(recovery_setting))
             return self._ZA_story_event_entry_recovery_timeout(
                 current_state, recovery_target, next_state,
                 "white_comment", timers, recovery_action)
@@ -15016,13 +15439,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 and green_comment_matched[0] is False)
             if next_state != current_state or not comment_missing:
                 timers.pop(current_state, None)
+                if (white_comment_matched[0] is True
+                        or green_comment_matched[0] is True):
+                    note_reset_debug_result(
+                        "mega_before_comment", "COMMENT_OK")
+                elif next_state != current_state:
+                    note_reset_debug_result(
+                        "mega_before_comment", "PROGRESSED")
                 return next_state
             recovery_setting = mega_before_comment_targets[current_state]
-            if (isinstance(recovery_setting, (tuple, list))
-                    and len(recovery_setting) == 2):
-                recovery_target, recovery_action = recovery_setting
-            else:
-                recovery_target, recovery_action = recovery_setting, 0
+            recovery_target, recovery_action = (
+                unpack_recovery_setting(recovery_setting))
             return self._ZA_story_event_entry_recovery_timeout(
                 current_state, recovery_target, next_state,
                 "mega_before_comment", timers, recovery_action)
@@ -15110,6 +15537,46 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _ZA_story_event_entry_pending_recovery_step(self, current_state):
         """ジャンプ前処理を完了させてから復帰先Stepを返す。"""
+        def normalized_recovery_actions(recovery_action):
+            action_parser = getattr(
+                self, "_ZA_story_event_entry_recovery_actions", None)
+            if callable(action_parser):
+                return action_parser(recovery_action)
+            raw_actions = (
+                recovery_action
+                if isinstance(recovery_action, (tuple, list))
+                else (recovery_action,))
+            if not raw_actions:
+                raw_actions = (0,)
+            actions = tuple(int(action) for action in raw_actions)
+            if any(action not in (0, 1, 2, 3, 4) for action in actions):
+                raise ValueError(
+                    "Unknown event entry recovery pre-action: {}".format(
+                        recovery_action))
+            if len(actions) > 1 and 0 in actions:
+                raise ValueError(
+                    "Recovery action 0 cannot be combined: {}".format(
+                        actions))
+            return actions
+
+        def reset_common_navigation_state(reason):
+            reset_common = getattr(
+                self, "_ZA_story_reset_common_navigation_state", None)
+            if callable(reset_common):
+                reset_common(reason)
+                return
+            self.Common_current_state = "COMMON_START"
+            self.map_cursor_reset = 0
+            self.timecount = 0
+            self.changetimecount = 0
+            self.sleepcount = 0
+            self.battlecheck = 0
+            self.battle_step_return = 0
+            self.inactioncount = 0
+            print(
+                "[EVENT_ENTRY_RECOVERY_COMMON_RESET] reason={}".format(
+                    reason))
+
         pending = getattr(
             self, "_za_story_event_entry_pending_recovery", None)
         if (not isinstance(pending, dict)
@@ -15117,48 +15584,161 @@ class ZA_story_Base(ImageProcPythonCommand):
             return current_state
 
         recovery_target = pending["recovery_target"]
-        recovery_action = int(pending["recovery_action"])
+        recovery_actions = normalized_recovery_actions(
+            pending.get(
+                "recovery_actions", pending.get("recovery_action", 0)))
+        action_index = int(pending.get("action_index", 0))
+        if action_index >= len(recovery_actions):
+            action_index = len(recovery_actions) - 1
+        recovery_action = recovery_actions[action_index]
         if recovery_action in (1, 2, 3):
             check_timing = {
                 1: "POKEMON_ZA_MORNING",
                 2: "POKEMON_ZA_NIGHT",
                 3: "POKEMON_ZA_OTHER",
             }[recovery_action]
-            if not pending.get("initialized", False):
+            release_controls = getattr(
+                self, "_ZA_story_release_recovery_controls", None)
+            if pending.get("initialized_action_index") != action_index:
+                action_reason = "{}:{}:action{}".format(
+                    pending.get("recovery_kind", "unknown"),
+                    current_state, recovery_action)
+                if callable(release_controls):
+                    release_controls(action_reason)
                 # 通常Stepが使ったCommon状態を引き継がず、地図移動から
                 # ベンチ・時刻確認までを1セットとしてやり直す。
-                self.Common_current_state = "COMMON_START"
-                self.timecount = 0
-                self.changetimecount = 0
-                self.sleepcount = 0
-                pending["initialized"] = True
+                reset_common_navigation_state(action_reason)
+                pending["initialized_action_index"] = action_index
+                pending["action_started_at"] = time.monotonic()
                 print(
                     "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action={} "
                     "check_timing={} start".format(
                         current_state, recovery_action, check_timing))
+            timechange_options = dict(
+                pending.get("timechange_options", {}) or {})
             result = self.ZA_Common_change_time_set(
-                check_timing=check_timing)
+                check_timing=check_timing, **timechange_options)
             if result != "START":
+                action_started_at = pending.get("action_started_at")
+                if action_started_at is None:
+                    action_started_at = time.monotonic()
+                    pending["action_started_at"] = action_started_at
+                elapsed = time.monotonic() - float(action_started_at)
+                timeout_seconds = max(0.1, float(getattr(
+                    self, "ZA_STORY_RECOVERY_PRE_ACTION_TIMEOUT_SECONDS",
+                    180.0)))
+                if elapsed >= timeout_seconds:
+                    failure = {
+                        "current_state": current_state,
+                        "recovery_target": recovery_target,
+                        "recovery_kind": pending.get(
+                            "recovery_kind", "unknown"),
+                        "recovery_actions": recovery_actions,
+                        "action_index": action_index,
+                        "recovery_action": recovery_action,
+                        "elapsed": elapsed,
+                        "last_result": result,
+                    }
+                    self._za_story_event_entry_recovery_failure = failure
+                    self._za_story_event_entry_pending_recovery = None
+                    failure_reason = "{}:{}:action{}:timeout".format(
+                        failure["recovery_kind"], current_state,
+                        recovery_action)
+                    if callable(release_controls):
+                        release_controls(failure_reason)
+                    reset_common_navigation_state(failure_reason)
+                    message = (
+                        "Event entry recovery pre-action timed out: "
+                        "kind={} state={} target={} action={} "
+                        "elapsed={:.1f}s result={}".format(
+                            failure["recovery_kind"], current_state,
+                            recovery_target, recovery_action, elapsed,
+                            result))
+                    print(
+                        "[EVENT_ENTRY_RECOVERY_PRE_ACTION_FAILED] {}".
+                        format(message))
+                    raise RuntimeError(message)
                 return current_state
         elif recovery_action == 4:
             print(
                 "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action=4 "
                 "game reset start".format(current_state))
             self.ZA_gamereset()
-        elif recovery_action != 0:
-            raise ValueError(
-                "Unknown event entry recovery pre-action: {}".format(
-                    recovery_action))
+        # action 0は前処理なしでtargetへ移す旧形式。
+
+        action_index += 1
+        pending["action_index"] = action_index
+        pending.pop("initialized_action_index", None)
+        pending.pop("action_started_at", None)
+        if action_index < len(recovery_actions):
+            print(
+                "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} phase {}/{} complete; "
+                "next_action={}".format(
+                    current_state, action_index, len(recovery_actions),
+                    recovery_actions[action_index]))
+            return current_state
 
         self._za_story_event_entry_pending_recovery = None
         print(
             "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action={} complete -> {}".
-            format(current_state, recovery_action, recovery_target))
+            format(current_state, recovery_actions, recovery_target))
+        reset_debug_key = pending.get("reset_debug_key")
+        if reset_debug_key is not None:
+            completed = getattr(self, "_za_reset_debug_completed", None)
+            if completed is None:
+                completed = set()
+                self._za_reset_debug_completed = completed
+            completed.add(reset_debug_key)
+            print(
+                "[RESET_DEBUG] COMPLETE kind={} state={} target={} "
+                "actions={}".format(
+                    reset_debug_key[0], reset_debug_key[1],
+                    reset_debug_key[2], reset_debug_key[3]))
         return recovery_target
 
     def _ZA_story_event_entry_recovery_timeout(
             self, current_state, recovery_target, normal_return,
             recovery_kind, timers, recovery_action=0):
+        def normalized_recovery_actions(action_value):
+            action_parser = getattr(
+                self, "_ZA_story_event_entry_recovery_actions", None)
+            if callable(action_parser):
+                return action_parser(action_value)
+            raw_actions = (
+                action_value
+                if isinstance(action_value, (tuple, list))
+                else (action_value,))
+            if not raw_actions:
+                raw_actions = (0,)
+            actions = tuple(int(action) for action in raw_actions)
+            if any(action not in (0, 1, 2, 3, 4) for action in actions):
+                raise ValueError(
+                    "Unknown event entry recovery pre-action: {}".format(
+                        action_value))
+            if len(actions) > 1 and 0 in actions:
+                raise ValueError(
+                    "Recovery action 0 cannot be combined: {}".format(
+                        actions))
+            return actions
+
+        def reset_common_navigation_state(reason):
+            reset_common = getattr(
+                self, "_ZA_story_reset_common_navigation_state", None)
+            if callable(reset_common):
+                reset_common(reason)
+                return
+            self.Common_current_state = "COMMON_START"
+            self.map_cursor_reset = 0
+            self.timecount = 0
+            self.changetimecount = 0
+            self.sleepcount = 0
+            self.battlecheck = 0
+            self.battle_step_return = 0
+            self.inactioncount = 0
+            print(
+                "[EVENT_ENTRY_RECOVERY_COMMON_RESET] reason={}".format(
+                    reason))
+
         now = time.monotonic()
         started = timers.get(current_state)
         if started is None:
@@ -15199,15 +15779,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 and recovery_target == "2_STORY_ABSOL_MOVE14"):
             self._ZA_story_reset_absol_infi_reentry(
                 "battle_before_timeout")
-        recovery_action = int(recovery_action)
-        if recovery_action not in (0, 1, 2, 3, 4):
-            raise ValueError(
-                "Unknown event entry recovery pre-action: {}".format(
-                    recovery_action))
+        recovery_actions = normalized_recovery_actions(recovery_action)
         if (recovery_kind == "white_comment"
                 and current_state == "4_STORY_SHIRO_17"
                 and recovery_target == "4_STORY_SHIRO_16"
-                and recovery_action == 0):
+                and recovery_actions == (0,)):
             # SHIRO_16の移動はセーブ位置基準。現在位置のまま
             # Stepだけ戻すと方向がずれるため、ゲームを復元する。
             # 再度SHIRO_17へ入った時は30秒を最初から計る。
@@ -15215,6 +15791,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[SHIRO_17_WHITE_TIMEOUT] white comment missing -> "
                 "game reset and return to 4_STORY_SHIRO_16")
+            self._za_reset_debug_next_game_reset_site = (
+                "white_comment:4_STORY_SHIRO_17:legacy")
             self.ZA_gamereset()
         if (recovery_kind == "white_comment"
                 and current_state == "4_STORY_SHIRO_44"
@@ -15225,15 +15803,54 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[SHIRO_44_WHITE_TIMEOUT] white comment missing -> "
                 "return to 4_STORY_SHIRO_43")
-        if recovery_action != 0:
-            self._za_story_event_entry_pending_recovery = {
-                "current_state": current_state,
-                "recovery_target": recovery_target,
-                "recovery_kind": recovery_kind,
-                "recovery_action": recovery_action,
-            }
-            return self._ZA_story_event_entry_pending_recovery_step(
-                current_state)
+        if recovery_actions != (0,):
+            note_result = getattr(
+                self, "_ZA_story_reset_debug_note_normal_result", None)
+            if callable(note_result):
+                note_result(
+                    recovery_kind, current_state,
+                    "COMMENT_MISSING_RECOVERY")
+            schedule_recovery = getattr(
+                self, "_ZA_story_schedule_event_entry_recovery", None)
+            if callable(schedule_recovery):
+                schedule_recovery(
+                    current_state=current_state,
+                    recovery_target=recovery_target,
+                    recovery_kind=recovery_kind,
+                    recovery_action=recovery_actions)
+            else:
+                option_resolver = getattr(
+                    self, "_ZA_story_event_entry_pre_action_options", None)
+                timechange_options = (
+                    option_resolver(recovery_kind, current_state)
+                    if callable(option_resolver) else {})
+                self._za_story_event_entry_pending_recovery = {
+                    "current_state": current_state,
+                    "recovery_target": recovery_target,
+                    "recovery_kind": recovery_kind,
+                    "recovery_action": (
+                        recovery_actions[0]
+                        if len(recovery_actions) == 1
+                        else recovery_actions),
+                    "recovery_actions": recovery_actions,
+                    "action_index": 0,
+                    "timechange_options": dict(
+                        timechange_options or {}),
+                }
+            pending_step = getattr(
+                self, "_ZA_story_event_entry_pending_recovery_step", None)
+            if callable(pending_step):
+                return pending_step(current_state)
+            # 旧外部拡張がtimeout関数だけを取り込んでいる場合、前処理を
+            # 実行せずtargetへ飛ぶ方が危険なので現Stepに留める。
+            return current_state
+        target_owns_timechange = getattr(
+            self, "ZA_STORY_EVENT_ENTRY_TARGET_OWNS_TIMECHANGE",
+            frozenset())
+        if (recovery_kind, current_state) in target_owns_timechange:
+            reset_common_navigation_state(
+                "{}:{}:target_owned".format(
+                    recovery_kind, current_state))
         print(
             "[EVENT_ENTRY_RECOVERY] {}: {} -> {}".format(
                 recovery_kind, current_state, recovery_target))
@@ -17563,6 +18180,29 @@ class ZA_story_Base(ImageProcPythonCommand):
         if game_reset_state != "IDLE":
             game_reset_status = (
                 f'\r\n GAME_RESET_FUNCTION   :: {game_reset_state}')
+        reset_debug_status = ""
+        if bool(getattr(self, "ResetDebug", False)):
+            wait_state = getattr(self, "_za_reset_debug_wait_state", None)
+            debug_phase = "WAIT_20S" if isinstance(wait_state, dict) else "ACTIVE"
+            debug_state = (
+                wait_state.get("current_state", "")
+                if isinstance(wait_state, dict) else "")
+            reset_debug_status = (
+                f'\r\n RESET_DEBUG_FUNCTION  :: {debug_phase}'
+                f' :: {debug_state}'
+                f' :: complete='
+                f'{len(getattr(self, "_za_reset_debug_completed", set()))}')
+        recovery_failure_status = ""
+        recovery_failure = getattr(
+            self, "_za_story_event_entry_recovery_failure", None)
+        if isinstance(recovery_failure, dict):
+            recovery_failure_status = (
+                f'\r\n RECOVERY_PRE_ACTION   :: FAILED'
+                f' :: {recovery_failure.get("current_state", "")}'
+                f' :: action='
+                f'{recovery_failure.get("recovery_action", "")}'
+                f' :: elapsed='
+                f'{float(recovery_failure.get("elapsed", 0.0)):.1f}s')
         mega_mode5_status = ""
         if getattr(self, "_za_mega_last_battle_mode", False):
             hp_ratio=float(getattr(
@@ -17595,6 +18235,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             f'\r\n ITEM_GIVE_FUNCTION    :: {self.common_item_give_current_state}'
             f'\r\n EVOLUTION_FUNCTION    :: {self.common_evolution_current_state}'
             f'{game_reset_status}'
+            f'{reset_debug_status}'
+            f'{recovery_failure_status}'
             f'{mega_mode5_status}'
             f'\r\n----------------------------'
         )
@@ -17611,6 +18253,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_story_pre_step_gate_completed = False
         self._za_story_pre_step_gate_last_dispatch_state = None
         self._za_story_event_entry_pending_recovery = None
+        self._za_story_event_entry_recovery_failure = None
+        self._za_story_event_entry_recovery_started = {}
+        self._za_story_battle_before_recovery_exempt = set()
+        self._za_story_battle_return_counts = {}
+        self._za_story_battle_active_states = set()
+        self._za_story_furadari_comment_skipped = set()
+        # ResetDebugの履歴はCommands 1実行内だけ保持する。ゲームだけを
+        # 再起動しても消さず、同じcheckpointの2回目を通常判定へ渡す。
+        self._za_reset_debug_wait_state = None
+        self._za_reset_debug_completed = set()
+        self._za_reset_debug_revisited = set()
+        self._za_reset_debug_normal_results = set()
+        self._za_reset_debug_direct_sites_completed = set()
         self._za_story_mapping_goto_watch = None
         self._za_story_mapping_goto_recovery = None
         while True:
@@ -18463,6 +19118,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 current_state, dead_count, check_seconds))
         self.ZA_MOVE_SEE("END")
         self.ZA_ZL_ACTION("END")
+        self._za_reset_debug_next_game_reset_site = (
+            "1_STORY_OUT_HOTEL_Z_17_18:dead")
         self.ZA_gamereset()
         return "1_STORY_OUT_HOTEL_Z_17"
 
@@ -18479,6 +19136,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._1_story_out_hotel_z_20_not_eyecheck_count = 0
         self.ZA_MOVE_SEE("END")
         self.ZA_ZL_ACTION("END")
+        self._za_reset_debug_next_game_reset_site = (
+            "1_STORY_OUT_HOTEL_Z_20:dead")
         self.ZA_gamereset()
         return "1_STORY_OUT_HOTEL_Z_19"
 
@@ -18514,6 +19173,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "[OUT_HOTEL_Z_17_22_BLACK] sustained {:.1f}s at {} "
                     "-> game reset".format(elapsed, current_state))
                 self.ZA_ZL_ACTION("END")
+                self._za_reset_debug_next_game_reset_site = (
+                    "1_STORY_OUT_HOTEL_Z_17_22:black_comment")
                 self.ZA_gamereset()
                 if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
                     print(
@@ -19152,6 +19813,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         print(
             "[OUT_HOTEL_Z_40] recovery restart: {} -> "
             "1_STORY_WANINOKO_SKILL_CHANGE3".format(reason))
+        self._za_reset_debug_next_game_reset_site = (
+            "1_STORY_OUT_HOTEL_Z_40:recovery")
         self.ZA_gamereset()
         return "1_STORY_WANINOKO_SKILL_CHANGE3"
 
@@ -20050,6 +20713,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "[TOWER_38_STALL] else repeated {}/{} times -> "
                     "game reset and return to TOWER_31".format(
                         else_count, reset_count))
+                self._za_reset_debug_next_game_reset_site = (
+                    "2_STORY_TOWER_38:stall")
                 self.ZA_gamereset()
                 return "2_STORY_TOWER_31"
             if else_count == 1 or else_count % 10 == 0:
@@ -22589,6 +23254,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move0(self):
         self._2_story_absol_battle_confirmed=False
+        self._za_reset_debug_next_game_reset_site = (
+            "2_STORY_ABSOL_MOVE0:relay")
         self.ZA_gamereset()
         return "2_STORY_ABSOL_MOVE1"
         
@@ -26021,6 +26688,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "[KARASUBA_58_62_BLACK_RESET] sustained {:.1f}s at {} "
                     "-> game reset and return to 5_STORY_KARASUBA_58".format(
                         elapsed, current_state))
+                self._za_reset_debug_next_game_reset_site = (
+                    "5_STORY_KARASUBA_58_62:black_comment")
                 self.ZA_gamereset()
                 return "5_STORY_KARASUBA_58"
             self.wait(0.1)
@@ -26225,6 +26894,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "[KARASUBA_69_95_DEFEAT] black sustained {:.1f}s at {} "
                     "-> game reset and return to 5_STORY_KARASUBA_69".format(
                         elapsed, current_state))
+                self._za_reset_debug_next_game_reset_site = (
+                    "5_STORY_KARASUBA_69_95:defeat_black")
                 self.ZA_gamereset()
                 return "5_STORY_KARASUBA_69"
             # LOSE確認後の黒Commentは95で閉じるが、通常終了にはせず
@@ -26622,6 +27293,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "return to 5_STORY_KARASUBA_69".format(reason))
             clear_black_result_state()
             self._5_story_karasuba_69_95_attack_step = None
+            self._za_reset_debug_next_game_reset_site = (
+                "5_STORY_KARASUBA_95:defeat_return")
             self.ZA_gamereset()
             return "5_STORY_KARASUBA_69"
 
@@ -28977,6 +29650,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _8_story_story_last_8_0(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.wait(2.0)
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_8_0:relay")
             self.ZA_gamereset()
             return "8_STORY_STORY_LAST_8"
         return "8_STORY_STORY_LAST_8_0"
@@ -28997,6 +29672,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _8_story_story_last_10_0(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.wait(2.0)
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_10_0:relay")
             self.ZA_gamereset()
             return "8_STORY_STORY_LAST_10"
         return "8_STORY_STORY_LAST_10_0"
@@ -29032,6 +29709,8 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _8_story_story_last_14_0(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_14_0:relay")
             self.ZA_gamereset()
             return "8_STORY_STORY_LAST_14"
         return "8_STORY_STORY_LAST_14_0"
@@ -29052,6 +29731,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_16"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_15:black_comment")
             self.ZA_gamereset()
         return "8_STORY_STORY_LAST_15"
     
@@ -29088,6 +29769,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _8_story_story_last_21_0(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.wait(2.0)
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_21_0:relay")
             self.ZA_gamereset()
             return "8_STORY_STORY_LAST_21" 
         return "8_STORY_STORY_LAST_21_0"
@@ -29116,6 +29799,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_23"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_22:black_comment")
             self.ZA_gamereset()
         return "8_STORY_STORY_LAST_22"
     
@@ -29136,6 +29821,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="8_STORY_STORY_LAST_24",prg_ret="8_STORY_STORY_LAST_26_0")
 
     def _8_story_story_last_26_0(self):
+        self._za_reset_debug_next_game_reset_site = (
+            "8_STORY_STORY_LAST_26_0:relay")
         self.ZA_gamereset()
         return "8_STORY_STORY_LAST_26"
      
@@ -29243,6 +29930,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_29"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_28:black_comment")
             self.ZA_gamereset()
         return "8_STORY_STORY_LAST_28"
     
@@ -29277,6 +29966,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         """再起動後の固定ミニマップを確認し、完了後Stepへ復帰する。"""
         self._ZA_story_last_32_33_bounce_reset("32_0_game_reset")
         # ZA_gamereset()は通常FIELDを検知するまで戻らない。
+        self._za_reset_debug_next_game_reset_site = (
+            "8_STORY_STORY_LAST_32_0:relay")
         self.ZA_gamereset()
         self._ZA_story_battle_flow_reset(
             "8_STORY_STORY_LAST_34",
@@ -29318,6 +30009,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_33"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             self._ZA_story_last_32_33_bounce_reset("32_black_comment")
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_32:black_comment")
             self.ZA_gamereset()
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             self._ZA_story_last_32_33_bounce_reset("32_progress_image")
@@ -29427,6 +30120,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_37"
 
     def _8_story_story_last_38_0(self):
+        self._za_reset_debug_next_game_reset_site = (
+            "8_STORY_STORY_LAST_38_0:relay")
         self.ZA_gamereset()
         return "8_STORY_STORY_LAST_38"
     
@@ -29445,6 +30140,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_39"
     
     def _8_story_story_last_40_0(self):
+        self._za_reset_debug_next_game_reset_site = (
+            "8_STORY_STORY_LAST_40_0:relay")
         self.ZA_gamereset()
         return "8_STORY_STORY_LAST_40"
 
@@ -29465,6 +30162,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_ESCAPE") or self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL") or self.image_check("POKEMON_ZA_2_SELECT"):
             return "8_STORY_STORY_LAST_40_1"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            self._za_reset_debug_next_game_reset_site = (
+                "8_STORY_STORY_LAST_40:black_comment")
             self.ZA_gamereset()
         return "8_STORY_STORY_LAST_40"
     
@@ -40421,8 +41120,8 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             result = {"action": "cancel"}
             dialog = tk.Toplevel(parent)
             dialog.title("ZA_story - Step実行設定")
-            dialog.geometry("860x300")
-            dialog.minsize(720, 270)
+            dialog.geometry("860x355")
+            dialog.minsize(720, 325)
             dialog.transient(parent)
 
             search = tk.StringVar(value="")
@@ -40430,6 +41129,8 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             selected = tk.StringVar(value="")
             status = tk.StringVar(value="")
             description = tk.StringVar(value="")
+            reset_debug = tk.BooleanVar(
+                value=bool(getattr(self, "ResetDebug", False)))
             visible_locations = []
 
             groups = ["すべて"]
@@ -40471,6 +41172,21 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 dialog, textvariable=description,
                 foreground="#5a5a5a").pack(
                     anchor="w", padx=18, pady=(0, 4))
+
+            debug_frame = ttk.Labelframe(dialog, text="デバッグ")
+            debug_frame.pack(fill="x", padx=12, pady=5)
+            ttk.Checkbutton(
+                debug_frame,
+                text="ResetDebug（初回だけ20秒待機して復帰処理を検証）",
+                variable=reset_debug).pack(
+                    anchor="w", padx=7, pady=(5, 0))
+            ttk.Label(
+                debug_frame,
+                text=(
+                    "再訪時は通常のComment判定へ戻ります。"
+                    "Commands終了後には検証履歴を保持しません。"),
+                foreground="#5a5a5a").pack(
+                    anchor="w", padx=27, pady=(0, 5))
 
             def display(item):
                 if item["label"] == item["state"]:
@@ -40538,11 +41254,17 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                         "開始位置を設定できませんでした。\r\n{}".format(error),
                         parent=dialog)
                     return
+                self.ResetDebug = bool(reset_debug.get())
                 print(
-                    "[ZA_PORTABLE_START_FALLBACK] {} :: {} ({})".format(
+                    "[ZA_PORTABLE_START_FALLBACK] {} :: {} ({}) "
+                    "ResetDebug={}".format(
                         chosen["variable"], chosen["state"],
-                        chosen["label"]))
+                        chosen["label"], int(self.ResetDebug)))
                 close("apply")
+
+            def start_default():
+                self.ResetDebug = False
+                close("default")
 
             buttons = ttk.Frame(dialog)
             buttons.pack(fill="x", padx=12, pady=(8, 12))
@@ -40552,7 +41274,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                     side="right", padx=4)
             ttk.Button(
                 buttons, text="Commands既定で開始",
-                command=lambda: close("default")).pack(
+                command=start_default).pack(
                     side="right", padx=4)
             ttk.Button(
                 buttons, text="選択Stepから開始",
@@ -40622,11 +41344,12 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         # スクリプト継承
         print(
             "[ZA_COMMAND_START] main_init={} story3_init={} "
-            "infi_state={} legacy_infi_mode={}".format(
+            "infi_state={} legacy_infi_mode={} ResetDebug={}".format(
                 self.main_current_state_init,
                 self._3_story_current_state_init,
                 self.za_infi_main_current_state,
-                getattr(self, "ZA_infimode", 0)))
+                getattr(self, "ZA_infimode", 0),
+                int(bool(getattr(self, "ResetDebug", False)))))
         if self.testcode==1:
             self.Test()
         elif getattr(self, "ZA_infimode", 0)==1:
