@@ -40282,17 +40282,20 @@ class _StableZACommandNameMeta(type):
 
 class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_major = 0
-    version_minor = 0
+    version_minor = 1
     version_patch = 0
     
     ZA_infimode=0
     
     if ZA_infimode==1:
-        ZA_infi_custom_name = "_ZA_infi_custom_name"
+        #ZA_infi_custom_name = "_ZA_infi_custom_name"
+        NAME = f'ZA_story_v0.1.0_ZA_infi_custom_name'
     else:
-        ZA_infi_custom_name = ""
+        NAME = f'ZA_story_v0.1.0'
+        #ZA_infi_custom_name = ""
     
-    NAME = f'ZA_story_v{version_major}.{version_minor}.{version_patch}{ZA_infi_custom_name}'
+    #0.2.0のpokecon用NAMEの変数一時無効
+    #NAME = f'ZA_story_v{version_major}.{version_minor}.{version_patch}{ZA_infi_custom_name}'
     def __init__(self, cam, gui=None):
         super().__init__(cam, gui)
 
