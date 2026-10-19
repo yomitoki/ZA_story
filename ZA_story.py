@@ -233,12 +233,72 @@ class ZA_story_Base(ImageProcPythonCommand):
             "switch_user_select.png", 0.80, (40, 318, 402, 76)),
         "ZA_TITLE_PRESS_A": (
             "za_title_press_a.png", 0.80, (446, 547, 391, 81)),
+        
+        "SWITCH_HOME_ZA_SELECTED_BLACK": (
+            "switch_home_za_selected_b.png", 0.80, (35, 128, 405, 63)),
+        "SWITCH_HOME_ESHOP_BLACK": (
+            "switch_home_eshop_b.png", 0.80, (420, 502, 82, 84)),
+        "SWITCH_HOME_ALBUM_BLACK": (
+            "switch_home_album_b.png", 0.80, (510, 502, 82, 84)),
+        "SWITCH_HOME_CONTROLLERS_BLACK": (
+            "switch_home_controllers_b.png", 0.80, (690, 502, 82, 84)),
+        "SWITCH_HOME_SETTINGS_BLACK": (
+            "switch_home_settings_b.png", 0.80, (870, 502, 82, 84)),
+        "SWITCH_CLOSE_SOFTWARE_BLACK": (
+            "switch_close_software_b.png", 0.80, (542, 268, 394, 109)),
+        "SWITCH_USER_SELECT_BLACK": (
+            "switch_user_select_b.png", 0.80, (40, 318, 402, 76)),
+        "ZA_TITLE_PRESS_A_END": (
+            "za_title_press_a.png", 0.80, (446, 547, 391, 81)),
+        # --- Switch 2 用(未確認・仮): ROIはSwitch 1の値をコピーした仮値。テンプレ画像作成後に調整して有効化する ---
+        # "SWITCH2_HOME_ZA_SELECTED": (
+        #     "switch2_home_za_selected.png", 0.80, (35, 128, 405, 63)),
+        # "SWITCH2_HOME_ZA_SELECTED_BLACK": (
+        #     "switch2_home_za_selected_b.png", 0.80, (35, 128, 405, 63)),
+        # "SWITCH2_HOME_ESHOP": (
+        #     "switch2_home_eshop.png", 0.80, (420, 502, 82, 84)),
+        # "SWITCH2_HOME_ESHOP_BLACK": (
+        #     "switch2_home_eshop_b.png", 0.80, (420, 502, 82, 84)),
+        # "SWITCH2_HOME_ALBUM": (
+        #     "switch2_home_album.png", 0.80, (510, 502, 82, 84)),
+        # "SWITCH2_HOME_ALBUM_BLACK": (
+        #     "switch2_home_album_b.png", 0.80, (510, 502, 82, 84)),
+        # "SWITCH2_HOME_CONTROLLERS": (
+        #     "switch2_home_controllers.png", 0.80, (690, 502, 82, 84)),
+        # "SWITCH2_HOME_CONTROLLERS_BLACK": (
+        #     "switch2_home_controllers_b.png", 0.80, (690, 502, 82, 84)),
+        # "SWITCH2_HOME_SETTINGS": (
+        #     "switch2_home_settings.png", 0.80, (870, 502, 82, 84)),
+        # "SWITCH2_HOME_SETTINGS_BLACK": (
+        #     "switch2_home_settings_b.png", 0.80, (870, 502, 82, 84)),
+        # "SWITCH2_CLOSE_SOFTWARE": (
+        #     "switch2_close_software.png", 0.80, (542, 268, 394, 109)),
+        # "SWITCH2_CLOSE_SOFTWARE_BLACK": (
+        #     "switch2_close_software_b.png", 0.80, (542, 268, 394, 109)),
+        # "SWITCH2_USER_SELECT": (
+        #     "switch2_user_select.png", 0.80, (40, 318, 402, 76)),
+        # "SWITCH2_USER_SELECT_BLACK": (
+        #     "switch2_user_select_b.png", 0.80, (40, 318, 402, 76)),
     }
     RESET_TEMPLATE_HOME_ICON_TARGETS = (
         "SWITCH_HOME_ESHOP",
         "SWITCH_HOME_ALBUM",
         "SWITCH_HOME_CONTROLLERS",
         "SWITCH_HOME_SETTINGS",
+        
+        "SWITCH_HOME_ESHOP_BLACK",
+        "SWITCH_HOME_ALBUM_BLACK",
+        "SWITCH_HOME_CONTROLLERS_BLACK",
+        "SWITCH_HOME_SETTINGS_BLACK",
+        # Switch 2 用(未確認・仮。有効化する場合は上のSWITCH2_定義も有効化する)
+        # "SWITCH2_HOME_ESHOP",
+        # "SWITCH2_HOME_ALBUM",
+        # "SWITCH2_HOME_CONTROLLERS",
+        # "SWITCH2_HOME_SETTINGS",
+        # "SWITCH2_HOME_ESHOP_BLACK",
+        # "SWITCH2_HOME_ALBUM_BLACK",
+        # "SWITCH2_HOME_CONTROLLERS_BLACK",
+        # "SWITCH2_HOME_SETTINGS_BLACK",
     )
     # マップ移動直後の短いロード暗転を復旧対象にしない。
     ZA_STORY_FURADARI_DARK_RECOVERY_SECONDS = 5.0
@@ -5421,6 +5481,46 @@ class ZA_story_Base(ImageProcPythonCommand):
             crop=[x, y, x + width, y + height],
         ))
 
+    # 通常版に加え、_BLACK / _END の派生ターゲットが登録されていれば
+    # いずれか一致で判定する。派生ターゲットを増やす場合はここへ追加する。
+    RESET_TEMPLATE_VARIANT_SUFFIXES = ("", "_BLACK", "_END")
+
+    def _reset_template_matches_any(self, target_name):
+        """target_name本体と、登録済みの_BLACK/_END派生のどれかが一致するか。"""
+        for suffix in self.RESET_TEMPLATE_VARIANT_SUFFIXES:
+            name = target_name + suffix
+            if name in self.RESET_TEMPLATE_TARGETS \
+                    and self._reset_template_matches(name):
+                return True
+        return False
+
+    # --- Switch 2 対応用(未有効化・コメントアウト) ---
+    # 有効化手順: RESET_TEMPLATE_TARGETS / RESET_TEMPLATE_HOME_ICON_TARGETS の
+    # SWITCH2_ コメントを外し、テンプレ画像とROIを実機に合わせた上で、
+    # 上の _reset_template_matches_any をこの版に置き換える。
+    # (HOME下段アイコンの判定は上記タプルに SWITCH2_ を足せばそのまま動く)
+    #
+    # @staticmethod
+    # def _reset_template_switch2_name(target_name):
+    #     """SWITCH_xxx -> SWITCH2_xxx。対応しない名前(ZA_xxx等)はNone。"""
+    #     if target_name.startswith("SWITCH_"):
+    #         return "SWITCH2_" + target_name[len("SWITCH_"):]
+    #     return None
+    #
+    # def _reset_template_matches_any(self, target_name):
+    #     """本体・_BLACK/_END派生に加え、登録済みならSWITCH2_版も判定する。"""
+    #     base_names = [target_name]
+    #     switch2_name = self._reset_template_switch2_name(target_name)
+    #     if switch2_name:
+    #         base_names.append(switch2_name)
+    #     for base in base_names:
+    #         for suffix in self.RESET_TEMPLATE_VARIANT_SUFFIXES:
+    #             name = base + suffix
+    #             if name in self.RESET_TEMPLATE_TARGETS \
+    #                     and self._reset_template_matches(name):
+    #                 return True
+    #     return False
+
     def _reset_switch_home_ready(self):
         """ゲーム非依存のSwitch HOME下段アイコンを複数確認する。"""
         matched_icons = sum(
@@ -5649,7 +5749,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 tracker = self._reset_retry_tracker()
                 continue
             if (allow_user_select
-                    and self._reset_template_matches("SWITCH_USER_SELECT")):
+                    and self._reset_template_matches_any("SWITCH_USER_SELECT")):
                 return "user_select"
             game_state = game_screen_detector()
             if game_state:
@@ -5707,7 +5807,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         set_state("WAIT_CLOSE_CONFIRM")
         self._reset_wait_until(
             "ソフト終了確認",
-            lambda: self._reset_template_matches("SWITCH_CLOSE_SOFTWARE"),
+            lambda: self._reset_template_matches_any("SWITCH_CLOSE_SOFTWARE"),
             previous_predicate=home_ready,
             retry_action=lambda: self.press(
                 Button.X, duration=0.15, wait=0.1),
@@ -5719,7 +5819,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         set_state("WAIT_HOME_AFTER_CLOSE")
         self._reset_wait_until(
             "終了後のSwitch HOME", home_ready,
-            previous_predicate=lambda: self._reset_template_matches(
+            previous_predicate=lambda: self._reset_template_matches_any(
                 "SWITCH_CLOSE_SOFTWARE"),
             retry_action=lambda: self.press(
                 Button.A, duration=0.15, wait=0.1),
@@ -5751,7 +5851,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             state = self._reset_wait_for_screen(
                 game_screen_detector, allow_user_select=False,
                 state_callback=set_state,
-                previous_predicate=lambda: self._reset_template_matches(
+                previous_predicate=lambda: self._reset_template_matches_any(
                     "SWITCH_USER_SELECT"),
                 retry_action=lambda: self.press(
                     Button.A, duration=0.15, wait=0.1),
@@ -5760,7 +5860,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _ZA_gamereset_home_selected(self):
         """Switch HOMEでPokemon ZAが選択中かを確認する。"""
-        return self._reset_template_matches("SWITCH_HOME_ZA_SELECTED")
+        return self._reset_template_matches_any("SWITCH_HOME_ZA_SELECTED")
 
     def _ZA_gamereset_field_ready(self):
         """ZAの通常フィールドへ復帰したことを確認する。
@@ -5774,7 +5874,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _ZA_gamereset_game_screen(self):
         """ResetTemplateから呼ばれるZA固有画面判定。"""
-        if self._reset_template_matches("ZA_TITLE_PRESS_A"):
+        if self._reset_template_matches_any("ZA_TITLE_PRESS_A"):
             return "title"
         if self._ZA_gamereset_field_ready():
             return "field"
@@ -5938,7 +6038,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             while state == "title":
                 self._ZA_gamereset_set_state("WAIT_TITLE_STABLE")
                 self.wait(self.RESET_TEMPLATE_TITLE_CONFIRM_DELAY)
-                if not self._reset_template_matches("ZA_TITLE_PRESS_A"):
+                if not self._reset_template_matches_any("ZA_TITLE_PRESS_A"):
                     self._ZA_gamereset_set_state("RECHECK_GAME_SCREEN")
                     state = self._reset_wait_for_screen(
                         self._ZA_gamereset_game_screen,
