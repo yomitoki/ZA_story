@@ -4,8 +4,8 @@
 from Commands.Keys import Button, Direction, Hat, Stick
 from Commands.PythonCommandBase import ImageProcPythonCommand
 import importlib
-import LocalFunction.ImageDetection as _image_detection
-import LocalFunction.SwitchUpdatePrompt as _switch_update_prompt
+import Commands.PythonCommands.LocalFunction.ImageDetection as _image_detection
+import Commands.PythonCommands.LocalFunction.SwitchUpdatePrompt as _switch_update_prompt
 
 
 def _reload_local_dependency_when_stale(module, required_names):
@@ -13,9 +13,7 @@ def _reload_local_dependency_when_stale(module, required_names):
 
     PokeCon reloads the Commands module but normally keeps imported
     LocalFunction modules alive.  When a helper gains a new public symbol,
-    that otherwise makes Reload fail while an old ZA_story from LocalFunction.ImageDetection import SimilarityHistory, detect_image
-
-class continues to
+    that otherwise makes Reload fail while an old ZA_story class continues to
     run.  A full application restart must not be required just to pick up the
     copied portable helpers.
     """
@@ -45928,7 +45926,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     def start(self, ser, postProcess):
         """Add the Step picker when running on an unmodified stock 0.1.9 UI."""
         try:
-            from LocalFunction.CommandStartSelector import (
+            from Commands.PythonCommands.LocalFunction.CommandStartSelector import (
                 PORTABLE_START_CANCEL,
                 portable_selector_required,
                 show_portable_start_dialog,
@@ -45939,10 +45937,10 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             cancel_action = PORTABLE_START_CANCEL
         except ModuleNotFoundError as error:
             if not str(getattr(error, "name", "")).startswith(
-                    "LocalFunction.CommandStartSelector"):
+                    "Commands.PythonCommands.LocalFunction.CommandStartSelector"):
                 raise
             print(
-                "[ZA_PORTABLE_START] LocalFunction.CommandStartSelector "
+                "[ZA_PORTABLE_START] Commands.PythonCommands.LocalFunction.CommandStartSelector "
                 "is missing; use embedded fallback selector")
             action = self._show_portable_start_dialog_without_helper()
             cancel_action = "cancel"
