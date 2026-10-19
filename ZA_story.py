@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 from Commands.Keys import Button, Direction, Hat, Stick
@@ -76,14 +76,24 @@ import os
 class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
     # 明示設定を追加すると自動検出された従来項目を置き換えるため、
-    # ResetDebugだけでなく既存の3項目もここへ残す。
+    # ResetDebug／BATTLE_DEBUGだけでなく既存の3項目もここへ残す。
     COMMAND_DEBUG_OPTIONS = (
         {
             "attribute": "ResetDebug",
             "label": "ResetDebug（リセット復帰確認）",
             "description": (
-                "復帰設定済みのComment Stepで、初回だけ20秒静止してから"
-                "ゲーム再起動／時刻変更を実行します。再訪時は通常判定へ戻ります。"),
+                "復帰設定済みの地点で、初回だけ20秒静止してから指定の復帰処理"
+                "（Step移動／時刻変更／ゲーム再起動）を実行します。"
+                "同じ地点への再訪時は通常判定へ戻ります。"),
+            "default": False,
+        },
+        {
+            "attribute": "BATTLE_DEBUG",
+            "label": "BATTLE_DEBUG（敗戦復帰を各戦闘で1回確認）",
+            "description": (
+                "敗戦復帰を調査するFARST・TOWER・W・ABSOL・GURI戦で、各戦闘の初回だけ"
+                "攻撃とComment送りを止め、L入力とFIELD_Wの上入力だけで"
+                "敗戦させます。敗戦確認後は通常処理へ戻ります。"),
             "default": False,
         },
         {
@@ -376,7 +386,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "1_STORY_OUT_HOTEL_Z_63": ("1_STORY_OUT_HOTEL_Z_63", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_8": ("2_STORY_TOWER_8", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_12": ("2_STORY_TOWER_12", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
-        "2_STORY_TOWER_14": ("2_STORY_TOWER_13", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "2_STORY_TOWER_14": ("2_STORY_TOWER_13", 4),  # 動画22Lc8za8OfQ 4548秒のセーブ位置から固定移動を復元
         "2_STORY_TOWER_16": ("2_STORY_TOWER_16", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         #"2_STORY_TOWER_22": "2_STORY_TOWER_22",  # TODO_EVENT_ENTRY_RECOVERY[MEGA戦後なので不要]
         "2_STORY_TOWER_43": ("2_STORY_TOWER_43", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
@@ -385,7 +395,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         "2_STORY_TOWER_51": ("2_STORY_TOWER_51", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         "2_STORY_TOWER_68": ("2_STORY_TOWER_68", 0),  # TODO_EVENT_ENTRY_RECOVERY[未対応]
         
-        "2_STORY_TOWER_58": ("2_STORY_TOWER_69", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
+        "2_STORY_TOWER_58": ("2_STORY_TOWER_58_RECOVERY", 0),  # YUBIWAの進捗を維持し、既存55/61分岐で再定位
         "2_STORY_TOWER_63": ("2_STORY_TOWER_61", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "2_STORY_TOWER_72": ("2_STORY_TOWER_74", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] ホルビーの終了ミス？
         
@@ -532,6 +542,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         ("white_comment", "7_STORY_GURI_58"): {
             "check_pic1": "POKEMON_ZA_FILED_HARD_CHECK_1",
         },
+        ('checkpoint', '7_STORY_GURI_65'): {'check_pic1': 'POKEMON_ZA_FILED_HARD_CHECK_1'},
+        ('checkpoint', '7_STORY_GURI_68'): {'check_pic1': 'POKEMON_ZA_FILED_HARD_CHECK_1'},
     }
     # 複合判定があるため、復帰先Step自身にtimechangeを任せる例外。
     # ジャンプ前にCommon状態だけは必ず初期化する。
@@ -542,8 +554,3039 @@ class ZA_story_Base(ImageProcPythonCommand):
     # GURI_128は正常進行方向へCommentをskipする例外で、
     # 同じStepの2回目へ戻らないため強制ResetDebug対象にしない。
     ZA_RESET_DEBUG_EXCLUDED_CHECKPOINTS = frozenset({
-        ("white_comment", "7_STORY_GURI_128"),
+        ('battle_before', '2_STORY_ABSOL_MOVE11'),
+        ('battle_before', '2_STORY_ABSOL_MOVE17'),
+        ('battle_before', '2_STORY_MEGA_MOVE10'),
+        ('battle_before', '2_STORY_MEGA_MOVE25'),
+        ('battle_before', '2_STORY_TOWER_27'),
+        ('battle_before', '2_STORY_W_LANK_MOVE3'),
+        ('battle_before', '2_STORY_Y_LANK_MOVE3'),
+        ('battle_before', '3_STORY_CANARI_3'),
+        ('battle_before', '3_STORY_CANARI_36'),
+        ('battle_before', '3_STORY_CANARI_44'),
+        ('battle_before', '3_STORY_CANARI_48'),
+        ('battle_before', '4_STORY_SHIRO_35'),
+        ('battle_before', '4_STORY_SHIRO_5'),
+        ('battle_before', '4_STORY_SHIRO_54'),
+        ('battle_before', '4_STORY_SHIRO_86'),
+        ('battle_before', '5_STORY_KARASUBA_108'),
+        ('battle_before', '5_STORY_KARASUBA_122'),
+        ('battle_before', '5_STORY_KARASUBA_39'),
+        ('battle_before', '5_STORY_KARASUBA_4'),
+        ('battle_before', '5_STORY_KARASUBA_8'),
+        ('battle_before', '6_STORY_YUKARI_69'),
+        ('battle_before', '6_STORY_YUKARI_73'),
+        ('battle_before', '6_STORY_YUKARI_77'),
+        ('battle_before', '6_STORY_YUKARI_8'),
+        ('battle_before', '6_STORY_YUKARI_81'),
+        ('battle_before', '6_STORY_YUKARI_85'),
+        ('battle_before', '8_STORY_STORY_LAST_29'),
+        ('battle_before', '8_STORY_STORY_LAST_5'),
+        ('checkpoint', '1_STORY_OUT_HOTEL_Z_18'),
+        ('checkpoint', '1_STORY_OUT_HOTEL_Z_47'),
+        ('checkpoint', '1_STORY_OUT_HOTEL_Z_78'),
+        ('checkpoint', '1_STORY_OUT_HOTEL_Z_81'),
+        ('checkpoint', '2_STORY_ABSOL_MOVE38'),
+        ('checkpoint', '2_STORY_TOWER_34'),
+        ('checkpoint', '2_STORY_TOWER_38'),
+        ('checkpoint', '2_STORY_TOWER_4'),
+        ('checkpoint', '2_STORY_TOWER_41'),
+        ('checkpoint', '2_STORY_TOWER_54'),
+        ('checkpoint', '2_STORY_TOWER_65'),
+        ('checkpoint', '2_STORY_TOWER_71'),
+        ('checkpoint', '2_STORY_TOWER_78'),
+        ('checkpoint', '2_STORY_W_LANK_MOVE7'),
+        ('checkpoint', '3_STORY_CANARI_24'),
+        ('checkpoint', '3_STORY_CANARI_28'),
+        ('checkpoint', '3_STORY_CANARI_30'),
+        ('checkpoint', '4_STORY_SHIRO_24'),
+        ('checkpoint', '5_STORY_KARASUBA_12'),
+        ('checkpoint', '5_STORY_KARASUBA_70'),
+        ('checkpoint', '6_STORY_YUKARI_45'),
+        ('checkpoint', '6_STORY_YUKARI_47'),
+        ('checkpoint', '7_STORY_GURI_13'),
+        ('checkpoint', '7_STORY_GURI_54'),
+        ('checkpoint', '7_STORY_GURI_82'),
+        ('checkpoint', '8_STORY_STORY_LAST_53'),
+        ('mapping_goto', '2_STORY_MAPPING_100'),
+        ('mapping_goto', '2_STORY_MAPPING_103'),
+        ('mapping_goto', '2_STORY_MAPPING_106'),
+        ('mapping_goto', '2_STORY_MAPPING_109'),
+        ('mapping_goto', '2_STORY_MAPPING_113'),
+        ('mapping_goto', '2_STORY_MAPPING_115'),
+        ('mapping_goto', '2_STORY_MAPPING_117'),
+        ('mapping_goto', '2_STORY_MAPPING_12'),
+        ('mapping_goto', '2_STORY_MAPPING_15'),
+        ('mapping_goto', '2_STORY_MAPPING_18'),
+        ('mapping_goto', '2_STORY_MAPPING_21'),
+        ('mapping_goto', '2_STORY_MAPPING_24'),
+        ('mapping_goto', '2_STORY_MAPPING_27'),
+        ('mapping_goto', '2_STORY_MAPPING_3'),
+        ('mapping_goto', '2_STORY_MAPPING_30'),
+        ('mapping_goto', '2_STORY_MAPPING_33'),
+        ('mapping_goto', '2_STORY_MAPPING_36'),
+        ('mapping_goto', '2_STORY_MAPPING_39'),
+        ('mapping_goto', '2_STORY_MAPPING_42'),
+        ('mapping_goto', '2_STORY_MAPPING_45'),
+        ('mapping_goto', '2_STORY_MAPPING_48'),
+        ('mapping_goto', '2_STORY_MAPPING_51'),
+        ('mapping_goto', '2_STORY_MAPPING_54'),
+        ('mapping_goto', '2_STORY_MAPPING_57'),
+        ('mapping_goto', '2_STORY_MAPPING_6'),
+        ('mapping_goto', '2_STORY_MAPPING_60'),
+        ('mapping_goto', '2_STORY_MAPPING_63'),
+        ('mapping_goto', '2_STORY_MAPPING_66'),
+        ('mapping_goto', '2_STORY_MAPPING_69'),
+        ('mapping_goto', '2_STORY_MAPPING_72'),
+        ('mapping_goto', '2_STORY_MAPPING_75'),
+        ('mapping_goto', '2_STORY_MAPPING_78'),
+        ('mapping_goto', '2_STORY_MAPPING_81'),
+        ('mapping_goto', '2_STORY_MAPPING_84'),
+        ('mapping_goto', '2_STORY_MAPPING_87'),
+        ('mapping_goto', '2_STORY_MAPPING_9'),
+        ('mapping_goto', '2_STORY_MAPPING_90'),
+        ('mapping_goto', '2_STORY_MAPPING_94'),
+        ('mapping_goto', '2_STORY_MAPPING_97'),
+        ('mapping_goto', '5_STORY_MAPPING_4'),
+        ('mapping_goto', '5_STORY_MAPPING_6'),
+        ('mapping_goto', '6_STORY_MAPPING_4'),
+        ('mega_before_comment', '2_STORY_MEGA_MOVE14'),
+        ('mega_before_comment', '2_STORY_MEGA_MOVE20'),
+        ('mega_before_comment', '2_STORY_MEGA_MOVE4'),
+        ('mega_before_comment', '3_STORY_MEGA_MOVE10'),
+        ('mega_before_comment', '3_STORY_MEGA_MOVE16'),
+        ('mega_before_comment', '3_STORY_MEGA_MOVE25'),
+        ('mega_before_comment', '5_STORY_KARASUBA_24'),
+        ('mega_before_comment', '5_STORY_KARASUBA_30'),
+        ('mega_before_comment', '6_STORY_YUKARI_32'),
+        ('mega_before_comment', '6_STORY_YUKARI_39'),
+        ('mega_before_comment', '6_STORY_YUKARI_52'),
+        ('mega_before_comment', '7_STORY_GURI_34'),
+        ('white_comment', '1_STORY_OUT_HOTEL_Z_63'),
+        ('white_comment', '2_STORY_ABSOL_MOVE2'),
+        ('white_comment', '2_STORY_ABSOL_MOVE24'),
+        ('white_comment', '2_STORY_ABSOL_MOVE26'),
+        ('white_comment', '2_STORY_ABSOL_MOVE28'),
+        ('white_comment', '2_STORY_ABSOL_MOVE31'),
+        ('white_comment', '2_STORY_ABSOL_MOVE35'),
+        ('white_comment', '2_STORY_ABSOL_MOVE6'),
+        ('white_comment', '2_STORY_TOWER_16'),
+        ('white_comment', '2_STORY_TOWER_45'),
+        ('white_comment', '2_STORY_TOWER_49'),
+        ('white_comment', '2_STORY_TOWER_51'),
+        ('white_comment', '2_STORY_TOWER_58'),
+        ('white_comment', '2_STORY_TOWER_63'),
+        ('white_comment', '2_STORY_TOWER_68'),
+        ('white_comment', '2_STORY_TOWER_72'),
+        ('white_comment', '2_STORY_TOWER_75'),
+        ('white_comment', '2_STORY_X_LANK_MOVE8'),
+        ('white_comment', '3_STORY_CANARI_10'),
+        ('white_comment', '3_STORY_CANARI_16'),
+        ('white_comment', '3_STORY_MEGA_MOVE23'),
+        ('white_comment', '3_STORY_MEGA_MOVE30'),
+        ('white_comment', '3_STORY_MEGA_MOVE8'),
+        ('white_comment', '4_STORY_SHIRO_12'),
+        ('white_comment', '4_STORY_SHIRO_15'),
+        ('white_comment', '4_STORY_SHIRO_17'),
+        ('white_comment', '4_STORY_SHIRO_20'),
+        ('white_comment', '4_STORY_SHIRO_41'),
+        ('white_comment', '4_STORY_SHIRO_44'),
+        ('white_comment', '4_STORY_SHIRO_46'),
+        ('white_comment', '4_STORY_SHIRO_48'),
+        ('white_comment', '4_STORY_SHIRO_50'),
+        ('white_comment', '4_STORY_SHIRO_53'),
+        ('white_comment', '4_STORY_SHIRO_59'),
+        ('white_comment', '4_STORY_SHIRO_62'),
+        ('white_comment', '4_STORY_SHIRO_64'),
+        ('white_comment', '4_STORY_SHIRO_67'),
+        ('white_comment', '4_STORY_SHIRO_70'),
+        ('white_comment', '4_STORY_SHIRO_73'),
+        ('white_comment', '4_STORY_SHIRO_75'),
+        ('white_comment', '4_STORY_SHIRO_77'),
+        ('white_comment', '5_STORY_KARASUBA_104'),
+        ('white_comment', '5_STORY_KARASUBA_116'),
+        ('white_comment', '5_STORY_KARASUBA_120'),
+        ('white_comment', '5_STORY_KARASUBA_14'),
+        ('white_comment', '5_STORY_KARASUBA_18'),
+        ('white_comment', '5_STORY_KARASUBA_20'),
+        ('white_comment', '5_STORY_KARASUBA_37'),
+        ('white_comment', '5_STORY_KARASUBA_46'),
+        ('white_comment', '5_STORY_KARASUBA_52'),
+        ('white_comment', '5_STORY_KARASUBA_55'),
+        ('white_comment', '5_STORY_KARASUBA_57'),
+        ('white_comment', '5_STORY_KARASUBA_62'),
+        ('white_comment', '5_STORY_KARASUBA_66'),
+        ('white_comment', '5_STORY_KARASUBA_98'),
+        ('white_comment', '6_STORY_YUKARI_14'),
+        ('white_comment', '6_STORY_YUKARI_20'),
+        ('white_comment', '6_STORY_YUKARI_26'),
+        ('white_comment', '6_STORY_YUKARI_28'),
+        ('white_comment', '6_STORY_YUKARI_4'),
+        ('white_comment', '6_STORY_YUKARI_65'),
+        ('white_comment', '7_STORY_GURI_122'),
+        ('white_comment', '7_STORY_GURI_128'),
+        ('white_comment', '7_STORY_GURI_133'),
+        ('white_comment', '7_STORY_GURI_139'),
+        ('white_comment', '7_STORY_GURI_4'),
+        ('white_comment', '7_STORY_GURI_50'),
+        ('white_comment', '7_STORY_GURI_58'),
+        ('white_comment', '7_STORY_GURI_74'),
+        ('white_comment', '8_STORY_STORY_LAST_23'),
+        ('white_comment', '8_STORY_STORY_LAST_33'),
+        ('white_comment', '8_STORY_STORY_LAST_46'),
+        ('white_comment', '8_STORY_STORY_LAST_9'),
+        ('battle_before', '7_STORY_GURI_25'),
+        ('battle_before', '7_STORY_GURI_30'),
+        ('mapping_goto', '7_STORY_MAPPING_4'),
+        ('mapping_goto', '7_STORY_MAPPING_8'),
+        ('mega_before_comment', '7_STORY_GURI_17'),
+        ('mega_before_comment', '7_STORY_GURI_44'),
+        ('white_comment', '6_STORY_YUKARI_58'),
+        ('white_comment', '7_STORY_GURI_11'),
+        ('white_comment', '7_STORY_GURI_23'),
+        ('white_comment', '7_STORY_GURI_6'),
+        ('battle_before', '8_STORY_STORY_LAST_16'),
+        ('checkpoint', '7_STORY_GURI_68'),
+        ('checkpoint', '7_STORY_GURI_70'),
+        ('checkpoint', '7_STORY_GURI_84'),
+        ('white_comment', '7_STORY_GURI_78'),
+        ('white_comment', '8_STORY_STORY_LAST_20'),
+        ('checkpoint', '8_STORY_STORY_LAST_62'),
+        ('white_comment', '8_STORY_STORY_LAST_27'),
+        ('white_comment', '8_STORY_STORY_LAST_39'),
+        ('white_comment', '8_STORY_STORY_LAST_40_1'),
+        ('white_comment', '8_STORY_STORY_LAST_41'),
+        ('white_comment', '8_STORY_STORY_LAST_58'),
+        ('white_comment', '8_STORY_STORY_LAST_2'),
+        ('battle_before', '2_STORY_W_LANK_MOVE11'),
+        ('battle_before', '2_STORY_X_LANK_MOVE11'),
+        ('checkpoint', '2_STORY_TOWER_31'),
+        ('checkpoint', '3_STORY_CANARI_32'),
+        ('checkpoint', '6_STORY_YUKARI_22'),
     })
+
+    # レポート後の初戦前地点を明示登録する。AUTO_SAVE_POINTの注記だけでは
+    # ResetDebugから実行されない。初戦を直接開始した場合も同じ地点へ戻し、
+    # SELECTからBATTLEへ進んだ際は共有の完了キーで二重リセットを防ぐ。
+    # 映像と実Stepを照合した復帰経路。Debugのentryと通常guardは同じ完了keyを共有する。
+    ZA_STORY_CHECKPOINT_RECOVERY_TARGETS = {'1_STORY_STATION_FRONT': {'recovery_kind': 'checkpoint',
+                               'target': '1_STORY_STATION_OUT',
+                               'action': 4,
+                               'checkpoint_id': '1_STORY_STATION_FRONT',
+                               'reset_common': False},
+     '1_STORY_STATION_LEAVE_MOVE': {'recovery_kind': 'checkpoint',
+                                    'target': '1_STORY_STATION_LEAVE_MOVE',
+                                    'action': 4,
+                                    'checkpoint_id': '1_STORY_STATION_LEAVE_MOVE',
+                                    'reset_common': False},
+     '1_STORY_BAG_CHASE_END': {'recovery_kind': 'checkpoint',
+                               'target': '1_STORY_STATION_LEAVE_MOVE',
+                               'action': 4,
+                               'checkpoint_id': '1_STORY_STATION_LEAVE_MOVE',
+                               'reset_common': False},
+     '1_STORY_FAST_ELEVATOR': {'recovery_kind': 'checkpoint',
+                               'target': '1_STORY_HOTEL_Z_MOVE4',
+                               'action': 4,
+                               'checkpoint_id': '1_STORY_FAST_ELEVATOR',
+                               'reset_common': False},
+     '1_STORY_HOTEL_Z_MOVE8': {'recovery_kind': 'checkpoint',
+                               'target': '1_STORY_HOTEL_Z_MOVE7',
+                               'action': 4,
+                               'checkpoint_id': '1_STORY_HOTEL_Z_MOVE8',
+                               'reset_common': False},
+     '1_STORY_HOTEL_Z_MOVE12': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_HOTEL_Z_MOVE11',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_HOTEL_Z_MOVE12',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_13': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_WANINOKO_SKILL_CHANGE1',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_13',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_28': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_27',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_28',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_29': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_27',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_29',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_31': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_30',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_31',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_34': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_32',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_34',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_37': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_35',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_37',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_47': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_46',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_47',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_50': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_48',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_50',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_52': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_51',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_52',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_53': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_53',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_53',
+                                'reset_common': True},
+     '1_STORY_OUT_HOTEL_Z_69': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_67',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_69',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_73': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_67',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_73',
+                                'reset_common': False},
+     '1_STORY_OUT_HOTEL_Z_78': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_77',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_78',
+                                'reset_common': True},
+     '1_STORY_OUT_HOTEL_Z_81': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_79',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_81',
+                                'reset_common': True},
+     '2_STORY_TOWER_4': {'recovery_kind': 'checkpoint',
+                         'target': '2_STORY_TOWER_2',
+                         'action': 0,
+                         'checkpoint_id': '2_STORY_TOWER_4',
+                         'reset_common': False},
+     '2_STORY_TOWER_6': {'recovery_kind': 'checkpoint',
+                         'target': '2_STORY_TOWER_5',
+                         'action': 4,
+                         'checkpoint_id': '2_STORY_TOWER_6',
+                         'reset_common': False},
+     '2_STORY_TOWER_10': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_9',
+                          'action': 4,
+                          'checkpoint_id': '2_STORY_TOWER_10',
+                          'reset_common': False},
+     '2_STORY_TOWER_18': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_17',
+                          'action': 4,
+                          'checkpoint_id': '2_STORY_TOWER_18',
+                          'reset_common': False},
+     '2_STORY_TOWER_20': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_19',
+                          'action': 4,
+                          'checkpoint_id': '2_STORY_TOWER_20',
+                          'reset_common': False},
+     '2_STORY_TOWER_22': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_21',
+                          'action': 4,
+                          'checkpoint_id': '2_STORY_TOWER_22',
+                          'reset_common': False},
+     '2_STORY_TOWER_41': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_39',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_41',
+                          'reset_common': True},
+     '2_STORY_W_LANK_MOVE7': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_W_LANK_MOVE6',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_W_LANK_MOVE7',
+                              'reset_common': True},
+     '2_STORY_TOWER_65': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_64',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_65',
+                          'reset_common': True},
+     '2_STORY_TOWER_75': {'recovery_kind': 'white_comment',
+                          'target': '2_STORY_TOWER_74',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_72',
+                          'reset_common': True},
+     '3_STORY_CANARI_30': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_29',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_30',
+                           'reset_common': True},
+     '3_STORY_MEGA_MOVE4': {'recovery_kind': 'checkpoint',
+                            'target': '3_STORY_MEGA_MOVE4',
+                            'action': 1,
+                            'checkpoint_id': '3_STORY_MEGA_MOVE4',
+                            'reset_common': True},
+     '5_STORY_MAPPING_2': {'recovery_kind': 'checkpoint',
+                           'target': '5_STORY_MAPPING_2',
+                           'action': 1,
+                           'checkpoint_id': '5_STORY_MAPPING_2',
+                           'reset_common': True},
+     '6_STORY_MAPPING_2': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_MAPPING_2',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_MAPPING_2',
+                           'reset_common': True},
+     '6_STORY_YUKARI_45': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_YUKARI_43',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_45',
+                           'reset_common': True},
+     '6_STORY_YUKARI_47': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_YUKARI_46',
+                           'action': 4,
+                           'checkpoint_id': '6_STORY_YUKARI_47',
+                           'reset_common': True},
+     '7_STORY_GURI_119': {'recovery_kind': 'checkpoint',
+                          'target': '7_STORY_GURI_118',
+                          'action': 0,
+                          'checkpoint_id': '7_STORY_GURI_119',
+                          'reset_common': True},
+     '7_STORY_GURI_13': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_12',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_13',
+                         'reset_common': True},
+     '7_STORY_GURI_124': {'recovery_kind': 'checkpoint',
+                          'target': '7_STORY_GURI_123',
+                          'action': 0,
+                          'checkpoint_id': '7_STORY_GURI_124',
+                          'reset_common': True},
+     '7_STORY_GURI_54': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_52',
+                         'action': 1,
+                         'checkpoint_id': '7_STORY_GURI_54',
+                         'reset_common': True},
+     '7_STORY_GURI_82': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_81',
+                         'action': 4,
+                         'checkpoint_id': '7_STORY_GURI_82',
+                         'reset_common': True},
+     '7_STORY_GURI_87': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_86',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_87',
+                         'reset_common': True},
+     '7_STORY_GURI_92': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_91',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_92',
+                         'reset_common': True},
+     '7_STORY_GURI_95': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_94',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_95',
+                         'reset_common': True},
+     '7_STORY_GURI_98': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_97',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_98',
+                         'reset_common': True},
+     '8_STORY_STORY_LAST_53': {'recovery_kind': 'checkpoint',
+                               'target': '8_STORY_STORY_LAST_52',
+                               'action': 4,
+                               'checkpoint_id': '8_STORY_STORY_LAST_53',
+                               'reset_common': True},
+     '8_STORY_STORY_LAST_60': {'recovery_kind': 'checkpoint',
+                               'target': '8_STORY_STORY_LAST_59',
+                               'action': 0,
+                               'checkpoint_id': '8_STORY_STORY_LAST_60',
+                               'reset_common': True},
+     '5_STORY_KARASUBA_12': {'recovery_kind': 'checkpoint',
+                             'target': '5_STORY_KARASUBA_11',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_12',
+                             'reset_common': True},
+     '3_STORY_CANARI_24': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_23',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_24',
+                           'reset_common': True},
+     '3_STORY_CANARI_28': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_27',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_28',
+                           'reset_common': True},
+     '3_STORY_CANARI_34': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_34',
+                           'action': 2,
+                           'checkpoint_id': '3_STORY_CANARI_34',
+                           'reset_common': True},
+     '3_STORY_CANARI_12': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_12',
+                           'action': 2,
+                           'checkpoint_id': '3_STORY_CANARI_12',
+                           'reset_common': True},
+     '4_STORY_SHIRO_24': {'recovery_kind': 'checkpoint',
+                          'target': '4_STORY_SHIRO_21',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_24',
+                          'reset_common': True},
+     '4_STORY_SHIRO_59': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_57',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_59',
+                          'reset_common': True},
+     '2_STORY_ABSOL_MOVE38': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_ABSOL_MOVE36',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE38',
+                              'reset_common': True},
+     '6_STORY_YUKARI_26': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_24',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_26',
+                           'reset_common': True},
+     '5_STORY_KARASUBA_70': {'recovery_kind': 'checkpoint',
+                             'target': '5_STORY_KARASUBA_69',
+                             'action': 0,
+                             'checkpoint_id': '5_STORY_KARASUBA_70',
+                             'reset_common': True},
+     '2_STORY_ABSOL_MOVE6': {'recovery_kind': 'white_comment',
+                             'target': '2_STORY_ABSOL_MOVE4',
+                             'action': 4,
+                             'checkpoint_id': '2_STORY_ABSOL_MOVE6',
+                             'reset_common': True},
+        '7_STORY_GURI_6': {'recovery_kind': 'white_comment',
+                            'target': '7_STORY_GURI_5',
+                            'action': 4,
+                            'checkpoint_id': '7_STORY_GURI_6',
+                            'reset_common': True},
+        '7_STORY_GURI_68': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_64',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_68',
+                             'reset_common': True},
+        '7_STORY_GURI_70': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_69',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_70',
+                             'reset_common': True},
+        '7_STORY_GURI_84': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_83',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_84',
+                             'reset_common': True},
+        '7_STORY_GURI_102': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_101',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_102',
+                              'reset_common': True},
+        '7_STORY_GURI_106': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_105',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_106',
+                              'reset_common': True},
+        '7_STORY_GURI_109': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_108',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_109',
+                              'reset_common': True},
+        '8_STORY_STORY_LAST_20': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_19',
+                                   'action': 4,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_20',
+                                   'reset_common': True},
+        '8_STORY_STORY_LAST_58': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_56',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_58',
+                                   'reset_common': True},
+        '8_STORY_STORY_LAST_62': {'recovery_kind': 'checkpoint',
+                                   'target': '8_STORY_STORY_LAST_59',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_60',
+                                   'reset_common': True},
+        '8_STORY_STORY_LAST_2': {'recovery_kind': 'white_comment',
+                                  'target': '8_STORY_STORY_LAST_1',
+                                  'action': 4,
+                                  'checkpoint_id': '8_STORY_STORY_LAST_2',
+                                  'reset_common': True},
+        '2_STORY_TOWER_31': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_TOWER_30',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_TOWER_31',
+                              'reset_common': True},
+        '3_STORY_CANARI_32': {'recovery_kind': 'checkpoint',
+                               'target': '3_STORY_CANARI_31',
+                               'action': 0,
+                               'checkpoint_id': '3_STORY_CANARI_32',
+                               'reset_common': True},
+        '6_STORY_YUKARI_22': {'recovery_kind': 'checkpoint',
+                               'target': '6_STORY_YUKARI_21',
+                               'action': 0,
+                               'checkpoint_id': '6_STORY_YUKARI_22',
+                               'reset_common': True},
+    
+        '3_STORY_MEGA_MOVE2': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE2_RECOVERY',
+         'action': 4,
+         'checkpoint_id': '3_STORY_MEGA_MOVE2_PHASE_SELECTOR',
+         'reset_common': True,
+         'validated': True,
+         'debug_ready_method': '_ZA_story_chapter3_selector_debug_ready'},
+    
+        '2_STORY_MEGA_MOVE16': {'recovery_kind': 'checkpoint',
+         'target': '2_STORY_MEGA_MOVE16_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '2_STORY_MEGA_MOVE16',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready'},
+        '2_STORY_MEGA_MOVE22': {'recovery_kind': 'checkpoint',
+         'target': '2_STORY_MEGA_MOVE22_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '2_STORY_MEGA_MOVE22',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready'},
+        '3_STORY_MEGA_MOVE12': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE12_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE12',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready'},
+        '3_STORY_MEGA_MOVE18': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE18_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE18',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready'},
+        '3_STORY_MEGA_MOVE27': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE27_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE27',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready'},
+        '1_STORY_OUT_HOTEL_Z_20_1': {'recovery_kind': 'checkpoint',
+                                      'checkpoint_id': '1_STORY_OUT_HOTEL_Z_20_1',
+                                      'target': '1_STORY_OUT_HOTEL_Z_20_1',
+                                      'action': 4,
+                                      'reset_common': False},
+        '2_STORY_TOWER_34': {'recovery_kind': 'checkpoint',
+                              'checkpoint_id': '2_STORY_TOWER_34',
+                              'target': '2_STORY_TOWER_32',
+                              'action': 0,
+                              'reset_common': True},
+        '2_STORY_TOWER_71': {'recovery_kind': 'checkpoint',
+                              'checkpoint_id': '2_STORY_TOWER_71',
+                              'target': '2_STORY_TOWER_74',
+                              'action': 0,
+                              'reset_common': True},
+        '2_STORY_TOWER_78': {'recovery_kind': 'checkpoint',
+                              'checkpoint_id': '2_STORY_TOWER_78',
+                              'target': '2_STORY_TOWER_76',
+                              'action': 0,
+                              'reset_common': True},
+    }
+
+    ZA_STORY_EVENT_ENTRY_RECOVERY_OVERRIDES = {('battle_before', '1_STORY_SECOND_BATTLE_START'): {'recovery_kind': 'battle_before',
+                                                        'target': '1_STORY_FARST_BATTLE_ZONE_MOVE1',
+                                                        'action': 4,
+                                                        'checkpoint_id': '1_STORY_SECOND_BATTLE_START',
+                                                        'reset_common': False},
+     ('white_comment', '1_STORY_FARST_MOVIE_END'): {'recovery_kind': 'white_comment',
+                                                    'target': '1_STORY_FARST_BATTLE_ZONE_MOVE2',
+                                                    'action': 4,
+                                                    'checkpoint_id': '1_STORY_FARST_MOVIE_END',
+                                                    'reset_common': False},
+     ('white_comment', '1_STORY_FARST_BATTLE_ZONE_OUT'): {'recovery_kind': 'white_comment',
+                                                          'target': '1_STORY_FARST_BATTLE_ZONE_MOVE3',
+                                                          'action': 4,
+                                                          'checkpoint_id': '1_STORY_FARST_BATTLE_ZONE_OUT',
+                                                          'reset_common': False},
+     ('white_comment', '1_STORY_HOTEL_Z_ARRIVAL'): {'recovery_kind': 'white_comment',
+                                                    'target': '1_STORY_FARST_BATTLE_ZONE_MOVE3',
+                                                    'action': 4,
+                                                    'checkpoint_id': '1_STORY_HOTEL_Z_ARRIVAL',
+                                                    'reset_common': False},
+     ('white_comment', '1_STORY_HOTEL_Z_FAST_IN'): {'recovery_kind': 'white_comment',
+                                                    'target': '1_STORY_HOTEL_Z_MOVE1',
+                                                    'action': 4,
+                                                    'checkpoint_id': '1_STORY_HOTEL_Z_FAST_IN',
+                                                    'reset_common': False},
+     ('white_comment', '1_STORY_AZ_CHAT'): {'recovery_kind': 'white_comment',
+                                            'target': '1_STORY_HOTEL_Z_MOVE3',
+                                            'action': 4,
+                                            'checkpoint_id': '1_STORY_AZ_CHAT',
+                                            'reset_common': False},
+     ('white_comment', '1_STORY_HOTEL_Z_MOVE10'): {'recovery_kind': 'white_comment',
+                                                   'target': '1_STORY_HOTEL_Z_MOVE9',
+                                                   'action': 4,
+                                                   'checkpoint_id': '1_STORY_HOTEL_Z_MOVE10',
+                                                   'reset_common': False},
+     ('battle_before', '1_STORY_HOTEL_Z_MOVE15'): {'recovery_kind': 'battle_before',
+                                                   'target': '1_STORY_HOTEL_Z_MOVE13',
+                                                   'action': 4,
+                                                   'checkpoint_id': '1_STORY_HOTEL_Z_MOVE15',
+                                                   'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_3'): {'recovery_kind': 'white_comment',
+                                                  'target': '1_STORY_OUT_HOTEL_Z_1',
+                                                  'action': 4,
+                                                  'checkpoint_id': '1_STORY_OUT_HOTEL_Z_3',
+                                                  'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_5'): {'recovery_kind': 'white_comment',
+                                                  'target': '1_STORY_OUT_HOTEL_Z_4',
+                                                  'action': 4,
+                                                  'checkpoint_id': '1_STORY_OUT_HOTEL_Z_5',
+                                                  'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_5_2'): {'recovery_kind': 'white_comment',
+                                                    'target': '1_STORY_OUT_HOTEL_Z_5_1',
+                                                    'action': 4,
+                                                    'checkpoint_id': '1_STORY_OUT_HOTEL_Z_5_2',
+                                                    'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_7'): {'recovery_kind': 'white_comment',
+                                                  'target': '1_STORY_OUT_HOTEL_Z_6',
+                                                  'action': 4,
+                                                  'checkpoint_id': '1_STORY_OUT_HOTEL_Z_7',
+                                                  'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_9'): {'recovery_kind': 'white_comment',
+                                                  'target': '1_STORY_OUT_HOTEL_Z_8',
+                                                  'action': 4,
+                                                  'checkpoint_id': '1_STORY_OUT_HOTEL_Z_9',
+                                                  'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_11'): {'recovery_kind': 'white_comment',
+                                                   'target': '1_STORY_WANINOKO_SKILL_CHANGE1',
+                                                   'action': 4,
+                                                   'checkpoint_id': '1_STORY_OUT_HOTEL_Z_11',
+                                                   'reset_common': False},
+     ('white_comment', '1_STORY_OUT_HOTEL_Z_63'): {'recovery_kind': 'white_comment',
+                                                   'target': '1_STORY_OUT_HOTEL_Z_61',
+                                                   'action': 0,
+                                                   'checkpoint_id': '1_STORY_OUT_HOTEL_Z_63',
+                                                   'reset_common': False},
+     ('battle_before', '1_STORY_OUT_HOTEL_Z_83'): {'recovery_kind': 'battle_before',
+                                                   'target': '1_STORY_OUT_HOTEL_Z_82',
+                                                   'action': 4,
+                                                   'checkpoint_id': '1_STORY_OUT_HOTEL_Z_83',
+                                                   'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_8'): {'recovery_kind': 'white_comment',
+                                            'target': '2_STORY_TOWER_7',
+                                            'action': 4,
+                                            'checkpoint_id': '2_STORY_TOWER_8',
+                                            'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_12'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_11',
+                                             'action': 4,
+                                             'checkpoint_id': '2_STORY_TOWER_12',
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_14'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_13',
+                                             'action': 4,
+                                             'checkpoint_id': '2_STORY_TOWER_14',
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_16'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_15_0',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_16',
+                                             'reset_common': False},
+     ('battle_before', '2_STORY_TOWER_27'): {'recovery_kind': 'battle_before',
+                                             'target': '2_STORY_TOWER_25',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_27',
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_43'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_42',
+                                             'action': 4,
+                                             'checkpoint_id': '2_STORY_TOWER_43',
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_45'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_44',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_45',
+                                             'reset_common': False},
+     ('battle_before', '2_STORY_TOWER_81'): {'recovery_kind': 'battle_before',
+                                             'target': '2_STORY_TOWER_79',
+                                             'action': 4,
+                                             'checkpoint_id': '2_STORY_TOWER_81',
+                                             'reset_common': False},
+     ('battle_before', '2_STORY_X_LANK_MOVE3'): {'recovery_kind': 'battle_before',
+                                                 'target': '2_STORY_X_LANK_MOVE1',
+                                                 'action': 4,
+                                                 'checkpoint_id': '2_STORY_X_LANK_MOVE3',
+                                                 'reset_common': False},
+     ('white_comment', '2_STORY_X_LANK_MOVE8'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_X_LANK_MOVE6',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_X_LANK_MOVE8',
+                                                 'reset_common': True},
+     ('battle_before', '2_STORY_W_LANK_MOVE3'): {'recovery_kind': 'battle_before',
+                                                 'target': '2_STORY_W_LANK_MOVE1',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_W_LANK_MOVE3',
+                                                 'reset_common': True},
+     ('white_comment', '2_STORY_ABSOL_MOVE22'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE21',
+                                                 'action': 4,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE22',
+                                                 'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_49'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_47',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_49',
+                                             'reset_common': True},
+     ('white_comment', '2_STORY_TOWER_51'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_50',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_51',
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_58'): {'recovery_kind': 'white_comment',
+                                             'checkpoint_id': '2_STORY_TOWER_58',
+                                             'target': '2_STORY_TOWER_58_RECOVERY',
+                                             'action': 0,
+                                             'reset_common': False},
+     ('white_comment', '2_STORY_TOWER_63'): {'recovery_kind': 'white_comment',
+                                             'target': '2_STORY_TOWER_61',
+                                             'action': 0,
+                                             'checkpoint_id': '2_STORY_TOWER_63',
+                                             'reset_common': True},
+     ('battle_before', '2_STORY_Y_LANK_MOVE3'): {'recovery_kind': 'battle_before',
+                                                 'target': '2_STORY_Y_LANK_MOVE0',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_Y_LANK_MOVE3',
+                                                 'reset_common': True},
+     ('battle_before', '3_STORY_CANARI_48'): {'recovery_kind': 'battle_before',
+         'target': '3_STORY_CANARI_48_RECOVERY',
+         'action': 4,
+         'checkpoint_id': '3_STORY_CANARI_48',
+         'reset_common': True,
+         'validated': True,
+         'debug_ready_method': '_ZA_story_chapter3_selector_debug_ready'},
+     ('white_comment', '3_STORY_CANARI_10'): {'recovery_kind': 'white_comment',
+                                              'target': '3_STORY_CANARI_2_RECOVERY1',
+                                              'action': 0,
+                                              'checkpoint_id': '3_STORY_CANARI_10',
+                                              'reset_common': True},
+     ('white_comment', '3_STORY_MEGA_MOVE8'): {'recovery_kind': 'white_comment',
+                                               'target': '3_STORY_MEGA_MOVE7',
+                                               'action': 0,
+                                               'checkpoint_id': '3_STORY_MEGA_MOVE8',
+                                               'reset_common': True},
+     ('mega_before_comment', '3_STORY_MEGA_MOVE10'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '3_STORY_MEGA_MOVE9',
+                                                      'action': 4,
+                                                      'checkpoint_id': '3_STORY_MEGA_MOVE10',
+                                                      'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_41'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_38',
+                                             'action': 0,
+                                             'checkpoint_id': '4_STORY_SHIRO_41',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_46'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_44_1',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_46',
+                                             'reset_common': True},
+     ('battle_before', '4_STORY_SHIRO_54'): {'recovery_kind': 'battle_before',
+                                             'target': '4_STORY_SHIRO_54',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_54',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_64'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_63',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_64',
+                                             'reset_common': True},
+     ('battle_before', '4_STORY_SHIRO_86'): {'recovery_kind': 'battle_before',
+                                             'target': '4_STORY_SHIRO_84',
+                                             'action': 0,
+                                             'checkpoint_id': '4_STORY_SHIRO_86',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_12'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_10',
+                                             'action': 0,
+                                             'checkpoint_id': '4_STORY_SHIRO_12',
+                                             'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_104'): {'recovery_kind': 'white_comment',
+                                                 'target': '5_STORY_KARASUBA_100',
+                                                 'action': 2,
+                                                 'checkpoint_id': '5_STORY_KARASUBA_104',
+                                                 'reset_common': True},
+     ('battle_before', '5_STORY_KARASUBA_122'): {'recovery_kind': 'battle_before',
+                                                 'target': '5_STORY_KARASUBA_121',
+                                                 'action': 0,
+                                                 'checkpoint_id': '5_STORY_KARASUBA_122',
+                                                 'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_66'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_64',
+                                                'action': 1,
+                                                'checkpoint_id': '5_STORY_KARASUBA_66',
+                                                'reset_common': True},
+     ('white_comment', '6_STORY_YUKARI_20'): {'recovery_kind': 'white_comment',
+                                              'target': '6_STORY_YUKARI_18',
+                                              'action': 1,
+                                              'checkpoint_id': '6_STORY_YUKARI_20',
+                                              'reset_common': True},
+     ('white_comment', '6_STORY_YUKARI_28'): {'recovery_kind': 'white_comment',
+                                              'target': '6_STORY_YUKARI_27',
+                                              'action': 4,
+                                              'checkpoint_id': '6_STORY_YUKARI_28',
+                                              'reset_common': True},
+     ('mega_before_comment', '6_STORY_YUKARI_52'): {'recovery_kind': 'mega_before_comment',
+                                                    'target': '6_STORY_YUKARI_52_RECOVERY',
+                                                    'action': 0,
+                                                    'checkpoint_id': '6_STORY_YUKARI_52',
+                                                    'reset_common': True},
+     ('white_comment', '6_STORY_YUKARI_65'): {'recovery_kind': 'white_comment',
+                                              'target': '6_STORY_YUKARI_62',
+                                              'action': 1,
+                                              'checkpoint_id': '6_STORY_YUKARI_65',
+                                              'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_69'): {'recovery_kind': 'battle_before',
+                                              'target': '6_STORY_YUKARI_68',
+                                              'action': 0,
+                                              'checkpoint_id': '6_STORY_YUKARI_69',
+                                              'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_73'): {'recovery_kind': 'battle_before',
+                                              'target': '6_STORY_YUKARI_72',
+                                              'action': 0,
+                                              'checkpoint_id': '6_STORY_YUKARI_73',
+                                              'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_77'): {'recovery_kind': 'battle_before',
+                                              'target': '6_STORY_YUKARI_76',
+                                              'action': 0,
+                                              'checkpoint_id': '6_STORY_YUKARI_77',
+                                              'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_81'): {'recovery_kind': 'battle_before',
+                                              'target': '6_STORY_YUKARI_80',
+                                              'action': 0,
+                                              'checkpoint_id': '6_STORY_YUKARI_81',
+                                              'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_85'): {'recovery_kind': 'battle_before',
+                                              'target': '6_STORY_YUKARI_84',
+                                              'action': 0,
+                                              'checkpoint_id': '6_STORY_YUKARI_85',
+                                              'reset_common': True},
+     ('white_comment', '7_STORY_GURI_133'): {'recovery_kind': 'white_comment',
+                                             'target': '7_STORY_GURI_130',
+                                             'action': 1,
+                                             'checkpoint_id': '7_STORY_GURI_133',
+                                             'reset_common': True},
+     ('white_comment', '7_STORY_GURI_139'): {'recovery_kind': 'white_comment',
+                                             'target': '7_STORY_GURI_137',
+                                             'action': 1,
+                                             'checkpoint_id': '7_STORY_GURI_139',
+                                             'reset_common': True},
+     ('white_comment', '7_STORY_GURI_4'): {'recovery_kind': 'white_comment',
+                                           'target': '7_STORY_GURI_2',
+                                           'action': 1,
+                                           'checkpoint_id': '7_STORY_GURI_4',
+                                           'reset_common': True},
+     ('mega_before_comment', '7_STORY_GURI_34'): {'recovery_kind': 'mega_before_comment',
+                                                  'target': '7_STORY_GURI_33',
+                                                  'action': 4,
+                                                  'checkpoint_id': '7_STORY_GURI_34',
+                                                  'reset_common': True},
+     ('white_comment', '7_STORY_GURI_50'): {'recovery_kind': 'white_comment',
+                                            'target': '7_STORY_GURI_48',
+                                            'action': 1,
+                                            'checkpoint_id': '7_STORY_GURI_50',
+                                            'reset_common': True},
+     ('white_comment', '7_STORY_GURI_58'): {'recovery_kind': 'white_comment',
+                                            'target': '7_STORY_GURI_56',
+                                            'action': 1,
+                                            'checkpoint_id': '7_STORY_GURI_58',
+                                            'reset_common': True},
+     ('white_comment', '7_STORY_GURI_74'): {'recovery_kind': 'white_comment',
+                                            'target': '7_STORY_GURI_72',
+                                            'action': 1,
+                                            'checkpoint_id': '7_STORY_GURI_74',
+                                            'reset_common': True},
+     ('battle_before', '8_STORY_STORY_LAST_5'): {'recovery_kind': 'battle_before',
+                                                 'target': '8_STORY_STORY_LAST_3',
+                                                 'action': 0,
+                                                 'checkpoint_id': '8_STORY_STORY_LAST_5',
+                                                 'reset_common': True},
+     ('battle_before', '8_STORY_STORY_LAST_29'): {'recovery_kind': 'battle_before',
+                                                  'target': '8_STORY_STORY_LAST_28',
+                                                  'action': 4,
+                                                  'checkpoint_id': '8_STORY_STORY_LAST_29',
+                                                  'reset_common': True},
+     ('white_comment', '8_STORY_STORY_LAST_46'): {'recovery_kind': 'white_comment',
+                                                  'target': '8_STORY_STORY_LAST_45',
+                                                  'action': 4,
+                                                  'checkpoint_id': '8_STORY_STORY_LAST_46',
+                                                  'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_67'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_63',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_67',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_70'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_63',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_70',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_73'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_63',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_73',
+                                             'reset_common': True},
+     ('mega_before_comment', '5_STORY_KARASUBA_24'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '5_STORY_KARASUBA_22',
+                                                      'action': 1,
+                                                      'checkpoint_id': '5_STORY_KARASUBA_24',
+                                                      'reset_common': True},
+     ('mega_before_comment', '5_STORY_KARASUBA_30'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '5_STORY_KARASUBA_28',
+                                                      'action': 1,
+                                                      'checkpoint_id': '5_STORY_KARASUBA_30',
+                                                      'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_37'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_35',
+                                                'action': 1,
+                                                'checkpoint_id': '5_STORY_KARASUBA_37',
+                                                'reset_common': True},
+     ('battle_before', '5_STORY_KARASUBA_39'): {'recovery_kind': 'battle_before',
+                                                'target': '5_STORY_KARASUBA_38',
+                                                'action': 4,
+                                                'checkpoint_id': '5_STORY_KARASUBA_39',
+                                                'reset_common': True},
+     ('battle_before', '5_STORY_KARASUBA_4'): {'recovery_kind': 'battle_before',
+                                               'target': '5_STORY_KARASUBA_2',
+                                               'action': 1,
+                                               'checkpoint_id': '5_STORY_KARASUBA_4',
+                                               'reset_common': True},
+     ('battle_before', '5_STORY_KARASUBA_8'): {'recovery_kind': 'battle_before',
+                                               'target': '5_STORY_KARASUBA_7',
+                                               'action': 4,
+                                               'checkpoint_id': '5_STORY_KARASUBA_8',
+                                               'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_14'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_11',
+                                                'action': 4,
+                                                'checkpoint_id': '5_STORY_KARASUBA_14',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_18'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_16',
+                                                'action': 1,
+                                                'checkpoint_id': '5_STORY_KARASUBA_18',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_20'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_19',
+                                                'action': 4,
+                                                'checkpoint_id': '5_STORY_KARASUBA_20',
+                                                'reset_common': True},
+     ('white_comment', '3_STORY_CANARI_16'): {'recovery_kind': 'white_comment',
+                                              'target': '3_STORY_CANARI_15',
+                                              'action': 4,
+                                              'checkpoint_id': '3_STORY_CANARI_16',
+                                              'reset_common': True},
+     ('white_comment', '3_STORY_CANARI_18'): {'recovery_kind': 'white_comment',
+                                              'target': '3_STORY_CANARI_15',
+                                              'action': 4,
+                                              'checkpoint_id': '3_STORY_CANARI_16',
+                                              'reset_common': True},
+     ('white_comment', '3_STORY_CANARI_20'): {'recovery_kind': 'white_comment',
+                                              'target': '3_STORY_CANARI_15',
+                                              'action': 4,
+                                              'checkpoint_id': '3_STORY_CANARI_16',
+                                              'reset_common': True},
+     ('battle_before', '3_STORY_CANARI_36'): {'recovery_kind': 'battle_before',
+                                              'target': '3_STORY_CANARI_34',
+                                              'action': 2,
+                                              'checkpoint_id': '3_STORY_CANARI_36',
+                                              'reset_common': True},
+     ('battle_before', '3_STORY_CANARI_44'): {'recovery_kind': 'battle_before',
+                                              'target': '3_STORY_CANARI_41',
+                                              'action': 0,
+                                              'checkpoint_id': '3_STORY_CANARI_44',
+                                              'reset_common': True},
+     ('mega_before_comment', '2_STORY_MEGA_MOVE4'): {'recovery_kind': 'mega_before_comment',
+                                                     'target': '2_STORY_MEGA_MOVE2',
+                                                     'action': 1,
+                                                     'checkpoint_id': '2_STORY_MEGA_MOVE4',
+                                                     'reset_common': False},
+     ('battle_before', '2_STORY_MEGA_MOVE10'): {'recovery_kind': 'battle_before',
+                                                'target': '2_STORY_MEGA_MOVE8',
+                                                'action': 1,
+                                                'checkpoint_id': '2_STORY_MEGA_MOVE10',
+                                                'reset_common': False},
+     ('mega_before_comment', '2_STORY_MEGA_MOVE14'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '2_STORY_MEGA_MOVE13',
+                                                      'action': 4,
+                                                      'checkpoint_id': '2_STORY_MEGA_MOVE14',
+                                                      'reset_common': False},
+     ('mega_before_comment', '2_STORY_MEGA_MOVE20'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '2_STORY_MEGA_MOVE18',
+                                                      'action': 1,
+                                                      'checkpoint_id': '2_STORY_MEGA_MOVE20',
+                                                      'reset_common': False},
+     ('battle_before', '2_STORY_MEGA_MOVE25'): {'recovery_kind': 'battle_before',
+                                                'target': '2_STORY_MEGA_MOVE23',
+                                                'action': 0,
+                                                'checkpoint_id': '2_STORY_MEGA_MOVE25',
+                                                'reset_common': True},
+     ('battle_before', '3_STORY_CANARI_3'): {'recovery_kind': 'battle_before',
+                                             'target': '3_STORY_CANARI_2_RECOVERY1',
+                                             'action': 0,
+                                             'checkpoint_id': '3_STORY_CANARI_3',
+                                             'reset_common': True},
+     ('battle_before', '4_STORY_SHIRO_5'): {'recovery_kind': 'battle_before',
+                                            'target': '4_STORY_SHIRO_2',
+                                            'action': 0,
+                                            'checkpoint_id': '4_STORY_SHIRO_5',
+                                            'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_15'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_13',
+                                             'action': 0,
+                                             'checkpoint_id': '4_STORY_SHIRO_15',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_17'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_16',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_17',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_20'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_18',
+                                             'action': 0,
+                                             'checkpoint_id': '4_STORY_SHIRO_20',
+                                             'reset_common': True},
+     ('battle_before', '4_STORY_SHIRO_35'): {'recovery_kind': 'battle_before',
+                                             'target': '4_STORY_SHIRO_32',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_35',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_44'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_43',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_44',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_48'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_47',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_48',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_50'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_49',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_50',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_53'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_52',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_53',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_62'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_61',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_62',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_75'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_74',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_75',
+                                             'reset_common': True},
+     ('white_comment', '4_STORY_SHIRO_77'): {'recovery_kind': 'white_comment',
+                                             'target': '4_STORY_SHIRO_76',
+                                             'action': 4,
+                                             'checkpoint_id': '4_STORY_SHIRO_77',
+                                             'reset_common': True},
+     ('white_comment', '2_STORY_ABSOL_MOVE24'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE23',
+                                                 'action': 4,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE24',
+                                                 'reset_common': False},
+     ('white_comment', '2_STORY_ABSOL_MOVE26'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE23',
+                                                 'action': 4,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE24',
+                                                 'reset_common': False},
+     ('white_comment', '2_STORY_ABSOL_MOVE28'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE23',
+                                                 'action': 4,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE24',
+                                                 'reset_common': False},
+     ('white_comment', '2_STORY_ABSOL_MOVE31'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE29',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE31',
+                                                 'reset_common': True},
+     ('white_comment', '2_STORY_ABSOL_MOVE35'): {'recovery_kind': 'white_comment',
+                                                 'target': '2_STORY_ABSOL_MOVE32',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE35',
+                                                 'reset_common': True},
+     ('mega_before_comment', '3_STORY_MEGA_MOVE16'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '3_STORY_MEGA_MOVE14',
+                                                      'action': 1,
+                                                      'checkpoint_id': '3_STORY_MEGA_MOVE16',
+                                                      'reset_common': False},
+     ('white_comment', '3_STORY_MEGA_MOVE23'): {'recovery_kind': 'white_comment',
+                                                'target': '3_STORY_MEGA_MOVE20',
+                                                'action': 1,
+                                                'checkpoint_id': '3_STORY_MEGA_MOVE23',
+                                                'reset_common': False},
+     ('mega_before_comment', '3_STORY_MEGA_MOVE25'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '3_STORY_MEGA_MOVE24',
+                                                      'action': 4,
+                                                      'checkpoint_id': '3_STORY_MEGA_MOVE25',
+                                                      'reset_common': False},
+     ('white_comment', '3_STORY_MEGA_MOVE30'): {'recovery_kind': 'white_comment',
+                                                'target': '3_STORY_MEGA_MOVE28',
+                                                'action': 0,
+                                                'checkpoint_id': '3_STORY_MEGA_MOVE30',
+                                                'reset_common': True},
+     ('white_comment', '6_STORY_YUKARI_4'): {'recovery_kind': 'white_comment',
+                                             'target': '6_STORY_YUKARI_2',
+                                             'action': 1,
+                                             'checkpoint_id': '6_STORY_YUKARI_4',
+                                             'reset_common': True},
+     ('battle_before', '6_STORY_YUKARI_8'): {'recovery_kind': 'battle_before',
+                                             'target': '6_STORY_YUKARI_7',
+                                             'action': 4,
+                                             'checkpoint_id': '6_STORY_YUKARI_8',
+                                             'reset_common': True},
+     ('white_comment', '6_STORY_YUKARI_14'): {'recovery_kind': 'white_comment',
+                                              'target': '6_STORY_YUKARI_12',
+                                              'action': 1,
+                                              'checkpoint_id': '6_STORY_YUKARI_14',
+                                              'reset_common': True},
+     ('mega_before_comment', '6_STORY_YUKARI_32'): {'recovery_kind': 'mega_before_comment',
+                                                    'target': '6_STORY_YUKARI_30',
+                                                    'action': 1,
+                                                    'checkpoint_id': '6_STORY_YUKARI_32',
+                                                    'reset_common': True},
+     ('mega_before_comment', '6_STORY_YUKARI_39'): {'recovery_kind': 'mega_before_comment',
+                                                    'target': '6_STORY_YUKARI_36',
+                                                    'action': 1,
+                                                    'checkpoint_id': '6_STORY_YUKARI_39',
+                                                    'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_52'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_50',
+                                                'action': 0,
+                                                'checkpoint_id': '5_STORY_KARASUBA_52',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_55'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_53',
+                                                'action': 0,
+                                                'checkpoint_id': '5_STORY_KARASUBA_55',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_57'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_56',
+                                                'action': 4,
+                                                'checkpoint_id': '5_STORY_KARASUBA_57',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_62'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_58',
+                                                'action': 4,
+                                                'checkpoint_id': '5_STORY_KARASUBA_62',
+                                                'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_98'): {'recovery_kind': 'white_comment',
+                                                'target': '5_STORY_KARASUBA_96',
+                                                'action': 0,
+                                                'checkpoint_id': '5_STORY_KARASUBA_98',
+                                                'reset_common': True},
+     ('battle_before', '5_STORY_KARASUBA_108'): {'recovery_kind': 'battle_before',
+                                                 'target': '5_STORY_KARASUBA_107',
+                                                 'action': 0,
+                                                 'checkpoint_id': '5_STORY_KARASUBA_108',
+                                                 'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_116'): {'recovery_kind': 'white_comment',
+                                                 'target': '5_STORY_KARASUBA_112',
+                                                 'action': 2,
+                                                 'checkpoint_id': '5_STORY_KARASUBA_116',
+                                                 'reset_common': True},
+     ('white_comment', '5_STORY_KARASUBA_120'): {'recovery_kind': 'white_comment',
+                                                 'target': '5_STORY_KARASUBA_117',
+                                                 'action': 0,
+                                                 'checkpoint_id': '5_STORY_KARASUBA_120',
+                                                 'reset_common': True},
+     ('battle_before', '2_STORY_ABSOL_MOVE11'): {'recovery_kind': 'battle_before',
+                                                 'target': '2_STORY_ABSOL_MOVE9',
+                                                 'action': 0,
+                                                 'checkpoint_id': '2_STORY_ABSOL_MOVE11',
+                                                 'reset_common': True},
+     ('white_comment', '7_STORY_GURI_122'): {'recovery_kind': 'white_comment',
+                                             'checkpoint_id': '7_STORY_GURI_122',
+                                             'target': '7_STORY_GURI_118',
+                                             'action': 0,
+                                             'reset_common': True},
+        ('white_comment', '6_STORY_YUKARI_58'): {'recovery_kind': 'white_comment',
+                                                  'target': '6_STORY_YUKARI_56',
+                                                  'action': 1,
+                                                  'checkpoint_id': '6_STORY_YUKARI_58',
+                                                  'reset_common': True},
+        ('white_comment', '7_STORY_GURI_11'): {'recovery_kind': 'white_comment',
+                                                'target': '7_STORY_GURI_9',
+                                                'action': 1,
+                                                'checkpoint_id': '7_STORY_GURI_11',
+                                                'reset_common': True},
+        ('mega_before_comment', '7_STORY_GURI_17'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '7_STORY_GURI_15',
+                                                      'action': 1,
+                                                      'checkpoint_id': '7_STORY_GURI_17',
+                                                      'reset_common': True},
+        ('white_comment', '7_STORY_GURI_23'): {'recovery_kind': 'white_comment',
+                                                'target': '7_STORY_GURI_21',
+                                                'action': 1,
+                                                'checkpoint_id': '7_STORY_GURI_23',
+                                                'reset_common': True},
+        ('battle_before', '7_STORY_GURI_25'): {'recovery_kind': 'battle_before',
+                                                'target': '7_STORY_GURI_24',
+                                                'action': 4,
+                                                'checkpoint_id': '7_STORY_GURI_25',
+                                                'reset_common': True},
+        ('battle_before', '7_STORY_GURI_30'): {'recovery_kind': 'battle_before',
+                                                'target': '7_STORY_GURI_28',
+                                                'action': 4,
+                                                'checkpoint_id': '7_STORY_GURI_30',
+                                                'reset_common': True},
+        ('mega_before_comment', '7_STORY_GURI_44'): {'recovery_kind': 'mega_before_comment',
+                                                      'target': '7_STORY_GURI_38',
+                                                      'action': 1,
+                                                      'checkpoint_id': '7_STORY_GURI_44',
+                                                      'reset_common': True},
+        ('white_comment', '7_STORY_GURI_78'): {'recovery_kind': 'white_comment',
+                                                'target': '7_STORY_GURI_76',
+                                                'action': 1,
+                                                'checkpoint_id': '7_STORY_GURI_78',
+                                                'reset_common': True},
+        ('battle_before', '8_STORY_STORY_LAST_16'): {'recovery_kind': 'battle_before',
+                                                      'target': '8_STORY_STORY_LAST_14_0',
+                                                      'action': 0,
+                                                      'checkpoint_id': '8_STORY_STORY_LAST_16',
+                                                      'reset_common': True,
+                                                      'completion': 'game_reset',
+                                                      'relay_site': '8_STORY_STORY_LAST_14_0:relay'},
+        ('white_comment', '8_STORY_STORY_LAST_27'): {'recovery_kind': 'white_comment',
+                                                      'target': '8_STORY_STORY_LAST_26_0',
+                                                      'action': 0,
+                                                      'checkpoint_id': '8_STORY_STORY_LAST_27',
+                                                      'reset_common': True,
+                                                      'completion': 'game_reset',
+                                                      'relay_site': '8_STORY_STORY_LAST_26_0:relay'},
+        ('white_comment', '8_STORY_STORY_LAST_39'): {'recovery_kind': 'white_comment',
+                                                      'target': '8_STORY_STORY_LAST_38_0',
+                                                      'action': 0,
+                                                      'checkpoint_id': '8_STORY_STORY_LAST_39',
+                                                      'reset_common': True,
+                                                      'completion': 'game_reset',
+                                                      'relay_site': '8_STORY_STORY_LAST_38_0:relay'},
+        ('white_comment', '8_STORY_STORY_LAST_40_1'): {'recovery_kind': 'white_comment',
+                                                        'target': '8_STORY_STORY_LAST_40_0',
+                                                        'action': 0,
+                                                        'checkpoint_id': '8_STORY_STORY_LAST_41',
+                                                        'reset_common': True,
+                                                        'completion': 'game_reset',
+                                                        'relay_site': '8_STORY_STORY_LAST_40_0:relay'},
+        ('white_comment', '8_STORY_STORY_LAST_41'): {'recovery_kind': 'white_comment',
+                                                      'target': '8_STORY_STORY_LAST_40_0',
+                                                      'action': 0,
+                                                      'checkpoint_id': '8_STORY_STORY_LAST_41',
+                                                      'reset_common': True,
+                                                      'completion': 'game_reset',
+                                                      'relay_site': '8_STORY_STORY_LAST_40_0:relay'},
+        ('battle_before', '2_STORY_X_LANK_MOVE11'): {'recovery_kind': 'battle_before',
+                                                      'target': '2_STORY_X_LANK_MOVE9',
+                                                      'action': 0,
+                                                      'checkpoint_id': '2_STORY_X_LANK_MOVE11',
+                                                      'reset_common': True},
+        ('battle_before', '2_STORY_W_LANK_MOVE11'): {'recovery_kind': 'battle_before',
+                                                      'target': '2_STORY_W_LANK_MOVE8',
+                                                      'action': 0,
+                                                      'checkpoint_id': '2_STORY_W_LANK_MOVE11',
+                                                      'reset_common': True},
+        ('battle_before', '2_STORY_ABSOL_MOVE17'): {'recovery_kind': 'battle_before',
+                                                     'target': '2_STORY_ABSOL_MOVE14',
+                                                     'action': 0,
+                                                     'checkpoint_id': '2_STORY_ABSOL_MOVE17',
+                                                     'reset_common': True},
+        ('white_comment', '2_STORY_TOWER_68'): {'recovery_kind': 'white_comment',
+                                                 'checkpoint_id': '2_STORY_TOWER_68',
+                                                 'target': '2_STORY_TOWER_66',
+                                                 'action': 0,
+                                                 'reset_common': True},
+    }
+
+    ZA_STORY_RESET_DEBUG_RECOVERY_TARGETS = {'1_STORY_OUT_HOTEL_Z_17': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_17',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_18',
+                                'reset_common': False,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_20_1': {'recovery_kind': 'checkpoint',
+                                  'target': '1_STORY_OUT_HOTEL_Z_20_1',
+                                  'action': 4,
+                                  'checkpoint_id': '1_STORY_OUT_HOTEL_Z_20_1',
+                                  'reset_common': False,
+                                  'validated': True},
+     '1_STORY_OUT_HOTEL_Z_40': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_WANINOKO_SKILL_CHANGE3',
+                                'action': 4,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_40',
+                                'reset_common': False,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_43': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_46',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_47',
+                                'reset_common': False,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_53': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_53',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_53',
+                                'reset_common': True,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_61': {'recovery_kind': 'white_comment',
+                                'target': '1_STORY_OUT_HOTEL_Z_61',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_63',
+                                'reset_common': False,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_77': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_77',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_78',
+                                'reset_common': True,
+                                'validated': True},
+     '1_STORY_OUT_HOTEL_Z_79': {'recovery_kind': 'checkpoint',
+                                'target': '1_STORY_OUT_HOTEL_Z_79',
+                                'action': 0,
+                                'checkpoint_id': '1_STORY_OUT_HOTEL_Z_81',
+                                'reset_common': True,
+                                'validated': True},
+     '2_STORY_TOWER_2': {'recovery_kind': 'checkpoint',
+                         'target': '2_STORY_TOWER_2',
+                         'action': 0,
+                         'checkpoint_id': '2_STORY_TOWER_4',
+                         'reset_common': False,
+                         'validated': True},
+     '2_STORY_TOWER_15_0': {'recovery_kind': 'white_comment',
+                            'checkpoint_id': '2_STORY_TOWER_16',
+                            'target': '2_STORY_TOWER_15_0',
+                            'action': 0,
+                            'validated': True,
+                            'reset_common': False},
+     '2_STORY_TOWER_25': {'recovery_kind': 'battle_before',
+                          'checkpoint_id': '2_STORY_TOWER_27',
+                          'target': '2_STORY_TOWER_25',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': False},
+     '2_STORY_TOWER_32': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_32',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_34',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_37': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_37',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_38',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_39': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_39',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_41',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_44': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '2_STORY_TOWER_45',
+                          'target': '2_STORY_TOWER_44',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': False},
+     '2_STORY_TOWER_69': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_69',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_71',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_84': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_Y_LANK_BATTLE_ZONE',
+                          'action': 2,
+                          'checkpoint_id': '2_STORY_TOWER_84',
+                          'reset_common': False,
+                          'validated': True},
+     '2_STORY_X_LANK_MOVE6': {'recovery_kind': 'white_comment',
+                              'target': '2_STORY_X_LANK_MOVE6',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_X_LANK_MOVE8',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_W_LANK_MOVE1': {'recovery_kind': 'battle_before',
+                              'target': '2_STORY_W_LANK_MOVE1',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_W_LANK_MOVE3',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_W_LANK_MOVE6': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_W_LANK_MOVE6',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_W_LANK_MOVE7',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_TOWER_47': {'recovery_kind': 'white_comment',
+                          'target': '2_STORY_TOWER_47',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_49',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_50': {'recovery_kind': 'white_comment',
+                          'target': '2_STORY_TOWER_50',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_51',
+                          'reset_common': False,
+                          'validated': True},
+     '2_STORY_TOWER_52': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_52',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_54',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_62': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '2_STORY_TOWER_63',
+                          'target': '2_STORY_TOWER_61',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': True},
+     '2_STORY_TOWER_64': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_64',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_65',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_66': {'recovery_kind': 'white_comment',
+                          'target': '2_STORY_TOWER_66',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_68',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_TOWER_74': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '2_STORY_TOWER_72',
+                          'target': '2_STORY_TOWER_74',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': True},
+     '2_STORY_TOWER_76': {'recovery_kind': 'checkpoint',
+                          'target': '2_STORY_TOWER_76',
+                          'action': 0,
+                          'checkpoint_id': '2_STORY_TOWER_78',
+                          'reset_common': True,
+                          'validated': True},
+     '2_STORY_Y_LANK_MOVE0': {'recovery_kind': 'battle_before',
+                              'target': '2_STORY_Y_LANK_MOVE0',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_Y_LANK_MOVE3',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_Y_LANK_BATTLE_ZONE': {'recovery_kind': 'infi',
+                                    'target': '2_STORY_Y_LANK_BATTLE_ZONE',
+                                    'action': 4,
+                                    'checkpoint_id': 'infi:2_STORY_Y_LANK_BATTLE_ZONE',
+                                    'reset_common': False,
+                                    'validated': True},
+     '2_STORY_X_LANK_BATTLE_ZONE': {'recovery_kind': 'infi',
+                                    'target': '2_STORY_X_LANK_BATTLE_ZONE',
+                                    'action': 4,
+                                    'checkpoint_id': 'infi:2_STORY_X_LANK_BATTLE_ZONE',
+                                    'reset_common': False,
+                                    'validated': True},
+     '2_STORY_W_LANK_BATTLE_ZONE': {'recovery_kind': 'infi',
+                                    'target': '2_STORY_W_LANK_BATTLE_ZONE',
+                                    'action': 4,
+                                    'checkpoint_id': 'infi:2_STORY_W_LANK_BATTLE_ZONE',
+                                    'reset_common': False,
+                                    'validated': True},
+     '2_STORY_ABSOL_MOVE14': {'recovery_kind': 'infi',
+                              'target': '2_STORY_ABSOL_MOVE14',
+                              'action': 4,
+                              'checkpoint_id': 'infi:2_STORY_ABSOL_MOVE14',
+                              'reset_common': False,
+                              'validated': True},
+     '2_STORY_MAPPING_1': {'recovery_kind': 'mapping_goto',
+                           'target': '2_STORY_MAPPING_1',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_3',
+                           'reset_common': True,
+                           'validated': True},
+     '2_STORY_MAPPING_4': {'recovery_kind': 'mapping_goto',
+                           'target': '2_STORY_MAPPING_4',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_6',
+                           'reset_common': True,
+                           'validated': True},
+     '2_STORY_MAPPING_7': {'recovery_kind': 'mapping_goto',
+                           'target': '2_STORY_MAPPING_7',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_9',
+                           'reset_common': True,
+                           'validated': True},
+     '2_STORY_MAPPING_10': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_10',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_12',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_13': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_13',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_15',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_16': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_16',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_18',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_19': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_19',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_21',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_22': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_22',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_24',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_25': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_25',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_27',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_28': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_28',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_30',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_31': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_31',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_33',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_34': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_34',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_36',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_37': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_37',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_39',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_40': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_40',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_42',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_43': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_43',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_45',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_46': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_46',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_48',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_49': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_49',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_51',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_52': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_52',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_54',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_55': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_55',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_57',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_58': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_58',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_60',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_61': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_61',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_63',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_64': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_64',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_66',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_67': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_67',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_69',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_70': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_70',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_72',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_73': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_73',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_75',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_76': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_76',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_78',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_79': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_79',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_81',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_82': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_82',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_84',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_85': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_85',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_87',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_88': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_88',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_90',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_91': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_91',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_94',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_95': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_95',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_97',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_98': {'recovery_kind': 'mapping_goto',
+                            'target': '2_STORY_MAPPING_98',
+                            'action': 0,
+                            'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_100',
+                            'reset_common': True,
+                            'validated': True},
+     '2_STORY_MAPPING_101': {'recovery_kind': 'mapping_goto',
+                             'target': '2_STORY_MAPPING_101',
+                             'action': 0,
+                             'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_103',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_MAPPING_104': {'recovery_kind': 'mapping_goto',
+                             'target': '2_STORY_MAPPING_104',
+                             'action': 0,
+                             'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_106',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_MAPPING_107': {'recovery_kind': 'mapping_goto',
+                             'target': '2_STORY_MAPPING_107',
+                             'action': 0,
+                             'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_109',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_MAPPING_116_0': {'recovery_kind': 'mapping_goto',
+                               'target': '2_STORY_MAPPING_116_0',
+                               'action': 0,
+                               'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_117',
+                               'reset_common': True,
+                               'validated': True},
+     '3_STORY_CANARI_29': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_29',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_30',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_47': {'recovery_kind': 'battle_before',
+         'target': '3_STORY_CANARI_48_RECOVERY',
+         'action': 4,
+         'checkpoint_id': '3_STORY_CANARI_48',
+         'reset_common': True,
+         'validated': True,
+         'debug_ready_method': '_ZA_story_chapter3_selector_debug_ready'},
+     '3_STORY_CANARI_7': {'recovery_kind': 'white_comment',
+                          'target': '3_STORY_CANARI_2_RECOVERY1',
+                          'action': 0,
+                          'checkpoint_id': '3_STORY_CANARI_10',
+                          'reset_common': True,
+                          'validated': True},
+     '3_STORY_MEGA_MOVE4': {'recovery_kind': 'checkpoint',
+                            'target': '3_STORY_MEGA_MOVE4',
+                            'action': 1,
+                            'checkpoint_id': '3_STORY_MEGA_MOVE4',
+                            'reset_common': True,
+                            'validated': True},
+     '3_STORY_MEGA_MOVE7': {'recovery_kind': 'white_comment',
+                            'target': '3_STORY_MEGA_MOVE7',
+                            'action': 0,
+                            'checkpoint_id': '3_STORY_MEGA_MOVE8',
+                            'reset_common': True,
+                            'validated': True},
+     '3_STORY_MEGA_MOVE9': {'recovery_kind': 'mega_before_comment',
+                            'target': '3_STORY_MEGA_MOVE9',
+                            'action': 4,
+                            'checkpoint_id': '3_STORY_MEGA_MOVE10',
+                            'reset_common': True,
+                            'validated': True},
+     '4_STORY_SHIRO_1': {'recovery_kind': 'infi',
+                         'target': '4_STORY_SHIRO_1',
+                         'action': 4,
+                         'checkpoint_id': 'infi:4_STORY_SHIRO_1',
+                         'reset_common': True,
+                         'validated': True},
+     '4_STORY_SHIRO_40': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_38',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_41',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_44_1': {'recovery_kind': 'white_comment',
+                            'target': '4_STORY_SHIRO_44_1',
+                            'action': 4,
+                            'checkpoint_id': '4_STORY_SHIRO_46',
+                            'reset_common': True,
+                            'validated': True},
+     '4_STORY_SHIRO_55': {'recovery_kind': 'battle_before',
+                          'target': '4_STORY_SHIRO_54',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_54',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_63': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_63',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_64',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_85': {'recovery_kind': 'battle_before',
+                          'target': '4_STORY_SHIRO_84',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_86',
+                          'reset_common': True,
+                          'validated': True},
+     '5_STORY_MAPPING_2': {'recovery_kind': 'checkpoint',
+                           'target': '5_STORY_MAPPING_2',
+                           'action': 1,
+                           'checkpoint_id': '5_STORY_MAPPING_2',
+                           'reset_common': True,
+                           'validated': True},
+     '4_STORY_SHIRO_11': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_10',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_12',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_START_CHECK': {'recovery_kind': 'infi',
+                             'target': '4_STORY_SHIRO_1',
+                             'action': 4,
+                             'checkpoint_id': 'infi:4_STORY_SHIRO_1',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_D_LANK_BATTLE_ZONE': {'recovery_kind': 'infi',
+                                    'target': '5_STORY_D_LANK_BATTLE_ZONE',
+                                    'action': 4,
+                                    'checkpoint_id': 'infi:5_STORY_D_LANK_BATTLE_ZONE',
+                                    'reset_common': True,
+                                    'validated': True},
+     '5_STORY_KARASUBA_103': {'recovery_kind': 'white_comment',
+                              'target': '5_STORY_KARASUBA_100',
+                              'action': 2,
+                              'checkpoint_id': '5_STORY_KARASUBA_104',
+                              'reset_common': True,
+                              'validated': True},
+     '5_STORY_KARASUBA_121': {'recovery_kind': 'battle_before',
+                              'target': '5_STORY_KARASUBA_121',
+                              'action': 0,
+                              'checkpoint_id': '5_STORY_KARASUBA_122',
+                              'reset_common': True,
+                              'validated': True},
+     '5_STORY_KARASUBA_65': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_64',
+                             'action': 1,
+                             'checkpoint_id': '5_STORY_KARASUBA_66',
+                             'reset_common': True,
+                             'validated': True},
+     '6_STORY_C_LANK_BATTLE_ZONE': {'recovery_kind': 'infi',
+                                    'target': '6_STORY_C_LANK_BATTLE_ZONE',
+                                    'action': 4,
+                                    'checkpoint_id': 'infi:6_STORY_C_LANK_BATTLE_ZONE',
+                                    'reset_common': True,
+                                    'validated': True},
+     '6_STORY_MAPPING_2': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_MAPPING_2',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_MAPPING_2',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_19': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_18',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_20',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_27': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_27',
+                           'action': 4,
+                           'checkpoint_id': '6_STORY_YUKARI_28',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_44': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_YUKARI_43',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_45',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_46': {'recovery_kind': 'checkpoint',
+                           'target': '6_STORY_YUKARI_46',
+                           'action': 4,
+                           'checkpoint_id': '6_STORY_YUKARI_47',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_50': {'recovery_kind': 'mega_before_comment',
+                           'target': '6_STORY_YUKARI_52_RECOVERY',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_52',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_63': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_62',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_65',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_68': {'recovery_kind': 'battle_before',
+                           'target': '6_STORY_YUKARI_68',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_69',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_72': {'recovery_kind': 'battle_before',
+                           'target': '6_STORY_YUKARI_72',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_73',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_76': {'recovery_kind': 'battle_before',
+                           'target': '6_STORY_YUKARI_76',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_77',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_80': {'recovery_kind': 'battle_before',
+                           'target': '6_STORY_YUKARI_80',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_81',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_84': {'recovery_kind': 'battle_before',
+                           'target': '6_STORY_YUKARI_84',
+                           'action': 0,
+                           'checkpoint_id': '6_STORY_YUKARI_85',
+                           'reset_common': True,
+                           'validated': True},
+     '7_STORY_GURI_119': {'recovery_kind': 'checkpoint',
+                          'target': '7_STORY_GURI_118',
+                          'action': 0,
+                          'checkpoint_id': '7_STORY_GURI_119',
+                          'reset_common': True,
+                          'validated': True},
+     '7_STORY_GURI_12': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_12',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_13',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_124': {'recovery_kind': 'checkpoint',
+                          'target': '7_STORY_GURI_123',
+                          'action': 0,
+                          'checkpoint_id': '7_STORY_GURI_124',
+                          'reset_common': True,
+                          'validated': True},
+     '7_STORY_GURI_131': {'recovery_kind': 'white_comment',
+                          'target': '7_STORY_GURI_130',
+                          'action': 1,
+                          'checkpoint_id': '7_STORY_GURI_133',
+                          'reset_common': True,
+                          'validated': True},
+     '7_STORY_GURI_138': {'recovery_kind': 'white_comment',
+                          'target': '7_STORY_GURI_137',
+                          'action': 1,
+                          'checkpoint_id': '7_STORY_GURI_139',
+                          'reset_common': True,
+                          'validated': True},
+     '7_STORY_GURI_3': {'recovery_kind': 'white_comment',
+                        'target': '7_STORY_GURI_2',
+                        'action': 1,
+                        'checkpoint_id': '7_STORY_GURI_4',
+                        'reset_common': True,
+                        'validated': True},
+     '7_STORY_GURI_33': {'recovery_kind': 'mega_before_comment',
+                         'target': '7_STORY_GURI_33',
+                         'action': 4,
+                         'checkpoint_id': '7_STORY_GURI_34',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_49': {'recovery_kind': 'white_comment',
+                         'target': '7_STORY_GURI_48',
+                         'action': 1,
+                         'checkpoint_id': '7_STORY_GURI_50',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_53': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_52',
+                         'action': 1,
+                         'checkpoint_id': '7_STORY_GURI_54',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_57': {'recovery_kind': 'white_comment',
+                         'target': '7_STORY_GURI_56',
+                         'action': 1,
+                         'checkpoint_id': '7_STORY_GURI_58',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_73': {'recovery_kind': 'white_comment',
+                         'target': '7_STORY_GURI_72',
+                         'action': 1,
+                         'checkpoint_id': '7_STORY_GURI_74',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_7': {'recovery_kind': 'infi',
+                        'target': '7_STORY_GURI_7',
+                        'action': 4,
+                        'checkpoint_id': 'infi:7_STORY_GURI_7',
+                        'reset_common': True,
+                        'validated': True},
+     '7_STORY_GURI_81': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_81',
+                         'action': 4,
+                         'checkpoint_id': '7_STORY_GURI_82',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_87': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_86',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_87',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_92': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_91',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_92',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_95': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_94',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_95',
+                         'reset_common': True,
+                         'validated': True},
+     '7_STORY_GURI_98': {'recovery_kind': 'checkpoint',
+                         'target': '7_STORY_GURI_97',
+                         'action': 0,
+                         'checkpoint_id': '7_STORY_GURI_98',
+                         'reset_common': True,
+                         'validated': True},
+     '8_STORY_STORY_LAST_4': {'recovery_kind': 'battle_before',
+                              'target': '8_STORY_STORY_LAST_3',
+                              'action': 0,
+                              'checkpoint_id': '8_STORY_STORY_LAST_5',
+                              'reset_common': True,
+                              'validated': True},
+     '8_STORY_STORY_LAST_28': {'recovery_kind': 'battle_before',
+                               'target': '8_STORY_STORY_LAST_28',
+                               'action': 4,
+                               'checkpoint_id': '8_STORY_STORY_LAST_29',
+                               'reset_common': True,
+                               'validated': True},
+     '8_STORY_STORY_LAST_45': {'recovery_kind': 'white_comment',
+                               'target': '8_STORY_STORY_LAST_45',
+                               'action': 4,
+                               'checkpoint_id': '8_STORY_STORY_LAST_46',
+                               'reset_common': True,
+                               'validated': True},
+     '8_STORY_STORY_LAST_52': {'recovery_kind': 'checkpoint',
+                               'target': '8_STORY_STORY_LAST_52',
+                               'action': 4,
+                               'checkpoint_id': '8_STORY_STORY_LAST_53',
+                               'reset_common': True,
+                               'validated': True,
+                               'debug_ready_method': '_ZA_story_hotel_room_state'},
+     '8_STORY_STORY_LAST_60': {'recovery_kind': 'checkpoint',
+                               'target': '8_STORY_STORY_LAST_59',
+                               'action': 0,
+                               'checkpoint_id': '8_STORY_STORY_LAST_60',
+                               'reset_common': True,
+                               'validated': True},
+     '4_STORY_SHIRO_66': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_63',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_67',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_69': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_63',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_70',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_72': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_63',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_73',
+                          'reset_common': True,
+                          'validated': True},
+     '3_STORY_CANARI_6': {'recovery_kind': 'infi',
+                          'target': '3_STORY_CANARI_6',
+                          'action': 4,
+                          'checkpoint_id': 'infi:3_STORY_CANARI_6',
+                          'reset_common': True,
+                          'validated': True},
+     '5_STORY_KARASUBA_23': {'recovery_kind': 'mega_before_comment',
+                             'target': '5_STORY_KARASUBA_22',
+                             'action': 1,
+                             'checkpoint_id': '5_STORY_KARASUBA_24',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_29': {'recovery_kind': 'mega_before_comment',
+                             'target': '5_STORY_KARASUBA_28',
+                             'action': 1,
+                             'checkpoint_id': '5_STORY_KARASUBA_30',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_36': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_35',
+                             'action': 1,
+                             'checkpoint_id': '5_STORY_KARASUBA_37',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_38': {'recovery_kind': 'battle_before',
+                             'target': '5_STORY_KARASUBA_38',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_39',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_49': {'recovery_kind': 'checkpoint',
+                             'target': '5_STORY_KARASUBA_49',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_49',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_MAPPING_1': {'recovery_kind': 'mapping_goto',
+                           'target': '5_STORY_MAPPING_1',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:5_STORY_MAPPING_4',
+                           'reset_common': True,
+                           'validated': True},
+     '5_STORY_MAPPING_5': {'recovery_kind': 'mapping_goto',
+                           'target': '5_STORY_MAPPING_5',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:5_STORY_MAPPING_6',
+                           'reset_common': True,
+                           'validated': True},
+     '5_STORY_KARASUBA_3': {'recovery_kind': 'battle_before',
+                            'target': '5_STORY_KARASUBA_2',
+                            'action': 1,
+                            'checkpoint_id': '5_STORY_KARASUBA_4',
+                            'reset_common': True,
+                            'validated': True},
+     '5_STORY_KARASUBA_7': {'recovery_kind': 'battle_before',
+                            'target': '5_STORY_KARASUBA_7',
+                            'action': 4,
+                            'checkpoint_id': '5_STORY_KARASUBA_8',
+                            'reset_common': True,
+                            'validated': True},
+     '5_STORY_KARASUBA_11': {'recovery_kind': 'checkpoint',
+                             'target': '5_STORY_KARASUBA_11',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_12',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_13': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_11',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_14',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_17': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_16',
+                             'action': 1,
+                             'checkpoint_id': '5_STORY_KARASUBA_18',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_19': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_19',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_20',
+                             'reset_common': True,
+                             'validated': True},
+     '3_STORY_CANARI_15': {'recovery_kind': 'white_comment',
+                           'target': '3_STORY_CANARI_15',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_16',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_23': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_23',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_24',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_27': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_27',
+                           'action': 4,
+                           'checkpoint_id': '3_STORY_CANARI_28',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_34': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_34',
+                           'action': 2,
+                           'checkpoint_id': '3_STORY_CANARI_34',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_35': {'recovery_kind': 'battle_before',
+                           'target': '3_STORY_CANARI_34',
+                           'action': 2,
+                           'checkpoint_id': '3_STORY_CANARI_36',
+                           'reset_common': True,
+                           'validated': True},
+     '3_STORY_CANARI_42': {'recovery_kind': 'battle_before',
+                           'target': '3_STORY_CANARI_41',
+                           'action': 0,
+                           'checkpoint_id': '3_STORY_CANARI_44',
+                           'reset_common': True,
+                           'validated': True},
+     '2_STORY_MEGA_MOVE1': {'recovery_kind': 'mega_before_comment',
+                            'target': '2_STORY_MEGA_MOVE2',
+                            'action': 1,
+                            'checkpoint_id': '2_STORY_MEGA_MOVE4',
+                            'reset_common': False,
+                            'validated': True},
+     '2_STORY_MEGA_MOVE7': {'recovery_kind': 'battle_before',
+                            'target': '2_STORY_MEGA_MOVE8',
+                            'action': 1,
+                            'checkpoint_id': '2_STORY_MEGA_MOVE10',
+                            'reset_common': False,
+                            'validated': True},
+     '2_STORY_MEGA_MOVE13': {'recovery_kind': 'mega_before_comment',
+                             'target': '2_STORY_MEGA_MOVE13',
+                             'action': 4,
+                             'checkpoint_id': '2_STORY_MEGA_MOVE14',
+                             'reset_common': False,
+                             'validated': True},
+     '2_STORY_MEGA_MOVE17': {'recovery_kind': 'mega_before_comment',
+                             'target': '2_STORY_MEGA_MOVE18',
+                             'action': 1,
+                             'checkpoint_id': '2_STORY_MEGA_MOVE20',
+                             'reset_common': False,
+                             'validated': True},
+     '2_STORY_MEGA_MOVE23': {'recovery_kind': 'battle_before',
+                             'target': '2_STORY_MEGA_MOVE23',
+                             'action': 0,
+                             'checkpoint_id': '2_STORY_MEGA_MOVE25',
+                             'reset_common': True,
+                             'validated': True},
+     '3_STORY_CANARI_2_RECOVERY3': {'recovery_kind': 'battle_before',
+                                    'target': '3_STORY_CANARI_2_RECOVERY1',
+                                    'action': 0,
+                                    'checkpoint_id': '3_STORY_CANARI_3',
+                                    'reset_common': True,
+                                    'validated': True},
+     '3_STORY_CANARI_12': {'recovery_kind': 'checkpoint',
+                           'target': '3_STORY_CANARI_12',
+                           'action': 2,
+                           'checkpoint_id': '3_STORY_CANARI_12',
+                           'reset_common': True,
+                           'validated': True},
+     '4_STORY_SHIRO_4': {'recovery_kind': 'battle_before',
+                         'target': '4_STORY_SHIRO_2',
+                         'action': 0,
+                         'checkpoint_id': '4_STORY_SHIRO_5',
+                         'reset_common': True,
+                         'validated': True},
+     '4_STORY_SHIRO_14': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_13',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_15',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_16': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_16',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_17',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_19': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_18',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_20',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_23': {'recovery_kind': 'checkpoint',
+                          'target': '4_STORY_SHIRO_21',
+                          'action': 0,
+                          'checkpoint_id': '4_STORY_SHIRO_24',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_32': {'recovery_kind': 'battle_before',
+                          'target': '4_STORY_SHIRO_32',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_35',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_43': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '4_STORY_SHIRO_44',
+                          'target': '4_STORY_SHIRO_43',
+                          'action': 4,
+                          'validated': True,
+                          'reset_common': True},
+     '4_STORY_SHIRO_47': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_47',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_48',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_49': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_49',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_50',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_52': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_52',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_53',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_57': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_57',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_59',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_61': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_61',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_62',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_74': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_74',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_75',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_76': {'recovery_kind': 'white_comment',
+                          'target': '4_STORY_SHIRO_76',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_77',
+                          'reset_common': True,
+                          'validated': True},
+     '4_STORY_SHIRO_80': {'recovery_kind': 'battle_before',
+                          'target': '4_STORY_SHIRO_80',
+                          'action': 4,
+                          'checkpoint_id': '4_STORY_SHIRO_80',
+                          'reset_common': True,
+                          'debug_ready_method': '_ZA_story_shiro_80_reset_debug_ready',
+                          'validated': True},
+     '2_STORY_ABSOL_MOVE23': {'recovery_kind': 'white_comment',
+                              'target': '2_STORY_ABSOL_MOVE23',
+                              'action': 4,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE24',
+                              'reset_common': False,
+                              'validated': True},
+     '2_STORY_ABSOL_MOVE29': {'recovery_kind': 'white_comment',
+                              'target': '2_STORY_ABSOL_MOVE29',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE31',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_ABSOL_MOVE32': {'recovery_kind': 'white_comment',
+                              'target': '2_STORY_ABSOL_MOVE32',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE35',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_ABSOL_MOVE36': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_ABSOL_MOVE36',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE38',
+                              'reset_common': True,
+                              'validated': True},
+     '3_STORY_MEGA_MOVE13': {'recovery_kind': 'mega_before_comment',
+                             'target': '3_STORY_MEGA_MOVE14',
+                             'action': 1,
+                             'checkpoint_id': '3_STORY_MEGA_MOVE16',
+                             'reset_common': False,
+                             'validated': True},
+     '3_STORY_MEGA_MOVE19': {'recovery_kind': 'white_comment',
+                             'target': '3_STORY_MEGA_MOVE20',
+                             'action': 1,
+                             'checkpoint_id': '3_STORY_MEGA_MOVE23',
+                             'reset_common': False,
+                             'validated': True},
+     '3_STORY_MEGA_MOVE24': {'recovery_kind': 'mega_before_comment',
+                             'target': '3_STORY_MEGA_MOVE24',
+                             'action': 4,
+                             'checkpoint_id': '3_STORY_MEGA_MOVE25',
+                             'reset_common': False,
+                             'validated': True},
+     '3_STORY_MEGA_MOVE28': {'recovery_kind': 'white_comment',
+                             'target': '3_STORY_MEGA_MOVE28',
+                             'action': 0,
+                             'checkpoint_id': '3_STORY_MEGA_MOVE30',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_RESTAURANT_DOHUTSU_LOOP': {'recovery_kind': 'checkpoint',
+                                         'target': '2_STORY_RESTAURANT_DOHUTSU_LOOP',
+                                         'action': 4,
+                                         'checkpoint_id': '2_STORY_RESTAURANT_DOHUTSU_LOOP',
+                                         'reset_common': False,
+                                         'debug_ready_method': '_ZA_story_restaurant_reset_debug_ready',
+                                         'validated': True},
+     '6_STORY_MAPPING_1': {'recovery_kind': 'mapping_goto',
+                           'target': '6_STORY_MAPPING_1',
+                           'action': 0,
+                           'checkpoint_id': 'mapping-goto:6_STORY_MAPPING_4',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_3': {'recovery_kind': 'white_comment',
+                          'target': '6_STORY_YUKARI_2',
+                          'action': 1,
+                          'checkpoint_id': '6_STORY_YUKARI_4',
+                          'reset_common': True,
+                          'validated': True},
+     '6_STORY_YUKARI_7': {'recovery_kind': 'battle_before',
+                          'target': '6_STORY_YUKARI_7',
+                          'action': 4,
+                          'checkpoint_id': '6_STORY_YUKARI_8',
+                          'reset_common': True,
+                          'validated': True},
+     '6_STORY_YUKARI_13': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_12',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_14',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_25': {'recovery_kind': 'white_comment',
+                           'target': '6_STORY_YUKARI_24',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_26',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_31': {'recovery_kind': 'mega_before_comment',
+                           'target': '6_STORY_YUKARI_30',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_32',
+                           'reset_common': True,
+                           'validated': True},
+     '6_STORY_YUKARI_37': {'recovery_kind': 'mega_before_comment',
+                           'target': '6_STORY_YUKARI_36',
+                           'action': 1,
+                           'checkpoint_id': '6_STORY_YUKARI_39',
+                           'reset_common': True,
+                           'validated': True},
+     '5_STORY_KARASUBA_50': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_50',
+                             'action': 0,
+                             'checkpoint_id': '5_STORY_KARASUBA_52',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_53': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_53',
+                             'action': 0,
+                             'checkpoint_id': '5_STORY_KARASUBA_55',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_56': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_56',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_57',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_58': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_58',
+                             'action': 4,
+                             'checkpoint_id': '5_STORY_KARASUBA_62',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_69': {'recovery_kind': 'checkpoint',
+                             'target': '5_STORY_KARASUBA_69',
+                             'action': 0,
+                             'checkpoint_id': '5_STORY_KARASUBA_70',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_96': {'recovery_kind': 'white_comment',
+                             'target': '5_STORY_KARASUBA_96',
+                             'action': 0,
+                             'checkpoint_id': '5_STORY_KARASUBA_98',
+                             'reset_common': True,
+                             'validated': True},
+     '5_STORY_KARASUBA_107': {'recovery_kind': 'battle_before',
+                              'target': '5_STORY_KARASUBA_107',
+                              'action': 0,
+                              'checkpoint_id': '5_STORY_KARASUBA_108',
+                              'reset_common': True,
+                              'validated': True},
+     '5_STORY_KARASUBA_111': {'recovery_kind': 'white_comment',
+                              'target': '5_STORY_KARASUBA_112',
+                              'action': 2,
+                              'checkpoint_id': '5_STORY_KARASUBA_116',
+                              'reset_common': True,
+                              'validated': True},
+     '5_STORY_KARASUBA_117': {'recovery_kind': 'white_comment',
+                              'target': '5_STORY_KARASUBA_117',
+                              'action': 0,
+                              'checkpoint_id': '5_STORY_KARASUBA_120',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_ABSOL_MOVE4': {'recovery_kind': 'white_comment',
+                             'target': '2_STORY_ABSOL_MOVE4',
+                             'action': 4,
+                             'checkpoint_id': '2_STORY_ABSOL_MOVE6',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_ABSOL_MOVE10': {'recovery_kind': 'battle_before',
+                              'target': '2_STORY_ABSOL_MOVE9',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE11',
+                              'reset_common': True,
+                              'validated': True},
+     '2_STORY_MAPPING_110': {'recovery_kind': 'mapping_goto',
+                             'target': '2_STORY_MAPPING_110',
+                             'action': 0,
+                             'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_113',
+                             'reset_common': True,
+                             'validated': True},
+     '2_STORY_MAPPING_114_0': {'recovery_kind': 'mapping_goto',
+                               'target': '2_STORY_MAPPING_114_0',
+                               'action': 0,
+                               'checkpoint_id': 'mapping-goto:2_STORY_MAPPING_115',
+                               'reset_common': True,
+                               'validated': True},
+     '2_STORY_TOWER_55': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '2_STORY_TOWER_58',
+                          'target': '2_STORY_TOWER_58_RECOVERY',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': False},
+     '4_STORY_SHIRO_13': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '4_STORY_SHIRO_15',
+                          'target': '4_STORY_SHIRO_13',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': True},
+     '5_STORY_KARASUBA_42': {'recovery_kind': 'white_comment',
+                             'checkpoint_id': '5_STORY_KARASUBA_46',
+                             'target': '5_STORY_KARASUBA_46_RECOVERY',
+                             'action': 0,
+                             'validated': True,
+                             'reset_common': True},
+     '7_STORY_GURI_121': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '7_STORY_GURI_122',
+                          'target': '7_STORY_GURI_118',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': True},
+     '8_STORY_STORY_LAST_8_0': {'recovery_kind': 'white_comment',
+                                'checkpoint_id': '8_STORY_STORY_LAST_9',
+                                'target': '8_STORY_STORY_LAST_8_0',
+                                'action': 0,
+                                'validated': True,
+                                'reset_common': False},
+     '8_STORY_STORY_LAST_8': {'recovery_kind': 'white_comment',
+                              'checkpoint_id': '8_STORY_STORY_LAST_9',
+                              'target': '8_STORY_STORY_LAST_8_0',
+                              'action': 0,
+                              'validated': True,
+                              'reset_common': False},
+     '8_STORY_STORY_LAST_21_0': {'recovery_kind': 'white_comment',
+                                 'checkpoint_id': '8_STORY_STORY_LAST_23',
+                                 'target': '8_STORY_STORY_LAST_21_0',
+                                 'action': 0,
+                                 'validated': True,
+                                 'reset_common': False},
+     '8_STORY_STORY_LAST_21': {'recovery_kind': 'white_comment',
+                               'checkpoint_id': '8_STORY_STORY_LAST_23',
+                               'target': '8_STORY_STORY_LAST_21_0',
+                               'action': 0,
+                               'validated': True,
+                               'reset_common': False},
+     '8_STORY_STORY_LAST_32_0': {'recovery_kind': 'white_comment',
+                                 'checkpoint_id': '8_STORY_STORY_LAST_33',
+                                 'target': '8_STORY_STORY_LAST_32_0',
+                                 'action': 0,
+                                 'validated': True,
+                                 'reset_common': False},
+     '2_STORY_ABSOL_MOVE0': {'recovery_kind': 'white_comment',
+                             'checkpoint_id': '2_STORY_ABSOL_MOVE2',
+                             'target': '2_STORY_ABSOL_MOVE0',
+                             'action': 0,
+                             'validated': True,
+                             'reset_common': False},
+     '2_STORY_TOWER_61': {'recovery_kind': 'white_comment',
+                          'checkpoint_id': '2_STORY_TOWER_58',
+                          'target': '2_STORY_TOWER_58_RECOVERY',
+                          'action': 0,
+                          'validated': True,
+                          'reset_common': False},
+     '2_STORY_ABSOL_MOVE15': {'recovery_kind': 'battle_before',
+                              'target': '2_STORY_ABSOL_MOVE14',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_ABSOL_MOVE17',
+                              'reset_common': True,
+                              'validated': True},
+        '6_STORY_YUKARI_57': {'recovery_kind': 'white_comment',
+                               'target': '6_STORY_YUKARI_56',
+                               'action': 1,
+                               'checkpoint_id': '6_STORY_YUKARI_58',
+                               'reset_common': True,
+                               'validated': True},
+        '7_STORY_MAPPING_1': {'recovery_kind': 'mapping_goto',
+                               'target': '7_STORY_MAPPING_1',
+                               'action': 0,
+                               'checkpoint_id': '7_STORY_MAPPING_4',
+                               'reset_common': True,
+                               'validated': True},
+        '7_STORY_MAPPING_5': {'recovery_kind': 'mapping_goto',
+                               'target': '7_STORY_MAPPING_5',
+                               'action': 0,
+                               'checkpoint_id': '7_STORY_MAPPING_8',
+                               'reset_common': True,
+                               'validated': True},
+        '7_STORY_GURI_5': {'recovery_kind': 'white_comment',
+                            'target': '7_STORY_GURI_5',
+                            'action': 4,
+                            'checkpoint_id': '7_STORY_GURI_6',
+                            'reset_common': True,
+                            'validated': True},
+        '7_STORY_GURI_10': {'recovery_kind': 'white_comment',
+                             'target': '7_STORY_GURI_9',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_11',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_16': {'recovery_kind': 'mega_before_comment',
+                             'target': '7_STORY_GURI_15',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_17',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_22': {'recovery_kind': 'white_comment',
+                             'target': '7_STORY_GURI_21',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_23',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_24': {'recovery_kind': 'battle_before',
+                             'target': '7_STORY_GURI_24',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_25',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_28': {'recovery_kind': 'battle_before',
+                             'target': '7_STORY_GURI_28',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_30',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_39': {'recovery_kind': 'mega_before_comment',
+                             'target': '7_STORY_GURI_38',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_44',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_65': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_64',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_68',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_69': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_69',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_70',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_77': {'recovery_kind': 'white_comment',
+                             'target': '7_STORY_GURI_76',
+                             'action': 1,
+                             'checkpoint_id': '7_STORY_GURI_78',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_83': {'recovery_kind': 'checkpoint',
+                             'target': '7_STORY_GURI_83',
+                             'action': 4,
+                             'checkpoint_id': '7_STORY_GURI_84',
+                             'reset_common': True,
+                             'validated': True},
+        '7_STORY_GURI_102': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_101',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_102',
+                              'reset_common': True,
+                              'validated': True},
+        '7_STORY_GURI_106': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_105',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_106',
+                              'reset_common': True,
+                              'validated': True},
+        '7_STORY_GURI_109': {'recovery_kind': 'checkpoint',
+                              'target': '7_STORY_GURI_108',
+                              'action': 0,
+                              'checkpoint_id': '7_STORY_GURI_109',
+                              'reset_common': True,
+                              'validated': True},
+        '8_STORY_STORY_LAST_14': {'recovery_kind': 'battle_before',
+                                   'target': '8_STORY_STORY_LAST_14_0',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_16',
+                                   'reset_common': True,
+                                   'completion': 'game_reset',
+                                   'relay_site': '8_STORY_STORY_LAST_14_0:relay',
+                                   'validated': True},
+        '8_STORY_STORY_LAST_19': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_19',
+                                   'action': 4,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_20',
+                                   'reset_common': True,
+                                   'validated': True},
+        '8_STORY_STORY_LAST_26_0': {'recovery_kind': 'white_comment',
+                                     'target': '8_STORY_STORY_LAST_26_0',
+                                     'action': 0,
+                                     'checkpoint_id': '8_STORY_STORY_LAST_27',
+                                     'reset_common': True,
+                                     'completion': 'game_reset',
+                                     'relay_site': '8_STORY_STORY_LAST_26_0:relay',
+                                     'validated': True},
+        '8_STORY_STORY_LAST_38': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_38_0',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_39',
+                                   'reset_common': True,
+                                   'completion': 'game_reset',
+                                   'relay_site': '8_STORY_STORY_LAST_38_0:relay',
+                                   'validated': True},
+        '8_STORY_STORY_LAST_38_0': {'recovery_kind': 'white_comment',
+                                     'target': '8_STORY_STORY_LAST_38_0',
+                                     'action': 0,
+                                     'checkpoint_id': '8_STORY_STORY_LAST_39',
+                                     'reset_common': True,
+                                     'completion': 'game_reset',
+                                     'relay_site': '8_STORY_STORY_LAST_38_0:relay',
+                                     'validated': True},
+        '8_STORY_STORY_LAST_40': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_40_0',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_41',
+                                   'reset_common': True,
+                                   'completion': 'game_reset',
+                                   'relay_site': '8_STORY_STORY_LAST_40_0:relay',
+                                   'validated': True},
+        '8_STORY_STORY_LAST_56': {'recovery_kind': 'white_comment',
+                                   'target': '8_STORY_STORY_LAST_56',
+                                   'action': 0,
+                                   'checkpoint_id': '8_STORY_STORY_LAST_58',
+                                   'reset_common': True,
+                                   'validated': True},
+        '8_STORY_STORY_LAST_1': {'recovery_kind': 'white_comment',
+                                  'target': '8_STORY_STORY_LAST_1',
+                                  'action': 4,
+                                  'checkpoint_id': '8_STORY_STORY_LAST_2',
+                                  'reset_common': True,
+                                  'validated': True,
+                                  'debug_ready_method': '_ZA_story_hotel_room_state'},
+        '2_STORY_TOWER_30': {'recovery_kind': 'checkpoint',
+                              'target': '2_STORY_TOWER_30',
+                              'action': 0,
+                              'checkpoint_id': '2_STORY_TOWER_31',
+                              'reset_common': True,
+                              'validated': True},
+        '2_STORY_X_LANK_MOVE9': {'recovery_kind': 'battle_before',
+                                  'target': '2_STORY_X_LANK_MOVE9',
+                                  'action': 0,
+                                  'checkpoint_id': '2_STORY_X_LANK_MOVE11',
+                                  'reset_common': True,
+                                  'validated': True},
+        '2_STORY_W_LANK_MOVE8': {'recovery_kind': 'battle_before',
+                                  'target': '2_STORY_W_LANK_MOVE8',
+                                  'action': 0,
+                                  'checkpoint_id': '2_STORY_W_LANK_MOVE11',
+                                  'reset_common': True,
+                                  'validated': True},
+        '3_STORY_CANARI_31': {'recovery_kind': 'checkpoint',
+                               'target': '3_STORY_CANARI_31',
+                               'action': 0,
+                               'checkpoint_id': '3_STORY_CANARI_32',
+                               'reset_common': True,
+                               'validated': True},
+        '4_STORY_SHIRO_54': {'recovery_kind': 'battle_before',
+                              'target': '4_STORY_SHIRO_54',
+                              'action': 4,
+                              'checkpoint_id': '4_STORY_SHIRO_54',
+                              'reset_common': True,
+                              'validated': True},
+        '6_STORY_YUKARI_21': {'recovery_kind': 'checkpoint',
+                               'target': '6_STORY_YUKARI_21',
+                               'action': 0,
+                               'checkpoint_id': '6_STORY_YUKARI_22',
+                               'reset_common': True,
+                               'validated': True},
+    
+        '3_STORY_MEGA_MOVE1': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE2_RECOVERY',
+         'action': 4,
+         'checkpoint_id': '3_STORY_MEGA_MOVE2_PHASE_SELECTOR',
+         'reset_common': True,
+         'validated': True,
+         'debug_ready_method': '_ZA_story_chapter3_selector_debug_ready'},
+        '3_STORY_MEGA_MOVE2': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE2_RECOVERY',
+         'action': 4,
+         'checkpoint_id': '3_STORY_MEGA_MOVE2_PHASE_SELECTOR',
+         'reset_common': True,
+         'validated': True,
+         'debug_ready_method': '_ZA_story_chapter3_selector_debug_ready'},
+    
+        '2_STORY_MEGA_MOVE16_RESULT_RECOVERY': {'recovery_kind': 'checkpoint',
+         'target': '2_STORY_MEGA_MOVE16_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '2_STORY_MEGA_MOVE16',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready',
+         'validated': True},
+        '2_STORY_MEGA_MOVE22_RESULT_RECOVERY': {'recovery_kind': 'checkpoint',
+         'target': '2_STORY_MEGA_MOVE22_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '2_STORY_MEGA_MOVE22',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready',
+         'validated': True},
+        '3_STORY_MEGA_MOVE12_RESULT_RECOVERY': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE12_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE12',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready',
+         'validated': True},
+        '3_STORY_MEGA_MOVE18_RESULT_RECOVERY': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE18_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE18',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready',
+         'validated': True},
+        '3_STORY_MEGA_MOVE27_RESULT_RECOVERY': {'recovery_kind': 'checkpoint',
+         'target': '3_STORY_MEGA_MOVE27_RESULT_RECOVERY',
+         'action': 0,
+         'checkpoint_id': '3_STORY_MEGA_MOVE27',
+         'reset_common': True,
+         'debug_ready_method': '_ZA_story_post_result_reset_debug_ready',
+         'validated': True},
+    }
+
+    ZA_STORY_POST_RESULT_RECOVERY_ROUTES = {'2_STORY_MEGA_MOVE16': {'recovery_state': '2_STORY_MEGA_MOVE16_RESULT_RECOVERY',
+                             'battle_state': '2_STORY_MEGA_MOVE15',
+                             'next_state': '2_STORY_MEGA_MOVE17',
+                             'field_seconds': 3.0,
+                             'timeout_seconds': 120.0},
+     '2_STORY_MEGA_MOVE22': {'recovery_state': '2_STORY_MEGA_MOVE22_RESULT_RECOVERY',
+                             'battle_state': '2_STORY_MEGA_MOVE21',
+                             'next_state': '2_STORY_MEGA_MOVE23',
+                             'field_seconds': 3.0,
+                             'timeout_seconds': 120.0},
+     '3_STORY_MEGA_MOVE12': {'recovery_state': '3_STORY_MEGA_MOVE12_RESULT_RECOVERY',
+                             'battle_state': '3_STORY_MEGA_MOVE11',
+                             'next_state': '3_STORY_MEGA_MOVE13',
+                             'field_seconds': 3.0,
+                             'timeout_seconds': 120.0},
+     '3_STORY_MEGA_MOVE18': {'recovery_state': '3_STORY_MEGA_MOVE18_RESULT_RECOVERY',
+                             'battle_state': '3_STORY_MEGA_MOVE17',
+                             'next_state': '3_STORY_MEGA_MOVE19',
+                             'field_seconds': 3.0,
+                             'timeout_seconds': 120.0},
+     '3_STORY_MEGA_MOVE27': {'recovery_state': '3_STORY_MEGA_MOVE27_RESULT_RECOVERY',
+                             'battle_state': '3_STORY_MEGA_MOVE26',
+                             'next_state': '3_STORY_MEGA_MOVE28',
+                             'field_seconds': 3.0,
+                             'timeout_seconds': 120.0}}
+
+    ZA_STORY_GAME_RESET_RUNTIME_CLEANUP_TARGETS = frozenset({
+        '1_STORY_FARST_BATTLE_ZONE_MOVE1',
+        '1_STORY_FARST_BATTLE_ZONE_MOVE2',
+        '1_STORY_FARST_BATTLE_ZONE_MOVE3',
+        '1_STORY_HOTEL_Z_MOVE1',
+        '1_STORY_HOTEL_Z_MOVE11',
+        '1_STORY_HOTEL_Z_MOVE13',
+        '1_STORY_HOTEL_Z_MOVE3',
+        '1_STORY_HOTEL_Z_MOVE4',
+        '1_STORY_HOTEL_Z_MOVE7',
+        '1_STORY_HOTEL_Z_MOVE9',
+        '1_STORY_OUT_HOTEL_Z_1',
+        '1_STORY_OUT_HOTEL_Z_17',
+        '1_STORY_OUT_HOTEL_Z_20_1',
+        '1_STORY_OUT_HOTEL_Z_27',
+        '1_STORY_OUT_HOTEL_Z_30',
+        '1_STORY_OUT_HOTEL_Z_32',
+        '1_STORY_OUT_HOTEL_Z_35',
+        '1_STORY_OUT_HOTEL_Z_4',
+        '1_STORY_OUT_HOTEL_Z_48',
+        '1_STORY_OUT_HOTEL_Z_51',
+        '1_STORY_OUT_HOTEL_Z_5_1',
+        '1_STORY_OUT_HOTEL_Z_6',
+        '1_STORY_OUT_HOTEL_Z_67',
+        '1_STORY_OUT_HOTEL_Z_8',
+        '1_STORY_OUT_HOTEL_Z_82',
+        '1_STORY_STATION_LEAVE_MOVE',
+        '1_STORY_STATION_OUT',
+        '1_STORY_WANINOKO_SKILL_CHANGE1',
+        '1_STORY_WANINOKO_SKILL_CHANGE3',
+        '2_STORY_ABSOL_MOVE14',
+        '2_STORY_ABSOL_MOVE21',
+        '2_STORY_ABSOL_MOVE23',
+        '2_STORY_ABSOL_MOVE4',
+        '2_STORY_MEGA_MOVE13',
+        '2_STORY_RESTAURANT_DOHUTSU_LOOP',
+        '2_STORY_TOWER_11',
+        '2_STORY_TOWER_13',
+        '2_STORY_TOWER_17',
+        '2_STORY_TOWER_19',
+        '2_STORY_TOWER_21',
+        '2_STORY_TOWER_42',
+        '2_STORY_TOWER_5',
+        '2_STORY_TOWER_7',
+        '2_STORY_TOWER_79',
+        '2_STORY_TOWER_9',
+        '2_STORY_W_LANK_BATTLE_ZONE',
+        '2_STORY_X_LANK_BATTLE_ZONE',
+        '2_STORY_X_LANK_MOVE1',
+        '2_STORY_Y_LANK_BATTLE_ZONE',
+        '3_STORY_CANARI_15',
+        '3_STORY_CANARI_23',
+        '3_STORY_CANARI_27',
+        '3_STORY_CANARI_29',
+        '3_STORY_CANARI_47',
+        '3_STORY_CANARI_6',
+        '3_STORY_MEGA_MOVE24',
+        '3_STORY_MEGA_MOVE9',
+        '4_STORY_SHIRO_1',
+        '4_STORY_SHIRO_16',
+        '4_STORY_SHIRO_32',
+        '4_STORY_SHIRO_43',
+        '4_STORY_SHIRO_44_1',
+        '4_STORY_SHIRO_47',
+        '4_STORY_SHIRO_49',
+        '4_STORY_SHIRO_52',
+        '4_STORY_SHIRO_57',
+        '4_STORY_SHIRO_61',
+        '4_STORY_SHIRO_63',
+        '4_STORY_SHIRO_74',
+        '4_STORY_SHIRO_76',
+        '4_STORY_SHIRO_80',
+        '5_STORY_D_LANK_BATTLE_ZONE',
+        '5_STORY_KARASUBA_11',
+        '5_STORY_KARASUBA_19',
+        '5_STORY_KARASUBA_38',
+        '5_STORY_KARASUBA_49',
+        '5_STORY_KARASUBA_56',
+        '5_STORY_KARASUBA_58',
+        '5_STORY_KARASUBA_7',
+        '6_STORY_C_LANK_BATTLE_ZONE',
+        '6_STORY_YUKARI_27',
+        '6_STORY_YUKARI_46',
+        '6_STORY_YUKARI_7',
+        '7_STORY_GURI_33',
+        '7_STORY_GURI_7',
+        '7_STORY_GURI_81',
+        '8_STORY_STORY_LAST_28',
+        '8_STORY_STORY_LAST_45',
+        '8_STORY_STORY_LAST_52',
+        '7_STORY_GURI_24',
+        '7_STORY_GURI_28',
+        '7_STORY_GURI_5',
+        '7_STORY_GURI_69',
+        '7_STORY_GURI_83',
+        '8_STORY_STORY_LAST_19',
+        '8_STORY_STORY_LAST_1',
+        '4_STORY_SHIRO_54',
+        '3_STORY_CANARI_48_RECOVERY',
+        '3_STORY_MEGA_MOVE2_RECOVERY',
+    })
+
+    ZA_STORY_GAME_RESET_INFI_REENTRY_TARGETS = frozenset({
+        '2_STORY_ABSOL_MOVE14',
+        '2_STORY_W_LANK_BATTLE_ZONE',
+        '2_STORY_X_LANK_BATTLE_ZONE',
+        '2_STORY_Y_LANK_BATTLE_ZONE',
+        '3_STORY_CANARI_6',
+        '4_STORY_SHIRO_1',
+        '5_STORY_D_LANK_BATTLE_ZONE',
+        '6_STORY_C_LANK_BATTLE_ZONE',
+        '7_STORY_GURI_7',
+    })
+
+    # 映像と実Stepを照合した復帰経路。Debugのentryと通常guardは同じ完了keyを共有する。
+
+    # 映像と実Stepを照合した復帰経路。Debugのentryと通常guardは同じ完了keyを共有する。
+
+    # 映像と実Stepを照合した復帰経路。Debugのentryと通常guardは同じ完了keyを共有する。
+    ZA_STORY_GAME_RESET_EVENT_READY_PICTURES = {'4_STORY_SHIRO_80': ('POKEMON_ZA_TEXT_WHITE_COMMENT',
+                          'POKEMON_ZA_TEXT_BLACK_COMMENT',
+                          'POKEMON_ZA_BATTLE_ACTIVE_LEVEL')}
+
+    ZA_STORY_AUTOSAVE_RESET_DEBUG_TARGETS = {
+        "1_STORY_FARST_POKEMON_SELECT": ("1_STORY_FARST_POKEMON_SELECT", 4),
+        "1_STORY_FARST_BATTLE": ("1_STORY_FARST_POKEMON_SELECT", 4),
+    }
+
+    # 通常の手持ちFIELD UIがない序盤とホテル室内だけ、復帰先Stepが
+    # 実際に待つ表示をロード完了条件にする。pendingの対象外には使わない。
+    ZA_STORY_GAME_RESET_READY_PICTURES = {
+        "1_STORY_STATION_OUT": ("POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT",),
+        "1_STORY_STATION_LEAVE_MOVE": ("POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",),
+        "1_STORY_HOTEL_Z_MOVE4": ("POKEMON_ZA_IN_ICON",),
+        "1_STORY_HOTEL_Z_MOVE7": ("POKEMON_ZA_WANINOKO_ICON",),
+        "1_STORY_HOTEL_Z_MOVE9": ("POKEMON_ZA_IN_ICON",),
+        "1_STORY_HOTEL_Z_MOVE11": ("POKEMON_ZA_IN_ICON",),
+    }
 
     # 値は (復帰先, battle_before成功時の遷移先)。第1要素は30秒待機と
     # battle_functionから連続3回戻った場合の両方で使用する。
@@ -639,6 +3682,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.frameWaitTime = 1.0/30.0
         self.testcode=0
         self.ResetDebug=False
+        self.BATTLE_DEBUG=False
+        self._za_battle_debug_states = {}
+        self._za_battle_debug_completed = set()
         self.show_value_bool = False
         self.ZA_gamereset_current_state = "IDLE"
         
@@ -690,6 +3736,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "1_STORY_BAG_CHASE_END": self._1_story_bag_chase_end,
             "1_STORY_FARST_POKEMON_SELECT": self._1_story_farst_pokemon_select,
             "1_STORY_FARST_BATTLE": self._1_story_farst_battle,
+            "1_STORY_FARST_BATTLE_LOSE": self._1_story_farst_battle_lose,
             "1_STORY_FARST_BATTLE_END": self._1_story_farst_battle_end,
             "1_STORY_FARST_BATTLE_ZONE_MOVE1": self._1_story_farst_battle_zone_move1,
             "1_STORY_SECOND_BATTLE_START": self._1_story_second_battle_start,
@@ -1028,6 +4075,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_TOWER_56": self._2_story_tower_56,
             "2_STORY_TOWER_57": self._2_story_tower_57,
             "2_STORY_TOWER_58": self._2_story_tower_58,
+            "2_STORY_TOWER_58_RECOVERY": self._2_story_tower_58_recovery,
             "2_STORY_TOWER_59": self._2_story_tower_59,
             "2_STORY_TOWER_60": self._2_story_tower_60,
             "2_STORY_TOWER_61": self._2_story_tower_61,
@@ -1238,7 +4286,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             "2_STORY_END": self._2_story_end,
 
 
-        }
+        
+        '2_STORY_MEGA_MOVE16_RESULT_RECOVERY': self._2_story_mega_move16_result_recovery,
+        '2_STORY_MEGA_MOVE22_RESULT_RECOVERY': self._2_story_mega_move22_result_recovery,
+    }
         
         self._2_story_current_state="2_STORY_START_CHECK" 
         self._2_story_current_state_init= "2_STORY_AME1"
@@ -1346,7 +4397,14 @@ class ZA_story_Base(ImageProcPythonCommand):
              
              
             "3_STORY_END": self._3_story_end,
-        }
+        
+        '3_STORY_CANARI_48_RECOVERY': self._3_story_canari_48_recovery,
+        '3_STORY_MEGA_MOVE2_RECOVERY': self._3_story_mega_move2_recovery,
+    
+        '3_STORY_MEGA_MOVE12_RESULT_RECOVERY': self._3_story_mega_move12_result_recovery,
+        '3_STORY_MEGA_MOVE18_RESULT_RECOVERY': self._3_story_mega_move18_result_recovery,
+        '3_STORY_MEGA_MOVE27_RESULT_RECOVERY': self._3_story_mega_move27_result_recovery,
+    }
         
         self._3_story_current_state="3_STORY_START_CHECK" 
         self._3_story_current_state_init= "3_STORY_END"
@@ -2705,8 +5763,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self._reset_template_matches("SWITCH_HOME_ZA_SELECTED")
 
     def _ZA_gamereset_field_ready(self):
-        """ZAの通常フィールドへ復帰したことを既存のHardGuardで確認する。"""
-        return self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        """ZAの通常フィールドへ復帰したことを確認する。
+
+        通常のHARD FIELD判定(mode 0: FIELD_W / FIELD_BACK_Wのどちらかが必須)
+        に加え、FIELD_W系が不要なmode 1(HARD_CHECK_1)でも復帰とみなす。
+        """
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return True
+        return bool(self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1"))
 
     def _ZA_gamereset_game_screen(self):
         """ResetTemplateから呼ばれるZA固有画面判定。"""
@@ -2714,7 +5778,55 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "title"
         if self._ZA_gamereset_field_ready():
             return "field"
+        # 初戦前は手持ちポケモンのUIがまだなく、通常のHARD FIELDは
+        # 成立しない。この明示セーブ地点だけ、Step本体と同じ会話開始
+        # マーカーをロード後の復帰確認に使う。他の再起動には広げない。
+        pending = getattr(self, "_za_story_event_entry_pending_recovery", None)
+        if (isinstance(pending, dict)
+                and pending.get("recovery_kind") == "autosave"
+                and pending.get("recovery_target")
+                == "1_STORY_FARST_POKEMON_SELECT"
+                and self.image_check("POKEMON_ZA_CHAT_MARKER")):
+            return "field"
+        if (isinstance(pending, dict)
+                and pending.get("recovery_target") in (
+                    "8_STORY_STORY_LAST_1", "8_STORY_STORY_LAST_52")):
+            # ホテル自室では通常FIELDの上部HUDがない。対応する保存原点
+            # だけ室内の入口マーカー／出口操作表示でロード完了を確認する。
+            return "field" if self._ZA_story_hotel_room_state() else None
+        if isinstance(pending, dict):
+            # SHIROのボス部屋は保存後のイベントを再開するため、通常FIELD
+            # HUDがない。対応する復元先だけ、Step本体が扱う実表示を待つ。
+            event_pictures = getattr(
+                self, "ZA_STORY_GAME_RESET_EVENT_READY_PICTURES", {}).get(
+                    pending.get("recovery_target"), ())
+            if (event_pictures
+                    and not self.image_check("POKEMON_ZA_X_MENU_OPEN")
+                    and any(self.image_check(picture) for picture in event_pictures)):
+                return "field"
+            ready_pictures = getattr(
+                self, "ZA_STORY_GAME_RESET_READY_PICTURES", {}).get(
+                    pending.get("recovery_target"), ())
+            if (ready_pictures
+                    and any(self.image_check(picture)
+                            for picture in ready_pictures)
+                    and not any(self.image_check(picture) for picture in (
+                        "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                        "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                        "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                        "POKEMON_ZA_HELP_MARKER",
+                        "POKEMON_ZA_X_MENU_OPEN",
+                        "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"))):
+                return "field"
         return None
+
+    def _ZA_story_shiro_80_reset_debug_ready(self):
+        """転送後のロード中は待ち、既存before関数が扱う表示で検証する。"""
+        return (
+            not self.image_check("POKEMON_ZA_X_MENU_OPEN")
+            and any(self.image_check(picture) for picture in getattr(
+                self, "ZA_STORY_GAME_RESET_EVENT_READY_PICTURES", {}).get(
+                    "4_STORY_SHIRO_80", ())))
 
     def _ZA_gamereset_set_state(self, state):
         """個別ログを増やさず、ZA_storyの状態表示を更新する。"""
@@ -2776,6 +5888,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         if completed is None:
             completed = set()
             self._za_reset_debug_direct_sites_completed = completed
+        relay_context = getattr(self, "_za_reset_debug_relay_context", None)
+        if (isinstance(relay_context, dict)
+                and relay_context.get("relay_site") == site
+                and relay_context.get("wait_satisfied")):
+            print("[RESET_DEBUG] WAIT_ALREADY_SATISFIED direct_site={}".
+                  format(site))
+            return True
         if site in completed:
             return False
 
@@ -2851,6 +5970,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[RESET_DEBUG] COMPLETE direct_site={}".format(
                     reset_debug_site))
+        relay_context = getattr(self, "_za_reset_debug_relay_context", None)
+        if (isinstance(relay_context, dict)
+                and relay_context.get("relay_site") == reset_debug_site):
+            complete = getattr(self, "_ZA_story_reset_debug_complete", None)
+            if callable(complete):
+                complete(relay_context["key"])
+            self._za_reset_debug_relay_context = None
         return True
 
     ######################################################
@@ -3423,8 +6549,25 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # ZA_battle_infi_Base_End
     ######################################################
-    def ZA_renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5,timeout_seconds=0.0,detected_action_wait=0.0,interrupt_callback=None):
+    def ZA_renda_button(self,rendabutton="B",endpicture="",endpicture2="",endpicture3="",endpicture4="",endpicture5="",endpicture6="",endpicture7="",not_endpicture="POKEMON_ZA_FALSE_RETURN",sub_button="NULL",sub_picture="",sub2_button="NULL",sub2_picture="",sub3_button="NULL",sub3_picture="",sub4_button="NULL",sub4_picture="",sub5_button="NULL",sub5_picture="",sub6_button="NULL",sub6_picture="",sub7_button="NULL",sub7_picture="",sub8_button="NULL",sub8_picture="",sub9_button="NULL",sub9_picture="",event_picture="",sleeptime=0.5,timeout_seconds=0.0,detected_action_wait=0.0,interrupt_callback=None,require_entry_picture=False,entry_pictures=None):
         started_at = time.monotonic()
+        # Opt-in wait guards must observe dialogue/choice before FIELD is completion.
+        entry_seen = not bool(require_entry_picture)
+        if not entry_seen:
+            if entry_pictures is None:
+                entry_pictures = (
+                    "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                    "POKEMON_ZA_TEXT_WHITE_COMMENT2",
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                    "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    "POKEMON_ZA_HELP_MARKER",
+                    "POKEMON_ZA_1_SELECT", "POKEMON_ZA_2_SELECT",
+                    "POKEMON_ZA_3_SELECT", "POKEMON_ZA_4_SELECT")
+            elif isinstance(entry_pictures, str):
+                entry_pictures = (entry_pictures,)
+            entry_pictures = tuple(
+                picture for picture in entry_pictures
+                if isinstance(picture, str) and picture)
 
         try:
             detected_action_wait = max(0.0, float(detected_action_wait))
@@ -3447,6 +6590,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.checkIfAlive()
             
             while True:
+                self.checkIfAlive()
                 if timed_out():
                     return False
                 if callable(interrupt_callback):
@@ -3459,38 +6603,42 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if interrupt_result in {"waiting", "x_menu"}:
                         self.wait(0.1)
                         continue
+                if not entry_seen:
+                    entry_seen = any(
+                        self.image_check(picture)
+                        for picture in entry_pictures)
                 checkerflg=0
                     
                 #誤判定回避用で指定画面での検知を除外する
                 if not self.image_check(not_endpicture):
                     if endpicture != "":
                         if self.image_check(endpicture):
-                            return True
+                            return entry_seen
                     if endpicture2 != "":
                         if self.image_check(endpicture2):
-                            return True
+                            return entry_seen
                     if endpicture3 != "":
                         if self.image_check(endpicture3):
-                            return True
+                            return entry_seen
                     if endpicture4 != "":
                         if self.image_check(endpicture4):
-                            return True     
+                            return entry_seen     
                     if endpicture5 != "":
                         if self.image_check(endpicture5):
-                            return True
+                            return entry_seen
                     if endpicture6 != "":
                         if self.image_check(endpicture6):
-                            return True
+                            return entry_seen
                     if endpicture7 != "":
                         if self.image_check(endpicture7):
-                            return True           
+                            return entry_seen           
                 if sub_picture != "":
                     tmp = sub_picture
                     picture_matched = self.image_check(sub_picture)
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub_button == "A":
                             wait_for_detected_action()
@@ -3503,7 +6651,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub2_button == "A":
                             wait_for_detected_action()
@@ -3516,7 +6664,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub3_button == "A":
                             wait_for_detected_action()
@@ -3529,7 +6677,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub4_button == "A":
                             wait_for_detected_action()
@@ -3547,7 +6695,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub5_button == "A":
                             wait_for_detected_action()
@@ -3560,7 +6708,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub6_button == "A":
                             wait_for_detected_action()
@@ -3573,7 +6721,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub7_button == "A":
                             wait_for_detected_action()
@@ -3586,7 +6734,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub8_button == "A":
                             wait_for_detected_action()
@@ -3599,7 +6747,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if (not (tmp=="RETURN_FALSE" or tmp=="RETURN_TRUE")):
                         if ((tmp == endpicture) or (tmp == endpicture2) or (tmp == endpicture3) or (tmp == endpicture4) or (tmp == endpicture5) or (tmp == endpicture6) or (tmp == endpicture7)):
                             if picture_matched:
-                                return True
+                                return entry_seen
                     if picture_matched:
                         if sub9_button == "A":
                             wait_for_detected_action()
@@ -14925,6 +18073,10 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _ZA_story_event_entry_unpack_recovery_setting(self, setting):
         """旧文字列形式と(target, action)形式を同じ形へ揃える。"""
+        if isinstance(setting, dict):
+            return (
+                setting.get("recovery_target", setting.get("target")),
+                setting.get("recovery_action", setting.get("action", 0)))
         if isinstance(setting, (tuple, list)) and len(setting) == 2:
             return setting[0], setting[1]
         return setting, 0
@@ -14946,6 +18098,38 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "Recovery action 0 cannot be combined: {}".format(actions))
         return actions
 
+    def _ZA_story_event_entry_resolve_recovery(
+            self, recovery_kind, current_state, recovery_target, recovery_action,
+            with_options=False):
+        """映像確認済みoverrideを通常復帰とDebugの双方へ適用する。"""
+        options = {}
+        for catalog_kind, catalog_name in (
+                ("autosave", "ZA_STORY_AUTOSAVE_RESET_DEBUG_TARGETS"),
+                ("checkpoint", "ZA_STORY_CHECKPOINT_RECOVERY_TARGETS"),
+                ("white_comment", "ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS"),
+                ("mega_before_comment", "ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS"),
+                ("battle_before", "ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS")):
+            candidate = getattr(self, catalog_name, {}).get(current_state)
+            if (isinstance(candidate, dict)
+                    and str(candidate.get("recovery_kind", catalog_kind))
+                    == str(recovery_kind)):
+                options = dict(candidate)
+                break
+        overrides = getattr(self, "ZA_STORY_EVENT_ENTRY_RECOVERY_OVERRIDES", {})
+        setting = overrides.get((str(recovery_kind), str(current_state)))
+        if setting is not None:
+            recovery_target, recovery_action = (
+                self._ZA_story_event_entry_unpack_recovery_setting(setting))
+            if isinstance(setting, dict):
+                options.update(setting)
+        if not isinstance(recovery_target, str) or not recovery_target:
+            raise ValueError("Recovery target must be a non-empty Step")
+        actions = self._ZA_story_event_entry_recovery_actions(recovery_action)
+        action = actions[0] if len(actions) == 1 else actions
+        if with_options:
+            return recovery_target, action, options
+        return recovery_target, action
+
     def _ZA_story_reset_common_navigation_state(self, reason):
         """timechange/gotoの共有途中状態を復帰元から引き継がない。"""
         self.Common_current_state = "COMMON_START"
@@ -14957,6 +18141,47 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.battle_step_return = 0
         self.inactioncount = 0
         print("[EVENT_ENTRY_RECOVERY_COMMON_RESET] reason={}".format(reason))
+
+    def _ZA_story_reset_game_recovery_runtime_state(
+            self, reason, recovery_target=None):
+        """登録済みのセーブ復元先だけ、ロード前の途中状態を破棄する。"""
+        self._ZA_story_reset_common_navigation_state(reason)
+        self.common_skill_change_current_state = "COMMON_SKILL_CHANGE_START"
+        self._za_common_skill_target_search_picture = ""
+        self._za_common_skill_target_search_active = False
+        self._za_common_skill_target_search_count = 0
+        self._za_common_skill_target_search_started_at = None
+        self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
+        self.common_item_give_current_state = "COMMON_ITEM_GIVE_START"
+        self.common_evolution_current_state = "COMMON_EVOLUTION_START"
+        self._za_story_mapping_goto_watch = None
+        self._za_story_mapping_goto_recovery = None
+        self._za_story_battle_flows = {}
+        self._za_story_event_marker_missing_counts = {}
+        self._za_story_battle_return_counts = {}
+        self._za_story_battle_active_states = set()
+        self._za_story_battle_before_recovery_exempt = set()
+        self._za_battle_debug_states = {}
+        self._za_first_battle_started = False
+        self._za_first_battle_confirm_count = 0
+        if recovery_target == "2_STORY_RESTAURANT_DOHUTSU_LOOP":
+            self._2_story_restaurant_dohutsu_black_check = 0
+            self._2_story_restaurant_dohutsu_white_check = 0
+        # 両Debugのcompleted ledgerはCommands 1実行内で保持する。
+        print("[EVENT_ENTRY_RECOVERY_RUNTIME_RESET] reason={}".format(reason))
+
+    def _ZA_story_reset_infi_recovery_runtime_state(self, recovery_target):
+        """明示したINFI復元先だけ、保存前の共有loop状態を初期化する。"""
+        self.chicketmaxflag = 0
+        self.za_infi_main_current_state = "ZA_INFI_MAIN_START"
+        self.bench_current_state = "BENCH_START"
+        self.battle_current_state = "BATTLE_START"
+        self.quasar_current_state = "QUASAR_START"
+        self._za_story_active_infi_step = None
+        self._za_story_active_lank_battle_zone = None
+        if recovery_target == "4_STORY_SHIRO_1":
+            self._4_story_shiro_infi_initialized = False
+        print("[EVENT_ENTRY_RECOVERY_INFI_RESET] target={}".format(recovery_target))
 
     def _ZA_story_event_entry_pre_action_options(
             self, recovery_kind, current_state):
@@ -14991,29 +18216,66 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _ZA_story_reset_debug_recovery_spec(self, current_state):
         """通常dispatcherと同じ優先順位で強制検証対象を1件選ぶ。"""
         catalogs = (
+            ("explicit", getattr(
+                self, "ZA_STORY_RESET_DEBUG_RECOVERY_TARGETS", {})),
+            ("autosave", getattr(
+                self, "ZA_STORY_AUTOSAVE_RESET_DEBUG_TARGETS", {})),
+            ("checkpoint", getattr(
+                self, "ZA_STORY_CHECKPOINT_RECOVERY_TARGETS", {})),
             ("white_comment", getattr(
                 self, "ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS", {})),
             ("mega_before_comment", getattr(
                 self, "ZA_STORY_MEGA_BEFORE_COMMENT_RECOVERY_TARGETS", {})),
+            ("battle_before", getattr(
+                self, "ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS", {})),
         )
         excluded = getattr(
             self, "ZA_RESET_DEBUG_EXCLUDED_CHECKPOINTS", frozenset())
-        for recovery_kind, catalog in catalogs:
+        for catalog_kind, catalog in catalogs:
             if current_state not in catalog:
                 continue
-            if (recovery_kind, current_state) in excluded:
-                return None
-            recovery_target, recovery_action = (
-                self._ZA_story_event_entry_unpack_recovery_setting(
-                    catalog[current_state]))
+            setting = catalog[current_state]
+            options = setting if isinstance(setting, dict) else {}
+            recovery_kind = str(options.get("recovery_kind", catalog_kind))
+            validated = options.get("validated") is True
+            if catalog_kind == "battle_before" and not options:
+                # battle-before表の第2要素は成功Stepであり、actionではない。
+                recovery_target, _success_state = setting
+                recovery_action = 0
+            else:
+                recovery_target, recovery_action = (
+                    self._ZA_story_event_entry_unpack_recovery_setting(setting))
+            resolver = getattr(self, "_ZA_story_event_entry_resolve_recovery", None)
+            if callable(resolver):
+                recovery_target, recovery_action = resolver(
+                    recovery_kind, current_state, recovery_target, recovery_action)
+            override = getattr(
+                self, "ZA_STORY_EVENT_ENTRY_RECOVERY_OVERRIDES", {}).get(
+                    (recovery_kind, str(current_state)))
+            if isinstance(override, dict):
+                options = dict(options)
+                options.update(override)
+                validated = options.get("validated") is True
+            if not isinstance(recovery_target, str) or not recovery_target:
+                raise ValueError("Recovery target must be a non-empty Step")
             actions = self._ZA_story_event_entry_recovery_actions(
                 recovery_action)
-            if actions == (0,):
+            forward_skip = getattr(
+                self, "ZA_STORY_FURADARI_COMMENT_SKIP_TARGETS", {}).get(
+                    current_state) == recovery_target
+            if not validated and (
+                    (recovery_kind, current_state) in excluded
+                    or forward_skip
+                    or (actions == (0,) and recovery_target == current_state)):
                 return None
+            checkpoint_state = (
+                recovery_target if recovery_kind == "autosave"
+                else current_state)
+            checkpoint_state = options.get("checkpoint_id", checkpoint_state)
             key = (
-                str(recovery_kind), str(current_state),
+                str(recovery_kind), str(checkpoint_state),
                 str(recovery_target), actions)
-            return {
+            spec = {
                 "key": key,
                 "recovery_kind": recovery_kind,
                 "current_state": current_state,
@@ -15021,12 +18283,91 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "recovery_action": (
                     actions[0] if len(actions) == 1 else actions),
             }
+            if "reset_common" in options:
+                spec["reset_common"] = options["reset_common"] is True
+            if options.get("debug_ready_method"):
+                spec["debug_ready_method"] = str(options["debug_ready_method"])
+            relay_site = options.get("relay_site")
+            if actions == (0,) and not relay_site:
+                relay_resolver = getattr(
+                    self, "_ZA_story_reset_debug_target_relay_site", None)
+                if callable(relay_resolver):
+                    relay_site = relay_resolver(recovery_target)
+            if relay_site:
+                spec["relay_site"] = str(relay_site)
+                spec["completion"] = "game_reset"
+            elif options.get("completion"):
+                spec["completion"] = str(options["completion"])
+                if spec["completion"] == "game_reset" and actions == (0,):
+                    raise ValueError(
+                        "Game-reset relay verification requires relay_site")
+            return spec
         return None
+
+    def _ZA_story_reset_debug_target_relay_site(self, recovery_target):
+        """既存Stepが持つ明示relayタグだけを読み、復帰先を推測しない。"""
+        for catalog_name in getattr(self, "COMMAND_RUN_STATE_VARIABLES", ()):
+            state_function = getattr(self, catalog_name, {}).get(recovery_target)
+            code = getattr(
+                getattr(state_function, "__func__", state_function),
+                "__code__", None)
+            if code is None or "ZA_gamereset" not in code.co_names:
+                continue
+            if "_za_reset_debug_next_game_reset_site" not in code.co_names:
+                continue
+            sites = [value for value in code.co_consts
+                     if isinstance(value, str) and value.endswith(":relay")]
+            if len(sites) == 1:
+                return sites[0]
+        return None
+
+    def _ZA_story_reset_debug_complete(self, key):
+        completed = getattr(self, "_za_reset_debug_completed", None)
+        if completed is None:
+            completed = set()
+            self._za_reset_debug_completed = completed
+        if key in completed:
+            return
+        completed.add(key)
+        print(
+            "[RESET_DEBUG] COMPLETE kind={} state={} target={} actions={}".
+            format(key[0], key[1], key[2], key[3]))
+
+    def _ZA_story_restaurant_reset_debug_ready(self):
+        """初勝利後の保存可能な白Commentでだけ、強制復元の待機を始める。"""
+        return (
+            getattr(self, "_2_story_restaurant_dohutsu_battle_count", 0) >= 1
+            and getattr(self, "_2_story_restaurant_dohutsu_white_check", 0) == 1
+            and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"))
 
     def _ZA_story_reset_debug_checkpoint_step(self, current_state):
         """初回だけ20秒静止して復帰前処理を強制し、再訪は通常判定へ戻す。"""
         if not bool(getattr(self, "ResetDebug", False)):
             return None
+        relay_context = getattr(self, "_za_reset_debug_relay_context", None)
+        if isinstance(relay_context, dict):
+            if relay_context.get("relay_state") == current_state:
+                elapsed = time.monotonic() - relay_context["started_at"]
+                timeout_seconds = float(getattr(
+                    self, "ZA_STORY_RECOVERY_PRE_ACTION_TIMEOUT_SECONDS", 180.0))
+                if elapsed >= timeout_seconds:
+                    self._ZA_story_release_recovery_controls(
+                        "reset_debug_relay_timeout:{}".format(current_state))
+                    self._za_story_event_entry_recovery_failure = {
+                        "current_state": current_state,
+                        "recovery_target": relay_context["key"][2],
+                        "recovery_action": 4,
+                        "elapsed": elapsed,
+                        "relay_site": relay_context["relay_site"],
+                    }
+                    raise RuntimeError(
+                        "ResetDebug relay did not complete: {}".format(
+                            relay_context["relay_site"]))
+                # relay本体が持つ条件とreset後の分岐をそのまま実行する。
+                return None
+            print("[RESET_DEBUG] CANCEL relay={} current={}".format(
+                relay_context.get("relay_state"), current_state))
+            self._za_reset_debug_relay_context = None
         spec = self._ZA_story_reset_debug_recovery_spec(current_state)
         wait_state = getattr(self, "_za_reset_debug_wait_state", None)
         if spec is None:
@@ -15059,6 +18400,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         now = time.monotonic()
         if (not isinstance(wait_state, dict)
                 or wait_state.get("key") != key):
+            ready_method_name = spec.get("debug_ready_method")
+            if ready_method_name:
+                ready_method = getattr(self, ready_method_name, None)
+                if not callable(ready_method):
+                    raise ValueError("Unknown ResetDebug ready method: {}".format(
+                        ready_method_name))
+                if not ready_method():
+                    self._za_reset_debug_wait_state = None
+                    return None
             self._ZA_story_release_recovery_controls(
                 "reset_debug:{}:{}".format(key[0], key[1]))
             wait_state = {
@@ -15081,18 +18431,18 @@ class ZA_story_Base(ImageProcPythonCommand):
             return current_state
 
         self._za_reset_debug_wait_state = None
-        self._ZA_story_schedule_event_entry_recovery(
-            current_state=spec["current_state"],
-            recovery_target=spec["recovery_target"],
-            recovery_kind=spec["recovery_kind"],
-            recovery_action=spec["recovery_action"],
-            reset_debug_key=key)
         print(
             "[RESET_DEBUG] EXECUTE kind={} state={} target={} actions={} "
             "elapsed={:.1f}".format(
                 key[0], key[1], key[2], key[3], elapsed))
-        return self._ZA_story_event_entry_pending_recovery_step(
-            current_state)
+        timers = getattr(self, "_za_story_event_entry_recovery_started", None)
+        if timers is None:
+            timers = {}
+            self._za_story_event_entry_recovery_started = timers
+        return self._ZA_story_event_entry_recovery_timeout(
+            current_state, spec["recovery_target"], current_state,
+            spec["recovery_kind"], timers, spec["recovery_action"],
+            force=True, reset_debug_key=key, reset_debug_spec=spec)
 
     def _ZA_story_reset_debug_note_normal_result(
             self, recovery_kind, current_state, outcome):
@@ -15321,6 +18671,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                 else:
                     del self.image_check
 
+        screen_policy = getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}).get(
+            str(current_state))
+        screen_flow = getattr(self, "_za_story_battle_flows", {}).get(
+            current_state, {})
+        if screen_policy and is_battle_function:
+            battle_active_matched[0] = screen_flow.get("screen_state") == "active"
+
         mapping_goto_recovery_override = getattr(
             self, "_ZA_story_mapping_goto_recovery_override", None)
         if callable(mapping_goto_recovery_override):
@@ -15391,6 +18748,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                 recovery_target = (
                     self.ZA_STORY_BATTLE_BEFORE_RECOVERY_TARGETS[
                         next_state][0])
+                override = getattr(
+                    self, "ZA_STORY_EVENT_ENTRY_RECOVERY_OVERRIDES", {}).get(
+                        ("battle_before", str(next_state)))
+                if override is not None:
+                    resolver = getattr(
+                        self, "_ZA_story_event_entry_resolve_recovery", None)
+                    if callable(resolver):
+                        recovery_target, recovery_action = resolver(
+                            "battle_before", next_state, recovery_target, 0)
+                        battle_before_exempt.discard(next_state)
+                        battle_return_counts.pop(next_state, None)
+                        print("[BATTLE_RETURN_RECOVERY] override {} -> {}".
+                              format(next_state, recovery_target))
+                        return self._ZA_story_event_entry_recovery_timeout(
+                            next_state, recovery_target, next_state,
+                            "battle_before", timers, recovery_action,
+                            force=True, recovery_trigger="battle_return")
                 battle_return_counts.pop(next_state, None)
                 if recovery_target != next_state:
                     battle_before_exempt.discard(next_state)
@@ -15407,6 +18781,30 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 正常に別Stepへ進んだ場合は、このバトル系列の履歴を持ち越さない。
             battle_return_counts.clear()
             battle_active_states.discard(current_state)
+
+        # TOWER72は会話待ちではなく実バトル本体。現在の周回で実戦闘を
+        # 観測した間は、白Comment未検知の120秒で戦闘を飛ばさない。
+        # 過去のactive履歴では免除せず、戦後の停滞は通常監視へ戻す。
+        if (current_state == "2_STORY_TOWER_72"
+                and is_battle_function and battle_active_matched[0]):
+            timers.pop(current_state, None)
+            return next_state
+
+        checkpoint_catalog = getattr(
+            self, "ZA_STORY_CHECKPOINT_RECOVERY_TARGETS", {})
+        if current_state in checkpoint_catalog:
+            setting = checkpoint_catalog[current_state]
+            recovery_kind = (
+                str(setting.get("recovery_kind", "checkpoint"))
+                if isinstance(setting, dict) else "checkpoint")
+            if next_state != current_state:
+                timers.pop(current_state, None)
+                note_reset_debug_result(recovery_kind, "PROGRESSED")
+                return next_state
+            recovery_target, recovery_action = unpack_recovery_setting(setting)
+            return self._ZA_story_event_entry_recovery_timeout(
+                current_state, recovery_target, next_state,
+                recovery_kind, timers, recovery_action)
 
         if current_state in self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS:
             # 白コメント判定自体は不一致でも、黒コメント等の別経路で
@@ -15425,6 +18823,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS[current_state])
             recovery_target, recovery_action = (
                 unpack_recovery_setting(recovery_setting))
+            if (screen_policy and not screen_flow.get("result_seen")
+                    and screen_policy.get("field_without_result_state")):
+                # 各戦闘で指定した結果不明時の復帰先を使う。
+                recovery_target = screen_policy["field_without_result_state"]
             return self._ZA_story_event_entry_recovery_timeout(
                 current_state, recovery_target, next_state,
                 "white_comment", timers, recovery_action)
@@ -15616,8 +19018,24 @@ class ZA_story_Base(ImageProcPythonCommand):
                         current_state, recovery_action, check_timing))
             timechange_options = dict(
                 pending.get("timechange_options", {}) or {})
-            result = self.ZA_Common_change_time_set(
-                check_timing=check_timing, **timechange_options)
+            timeout_seconds = max(0.1, float(getattr(
+                self, "ZA_STORY_RECOVERY_PRE_ACTION_TIMEOUT_SECONDS", 180.0)))
+            action_started_at = pending.get("action_started_at")
+            if action_started_at is None:
+                action_started_at = time.monotonic()
+                pending["action_started_at"] = action_started_at
+            deadline_attribute = "_za_story_timechange_recovery_deadline"
+            had_deadline = hasattr(self, deadline_attribute)
+            previous_deadline = getattr(self, deadline_attribute, None)
+            setattr(self, deadline_attribute, float(action_started_at) + timeout_seconds)
+            try:
+                result = self.ZA_Common_change_time_set(
+                    check_timing=check_timing, **timechange_options)
+            finally:
+                if had_deadline:
+                    setattr(self, deadline_attribute, previous_deadline)
+                else:
+                    self.__dict__.pop(deadline_attribute, None)
             if result != "START":
                 action_started_at = pending.get("action_started_at")
                 if action_started_at is None:
@@ -15663,7 +19081,50 @@ class ZA_story_Base(ImageProcPythonCommand):
             print(
                 "[EVENT_ENTRY_RECOVERY_PRE_ACTION] {} action=4 "
                 "game reset start".format(current_state))
-            self.ZA_gamereset()
+            if pending.get("action_started_at") is None:
+                pending["action_started_at"] = time.monotonic()
+            if self.ZA_gamereset() is not True:
+                # False／未確定を復元成功として扱わず、同じ前処理を保持する。
+                # cleanup・次action・Debug完了へは実成功後だけ進む。
+                elapsed = time.monotonic() - float(pending["action_started_at"])
+                timeout_seconds = max(0.1, float(getattr(
+                    self, "ZA_STORY_RECOVERY_PRE_ACTION_TIMEOUT_SECONDS", 180.0)))
+                if elapsed >= timeout_seconds:
+                    failure = {
+                        "current_state": current_state,
+                        "recovery_target": recovery_target,
+                        "recovery_kind": pending.get("recovery_kind", "unknown"),
+                        "recovery_action": 4,
+                        "elapsed": elapsed,
+                        "last_result": "reset_not_complete",
+                    }
+                    self._za_story_event_entry_recovery_failure = failure
+                    self._za_story_event_entry_pending_recovery = None
+                    reason = "game_reset_incomplete:" + current_state
+                    self._ZA_story_release_recovery_controls(reason)
+                    reset_common_navigation_state(reason)
+                    raise RuntimeError("Game reset did not complete: " + current_state)
+                return current_state
+            if recovery_target in getattr(
+                    self, "ZA_STORY_GAME_RESET_RUNTIME_CLEANUP_TARGETS", ()):
+                self._ZA_story_reset_game_recovery_runtime_state(
+                    "verified_save:{}".format(recovery_target),
+                    recovery_target=recovery_target)
+            if recovery_target in getattr(
+                    self, "ZA_STORY_GAME_RESET_INFI_REENTRY_TARGETS", ()):
+                self._ZA_story_reset_infi_recovery_runtime_state(recovery_target)
+            if (pending.get("recovery_kind") == "autosave"
+                    and recovery_target == "1_STORY_FARST_POKEMON_SELECT"):
+                # ロード前の戦闘開始・終了判定を持ち越さない。強制敗戦と
+                # リセット確認の完了履歴はCommands終了まで維持する。
+                reset_common_navigation_state("autosave_reset_debug")
+                self._za_first_battle_started = False
+                self._za_first_battle_confirm_count = 0
+                reset_battle_flow = getattr(
+                    self, "_ZA_story_battle_flow_reset", None)
+                if callable(reset_battle_flow):
+                    reset_battle_flow(
+                        "1_STORY_FARST_BATTLE", "autosave_reset_debug")
         # action 0は前処理なしでtargetへ移す旧形式。
 
         action_index += 1
@@ -15698,7 +19159,17 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _ZA_story_event_entry_recovery_timeout(
             self, current_state, recovery_target, normal_return,
-            recovery_kind, timers, recovery_action=0):
+            recovery_kind, timers, recovery_action=0, force=False,
+            reset_debug_key=None, reset_debug_spec=None, recovery_trigger=None):
+        """待機期限だけを分離し、通常復帰とDebugで同じ適用処理を使う。"""
+        resolver = getattr(self, "_ZA_story_event_entry_resolve_recovery", None)
+        recovery_options = {}
+        if callable(resolver):
+            recovery_target, recovery_action, recovery_options = resolver(
+                recovery_kind, current_state, recovery_target, recovery_action,
+                with_options=True)
+        if isinstance(reset_debug_spec, dict) and "reset_common" in reset_debug_spec:
+            recovery_options["reset_common"] = reset_debug_spec["reset_common"]
         def normalized_recovery_actions(action_value):
             action_parser = getattr(
                 self, "_ZA_story_event_entry_recovery_actions", None)
@@ -15740,15 +19211,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                     reason))
 
         now = time.monotonic()
-        started = timers.get(current_state)
-        if started is None:
-            timers[current_state] = now
-            return normal_return
-        recovery_seconds = getattr(
-            self, "ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS_BY_STATE", {}
-        ).get(current_state, self.ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS)
-        if now - started < recovery_seconds:
-            return normal_return
+        if not force:
+            started = timers.get(current_state)
+            if started is None:
+                timers[current_state] = now
+                return normal_return
+            recovery_seconds = getattr(
+                self, "ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS_BY_STATE", {}
+            ).get(current_state, self.ZA_STORY_EVENT_ENTRY_RECOVERY_SECONDS)
+            if now - started < recovery_seconds:
+                return normal_return
 
         if recovery_target == current_state:
             # 実装未対応で自分自身へ戻すだけの項目は、実際には
@@ -15778,7 +19250,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 and current_state == "2_STORY_ABSOL_MOVE17"
                 and recovery_target == "2_STORY_ABSOL_MOVE14"):
             self._ZA_story_reset_absol_infi_reentry(
-                "battle_before_timeout")
+                "battle_return" if recovery_trigger == "battle_return"
+                else "battle_before_timeout")
         recovery_actions = normalized_recovery_actions(recovery_action)
         if (recovery_kind == "white_comment"
                 and current_state == "4_STORY_SHIRO_17"
@@ -15793,6 +19266,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "game reset and return to 4_STORY_SHIRO_16")
             self._za_reset_debug_next_game_reset_site = (
                 "white_comment:4_STORY_SHIRO_17:legacy")
+            if reset_debug_key is not None:
+                self._za_reset_debug_relay_context = {
+                    "key": reset_debug_key,
+                    "relay_state": current_state,
+                    "relay_site": "white_comment:4_STORY_SHIRO_17:legacy",
+                    "started_at": now,
+                    "wait_satisfied": True,
+                }
             self.ZA_gamereset()
         if (recovery_kind == "white_comment"
                 and current_state == "4_STORY_SHIRO_44"
@@ -15806,18 +19287,21 @@ class ZA_story_Base(ImageProcPythonCommand):
         if recovery_actions != (0,):
             note_result = getattr(
                 self, "_ZA_story_reset_debug_note_normal_result", None)
-            if callable(note_result):
+            if callable(note_result) and not force:
                 note_result(
                     recovery_kind, current_state,
                     "COMMENT_MISSING_RECOVERY")
             schedule_recovery = getattr(
                 self, "_ZA_story_schedule_event_entry_recovery", None)
             if callable(schedule_recovery):
+                schedule_options = {}
+                if reset_debug_key is not None:
+                    schedule_options["reset_debug_key"] = reset_debug_key
                 schedule_recovery(
                     current_state=current_state,
                     recovery_target=recovery_target,
                     recovery_kind=recovery_kind,
-                    recovery_action=recovery_actions)
+                    recovery_action=recovery_actions, **schedule_options)
             else:
                 option_resolver = getattr(
                     self, "_ZA_story_event_entry_pre_action_options", None)
@@ -15837,6 +19321,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "timechange_options": dict(
                         timechange_options or {}),
                 }
+                if reset_debug_key is not None:
+                    self._za_story_event_entry_pending_recovery[
+                        "reset_debug_key"] = reset_debug_key
             pending_step = getattr(
                 self, "_ZA_story_event_entry_pending_recovery_step", None)
             if callable(pending_step):
@@ -15847,10 +19334,36 @@ class ZA_story_Base(ImageProcPythonCommand):
         target_owns_timechange = getattr(
             self, "ZA_STORY_EVENT_ENTRY_TARGET_OWNS_TIMECHANGE",
             frozenset())
-        if (recovery_kind, current_state) in target_owns_timechange:
+        target_owned = (recovery_kind, current_state) in target_owns_timechange
+        if target_owned or recovery_options.get("reset_common") is True:
             reset_common_navigation_state(
-                "{}:{}:target_owned".format(
-                    recovery_kind, current_state))
+                "{}:{}:{}".format(
+                    recovery_kind, current_state,
+                    "target_owned" if target_owned else "configured"))
+        if reset_debug_key is not None:
+            relay_site = (reset_debug_spec or {}).get("relay_site")
+            if relay_site:
+                # action 0はrelayへ渡すだけ。relay自身のreset成功で完了させる。
+                self._za_reset_debug_relay_context = {
+                    "key": reset_debug_key,
+                    "relay_state": recovery_target,
+                    "relay_site": relay_site,
+                    "started_at": now,
+                    "wait_satisfied": True,
+                }
+                print("[RESET_DEBUG] WAIT_RELAY state={} site={}".format(
+                    recovery_target, relay_site))
+            else:
+                complete = getattr(self, "_ZA_story_reset_debug_complete", None)
+                if callable(complete):
+                    complete(reset_debug_key)
+                else:
+                    # 旧AST利用側は元のhelper群だけを取り込む場合がある。
+                    completed = getattr(self, "_za_reset_debug_completed", None)
+                    if completed is None:
+                        completed = set()
+                        self._za_reset_debug_completed = completed
+                    completed.add(reset_debug_key)
         print(
             "[EVENT_ENTRY_RECOVERY] {}: {} -> {}".format(
                 recovery_kind, current_state, recovery_target))
@@ -16165,6 +19678,75 @@ class ZA_story_Base(ImageProcPythonCommand):
                 continue
             self.wait(max(0.1, sleeptime))
 
+    ZA_STORY_BATTLE_SCREEN_POLICIES = {
+        "2_STORY_TOWER_72": {
+            "kind": "trainer", "field_seconds": 3.0,
+            # 結果画像を取りこぼしても74へ進め、78の既存判定で再戦する。
+            "field_without_result_state": "2_STORY_TOWER_74",
+            "after_state": "2_STORY_TOWER_73",
+        },
+        "2_STORY_TOWER_36": {
+            "kind": "pokemon", "eye_missing_seconds": 5.0,
+        },
+    }
+
+    def _ZA_story_battle_screen_observe(
+            self, battle_flow_key, active_level_visible=None,
+            hard_field_visible=None):
+        """Observe supported flows without equating the ordinary Lv HUD to battle."""
+        policy = getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}).get(
+            str(battle_flow_key))
+        if not isinstance(policy, dict):
+            return None
+        self.checkIfAlive()
+        state = self._ZA_story_battle_flow_state(battle_flow_key)
+        now = time.monotonic()
+        kind = policy["kind"]
+
+        def observed(result):
+            if result == "active":
+                state["screen_active_seen"] = True
+            if state.get("screen_state") != result:
+                print("[BATTLE_SCREEN] {} kind={} state={}".format(
+                    battle_flow_key, kind, result))
+            state["screen_state"] = result
+            return result
+
+        # Wild Pokemon retain the red eye even when normal FIELD also matches.
+        if (kind == "pokemon"
+                and self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE")):
+            state.pop("screen_field_since", None)
+            state.pop("screen_eye_missing_since", None)
+            return observed("active")
+        if kind == "pokemon":
+            state.setdefault("screen_eye_missing_since", now)
+        if active_level_visible is None:
+            active_level_visible = self.image_check(
+                "POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+        if hard_field_visible is None:
+            hard_field_visible = self.image_check(
+                "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        battle_hud = any(self.image_check(picture) for picture in (
+            "POKEMON_ZA_BATTLE_BALL_CHECK", "POKEMON_ZA_ESCAPE"))
+        if (kind == "trainer"
+                and (battle_hud or (active_level_visible and not hard_field_visible))):
+            state.pop("screen_field_since", None)
+            return observed("active")
+        if not hard_field_visible or battle_hud:
+            state.pop("screen_field_since", None)
+            return observed("unknown")
+        # Only continuous positive FIELD can settle the absence. Blank loading
+        # screens cannot finish a fight, and an eye flash restarts the grace.
+        since = state.setdefault("screen_field_since", now)
+        grace = float(policy.get("field_seconds", 3.0))
+        if kind == "pokemon":
+            grace = float(policy.get("eye_missing_seconds", 5.0))
+            if now - state["screen_eye_missing_since"] < grace:
+                return observed("pending")
+        if now - since < grace:
+            return observed("pending")
+        return observed("field")
+
     def _ZA_story_battle_flow_state(self, battle_flow_key):
         flows = getattr(self, "_za_story_battle_flows", None)
         if flows is None:
@@ -16177,6 +19759,161 @@ class ZA_story_Base(ImageProcPythonCommand):
             "field_result_count": 0,
             "field_result_since": None,
         })
+
+    def _ZA_story_battle_debug_hold_for_defeat(
+            self, battle_flow_key, flow_state, active_level_visible,
+            black_comment_is_defeat=False, battle_debug_defeat=False,
+            sleeptime=0.5, replace_attack=True):
+        """Force one observable defeat for each supported battle flow.
+
+        Only attacks are substituted with L while a forced defeat is pending.
+        Normal dialogue, selection and menu handling stays available without
+        lock-on. FIELD_W receives the up input for the next party member.
+        """
+        self.checkIfAlive()
+        if not bool(getattr(self, "BATTLE_DEBUG", False)):
+            return False
+        if not (bool(black_comment_is_defeat)
+                or bool(battle_debug_defeat)):
+            return False
+
+        debug_states = getattr(self, "_za_battle_debug_states", None)
+        if not isinstance(debug_states, dict):
+            debug_states = {}
+            self._za_battle_debug_states = debug_states
+        debug_completed = getattr(self, "_za_battle_debug_completed", None)
+        if not isinstance(debug_completed, set):
+            debug_completed = set()
+            self._za_battle_debug_completed = debug_completed
+
+        key = str(battle_flow_key)
+        debug_state = debug_states.setdefault(key, {
+            "started": False,
+            "completed": False,
+            "acknowledge_lose": False,
+            "last_action": "",
+            "defeat_picture": "",
+        })
+        wait_time = max(0.1, float(sleeptime))
+
+        def log_action(action, picture=""):
+            if debug_state.get("last_action") == action:
+                return
+            debug_state["last_action"] = action
+            suffix = " picture={}".format(picture) if picture else ""
+            print("[BATTLE_DEBUG] battle={} action={}{}".format(
+                key, action, suffix))
+
+        # LOSE確認後は通常の敗戦Commentへ進めるまでBだけを送る。
+        # 完了済みでもこの画面が残っている間は専用ackを継続する。
+        if debug_state.get("acknowledge_lose"):
+            if self.image_check("POKEMON_ZA_LOSE"):
+                log_action("ACK_LOSE_WITH_B", "POKEMON_ZA_LOSE")
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=wait_time, interval=0.1)
+                return True
+            debug_state["acknowledge_lose"] = False
+            debug_state["last_action"] = ""
+
+        if debug_state.get("completed") or key in debug_completed:
+            return False
+
+        first_defeat_picture = ""
+        if key == "1_STORY_FARST_BATTLE":
+            first_defeat_picture = next((picture for picture in (
+                "POKEMON_ZA_LOSE",
+                "POKEMON_ZA_2_SELECT_TUTORIAL",
+                "POKEMON_ZA_3_SELECT_TUTORIAL",
+            ) if self.image_check(picture)), "")
+            if (not first_defeat_picture and not active_level_visible
+                    and flow_state.get("result_comment_pending")
+                    and self.image_check("POKEMON_ZA_FARST_BATTLE_RETRY_START")):
+                first_defeat_picture = "POKEMON_ZA_FARST_BATTLE_RETRY_START"
+
+        battle_started = bool(
+            debug_state.get("started")
+            or flow_state.get("active_seen")
+            or active_level_visible
+            or first_defeat_picture)
+        if not battle_started:
+            return False
+
+        if not debug_state.get("started"):
+            debug_state["started"] = True
+            flow_state["active_seen"] = True
+            flow_state["result_seen"] = False
+            flow_state["field_result_count"] = 0
+            flow_state["field_result_since"] = None
+            marker = getattr(self, "_ZA_story_battle_flow_mark", None)
+            if callable(marker):
+                marker(battle_flow_key, "ACTIVE_SEEN", "battle_debug_started")
+            else:
+                flow_state["phase"] = "ACTIVE_SEEN"
+            # 通常戦闘から途中で設定を反映した場合も、保持済みの視点と
+            # ロックオンだけは解除して以降をL／上入力だけにする。
+            for method_name in ("ZA_MOVE_SEE", "ZA_ZL_ACTION"):
+                release = getattr(self, method_name, None)
+                if callable(release):
+                    release("END")
+            print(
+                "[BATTLE_DEBUG] battle={} START; "
+                "attacks=L; dialogue/selection enabled; lock-on disabled until first defeat check".format(key))
+
+        defeat_picture = first_defeat_picture
+        if not defeat_picture and self.image_check("POKEMON_ZA_LOSE"):
+            defeat_picture = "POKEMON_ZA_LOSE"
+
+        if defeat_picture:
+            debug_state["completed"] = True
+            debug_state["defeat_picture"] = defeat_picture
+            debug_completed.add(key)
+            debug_state["last_action"] = ""
+            print(
+                "[BATTLE_DEBUG] battle={} DEFEAT_CHECK picture={} "
+                "complete={}".format(
+                    key, defeat_picture, len(debug_completed)))
+            debug_state["acknowledge_lose"] = True
+            retry_choice = defeat_picture in (
+                "POKEMON_ZA_2_SELECT_TUTORIAL", "POKEMON_ZA_3_SELECT_TUTORIAL")
+            log_action("ACK_RETRY_WITH_A" if retry_choice else "ACK_LOSE_WITH_B",
+                       defeat_picture)
+            self.pressRep(
+                Button.A if retry_choice else Button.B,
+                repeat=1, duration=0.15, wait=wait_time, interval=0.1)
+            return True
+
+        if key == "1_STORY_FARST_BATTLE" and not active_level_visible:
+            if self.image_check("POKEMON_ZA_COIN_ICON"):
+                flow_state.pop("result_comment_pending", None)
+                return False
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                flow_state.pop("result_comment_pending", None)
+            elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                flow_state["result_comment_pending"] = True
+                # 勝敗未確定の会話を閉じ、専用の結果表示を待つ。
+                # 白Commentだけでは敗戦完了ledgerを更新しない。
+                log_action("WAIT_RESULT_COMMENT", "POKEMON_ZA_TEXT_WHITE_COMMENT")
+                # 入力は通常の会話処理へ渡す。勝敗の記録だけを保持する。
+
+        if not replace_attack:
+            return False
+
+        if self.image_check("POKEMON_ZA_FIELD_W"):
+            log_action("FIELD_W_UP", "POKEMON_ZA_FIELD_W")
+            self.etc_sendCommand("Lbutton_up")
+            self.wait(wait_time)
+            return True
+
+        if not active_level_visible:
+            # 会話・選択肢・メニュー・無検知待機は通常処理へ渡す。
+            return False
+
+        log_action("L_ONLY")
+        self.pressRep(
+            Button.L, repeat=1, duration=0.15,
+            wait=wait_time, interval=0.1)
+        return True
 
     def _ZA_story_battle_flow_mark(self, battle_flow_key, phase, reason):
         state = self._ZA_story_battle_flow_state(battle_flow_key)
@@ -16468,13 +20205,69 @@ class ZA_story_Base(ImageProcPythonCommand):
             result_picture="POKEMON_ZA_FALSE_RETURN",
             black_comment_is_defeat=False,
             green_comment_is_victory=False, rebattle=1,
-            white_comment_result_retries=0, usenum=1):
+            white_comment_result_retries=0, usenum=1,
+            battle_debug_defeat=False):
         """左下Lv.を戦闘中の唯一の基準として戦闘結果まで進める。"""
+        self.checkIfAlive()
         if not battle_flow_key:
             # battle関数の現在Step名。beforeのprg_ret、afterのbkprg_retと
             # 同じ値になるため、明示キーなしでも3関数で状態を共有できる。
             battle_flow_key = noprg_ret
         state = self._ZA_story_battle_flow_state(battle_flow_key)
+
+        active_level_visible = self.image_check(
+            "POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+        hard_field_visible = self.image_check(
+            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        observer = getattr(self, "_ZA_story_battle_screen_observe", None)
+        screen_state = (observer(
+            battle_flow_key, active_level_visible=active_level_visible,
+            hard_field_visible=hard_field_visible) if callable(observer) else None)
+        policy = getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}).get(
+            str(battle_flow_key), {})
+        defeat_visible = bool(screen_state is not None
+            and self.image_check("POKEMON_ZA_LOSE"))
+        if defeat_visible:
+            state["screen_defeat_pending"] = True
+        if screen_state is not None:
+            active_level_visible = bool(
+                active_level_visible and screen_state == "active")
+        # 攻撃をLへ置換する区間では、会話Aより先に必ずロックオンを解除する。
+        debug_completed = getattr(self, "_za_battle_debug_completed", ()) or ()
+        debug_pending = (bool(getattr(self, "BATTLE_DEBUG", False))
+            and (bool(black_comment_is_defeat) or bool(battle_debug_defeat))
+            and str(battle_flow_key) not in debug_completed)
+        if debug_pending:
+            for method_name in ("ZA_MOVE_SEE", "ZA_ZL_ACTION"):
+                release = getattr(self, method_name, None)
+                if callable(release):
+                    release("END")
+
+        battle_debug_guard = getattr(
+            self, "_ZA_story_battle_debug_hold_for_defeat", None)
+        if (callable(battle_debug_guard)
+                and battle_debug_guard(
+                    battle_flow_key=battle_flow_key,
+                    flow_state=state,
+                    active_level_visible=active_level_visible,
+                    black_comment_is_defeat=black_comment_is_defeat,
+                    battle_debug_defeat=battle_debug_defeat,
+                    sleeptime=sleeptime, replace_attack=False)):
+            return noprg_ret
+
+        # Let Debug record the positive defeat before consuming its retry.
+        # A normal defeat follows the same retry route without completing Debug.
+        if screen_state is not None and state.pop("screen_defeat_pending", False):
+            state["active_seen"] = False
+            state["result_seen"] = False
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "RETRY_ENTRY", "positive_defeat_screen")
+            if defeat_visible:
+                self.pressRep(Button.B, repeat=1, duration=0.15,
+                              wait=max(0.1, sleeptime), interval=0.1)
+            return bkprg_ret
 
         if self.image_check("POKEMON_ZA_HELP_MARKER"):
             self.pressRep(
@@ -16482,10 +20275,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 wait=0.5, interval=0.1)
             return noprg_ret
 
-        active_level_visible = self.image_check(
-            "POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
-        hard_field_visible = self.image_check(
-            "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
         selection_picture = next((
             picture for picture in (
                 "POKEMON_ZA_1_SELECT",
@@ -16509,6 +20298,37 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(
                 Button.B, repeat=1, duration=0.15,
                 wait=0.5, interval=0.1)
+            return noprg_ret
+
+        if debug_pending and active_level_visible:
+            # Lv.と会話矢印の同時検知でも、ZL解除済みで会話だけを送る。
+            comment_button = None
+            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                comment_button = Button.A
+            elif any(self.image_check(picture) for picture in (
+                    "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                    "POKEMON_ZA_COMMENT_MARKER")):
+                comment_button = Button.B
+            if comment_button is not None:
+                self.pressRep(comment_button, repeat=1, duration=0.15,
+                              wait=0.5, interval=0.1)
+                return noprg_ret
+
+        # HELP／選択肢／Xメニューを処理した後、攻撃呼出し直前で置換する。
+        if ((screen_state is None or active_level_visible)
+                and callable(battle_debug_guard)
+                and battle_debug_guard(
+                    battle_flow_key=battle_flow_key,
+                    flow_state=state,
+                    active_level_visible=active_level_visible,
+                    black_comment_is_defeat=black_comment_is_defeat,
+                    battle_debug_defeat=battle_debug_defeat,
+                    sleeptime=sleeptime)):
+            return noprg_ret
+
+        if screen_state == "pending":
+            self.wait(max(0.1, sleeptime))
             return noprg_ret
 
         if active_level_visible:
@@ -16686,6 +20506,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                 battle_flow_key, "RESULT_SEEN", "completion_icon")
             return prg_ret
 
+        if (hard_field_visible and screen_state == "field"
+                and not state["result_seen"]
+                and policy.get("field_without_result_state")):
+            state["active_seen"] = False
+            state["field_result_count"] = 0
+            state["field_result_since"] = None
+            self._ZA_story_battle_flow_mark(
+                battle_flow_key, "WAIT_ENTRY", "field_without_positive_result")
+            return policy["field_without_result_state"]
+
         if hard_field_visible:
             if not state["active_seen"]:
                 if black_comment_is_defeat:
@@ -16842,7 +20672,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 wait=0.5, interval=0.1)
 
     def _ZA_story_battle_before_safe_renda_once(
-            self, green_check, sleeptime):
+            self, green_check, sleeptime, battle_flow_key=""):
         """before用に安全入力を1回だけ送り、停止理由を返す。"""
         self.checkIfAlive()
         wait_time = max(0.1, float(sleeptime))
@@ -16859,8 +20689,16 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "continue", "POKEMON_ZA_HELP_MARKER"
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
             return "black_comment", "POKEMON_ZA_TEXT_BLACK_COMMENT"
-        if self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"):
+        observer = getattr(self, "_ZA_story_battle_screen_observe", None)
+        screen_state = (observer(battle_flow_key,
+            hard_field_visible=hard_field_visible) if callable(observer) else None)
+        if (screen_state == "active" or (screen_state is None
+                and self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL"))):
             return "active_level", "POKEMON_ZA_BATTLE_ACTIVE_LEVEL"
+
+        if screen_state == "pending":
+            self.wait(wait_time)
+            return "continue", "screen_pending"
 
         # 1～4択はFIELD背景の模様を誤検知する場合があるため、
         # HARD_FIELD不一致時だけ扱う。
@@ -16892,7 +20730,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "result", "POKEMON_ZA_IN_ICON"
         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
             return "chat", "POKEMON_ZA_CHAT_MARKER"
-        if hard_field_visible:
+        if hard_field_visible and screen_state in (None, "field"):
             return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
 
         # Bが必要な既知画面だけ入力する。全画像不一致時は待機も入力も
@@ -16913,7 +20751,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             event_marker_missing_sets=0,
             event_marker_missing_fallback="",
             event_marker_seen_resets_missing_sets=True,
-            guri_select_defeat_state=""):
+            guri_select_defeat_state="", entry_marker="EVENT"):
         """B基準の1入力Rendaで戦闘開始または結果候補まで進める。"""
         del no_filed  # 呼び出し互換用。従来のactive_level版でも未使用。
         if not battle_flow_key:
@@ -16933,6 +20771,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             rebattle != 0
             and state["phase"] not in {"RESULT_CANDIDATE", "RESULT_SEEN"}
             and not state["result_seen"])
+        marker_picture = (
+            "POKEMON_ZA_EVENT_MARKER" if entry_marker == "EVENT"
+            else "POKEMON_ZA_{}".format(entry_marker))
 
         def event_marker_missing_fallback_for_search(
                 event_marker_seen, count_seen_as_no_progress=False):
@@ -16983,10 +20824,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                     marker_missing_fallback))
             return marker_missing_fallback
 
-        stop_reason, stop_picture = (
-            self._ZA_story_battle_before_safe_renda_once(
-                green_check=green_check,
-                sleeptime=sleeptime))
+        safe_options = dict(green_check=green_check, sleeptime=sleeptime)
+        if battle_flow_key in getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}):
+            safe_options["battle_flow_key"] = battle_flow_key
+        stop_reason, stop_picture = self._ZA_story_battle_before_safe_renda_once(
+            **safe_options)
         # Step固有の復旧判定から、共通beforeが実際にどの画面で
         # noprg_retへ戻ったかを区別できるようにする。戻り値だけでは
         # FIELD／全画像不一致と、Comment・SELECT処理後を判別できない。
@@ -17063,7 +20905,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return prg_ret
 
         if stop_reason == "chat":
-            # 話しかけ表示はRendaを止めてからEVENTを中央化し、0.05秒
+            # 話しかけ表示はRendaを止めてから指定マーカーを中央化し、0.05秒
             # 接近後も表示が残っている場合だけAを送る。再戦なしでは
             # 既定移動で接近済みなのでEVENTを探さず、その場でAを送る。
             if (not event_reacquire_allowed
@@ -17073,12 +20915,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                     wait=0.5, interval=0.1)
             else:
                 event_marker_aligned = self.ZA_markerdir(
-                    "EVENT", 1, nofiled=True,
+                    entry_marker, 1, nofiled=True,
                     stop_after_first_scan_move=(
                         marker_missing_limit > 0))
                 event_marker_seen = bool(getattr(
                     self,
-                    "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
+                    "_za_markerdir_marker_seen_{}".format(marker_picture),
                     event_marker_aligned))
                 missing_fallback = event_marker_missing_fallback_for_search(
                     event_marker_seen)
@@ -17102,12 +20944,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             event_marker_aligned = False
             if event_reacquire_allowed:
                 event_marker_aligned = self.ZA_markerdir(
-                    "EVENT", 1,
+                    entry_marker, 1,
                     stop_after_first_scan_move=(
                         marker_missing_limit > 0))
                 event_marker_seen = bool(getattr(
                     self,
-                    "_za_markerdir_marker_seen_POKEMON_ZA_EVENT_MARKER",
+                    "_za_markerdir_marker_seen_{}".format(marker_picture),
                     event_marker_aligned))
                 missing_fallback = event_marker_missing_fallback_for_search(
                     event_marker_seen,
@@ -17117,7 +20959,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     return missing_fallback
             if (event_reacquire_allowed
                     and (event_marker_aligned
-                         or self.ZA_markerdir("SIDE_MARKER"))):
+                         or (entry_marker != "SIDE_MARKER"
+                             and self.ZA_markerdir("SIDE_MARKER")))):
                 move_attempts = max(1, int(event_move_attempts))
                 if move_attempts == 1:
                     self.press(
@@ -17164,7 +21007,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             result_picture="POKEMON_ZA_FALSE_RETURN",
             black_comment_is_defeat=False,
             green_comment_is_victory=False, rebattle=1,
-            white_comment_result_retries=0, usenum=1):
+            white_comment_result_retries=0, usenum=1,
+            battle_debug_defeat=False):
         """新しい安全連打フロー用の戦闘中入口。"""
         return self.ZA_story_Template_battle_function_active_level(
             bkprg_ret=bkprg_ret,
@@ -17190,11 +21034,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             green_comment_is_victory=green_comment_is_victory,
             rebattle=rebattle,
             white_comment_result_retries=white_comment_result_retries,
-            usenum=usenum)
+            usenum=usenum,
+            battle_debug_defeat=battle_debug_defeat)
 
     def _ZA_story_battle_after_safe_renda(
             self, selected_pic, selected_target, endpictures, sleeptime,
-            guri_select_defeat_state=""):
+            guri_select_defeat_state="", battle_flow_key=""):
         """B連打を基準にし、停止した画面の種類と画像名を返す。"""
         false_pictures = {
             None, "", "RETURN_FALSE", "RETURN FALSE",
@@ -17250,13 +21095,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                     "POKEMON_ZA_BATTLE_BALL_CHECK",
                     "POKEMON_ZA_ESCAPE",
                 ))
+            observer = getattr(self, "_ZA_story_battle_screen_observe", None)
+            screen_state = (observer(battle_flow_key) if callable(observer) else None)
+            if screen_state == "pending":
+                self.wait(wait_time)
+                return "screen_pending", ""
+            if screen_state == "field":
+                return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
+            if screen_state == "active":
+                return "active_level", "classified_battle"
+            if screen_state is not None:
+                active_pictures = []
             active_picture = next((
                 picture for picture in active_pictures
                 if self.image_check(picture)
             ), None)
             if active_picture is not None:
                 return "active_level", active_picture
-            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            if (screen_state is None
+                    and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
                 return "field", "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"
 
             # 選択肢と朝／夜の切替画像はA。それ以外（COMPLETE・
@@ -17276,6 +21133,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 button, repeat=1, duration=0.15,
                 wait=0.0, interval=0.1)
             self.wait(wait_time)
+            if screen_state is not None:
+                return "screen_pending", ""
             if guri_select_defeat_state and matched_select is not None:
                 select_return = self._ZA_story_guri_select_defeat_observe(
                     guri_select_defeat_state, matched_select)
@@ -17303,22 +21162,30 @@ class ZA_story_Base(ImageProcPythonCommand):
             picture for picture in (endpicture, endpicture2, endpicture3)
             if picture not in false_pictures)
         state = self._ZA_story_battle_flow_state(battle_flow_key)
-        if not state["result_seen"]:
+        policy = getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}).get(
+            str(battle_flow_key), {})
+        if not state["result_seen"] and not policy:
             state["result_seen"] = True
             self._ZA_story_battle_flow_mark(
                 battle_flow_key, "RESULT_SEEN", "entered_after_renda_route")
 
         while True:
-            stop_reason, stop_picture = self._ZA_story_battle_after_safe_renda(
-                selected_pic=selected_pic,
-                selected_target=selected_target,
-                endpictures=endpictures,
-                sleeptime=sleeptime,
+            safe_options = dict(
+                selected_pic=selected_pic, selected_target=selected_target,
+                endpictures=endpictures, sleeptime=sleeptime,
                 guri_select_defeat_state=guri_select_defeat_state)
+            policy = getattr(self, "ZA_STORY_BATTLE_SCREEN_POLICIES", {}).get(
+                str(battle_flow_key), {})
+            if policy:
+                safe_options["battle_flow_key"] = battle_flow_key
+            stop_reason, stop_picture = self._ZA_story_battle_after_safe_renda(
+                **safe_options)
             print(
                 "[BATTLE_RENDA] {}: stop={} picture={}".format(
                     battle_flow_key, stop_reason, stop_picture))
 
+            if stop_reason == "screen_pending":
+                return policy.get("after_state", bkprg_ret)
             if stop_reason == "endpicture":
                 self._ZA_story_battle_flow_reset(
                     battle_flow_key, "endpicture_renda")
@@ -17327,6 +21194,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                         "battle_after_endpicture")
                 return prg_ret
             if stop_reason == "field":
+                if policy and not state["result_seen"]:
+                    self._ZA_story_battle_flow_reset(
+                        battle_flow_key, "field_without_positive_result_after")
+                    return policy.get("field_without_result_state", bkprg_ret)
                 # FIELDは1回の検知で連打を終了し、その場で次Stepへ進む。
                 self._ZA_story_battle_flow_reset(
                     battle_flow_key, "field_renda")
@@ -17393,7 +21264,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 # 連打へ戻る。
                 
     
-    def ZA_story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub9_button="A",sub9_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,mode=0,sleeptime=0.5):
+    def ZA_story_Template_Comment_Out(self,substitute=0,green_check=1,black_check=1,endpicture7="RETURN_FALSE",sub9_button="A",sub9_picture="RETURN_FALSE",selected_pic="RETURN FALSE",selected_target=0,mode=0,sleeptime=0.5,timeout_seconds=0.0):
+        started_at = time.monotonic()
+        timeout_limit = max(0.0, float(timeout_seconds))
+
+        def recovery_timed_out():
+            return (timeout_limit > 0.0
+                    and time.monotonic() - started_at >= timeout_limit)
+
         selected_out_check=0
 
         if mode == 0:
@@ -17403,6 +21281,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         nofiled_check=0
         #コメントチェックができるまでループ
         for i in range(30):
+            if recovery_timed_out():
+                return False
             if self.image_check("POKEMON_ZA_IN_ICON"):#TODO
                 return True
             if (not (self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"))):
@@ -17455,8 +21335,14 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         while True:
             self.checkIfAlive()
+            if recovery_timed_out():
+                return False
+            renda_timeout_options = {}
+            if timeout_limit > 0.0:
+                renda_timeout_options["timeout_seconds"] = max(
+                    0.001, timeout_limit - (time.monotonic() - started_at))
             selected_out_check=0
-            if self.ZA_renda_button(rendabutton="B",
+            renda_result = self.ZA_renda_button(rendabutton="B",
                                  endpicture="POKEMON_ZA_BATTLE_BALL_CHECK",
                                  endpicture2="POKEMON_ZA_ESCAPE",
                                  endpicture3=selected_pic,
@@ -17474,11 +21360,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  sub7_button="A",sub7_picture="POKEMON_ZA_MORNING",
                                  sub8_button="A",sub8_picture="POKEMON_ZA_NIGHT",
                                  sub9_button=sub9_button,sub9_picture=sub9_picture,
-                                 sleeptime=sleeptime):
+                                 sleeptime=sleeptime,**renda_timeout_options)
+            if recovery_timed_out():
+                return False
+            if renda_result:
                 print(f"5rt2{nofiled_check}")
                 selected_out_check=0
                 filed_check_count=0
                 for i in range(30):
+                    if recovery_timed_out():
+                        return False
                     self.wait(0.5)
                     # mode=1（屋内FIELD）ではZA_renda_button側が終了画像を
                     # 検知しても、従来はこの後の分岐がFILED_HARD_CHECK_0しか
@@ -18192,6 +22083,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                 f' :: {debug_state}'
                 f' :: complete='
                 f'{len(getattr(self, "_za_reset_debug_completed", set()))}')
+        battle_debug_status = ""
+        if bool(getattr(self, "BATTLE_DEBUG", False)):
+            debug_states = getattr(self, "_za_battle_debug_states", {})
+            active_battles = [
+                key for key, value in debug_states.items()
+                if value.get("started") and not value.get("completed")]
+            battle_debug_status = (
+                f'\r\n BATTLE_DEBUG_FUNCTION :: ACTIVE'
+                f' :: {",".join(active_battles)}'
+                f' :: complete='
+                f'{len(getattr(self, "_za_battle_debug_completed", set()))}')
         recovery_failure_status = ""
         recovery_failure = getattr(
             self, "_za_story_event_entry_recovery_failure", None)
@@ -18236,6 +22138,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             f'\r\n EVOLUTION_FUNCTION    :: {self.common_evolution_current_state}'
             f'{game_reset_status}'
             f'{reset_debug_status}'
+            f'{battle_debug_status}'
             f'{recovery_failure_status}'
             f'{mega_mode5_status}'
             f'\r\n----------------------------'
@@ -18246,6 +22149,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_first_battle_started = False
         self._za_first_battle_confirm_count = 0
         self._za_story_battle_flows = {}
+        # BATTLE_DEBUGはCommands 1実行内で各敗戦対応バトルを1回だけ
+        # 強制敗戦にする。ゲーム再起動では消さず、Commands再実行で戻す。
+        self._za_battle_debug_states = {}
+        self._za_battle_debug_completed = set()
         self._za_story_active_lank_battle_zone = None
         self._za_story_active_infi_step = None
         self._za_story_pre_step_gate_state = None
@@ -18263,12 +22170,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 再起動しても消さず、同じcheckpointの2回目を通常判定へ渡す。
         self._za_reset_debug_wait_state = None
         self._za_reset_debug_completed = set()
+        self._za_reset_debug_relay_context = None
         self._za_reset_debug_revisited = set()
         self._za_reset_debug_normal_results = set()
         self._za_reset_debug_direct_sites_completed = set()
         self._za_story_mapping_goto_watch = None
         self._za_story_mapping_goto_recovery = None
         while True:
+            self.checkIfAlive()
             
             self.main_current_state = self.STATE_MAIN_FUNCTION[self.main_current_state]()
             self.wait(0.1)
@@ -18505,7 +22414,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",event_picture="POKEMON_ZA_QUASAR_MOVIE_ICON"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",event_picture="POKEMON_ZA_QUASAR_MOVIE_ICON",timeout_seconds=600.0):
                     return "1_STORY_STATION_LEAVE_MOVE"
             else:#コメンントナシノフォロー
                 self.press(Direction(Stick.LEFT,20), duration=0.1, wait=1.0)
@@ -18536,7 +22445,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT") 
         else:
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_CHAT_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_CHAT_MARKER",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0):
                     return "1_STORY_FARST_POKEMON_SELECT"
         return "1_STORY_BAG_CHASE_END"
 
@@ -18644,13 +22553,107 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_FARST_POKEMON_SELECT"
     
     def _1_story_farst_battle(self):
-        # 共通テンプレートの動作確認中。既存処理は下に残す。
-        return self.ZA_story_Template_battle_function_renda_route(
+        # 共通処理のB入力で敗戦表示が消える前に、専用画像を記録する。
+        # 台詞では勝敗を決めない。報酬表示と敗戦／再挑戦専用表示を分ける。
+        self.checkIfAlive()
+        victory_visible = self.image_check("POKEMON_ZA_COIN_ICON")
+        flow_state = self._ZA_story_battle_flow_state("1_STORY_FARST_BATTLE")
+        active_visible = self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+        field_visible = self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        if victory_visible or field_visible:
+            flow_state.pop("result_comment_pending", None)
+        elif (flow_state.get("active_seen") and not active_visible
+                and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")):
+            flow_state["result_comment_pending"] = True
+        defeat_visible = any(self.image_check(picture) for picture in (
+            "POKEMON_ZA_LOSE",
+            "POKEMON_ZA_2_SELECT_TUTORIAL",
+            "POKEMON_ZA_3_SELECT_TUTORIAL"))
+        if (flow_state.get("result_comment_pending") and not active_visible
+                and self.image_check("POKEMON_ZA_FARST_BATTLE_RETRY_START")):
+            # 初回の開始表示ではなく、戦闘→結果待ち→同じ初戦の再開を確認。
+            defeat_visible = True
+        next_state = self.ZA_story_Template_battle_function_renda_route(
             bkprg_ret="1_STORY_FARST_BATTLE",
             prg_ret="1_STORY_FARST_BATTLE_END",
             noprg_ret="1_STORY_FARST_BATTLE",
             Xaction=1, Aaction=1, Yaction=0, Baction=0,
-            lockon_endskip=0, get_chanceicon4=0, noCp=1)
+            lockon_endskip=0, get_chanceicon4=0, noCp=1,
+            battle_debug_defeat=True,
+            result_picture="POKEMON_ZA_COIN_ICON")
+        # 共通処理内で初めてLOSEを確認し、Bで閉じた場合も敗戦Stepへ渡す。
+        debug_state = getattr(self, "_za_battle_debug_states", {}).get(
+            "1_STORY_FARST_BATTLE", {})
+        if defeat_visible or debug_state.get("acknowledge_lose"):
+            # BATTLE_DEBUGの敗戦確認・完了記録を維持し、勝利後Stepへ進ませない。
+            self._ZA_story_battle_flow_reset(
+                "1_STORY_FARST_BATTLE", "first_battle_defeat")
+            return "1_STORY_FARST_BATTLE_LOSE"
+        if (next_state == "1_STORY_FARST_BATTLE_END"
+                and not victory_visible
+                and not self.image_check("POKEMON_ZA_COIN_ICON")):
+            # 汎用COMPLETE／IN_ICON等の単独一致でも勝利後Stepへ進ませない。
+            return "1_STORY_FARST_BATTLE"
+        return next_state
+
+    def _1_story_farst_battle_lose(self):
+        self.checkIfAlive()
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+
+        def battle_field_ready():
+            return (self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
+                and (self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0")
+                     or self.image_check("POKEMON_ZA_FARST_BATTLE_FIELD_HUD"))
+                and not any(self.image_check(picture) for picture in (
+                    "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                    "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    "POKEMON_ZA_COMMENT_MARKER",
+                    "POKEMON_ZA_HELP_MARKER",
+                    "POKEMON_ZA_X_MENU_OPEN")))
+
+        def retry_choice_visible():
+            return any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_2_SELECT_TUTORIAL",
+                "POKEMON_ZA_3_SELECT_TUTORIAL"))
+
+        def recovery_interrupt():
+            if battle_field_ready():
+                return "resume_combat"
+            if retry_choice_visible():
+                return "choice_guard"
+            return None
+
+        field_visible = (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+                         or battle_field_ready())
+        if not field_visible:
+            if retry_choice_visible():
+                self.pressRep(Button.A, repeat=1, duration=0.15,
+                              wait=0.5, interval=0.1)
+            else:
+                # 汎用Comment_OutのTrueでは終了せず、実FIELDまで会話を閉じる。
+                self.ZA_renda_button(
+                    rendabutton="B",
+                    endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",
+                    sub_button="A", sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    sub2_button="A", sub2_picture="POKEMON_ZA_1_SELECT",
+                    sub3_button="A", sub3_picture="POKEMON_ZA_2_SELECT",
+                    sub4_button="A", sub4_picture="POKEMON_ZA_3_SELECT",
+                    sub5_button="A", sub5_picture="POKEMON_ZA_4_SELECT",
+                    sub6_button="A", sub6_picture="POKEMON_ZA_HELP_MARKER",
+                    sub7_button="A", sub7_picture="POKEMON_ZA_MORNING",
+                    sub8_button="A", sub8_picture="POKEMON_ZA_NIGHT",
+                    sleeptime=0.5, timeout_seconds=2.0,
+                    interrupt_callback=recovery_interrupt)
+            field_visible = (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+                             or battle_field_ready())
+        if field_visible:
+            print("[FIRST_BATTLE_DEFEAT] FIELD confirmed -> 1_STORY_FARST_BATTLE")
+            self._ZA_story_battle_flow_reset(
+                "1_STORY_FARST_BATTLE", "first_battle_defeat_comment_out")
+            return "1_STORY_FARST_BATTLE"
+        return "1_STORY_FARST_BATTLE_LOSE"
     
     def _1_story_farst_battle_end(self):
         # 共通テンプレートの動作確認中。既存処理は下に残す。
@@ -18702,7 +22705,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_farst_movie_end(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_FARST_BATTLE_ZONE_MOVE3" 
         return "1_STORY_FARST_MOVIE_END"
         
@@ -18719,7 +22722,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_farst_battle_zone_out(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_FARST_BATTLE_ZONE_MOVE4" 
         return "1_STORY_FARST_BATTLE_ZONE_OUT"
 
@@ -18731,7 +22734,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_arrival(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_HOTEL_Z_MOVE1"
 
         return "1_STORY_HOTEL_Z_ARRIVAL"
@@ -18752,7 +22755,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_fast_in(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_HOTEL_Z_MOVE3"
         return "1_STORY_HOTEL_Z_FAST_IN"
     
@@ -18767,7 +22770,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_az_chat(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",timeout_seconds=600.0):
                 return "1_STORY_HOTEL_Z_MOVE4"
         return "1_STORY_AZ_CHAT"
     
@@ -18780,7 +22783,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_HOTEL_Z_MOVE4"
 
     def _1_story_fast_elevator(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5,timeout_seconds=600.0):
             return "1_STORY_HOTEL_Z_MOVE5"
         return "1_STORY_FAST_ELEVATOR"
     
@@ -18794,7 +22797,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_hote_z_move6(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_WANINOKO_ICON', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sleeptime=0.5, timeout_seconds=600.0):
                 return "1_STORY_HOTEL_Z_MOVE7"
 
         return "1_STORY_HOTEL_Z_MOVE6"   
@@ -18811,7 +22814,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5,timeout_seconds=600.0):
                 return "1_STORY_HOTEL_Z_MOVE9"
 
         return "1_STORY_HOTEL_Z_MOVE8"  
@@ -18827,7 +22830,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_move10(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_IN_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5,timeout_seconds=600.0):
                 return "1_STORY_HOTEL_Z_MOVE11"
 
         return "1_STORY_HOTEL_Z_MOVE10"
@@ -18849,7 +22852,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             # ロワイヤル画面でFILED判定してしまう場合があるため一旦代用でWANINOKO_ICONで判断
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0,require_entry_picture=True):
                 return "1_STORY_HOTEL_Z_MOVE13" 
 
         return "1_STORY_HOTEL_Z_MOVE12" 
@@ -18858,7 +22861,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         # 1_STORY_HOTEL_Z_MOVE12から予期せず飛んだ場合
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
@@ -18897,7 +22900,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_third_battle_end(self):
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更 "POKEMON_ZA_HELP_MARKER"
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_2_SELECT', sub2_button='A', sub2_picture='POKEMON_ZA_HELP_MARKER', timeout_seconds=600.0): #FIELDから変更 "POKEMON_ZA_HELP_MARKER"
                 return "1_STORY_OUT_HOTEL_Z_1"
         elif self.image_check("POKEMON_ZA_HELP_MARKER"):#TODO
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
@@ -18919,7 +22922,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_3(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_4"
         return "1_STORY_OUT_HOTEL_Z_3"
     
@@ -18937,7 +22940,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_5_1"
         return "1_STORY_OUT_HOTEL_Z_5"
     
@@ -18949,7 +22952,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_5_2(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_6"
         return "1_STORY_OUT_HOTEL_Z_5_2"
     
@@ -18970,7 +22973,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_out_hotel_z_7(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_8"
 
         return "1_STORY_OUT_HOTEL_Z_7"
@@ -18982,7 +22985,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_9(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_WANINOKO_SKILL_CHANGE1"
         return "1_STORY_OUT_HOTEL_Z_9"
     
@@ -19013,7 +23016,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_11(self):  
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_12"
         return "1_STORY_OUT_HOTEL_Z_11"
     
@@ -19023,7 +23026,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_13(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_14"
 
         return "1_STORY_OUT_HOTEL_Z_13"
@@ -19034,7 +23037,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_15(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self._1_story_2nd_get_comment=0
                 return "1_STORY_OUT_HOTEL_Z_16"
 
@@ -19599,7 +23602,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_24(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_25" 
         return "1_STORY_OUT_HOTEL_Z_24" 
     
@@ -19613,7 +23616,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_27" 
 
         return "1_STORY_OUT_HOTEL_Z_26" 
@@ -19627,7 +23630,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_27" 
     
     def _1_story_out_hotel_z_28(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",timeout_seconds=600.0):
             self.wait(0.3)
             self.etc_sendCommand("Lbutton_down")
             self.wait(0.3)
@@ -19638,7 +23641,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_29(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT2"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_30" 
 
         return "1_STORY_OUT_HOTEL_Z_29" 
@@ -19653,7 +23656,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_31(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_32" 
 
         return "1_STORY_OUT_HOTEL_Z_31" 
@@ -19684,7 +23687,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_34(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 #ネットワーク開放
                 return "1_STORY_OUT_HOTEL_Z_35"  
         return "1_STORY_OUT_HOTEL_Z_34" 
@@ -19716,7 +23719,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_38(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_WANINOKO_SKILL_CHANGE3"
         return "1_STORY_OUT_HOTEL_Z_38"
     
@@ -19885,7 +23888,41 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "1_STORY_OUT_HOTEL_Z_43" 
         return "1_STORY_OUT_HOTEL_Z_42" 
     
+    def _1_story_out_hotel_z_43_46_green_comment_recovery(self, current_state):
+        """緑Comment後はHARD FIELDを確認し、EVENT探索から移動を再開する。"""
+        self.checkIfAlive()
+        green_comment = self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+        if green_comment:
+            if not getattr(self, "_za_out_hotel_z43_46_green_comment_pending", False):
+                print("[OUT_HOTEL_Z_43_46_COMMENT_OUT] green comment; wait for HARD FIELD")
+            self._za_out_hotel_z43_46_green_comment_pending = True
+        if not getattr(self, "_za_out_hotel_z43_46_green_comment_pending", False):
+            return None
+
+        # 緑Comment消失やIN/BATTLE表示だけでは復旧完了にしない。
+        if (not green_comment
+                and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+            self._za_out_hotel_z43_46_green_comment_pending = False
+            self._za_out_hotel_z43_46_marker_pending = True
+            print("[OUT_HOTEL_Z_43_46_COMMENT_OUT] HARD FIELD confirmed; resume EVENT route")
+            return "1_STORY_OUT_HOTEL_Z_46"
+
+        # 1周期1入力で会話を閉じる。選択肢/HELP/黒Commentは既存と同じA。
+        button = Button.B
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_1_SELECT", "POKEMON_ZA_2_SELECT",
+                "POKEMON_ZA_3_SELECT", "POKEMON_ZA_4_SELECT",
+                "POKEMON_ZA_HELP_MARKER")):
+            button = Button.A
+        self.pressRep(button, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return current_state
+
     def _1_story_out_hotel_z_43(self):
+        recovery_state = self._1_story_out_hotel_z_43_46_green_comment_recovery(
+            "1_STORY_OUT_HOTEL_Z_43")
+        if recovery_state is not None:
+            return recovery_state
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK") and (self.image_check("POKEMON_ZA_FIELD3") or self.image_check("POKEMON_ZA_FIELD_BACK3")): #FIELDから変更
                 self.wait(1.0)
@@ -19898,6 +23935,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_43"
     
     def _1_story_out_hotel_z_44(self):
+        recovery_state = self._1_story_out_hotel_z_43_46_green_comment_recovery(
+            "1_STORY_OUT_HOTEL_Z_44")
+        if recovery_state is not None:
+            return recovery_state
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更
             for i in range(3):
                 self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=0)
@@ -19905,6 +23946,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_44" 
     
     def _1_story_out_hotel_z_45(self):
+        recovery_state = self._1_story_out_hotel_z_43_46_green_comment_recovery(
+            "1_STORY_OUT_HOTEL_Z_45")
+        if recovery_state is not None:
+            return recovery_state
         if self.image_check("POKEMON_ZA_IN_MARKER") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):# バトルでホテルZ人入ったよう？
             self.wait(0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -19944,11 +23989,23 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_45" 
     
     def _1_story_out_hotel_z_46(self):
+        recovery_state = self._1_story_out_hotel_z_43_46_green_comment_recovery(
+            "1_STORY_OUT_HOTEL_Z_46")
+        if recovery_state is not None:
+            return recovery_state
+        # 緑Comment復帰後は入口表示よりEVENT方向合わせを先に完了する。
+        if getattr(self, "_za_out_hotel_z43_46_marker_pending", False):
+            if (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+                    and self.ZA_markerdir("EVENT")):
+                self._za_out_hotel_z43_46_marker_pending = False
+                return "1_STORY_OUT_HOTEL_Z_43"
+            return "1_STORY_OUT_HOTEL_Z_46"
         if self.image_check("POKEMON_ZA_IN_MARKER"):
             self.wait(0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "1_STORY_OUT_HOTEL_Z_47" 
-        elif self.ZA_markerdir("EVENT"):
+        elif (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+                and self.ZA_markerdir("EVENT")):
             #いわくだきできていない用に
             return "1_STORY_OUT_HOTEL_Z_43" 
         else:
@@ -19956,7 +24013,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_47(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0):
                 return "1_STORY_OUT_HOTEL_Z_48"  
         return "1_STORY_OUT_HOTEL_Z_47" 
     
@@ -19977,7 +24034,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_50(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0):
                 return "1_STORY_OUT_HOTEL_Z_51"  
         return "1_STORY_OUT_HOTEL_Z_50"
     
@@ -19992,7 +24049,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_52(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0):
                 return "1_STORY_OUT_HOTEL_Z_53"  
 
         return "1_STORY_OUT_HOTEL_Z_52"
@@ -20084,7 +24141,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_63(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_64" 
         return "1_STORY_OUT_HOTEL_Z_63" 
     
@@ -20136,7 +24193,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_68" 
     
     def _1_story_out_hotel_z_69(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "1_STORY_OUT_HOTEL_Z_70"
         return "1_STORY_OUT_HOTEL_Z_69" 
     
@@ -20173,7 +24230,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_72"
     
     def _1_story_out_hotel_z_73(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "1_STORY_OUT_HOTEL_Z_74"
         return "1_STORY_OUT_HOTEL_Z_73"
     
@@ -20243,7 +24300,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_81(self):
         self.wait(3.0)
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
                 return "1_STORY_OUT_HOTEL_Z_82" 
         elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             return "1_STORY_OUT_HOTEL_Z_79"
@@ -20302,7 +24359,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_3"
     
     def _2_story_tower_4(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "2_STORY_TOWER_5"
         return "2_STORY_TOWER_4"
     
@@ -20316,7 +24373,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_5"
     
     def _2_story_tower_6(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_6"
     
@@ -20327,13 +24384,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.5)
             return "2_STORY_TOWER_8"
         else:
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_7"
         return "2_STORY_TOWER_7"
     
     def _2_story_tower_8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_9"
         return "2_STORY_TOWER_8"
     
@@ -20349,7 +24406,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_10(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_11"
         return "2_STORY_TOWER_10"
     
@@ -20367,7 +24424,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_13"
         return "2_STORY_TOWER_12"
     
@@ -20382,7 +24439,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_14(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_15_0"
         return "2_STORY_TOWER_14"
     
@@ -20401,7 +24458,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_17"
         return "2_STORY_TOWER_16"
     
@@ -20414,7 +24471,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_18(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_19"
         return "2_STORY_TOWER_18"
     
@@ -20430,7 +24487,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_21"
         return "2_STORY_TOWER_20"
     
@@ -20448,7 +24505,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_23"
         return "2_STORY_TOWER_22"
     
@@ -20501,7 +24558,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_31(self):
         ### AUTO_SAVE_POINT
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0, require_entry_picture=True):
             return "2_STORY_TOWER_32"
         else:
             return "2_STORY_TOWER_31"
@@ -20648,7 +24705,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.B, repeat=5, duration=0.04, wait=0.0, interval=0.1)
             self.wait(30.0)
         if self.image_check("POKEMON_ZA_PIKA_ICON_GET6"):
-            if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
+            screen_state = self._ZA_story_battle_screen_observe("2_STORY_TOWER_36")
+            if screen_state == "pending" or screen_state == "unknown":
+                self.wait(0.5)
+                return "2_STORY_TOWER_36"
+            if screen_state == "active":
                 if self.image_check("POKEMON_ZA_FIELD_W"):
                     self.etc_sendCommand("Lbutton_up")
                 self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
@@ -20673,17 +24734,18 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "2_STORY_TOWER_37"))
         if black_recovery is not None:
             return black_recovery
-        if self.image_check("POKEMON_ZA_EYE_CHECK_HIGH_POKE"):
-            return "2_STORY_TOWER_36"
-        #elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-        #    if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"): #FIELDから変更
-        #        return "2_STORY_TOWER_38"
-        else:
-            ret = self.ZA_Common_goto(2,0,1)#ポケセンメディオに移動で位置確定
+        # Once navigation starts, keep advancing it through MAP/loading frames.
+        if getattr(self, "Common_current_state", "COMMON_START") == "COMMON_START":
+            screen_state = self._ZA_story_battle_screen_observe("2_STORY_TOWER_36")
+            if screen_state in {"pending", "unknown"}:
+                self.wait(0.5)
+                return "2_STORY_TOWER_37"
+            if screen_state == "active":
+                return "2_STORY_TOWER_36"
+        ret = self.ZA_Common_goto(2,0,1)
         if ret == "START":
             return "2_STORY_TOWER_38"
-        else:
-            return "2_STORY_TOWER_37"
+        return "2_STORY_TOWER_37"
     
     def _2_story_tower_38(self):
         ### AUTO_SAVE_POINT
@@ -20698,7 +24760,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.B, repeat=20, duration=0.04, wait=0.0, interval=0.1)
             self.wait(10.0)
             return "2_STORY_TOWER_37"
-        elif self.ZA_Common_pokemon_recovery():
+        elif self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             self._2_story_tower_38_else_count = 0
             return "2_STORY_TOWER_39"
         else:
@@ -20752,7 +24814,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_41(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_TOWER_42"
         return "2_STORY_TOWER_41"
     
@@ -20770,7 +24832,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             #誤検知するため・上下アイコンが表示されないためワニノコ・メリープアイコンで判定
             #if self.renda_button(rendabutton="B",endpicture="WANINOKO_ICON",endpicture2="MERIP_ICON_GET5",sub_button="A",sub_picture="TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="4_SELECT",sub3_button="A",sub3_picture="2_SELECT",sub4_button="A",sub4_picture="HELP_MARKER",sleeptime=0.5):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0):
                 return "2_STORY_TOWER_44"
         return "2_STORY_TOWER_43"
     
@@ -20785,7 +24847,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_45(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_EVENT_MARKER_CENTER_WIDE",endpicture2="POKEMON_ZA_EVENT_MARKER_RIGHT_WIDE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_4_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0):
                 return "2_STORY_TOWER_46"
         return "2_STORY_TOWER_45"
     
@@ -22659,7 +26721,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_49(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_50"
         return "2_STORY_TOWER_49"
     
@@ -22678,7 +26740,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_51(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_PIKA_ICON_BOX6",sleeptime=2.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_PIKA_ICON_BOX6",sleeptime=2.0,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 if self.image_check("POKEMON_ZA_SIDE_MARKER_CENTER_WIDE"):
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -22706,13 +26768,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_54(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return self._2_story_tower_55_or_61()
             
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                     return self._2_story_tower_55_or_61()
         return "2_STORY_TOWER_52"
 
@@ -22729,6 +26791,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self._2_story_yubiwa_checked:
             return "2_STORY_TOWER_61"
         return "2_STORY_TOWER_55"
+
+    def _2_story_tower_58_recovery(self):
+        """会話待ちの復帰でも、ヤミラミ戦とYUBIWA取得を飛ばさない。"""
+        self._ZA_story_reset_common_navigation_state("tower_58_recovery")
+        return self._2_story_tower_55_or_61()
     
     def _2_story_tower_55(self): 
         ### AUTO_SAVE_POINT
@@ -22763,7 +26830,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_58(self): #やみらみ
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0):
                 return "2_STORY_TOWER_59"
         elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更　#TODOバトルじゃない場合になし判定？
             return self._2_story_tower_55_or_61()
@@ -22814,7 +26881,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_63(self): 
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_TOWER_64"
         return "2_STORY_TOWER_63"
     
@@ -22827,7 +26894,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_TOWER_64"
     
     def _2_story_tower_65(self):
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "2_STORY_TOWER_66"
         return "2_STORY_TOWER_65"
     
@@ -22853,13 +26920,13 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_tower_68(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_TOWER_69"
 
         for i in range(10):
             self.wait(0.5)
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"): #FIELDから変更
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
                     return "2_STORY_TOWER_69"
         return "2_STORY_TOWER_69"
     
@@ -22897,22 +26964,26 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "2_STORY_TOWER_70"
     
     def _2_story_tower_71(self):
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0): #FIELDから変更
-                return "2_STORY_TOWER_72"
-
-        for i in range(10):
-            self.wait(0.5)
-            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sleeptime=1.0): #FIELDから変更
-                    return "2_STORY_TOWER_72"
-        return "2_STORY_TOWER_74"
+        return self.ZA_story_Template_battle_before_renda_route(
+            noprg_ret="2_STORY_TOWER_71", prg_ret="2_STORY_TOWER_72",
+            battle_flow_key="2_STORY_TOWER_72",
+            black_comment_is_defeat=True, event_move_attempts=10,
+            entry_marker="SIDE_MARKER")
     
     def _2_story_tower_72(self):
-        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_TOWER_73",prg_ret="2_STORY_TOWER_73",noprg_ret="2_STORY_TOWER_72",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,markertype=1,battle_mode=1)
+        return self.ZA_story_Template_battle_function_renda_route(
+            bkprg_ret="2_STORY_TOWER_71",
+            prg_ret="2_STORY_TOWER_73",
+            noprg_ret="2_STORY_TOWER_72",
+            Xaction=1, Aaction=1, Yaction=0, Baction=1,
+            lockon_endskip=0, get_chanceicon4=0, noCp=1,
+            markertype=1, battle_mode=1,
+            black_comment_is_defeat=True, battle_debug_defeat=True)
     
-    def _2_story_tower_73(self): 
-        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_TOWER_72",prg_ret="2_STORY_TOWER_74")
+    def _2_story_tower_73(self):
+        return self.ZA_story_Template_battle_after_renda_route(
+            bkprg_ret="2_STORY_TOWER_71", prg_ret="2_STORY_TOWER_74",
+            battle_flow_key="2_STORY_TOWER_72", black_comment_is_defeat=True)
 
     def _2_story_tower_74(self): 
         ### AUTO_SAVE_POINT
@@ -22925,7 +26996,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_TOWER_74"
     
     def _2_story_tower_75(self):
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "2_STORY_TOWER_76"
         return "2_STORY_TOWER_75"
     
@@ -22950,7 +27021,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # TODO ホルビー敗戦処理がいるかも
         for i in range(1, 11):
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT"):
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_WANINOKO_ICON",endpicture2="POKEMON_ZA_MERIP_ICON_GET5",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0):
                     return "2_STORY_TOWER_79"
             elif i == 10:  # ホルビー敗戦処理
                 if (self.image_check("POKEMON_ZA_WANINOKO_ICON")
@@ -23097,7 +27168,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _2_story_x_lank_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "2_STORY_X_LANK_BATTLE_ZONE"
         return "2_STORY_X_LANK_MOVE8"
 
@@ -23198,7 +27269,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_W_LANK_MOVE6"
     
     def _2_story_w_lank_move7(self):
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "2_STORY_W_LANK_BATTLE_ZONE"
         return "2_STORY_W_LANK_MOVE7"
     
@@ -23289,7 +27360,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
             return "2_STORY_ABSOL_MOVE0"
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_ABSOL_BATTLE"
         return "2_STORY_ABSOL_MOVE2"
 
@@ -23593,7 +27664,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.ZA_story_Template_battle_before_renda_route(noprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE12",green_check=1)
     
     def _2_story_absol_move12(self):
-        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE11",prg_ret="2_STORY_ABSOL_MOVE13",noprg_ret="2_STORY_ABSOL_MOVE12",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,rebattle=0)
+        # ライバル同席で意図的な敗戦が難しいため、BATTLE_DEBUG対象は一旦無効。
+        return self.ZA_story_Template_battle_function_renda_route(
+            bkprg_ret="2_STORY_ABSOL_MOVE11",
+            prg_ret="2_STORY_ABSOL_MOVE13",
+            noprg_ret="2_STORY_ABSOL_MOVE12",
+            Xaction=1, Aaction=1, Yaction=0, Baction=1,
+            lockon_endskip=0, get_chanceicon4=0, noCp=1, rebattle=0,
+            # battle_debug_defeat=True,
+        )
     
     def _2_story_absol_move13(self):
         return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE12",prg_ret="2_STORY_ABSOL_MOVE14")
@@ -23689,11 +27768,11 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE23"
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 self.press(Direction(Stick.LEFT,270), duration=0.5, wait=1.0)
                 self.press(Direction(Stick.LEFT,0), duration=0.4, wait=1.0)
@@ -23718,7 +27797,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move24(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE25"
         return "2_STORY_ABSOL_MOVE24"
@@ -23735,7 +27814,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE27"
         return "2_STORY_ABSOL_MOVE26"
@@ -23754,7 +27833,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move28(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE29"
         return "2_STORY_ABSOL_MOVE28"
@@ -23775,7 +27854,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move31(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE32"
         return "2_STORY_ABSOL_MOVE31"
@@ -23807,7 +27886,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_absol_move35(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "2_STORY_ABSOL_MOVE36"
         return "2_STORY_ABSOL_MOVE35"
@@ -24204,7 +28283,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move4(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_MEGA_MOVE5"
         return "2_STORY_MEGA_MOVE4"
     
@@ -24284,7 +28363,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move14(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_MEGA_MOVE15"
         return "2_STORY_MEGA_MOVE14"
     
@@ -24295,8 +28374,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
-                return "2_STORY_MEGA_MOVE17"
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sub4_button='A', sub4_picture='POKEMON_ZA_HELP_MARKER', sleeptime=0.5, timeout_seconds=600.0): #FIELDから変更
+                return self._ZA_story_post_result_next_step('2_STORY_MEGA_MOVE16', '2_STORY_MEGA_MOVE17')
         return "2_STORY_MEGA_MOVE16"
     
     def _2_story_mega_move17(self):
@@ -24329,7 +28408,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _2_story_mega_move20(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "2_STORY_MEGA_MOVE21" 
         return "2_STORY_MEGA_MOVE20"
     
@@ -24340,8 +28419,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _2_story_mega_move22(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
-                return "2_STORY_MEGA_MOVE23" 
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sub4_button='A', sub4_picture='POKEMON_ZA_HELP_MARKER', sleeptime=0.5, timeout_seconds=600.0): #FIELDから変更
+                return self._ZA_story_post_result_next_step('2_STORY_MEGA_MOVE22', '2_STORY_MEGA_MOVE23') 
         return "2_STORY_MEGA_MOVE22"
     
     def _2_story_mega_move23(self):
@@ -24402,7 +28481,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_2_recovery1(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "3_STORY_CANARI_11"
         
         ret = self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING")
@@ -24485,7 +28564,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _3_story_canari_10(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "3_STORY_CANARI_11"
 
         return "3_STORY_CANARI_10"
@@ -24519,7 +28598,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_canari_14(self):
         for i in range(10):
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                     return "3_STORY_CANARI_15"
             self.wait(0.5)
         if not self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
@@ -24541,7 +28620,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5,timeout_seconds=600.0):
                 self.wait(0.5)
                 return "3_STORY_CANARI_17"
         return "3_STORY_CANARI_16"
@@ -24558,7 +28637,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5,timeout_seconds=600.0):
                 self.wait(0.5)
                 return "3_STORY_CANARI_19"
         return "3_STORY_CANARI_18"
@@ -24571,7 +28650,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_canari_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5,timeout_seconds=600.0):
                 self.wait(0.5)
                 return "3_STORY_CANARI_21"
         return "3_STORY_CANARI_20"
@@ -24585,7 +28664,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_21"
     
     def _3_story_canari_22(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
             return "3_STORY_CANARI_23"
 
         return "3_STORY_CANARI_22"
@@ -24601,7 +28680,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_23"
     
     def _3_story_canari_24(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "3_STORY_CANARI_25"
 
         return "3_STORY_CANARI_24"
@@ -24617,7 +28696,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_25"
     
     def _3_story_canari_26(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
             return "3_STORY_CANARI_27"
 
         return "3_STORY_CANARI_26"
@@ -24633,7 +28712,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_27"
     
     def _3_story_canari_28(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
             return "3_STORY_CANARI_29"
         return "3_STORY_CANARI_28"
     
@@ -24645,7 +28724,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_29"
     
     def _3_story_canari_30(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
             return "3_STORY_CANARI_31"
         return "3_STORY_CANARI_30"
     
@@ -24657,7 +28736,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "3_STORY_CANARI_31"
     
     def _3_story_canari_32(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sub4_button='A', sub4_picture='POKEMON_ZA_HELP_MARKER', sleeptime=0.5, timeout_seconds=600.0, require_entry_picture=True): #FIELDから変更
             return "3_STORY_CANARI_33"
         return "3_STORY_CANARI_32"
     
@@ -24707,7 +28786,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_39"
     
     def _3_story_canari_40(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
             return "3_STORY_CANARI_41"
         return "3_STORY_CANARI_40"
     
@@ -24754,7 +28833,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_CANARI_47"
     
     def _3_story_canari_48(self):
-        return self.ZA_story_Template_battle_before_renda_route(noprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_49",green_check=0)
+        return self._ZA_story_canari48_reset_selector("3_STORY_CANARI_48")
     
     def _3_story_canari_49(self):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="3_STORY_CANARI_48",prg_ret="3_STORY_CANARI_50",noprg_ret="3_STORY_CANARI_49",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=0)
@@ -24772,10 +28851,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "3_STORY_MEGA_MOVE1"
     
     def _3_story_mega_move2(self):
-        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
-                return "3_STORY_MEGA_MOVE3"
-        return "3_STORY_MEGA_MOVE2"
+        return self._ZA_story_mega2_phase_selector("3_STORY_MEGA_MOVE2")
     
     #Wゾーンマッピング 11-13   
 
@@ -24813,8 +28889,9 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_mega_move6(self):
         for i in range(1,20):
             if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                     return "3_STORY_MEGA_MOVE7"
+                return "3_STORY_MEGA_MOVE4"
             self.wait(0.5)
         return "3_STORY_MEGA_MOVE4"
     
@@ -24828,7 +28905,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move8(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "3_STORY_MEGA_MOVE9"
         return "3_STORY_MEGA_MOVE8"
     
@@ -24859,7 +28936,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_mega_move10(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "3_STORY_MEGA_MOVE11"
         return "3_STORY_MEGA_MOVE10"
     
@@ -24871,8 +28948,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
-                return "3_STORY_MEGA_MOVE13"
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sleeptime=0.5, timeout_seconds=600.0): #FIELDから変更
+                return self._ZA_story_post_result_next_step('3_STORY_MEGA_MOVE12', '3_STORY_MEGA_MOVE13')
         return "3_STORY_MEGA_MOVE12"
     
     def _3_story_mega_move13(self):
@@ -24914,7 +28991,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move16(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "3_STORY_MEGA_MOVE17"
         return "3_STORY_MEGA_MOVE16"
     
@@ -24926,8 +29003,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
-                return "3_STORY_MEGA_MOVE19"
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sleeptime=0.5, timeout_seconds=600.0): #FIELDから変更
+                return self._ZA_story_post_result_next_step('3_STORY_MEGA_MOVE18', '3_STORY_MEGA_MOVE19')
 
         return "3_STORY_MEGA_MOVE18"
     
@@ -24972,7 +29049,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move23(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "3_STORY_MEGA_MOVE24"
         return "3_STORY_MEGA_MOVE23"
 
@@ -24997,7 +29074,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _3_story_mega_move25(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "3_STORY_MEGA_MOVE26"
         return "3_STORY_MEGA_MOVE25"
     
@@ -25009,8 +29086,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move27(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
-                return "3_STORY_MEGA_MOVE28"
+            if self.ZA_renda_button(rendabutton='B', endpicture='POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK', sub_button='A', sub_picture='POKEMON_ZA_TEXT_BLACK_COMMENT', sub2_button='A', sub2_picture='POKEMON_ZA_2_SELECT', sub3_button='A', sub3_picture='POKEMON_ZA_3_SELECT', sleeptime=0.5, timeout_seconds=600.0): #FIELDから変更
+                return self._ZA_story_post_result_next_step('3_STORY_MEGA_MOVE27', '3_STORY_MEGA_MOVE28')
         return "3_STORY_MEGA_MOVE27"
     
     def _3_story_mega_move28(self):
@@ -25030,10 +29107,252 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _3_story_mega_move30(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "3_STORY_END"
         return "3_STORY_MEGA_MOVE30"
     
+    def _ZA_story_chapter3_selector_state(self, current_state):
+        """Keep only transient selector state in the existing reset-cleared flow map."""
+        flows = getattr(self, "_za_story_battle_flows", None)
+        if not isinstance(flows, dict):
+            flows = {}
+            self._za_story_battle_flows = flows
+        key = "_chapter3_bounded_selector"
+        state = flows.get(key)
+        if not isinstance(state, dict) or state.get("current_state") != current_state:
+            state = {"current_state": current_state, "started_at": time.monotonic(),
+                     "phase": None, "phase_since": None}
+            flows[key] = state
+        self.checkIfAlive()
+        limit = max(1.0, float(getattr(
+            self, "ZA_STORY_CHAPTER3_SELECTOR_TIMEOUT_SECONDS", 600.0)))
+        if time.monotonic() - state["started_at"] >= limit:
+            self._ZA_story_release_recovery_controls("chapter3_selector_timeout:" + current_state)
+            self._za_story_event_entry_recovery_failure = {
+                "current_state": current_state, "recovery_kind": "chapter3_selector",
+                "elapsed": time.monotonic() - state["started_at"]}
+            raise RuntimeError("Chapter3 recovery selector timed out: " + current_state)
+        return state
+
+    def _ZA_story_chapter3_selector_finish(self, next_state):
+        getattr(self, "_za_story_battle_flows", {}).pop("_chapter3_bounded_selector", None)
+        return next_state
+
+    def _ZA_story_chapter3_selector_ui(self):
+        """One explicit conversation/menu input; never call battle-before heuristics."""
+        for picture in ("POKEMON_ZA_TEXT_WHITE_COMMENT", "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                        "POKEMON_ZA_X_MENU_OPEN"):
+            if self.image_check(picture):
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+                return True
+        for picture in ("POKEMON_ZA_TEXT_BLACK_COMMENT", "POKEMON_ZA_HELP_MARKER",
+                        "POKEMON_ZA_1_SELECT", "POKEMON_ZA_2_SELECT",
+                        "POKEMON_ZA_3_SELECT", "POKEMON_ZA_4_SELECT"):
+            if self.image_check(picture):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+                return True
+        return False
+
+    def _ZA_story_chapter3_selector_debug_ready(self):
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_TEXT_WHITE_COMMENT", "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                "POKEMON_ZA_TEXT_BLACK_COMMENT", "POKEMON_ZA_X_MENU_OPEN",
+                "POKEMON_ZA_HELP_MARKER", "POKEMON_ZA_1_SELECT", "POKEMON_ZA_2_SELECT",
+                "POKEMON_ZA_3_SELECT", "POKEMON_ZA_4_SELECT",
+                "POKEMON_ZA_BATTLE_BALL_CHECK", "POKEMON_ZA_ESCAPE")):
+            return False
+        return bool(self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"))
+
+    def _ZA_story_chapter3_selector_event_once(self, current_state):
+        """EVENT only: center, short approach, then recheck CHAT before A."""
+        if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            self.wait(0.1)
+            return current_state
+        aligned = self.ZA_markerdir("EVENT", 1, stop_after_first_scan_move=True)
+        self._ZA_story_chapter3_selector_state(current_state)
+        if not aligned:
+            self.wait(0.1)
+            return current_state
+        # The search may have opened a scene. Recheck before sending movement.
+        if self._ZA_story_chapter3_selector_ui():
+            return current_state
+        if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK")
+                or self.image_check("POKEMON_ZA_ESCAPE")
+                or not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+            return current_state
+        self.press(Direction(Stick.LEFT, 90), duration=0.05, wait=0.2)
+        self._ZA_story_chapter3_selector_state(current_state)
+        if self._ZA_story_chapter3_selector_ui():
+            return current_state
+        if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK")
+                or self.image_check("POKEMON_ZA_ESCAPE")):
+            return current_state
+        if (self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+                and self.image_check("POKEMON_ZA_CHAT_MARKER")):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
+        return current_state
+
+    def _ZA_story_canari48_reset_selector(self, current_state):
+        """Resume the required battle from either save46 or the later intro save."""
+        state = self._ZA_story_chapter3_selector_state(current_state)
+        if self._ZA_story_chapter3_selector_ui():
+            state["phase"] = None
+            state["phase_since"] = None
+            return current_state
+        # Party Lv is visible on normal FIELD too; it is never a combat predicate here.
+        if (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK")
+                or self.image_check("POKEMON_ZA_ESCAPE")):
+            return self._ZA_story_chapter3_selector_finish("3_STORY_CANARI_49")
+        return self._ZA_story_chapter3_selector_event_once(current_state)
+
+    def _ZA_story_mega2_phase_selector(self, current_state):
+        """Select the pre-/post-meeting save by positive task text and stable FIELD."""
+        state = self._ZA_story_chapter3_selector_state(current_state)
+        if self._ZA_story_chapter3_selector_ui():
+            state["phase"] = None
+            state["phase_since"] = None
+            return current_state
+        field = self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        blocked = (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK")
+                   or self.image_check("POKEMON_ZA_ESCAPE"))
+        pre = self.image_check("POKEMON_ZA_MEGA2_PRE_MEETING_TASK")
+        post = self.image_check("POKEMON_ZA_MEGA2_POST_MEETING_TASK")
+        phase = ("pre" if pre else "post") if field and not blocked and pre != post else None
+        if phase is None:
+            state["phase"] = None
+            state["phase_since"] = None
+            self.wait(0.1)
+            return current_state
+        if phase != state["phase"]:
+            state["phase"] = phase
+            state["phase_since"] = time.monotonic()
+        if time.monotonic() - state["phase_since"] < 3.0:
+            self.wait(0.1)
+            return current_state
+        if phase == "post":
+            return self._ZA_story_chapter3_selector_finish("3_STORY_MEGA_MOVE3")
+        if current_state == "3_STORY_MEGA_MOVE2_RECOVERY":
+            return self._ZA_story_chapter3_selector_finish("3_STORY_MEGA_MOVE1")
+        # In normal2 the0.5sec approach1 was already attempted. Do not accumulate it.
+        return self._ZA_story_chapter3_selector_event_once(current_state)
+
+    def _3_story_canari_48_recovery(self):
+        return self._ZA_story_canari48_reset_selector("3_STORY_CANARI_48_RECOVERY")
+
+    def _3_story_mega_move2_recovery(self):
+        return self._ZA_story_mega2_phase_selector("3_STORY_MEGA_MOVE2_RECOVERY")
+
+    def _ZA_story_post_result_screen(self):
+        """Result recovery never uses party Lv or a negative match as completion."""
+        if self.image_check("POKEMON_ZA_LOSE"):
+            return "battle"
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_1_SELECT", "POKEMON_ZA_2_SELECT",
+                "POKEMON_ZA_3_SELECT", "POKEMON_ZA_4_SELECT",
+                "POKEMON_ZA_HELP_MARKER", "POKEMON_ZA_MORNING",
+                "POKEMON_ZA_NIGHT", "POKEMON_ZA_TEXT_BLACK_COMMENT")):
+            return "answer"
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                "POKEMON_ZA_COMMENT_MARKER", "POKEMON_ZA_MISSION_COMPLETE",
+                "POKEMON_ZA_COIN_ICON", "POKEMON_ZA_X_MENU_OPEN",
+                "POKEMON_ZA_MAP2")):
+            return "close"
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_BATTLE_BALL_CHECK", "POKEMON_ZA_ESCAPE",
+                "POKEMON_ZA_EYE_CHECK_HIGH_POKE",
+                "POKEMON_ZA_EYE_CHECK_HIGH")):
+            return "battle"
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return "field"
+        return "unknown"
+
+    def _ZA_story_post_result_reset_debug_ready(self):
+        return self._ZA_story_post_result_screen() == "field"
+
+    def _ZA_story_post_result_next_step(self, result_state, next_state):
+        """Only a successful original renda may hand Debug to the FIELD-ready entry."""
+        route = getattr(self, "ZA_STORY_POST_RESULT_RECOVERY_ROUTES", {}).get(
+            str(result_state))
+        if route and bool(getattr(self, "ResetDebug", False)):
+            spec = self._ZA_story_reset_debug_recovery_spec(
+                route["recovery_state"])
+            if spec is None:
+                raise RuntimeError("Missing result recovery Debug spec: {}".format(
+                    result_state))
+            if spec["key"] not in getattr(self, "_za_reset_debug_completed", set()):
+                return route["recovery_state"]
+        return next_state
+
+    def _ZA_story_post_result_recovery_step(self, result_state):
+        """Close actual result UI, require stable FIELD, or resume positive combat."""
+        self.checkIfAlive()
+        route = self.ZA_STORY_POST_RESULT_RECOVERY_ROUTES[str(result_state)]
+        recovery_state = route["recovery_state"]
+        now = time.monotonic()
+        flows = getattr(self, "_za_story_battle_flows", None)
+        if flows is None:
+            flows = {}
+            self._za_story_battle_flows = flows
+        flow_key = "post_result_recovery:" + str(result_state)
+        state = flows.get(flow_key)
+        if not isinstance(state, dict):
+            state = {"started_at": now, "field_since": None}
+            flows[flow_key] = state
+            self._ZA_story_release_recovery_controls(
+                "post_result_entry:{}".format(result_state))
+        screen = self._ZA_story_post_result_screen()
+        # Planned Debug wait must not reject a positively observed stable FIELD.
+        # A lost FIELD still uses the original unresolved-screen deadline.
+        if (screen != "field" and now - float(state["started_at"])
+                >= float(route["timeout_seconds"])):
+            self._ZA_story_release_recovery_controls(
+                "post_result_timeout:{}".format(result_state))
+            self._za_story_event_entry_recovery_failure = {
+                "current_state": recovery_state,
+                "recovery_target": recovery_state,
+                "recovery_action": 0,
+                "reason": "post_result_screen_unresolved",
+                "elapsed": now - float(state["started_at"]),
+            }
+            raise RuntimeError("Result recovery did not confirm FIELD: {}".format(
+                result_state))
+        if screen == "battle":
+            flows.pop(flow_key, None)
+            return route["battle_state"]
+        if screen == "field":
+            if state.get("field_since") is None:
+                state["field_since"] = now
+            if now - float(state["field_since"]) >= float(route["field_seconds"]):
+                flows.pop(flow_key, None)
+                return route["next_state"]
+        else:
+            state["field_since"] = None
+            if screen == "answer":
+                self.pressRep(Button.A, repeat=1, duration=0.15,
+                              wait=0.0, interval=0.1)
+            elif screen == "close":
+                self.pressRep(Button.B, repeat=1, duration=0.15,
+                              wait=0.0, interval=0.1)
+        self.wait(0.5)
+        return recovery_state
+
+    def _2_story_mega_move16_result_recovery(self):
+        return self._ZA_story_post_result_recovery_step("2_STORY_MEGA_MOVE16")
+
+    def _2_story_mega_move22_result_recovery(self):
+        return self._ZA_story_post_result_recovery_step("2_STORY_MEGA_MOVE22")
+
+    def _3_story_mega_move12_result_recovery(self):
+        return self._ZA_story_post_result_recovery_step("3_STORY_MEGA_MOVE12")
+
+    def _3_story_mega_move18_result_recovery(self):
+        return self._ZA_story_post_result_recovery_step("3_STORY_MEGA_MOVE18")
+
+    def _3_story_mega_move27_result_recovery(self):
+        return self._ZA_story_post_result_recovery_step("3_STORY_MEGA_MOVE27")
+
     def _3_story_end(self):
         return "3_STORY_START_CHECK" 
 
@@ -25128,7 +29447,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return next_state
 
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",endpicture3="POKEMON_ZA_BATTLE_BALL_CHECK",endpicture4="POKEMON_ZA_ESCAPE",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_6"
         return "4_STORY_SHIRO_5"
     
@@ -25170,7 +29489,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_12(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#FILED上下が出ない
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_13"
         return "4_STORY_SHIRO_12"
     
@@ -25196,7 +29515,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_15(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_16"
         return "4_STORY_SHIRO_15"
     
@@ -25212,7 +29531,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_17(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):#TODO　セーブから16に戻らないと方向不明？
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_18"
         return "4_STORY_SHIRO_17"
     
@@ -25233,7 +29552,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_20"
     
@@ -25254,7 +29573,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_21_2(self):
         ### AUTO_SAVE_POINT
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "4_STORY_SHIRO_22"
         else:
             return "4_STORY_SHIRO_21_2"
@@ -25295,7 +29614,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "4_STORY_SHIRO_25"
 
         elif self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT")#FIELDから変更
+            if not self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0):
+                return "4_STORY_SHIRO_24"
             return "4_STORY_SHIRO_21"
         return "4_STORY_SHIRO_24"
     
@@ -25467,7 +29787,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_41(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.5,timeout_seconds=600.0):
                 return "4_STORY_SHIRO_42"
         return "4_STORY_SHIRO_41"
     
@@ -25621,7 +29941,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_44(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_44_1"
         return "4_STORY_SHIRO_44"
     
@@ -25653,7 +29973,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_46(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_47"
         return "4_STORY_SHIRO_46"
     
@@ -25675,7 +29995,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_48(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_49"
         return "4_STORY_SHIRO_48"
     
@@ -25689,7 +30009,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_50(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_51"
         return "4_STORY_SHIRO_50"
     
@@ -25707,7 +30027,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_53(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_54"
         return "4_STORY_SHIRO_53"
     
@@ -25765,7 +30085,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_59(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_61"
         return "4_STORY_SHIRO_59"
     
@@ -25783,7 +30103,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_62(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_63"
         return "4_STORY_SHIRO_62"
     
@@ -25797,7 +30117,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_64(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_65"
         return "4_STORY_SHIRO_64"
     
@@ -25819,7 +30139,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_67(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_68" 
         return "4_STORY_SHIRO_67"
     
@@ -25839,7 +30159,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_70(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_71"
         return "4_STORY_SHIRO_70"
     
@@ -25859,7 +30179,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_73(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_74"
         return "4_STORY_SHIRO_73"
     
@@ -25873,7 +30193,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_75(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_76"
         return "4_STORY_SHIRO_75"
     
@@ -25891,7 +30211,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_77(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_4_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sleeptime=0.5,timeout_seconds=600.0):
                 return "4_STORY_SHIRO_78"
         return "4_STORY_SHIRO_77"
     
@@ -25906,7 +30226,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _4_story_shiro_79(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "4_STORY_SHIRO_80"
         return "4_STORY_SHIRO_79"
     
@@ -26157,7 +30477,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_12(self):
         if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_13"
         return "5_STORY_KARASUBA_12"
     
@@ -26172,7 +30492,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_14(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_4_SELECT",sub5_button="A",sub5_picture="POKEMON_ZA_1_SELECT",sleeptime=0.3,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_15"
         return "5_STORY_KARASUBA_14"
     
@@ -26202,7 +30522,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_18(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "5_STORY_KARASUBA_19"
         return "5_STORY_KARASUBA_18"
@@ -26219,7 +30539,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 self.wait(1.0)
                 return "5_STORY_KARASUBA_21"
         return "5_STORY_KARASUBA_20"
@@ -26269,7 +30589,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_24(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "5_STORY_KARASUBA_25"
         return "5_STORY_KARASUBA_24"
     
@@ -26322,7 +30642,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _5_story_karasuba_30(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "5_STORY_KARASUBA_31"
         elif self.ZA_markerdir("EVENT", 1):
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
@@ -26373,7 +30693,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_37(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_38"
         return "5_STORY_KARASUBA_37"
 
@@ -26469,7 +30789,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_46(self):#TODO リカバリープランが必要？
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT") or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 self._5_story_karasuba_46_recovery_reset()
                 return "5_STORY_KARASUBA_47"
         return "5_STORY_KARASUBA_46"
@@ -26540,7 +30860,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     sub3_picture="POKEMON_ZA_3_SELECT",
                     sub4_button="A",
                     sub4_picture="POKEMON_ZA_HELP_MARKER",
-                    sleeptime=0.5):
+                    sleeptime=0.5,timeout_seconds=600.0):
                 print(
                     "[KARASUBA_46_RECOVERY] conversation completed; "
                     "FIELD detected; resume from 5_STORY_KARASUBA_43")
@@ -26617,7 +30937,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_52(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ODAIRU_ICON",endpicture2="POKEMON_ZA_ABSOL_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5):
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_ODAIRU_ICON",endpicture2="POKEMON_ZA_ABSOL_ICON",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0):
                 return "5_STORY_KARASUBA_53"
 
         return "5_STORY_KARASUBA_52"
@@ -26639,7 +30959,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_55(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_56"
         return "5_STORY_KARASUBA_55"
     
@@ -26652,7 +30972,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_57(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_58"
         return "5_STORY_KARASUBA_57"
     
@@ -26763,7 +31083,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if black_recovery is not None:
             return black_recovery
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_63"
         elif (self.ZA_markerdir("EVENT", 1)):
             for i in range(30):
@@ -26801,7 +31121,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_66(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_67"
         return "5_STORY_KARASUBA_66"
     
@@ -26814,7 +31134,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_68(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_69"
         return "5_STORY_KARASUBA_68"
 
@@ -27342,7 +31662,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_98(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_99"
         return "5_STORY_KARASUBA_98"
     
@@ -27362,7 +31682,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _5_story_karasuba_101(self):
         ### AUTO_SAVE_POINT
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "5_STORY_KARASUBA_102"
         else:
             return "5_STORY_KARASUBA_101"
@@ -27424,7 +31744,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_113(self):
         ### AUTO_SAVE_POINT
-        if self.ZA_Common_pokemon_recovery():
+        if self.ZA_Common_pokemon_recovery(timeout_seconds=600.0,require_entry_picture=True):
             return "5_STORY_KARASUBA_114"
         else:
             return "5_STORY_KARASUBA_113"
@@ -27446,7 +31766,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_116(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_117"
         return "5_STORY_KARASUBA_116"
 
@@ -27473,7 +31793,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _5_story_karasuba_120(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_3_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
                 return "5_STORY_KARASUBA_121"
         return "5_STORY_KARASUBA_120"
 
@@ -27729,10 +32049,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _6_story_yukari_20(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_21"
         elif self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_11"
         return "6_STORY_YUKARI_20"
     
@@ -27747,7 +32067,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.5, interval=0.1)
-                if self.ZA_story_Template_Comment_Out():
+                if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                     return "6_STORY_YUKARI_23"
                 return "6_STORY_YUKARI_22"
             elif self.ZA_markerdir("EVENT", 1):
@@ -27755,17 +32075,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.checkIfAlive()
                     if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                        if self.ZA_story_Template_Comment_Out():
+                        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                             return "6_STORY_YUKARI_23"
                     if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
                         break
                     self.press(Direction(Stick.LEFT,90), duration=0.1, wait=0.2)
                     if self.image_check("POKEMON_ZA_CHAT_MARKER"):
                         self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                        if self.ZA_story_Template_Comment_Out():
+                        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                             return "6_STORY_YUKARI_23"
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_23"
         return "6_STORY_YUKARI_22"
     
@@ -27797,7 +32117,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_26(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_27"
         return "6_STORY_YUKARI_26"
     
@@ -27812,7 +32132,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_28(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_29"
         return "6_STORY_YUKARI_28"
     
@@ -27850,7 +32170,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_32(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_33"
         return "6_STORY_YUKARI_32"
     
@@ -27913,7 +32233,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _6_story_yukari_39(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "6_STORY_YUKARI_40"
         return "6_STORY_YUKARI_39"
         
@@ -27956,7 +32276,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_44"
     
     def _6_story_yukari_45(self):
-        if self.ZA_story_Template_Comment_Out():#リカバリーあり
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):#リカバリーあり
             return "6_STORY_YUKARI_46"
         return "6_STORY_YUKARI_45"
     
@@ -27968,7 +32288,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "6_STORY_YUKARI_46"
 
     def _6_story_yukari_47(self):
-        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW",sleeptime=1.0):
+        if self.ZA_story_Template_Comment_Out(endpicture7="POKEMON_ZA_ITEM_WINDOW",sleeptime=1.0,timeout_seconds=600.0):
             return "6_STORY_YUKARI_48"
         return "6_STORY_YUKARI_47"
     
@@ -28134,7 +32454,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 self._6_story_yukari_52_recovery_waiting_field = False
                 self._6_story_yukari_52_recovery_plan_active = False
                 return "6_STORY_YUKARI_53"
@@ -28510,7 +32830,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_4(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_5"
         return "7_STORY_GURI_4"
             
@@ -28524,7 +32844,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_6(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_7"
         return "7_STORY_GURI_6"
 
@@ -28568,7 +32888,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_11(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_12"
         return "7_STORY_GURI_11"
     
@@ -28583,7 +32903,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_13(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_14"
         return "7_STORY_GURI_13"
     
@@ -28615,7 +32935,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_17(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_18"
         return "7_STORY_GURI_17"
     
@@ -28657,7 +32977,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_23(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_24"
         return "7_STORY_GURI_23"
     
@@ -28714,7 +33034,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_34(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_35"
         return "7_STORY_GURI_34"
     
@@ -28833,7 +33153,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_44(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_45"
         return "7_STORY_GURI_44"
     
@@ -28874,7 +33194,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_50(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_51"
         return "7_STORY_GURI_50"
     
@@ -28900,7 +33220,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_53"
     
     def _7_story_guri_54(self):#TODO
-        if self.ZA_story_Template_Comment_Out(mode=1):
+        if self.ZA_story_Template_Comment_Out(mode=1,timeout_seconds=600.0):
             self._7_story_guri_54_talk_retry_count = 0
             print("[GURI_54] complete: indoor FIELD -> 7_STORY_GURI_55")
             return "7_STORY_GURI_55"
@@ -28998,7 +33318,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_66"
     
     def _7_story_guri_67(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT"):
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_3_SELECT",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT", timeout_seconds=600.0):
             self.wait(0.3)
             self.etc_sendCommand("Lbutton_down")
             self.wait(0.3)
@@ -29008,7 +33328,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_67"
     
     def _7_story_guri_68(self):
-        if self.ZA_story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
             return "7_STORY_GURI_69"
         return "7_STORY_GURI_68"
     
@@ -29021,7 +33341,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "7_STORY_GURI_69"
     
     def _7_story_guri_70(self):
-        if self.ZA_story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
             return "7_STORY_GURI_71"
         return "7_STORY_GURI_70"
     
@@ -29049,7 +33369,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_74(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_75"
         return "7_STORY_GURI_74"
     
@@ -29095,7 +33415,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_82(self):
         #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
         #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
-        if self.ZA_story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
             return "7_STORY_GURI_83"
         return "7_STORY_GURI_82"
     
@@ -29109,7 +33429,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_84(self):
         #リカバリーありでリカバリー時スルーする必要があるためコメントガード不可
         #コメントガードする場合は、ここまで処理完了をフラグで管理する必要があるが非対応
-        if self.ZA_story_Template_Comment_Out():
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
             return "7_STORY_GURI_85"
         return "7_STORY_GURI_84"
     
@@ -29419,7 +33739,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             guri_select_defeat_state="7_STORY_GURI_114")
        
     def _7_story_guri_115(self):
-        return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="7_STORY_GURI_114",prg_ret="7_STORY_GURI_116",noprg_ret="7_STORY_GURI_115",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=1,noCp=0,rebattle=0)
+        return self.ZA_story_Template_battle_function_renda_route(
+            bkprg_ret="7_STORY_GURI_114",
+            prg_ret="7_STORY_GURI_116",
+            noprg_ret="7_STORY_GURI_115",
+            Xaction=1, Aaction=1, Yaction=0, Baction=1,
+            lockon_endskip=0, get_chanceicon4=1, noCp=0, rebattle=0,
+            battle_debug_defeat=True)
        
     def _7_story_guri_116(self):
         return self.ZA_story_Template_battle_after_renda_route(
@@ -29463,7 +33789,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         #リカバリー付近だが次で終わりなのであってもよさそうだが
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_123"
         return "7_STORY_GURI_122" 
        
@@ -29537,7 +33863,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _7_story_guri_133(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "7_STORY_GURI_134"
         return "7_STORY_GURI_133"  
        
@@ -29595,8 +33921,31 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         return "8_STORY_STORY_LAST_1"
 
-    def _8_story_story_last_1(self):
+    def _ZA_story_hotel_room_state(self):
+        """室内の奥と出口前を区別し、会話／戦闘中は入力しない。"""
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_HELP_MARKER",
+                "POKEMON_ZA_X_MENU_OPEN",
+                "POKEMON_ZA_BATTLE_ACTIVE_LEVEL",
+                "POKEMON_ZA_BATTLE_BALL_CHECK",
+                "POKEMON_ZA_ESCAPE")):
+            return None
+        # Aの文字だけでは判定しない。広い範囲の入口マーカーとのAND。
+        if self.image_check("POKEMON_ZA_HOTEL_ROOM_EXIT_PROMPT"):
+            return "exit"
         if self.image_check("POKEMON_ZA_IN_ICON"):
+            return "room"
+        return None
+
+    def _8_story_story_last_1(self):
+        room_state = self._ZA_story_hotel_room_state()
+        if room_state == "exit":
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "8_STORY_STORY_LAST_2"
+        if room_state == "room":
             self.press(Direction(Stick.LEFT,80), duration=3.0, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -29606,7 +33955,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _8_story_story_last_2(self):
         if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
                 or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_3" 
         return "8_STORY_STORY_LAST_2"
     
@@ -29665,7 +34014,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_9(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_10_0" 
         return "8_STORY_STORY_LAST_9"
         
@@ -29762,7 +34111,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_20(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_21"
         return "8_STORY_STORY_LAST_20"
     
@@ -29915,7 +34264,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_27(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_28"
         return "8_STORY_STORY_LAST_27"
     
@@ -29968,7 +34317,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # ZA_gamereset()は通常FIELDを検知するまで戻らない。
         self._za_reset_debug_next_game_reset_site = (
             "8_STORY_STORY_LAST_32_0:relay")
-        self.ZA_gamereset()
+        reset_ok = self.ZA_gamereset()
         self._ZA_story_battle_flow_reset(
             "8_STORY_STORY_LAST_34",
             "story_last_32_0_game_reset")
@@ -29988,6 +34337,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "8_STORY_STORY_LAST_36")
             return "8_STORY_STORY_LAST_36"
         if self.image_check("ZA_STORY_KARASUBA_ENDRESET_MAP2"):
+            # 成功した再起動で次phaseの原点も確認できたため、
+            # 同じ保存位置の二重確認を省く。
+            if reset_ok is True and bool(getattr(self, "ResetDebug", False)):
+                complete = getattr(self, "_ZA_story_reset_debug_complete", None)
+                if callable(complete):
+                    complete((
+                        "white_comment", "8_STORY_STORY_LAST_39",
+                        "8_STORY_STORY_LAST_38_0", (0,)))
             print(
                 "[STORY_LAST_32_0_MAP] fixed map matched -> "
                 "8_STORY_STORY_LAST_38")
@@ -30135,7 +34492,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _8_story_story_last_39(self):
         if self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT") or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_story_Template_Comment_Out():
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_40"
         return "8_STORY_STORY_LAST_39"
     
@@ -30295,7 +34652,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "8_STORY_STORY_LAST_51"
     
     def _8_story_story_last_52(self):
-        if self.image_check("POKEMON_ZA_IN_ICON"):
+        room_state = self._ZA_story_hotel_room_state()
+        if room_state == "exit":
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "8_STORY_STORY_LAST_53"
+        if room_state == "room":
             self.press(Direction(Stick.LEFT,100), duration=3.0, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -30343,7 +34704,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     sub2_button="A",
                     sub2_picture="POKEMON_ZA_2_SELECT",
                     sub3_button="A",
-                    sub3_picture="POKEMON_ZA_HELP_MARKER"):
+                    sub3_picture="POKEMON_ZA_HELP_MARKER", timeout_seconds=600.0):
                 return "8_STORY_STORY_LAST_59"
         return "8_STORY_STORY_LAST_58"
     
@@ -30379,7 +34740,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     sub3_button="A",
                     sub3_picture="POKEMON_ZA_3_SELECT",
                     sub4_button="A",
-                    sub4_picture="POKEMON_ZA_HELP_MARKER"):
+                    sub4_picture="POKEMON_ZA_HELP_MARKER", timeout_seconds=600.0):
                 return "8_STORY_END"
         return "8_STORY_STORY_LAST_62"
     
@@ -31733,6 +36094,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             print("朝")
             self.timecount=0
             while True:
+                self.checkIfAlive()
+                recovery_deadline = getattr(
+                    self, "_za_story_timechange_recovery_deadline", None)
+                if (recovery_deadline is not None
+                        and time.monotonic() >= float(recovery_deadline)):
+                    # Return to the shared pre-action handler for its cleanup/failure.
+                    return "COMMON_CHECK_TIME"
                 #ジャスティス会への話しかけが発生する可能性があるので、ループしてしまう場合はBボタンが必要になる場合がある                
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1") or self.image_check("POKEMON_ZA_DEAD"): #FIELDから変更
@@ -31750,6 +36118,13 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.inactioncount=0
             print("夜")
             while True:
+                self.checkIfAlive()
+                recovery_deadline = getattr(
+                    self, "_za_story_timechange_recovery_deadline", None)
+                if (recovery_deadline is not None
+                        and time.monotonic() >= float(recovery_deadline)):
+                    # Return to the shared pre-action handler for its cleanup/failure.
+                    return "COMMON_CHECK_TIME"
                 #ジャスティス会への話しかけが発生する可能性があるので、ループしてしまう場合はBボタンが必要になる場合がある       
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1") or self.image_check("POKEMON_ZA_DEAD"): #FIELDから変更
@@ -32032,12 +36407,19 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "EXEC"
         
-    def ZA_Common_pokemon_recovery(self):  
+    def ZA_Common_pokemon_recovery(self,timeout_seconds=0.0,require_entry_picture=False):  
+        renda_options = {}
+        if float(timeout_seconds) > 0.0:
+            renda_options["timeout_seconds"] = float(timeout_seconds)
+        if require_entry_picture:
+            renda_options["require_entry_picture"] = True
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=0.1)
             self.pressRep(Button.A, repeat=10, duration=0.15, wait=0.2, interval=0.1)
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER"): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",**renda_options): #FIELDから変更
                 return True
+            if renda_options:
+                return False
         else:
             return False
     
@@ -34903,6 +39285,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                               'template_path': 'Template/ZA_Story_PIC/Common/last_battle_strong_light.png',
                                               'threshold': 0.78,
                                               'use_gray': True}],
+     'POKEMON_ZA_FARST_BATTLE_RETRY_START': [{'crop': [345, 640, 680, 700], 'ms': 2000, 'show_only_true_rect': False, 'show_position': True, 'show_value': False, 'template_path': 'Template/ZA_Story_PIC/_1_z_lank/farst_battle_retry_start.png', 'threshold': 0.85, 'use_gray': True}],
+     'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': [{'crop': [565, 610, 730, 690], 'ms': 2000, 'show_only_true_rect': False, 'show_position': True, 'show_value': False, 'template_path': 'Template/ZA_Story_PIC/_1_z_lank/farst_battle_field_hud.png', 'threshold': 0.85, 'use_gray': True}],
      'POKEMON_ZA_LOSE': [{'crop': [290, 550, 1000, 690],
                           'ms': 2000,
                           'show_only_true_rect': False,
@@ -34910,6 +39294,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                           'show_value': False,
                           'template_path': 'Template/ZA_Story_PIC/ZA_infi/lose.png',
                           'threshold': 0.8,
+                          'use_gray': True},
+                         {'crop': [300, 590, 760, 690],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/ZA_Story_PIC/Common/furadari_eyes_dark_comment.png',
+                          'threshold': 0.85,
                           'use_gray': True}],
      'POKEMON_ZA_MAP': [{'crop': [20, 0, 200, 70],
                          'ms': 2000,
@@ -36645,7 +41037,47 @@ class ZA_story_Base(ImageProcPythonCommand):
                            'show_value': False,
                            'template_path': 'Template/ZA_Story_PIC/ZA_infi/ZONE/zone9.png',
                            'threshold': 0.85,
-                           'use_gray': True}]}
+                           'use_gray': True}],
+     'POKEMON_ZA_HOTEL_ROOM_EXIT_PROMPT': [{'crop': [100, 150, 1100, 560],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story_PIC/Common/in_icon.png',
+                                             'threshold': 0.85,
+                                             'use_gray': True},
+                                            {'crop': [630, 350, 800, 500],
+                                             'match_color': 'blue',
+                                             'ms': 2000,
+                                             'no_match_color': 'red',
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story_PIC/ZA_infi/doorA.png',
+                                             'threshold': 0.85,
+                                             'use_gray': True}],
+    
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': [{'template_path': 'Template/ZA_Story_PIC/Common/chapter3_mega2_pre_meeting_task.png',
+          'threshold': 0.9,
+          'use_gray': True,
+          'show_value': False,
+          'show_position': True,
+          'show_only_true_rect': False,
+          'ms': 2000,
+          'match_color': 'blue',
+          'no_match_color': 'red',
+          'crop': [45, 65, 430, 150]}],
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': [{'template_path': 'Template/ZA_Story_PIC/Common/chapter3_mega2_post_meeting_task.png',
+          'threshold': 0.9,
+          'use_gray': True,
+          'show_value': False,
+          'show_position': True,
+          'show_only_true_rect': False,
+          'ms': 2000,
+          'match_color': 'blue',
+          'no_match_color': 'red',
+          'crop': [45, 65, 430, 150]}],
+    }
     IMAGE_DETECTION_OPERATORS = {'POKEMON_ZA_1_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT_TUTORIAL': 'OR',
@@ -36732,6 +41164,8 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_LAST_BATTLE_CHARGE': 'OR',
      'POKEMON_ZA_LAST_BATTLE_MOVE_UI': 'OR',
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': 'OR',
+     'POKEMON_ZA_FARST_BATTLE_RETRY_START': 'OR',
+     'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': 'OR',
      'POKEMON_ZA_LOSE': 'OR',
      'POKEMON_ZA_MAP': 'OR',
      'POKEMON_ZA_MAP2': 'OR',
@@ -36932,7 +41366,12 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ZONE6': 'OR',
      'POKEMON_ZA_ZONE7': 'OR',
      'POKEMON_ZA_ZONE8': 'OR',
-     'POKEMON_ZA_ZONE9': 'OR'}
+     'POKEMON_ZA_ZONE9': 'OR',
+     'POKEMON_ZA_HOTEL_ROOM_EXIT_PROMPT': 'AND',
+    
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': 'OR',
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': 'OR',
+    }
     IMAGE_DETECTION_DESCRIPTIONS = {'targets': {'POKEMON_ZA_1_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 1_SELECT',
                  'POKEMON_ZA_2_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT',
                  'POKEMON_ZA_2_SELECT_TUTORIAL': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT_TUTORIAL',
@@ -37034,6 +41473,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_LAST_BATTLE_CHARGE': '最終戦『アンジュフラエッテは 力を溜めている……！』予兆通知',
                  'POKEMON_ZA_LAST_BATTLE_MOVE_UI': '最終戦mode 5専用の4技表示（C+なしの攻撃可能画面）',
                  'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': '最終戦『アンジュフラエッテが 強い光を放つ！』発動通知',
+                 'POKEMON_ZA_FARST_BATTLE_RETRY_START': 'Initial battle automatic rematch: fixed battle-start line, excludes opponent name',
+                 'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': 'Initial battle playable FIELD: fixed aim and move command HUD',
                  'POKEMON_ZA_LOSE': 'Pokemon ZA image detection migrated from ZA_story: LOSE',
                  'POKEMON_ZA_MAP': 'Pokemon ZA image detection migrated from ZA_story: MAP',
                  'POKEMON_ZA_MAP2': 'Pokemon ZA image detection migrated from ZA_story: MAP2',
@@ -37360,7 +41801,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                  'POKEMON_ZA_ZONE6': 'Pokemon ZA image detection migrated from ZA_story: ZONE6',
                  'POKEMON_ZA_ZONE7': 'Pokemon ZA image detection migrated from ZA_story: ZONE7',
                  'POKEMON_ZA_ZONE8': 'Pokemon ZA image detection migrated from ZA_story: ZONE8',
-                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9'}}
+                 'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9',
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': 'Chapter3 MEGA2 positive pre strategy-meeting task',
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': 'Chapter3 MEGA2 positive post strategy-meeting task',
+    }}
 
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
     # DevStudioの登録済み画像検知から追加。再生成時も保持されます。
@@ -38230,6 +42674,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                               'template_path': 'Template/ZA_Story_PIC/Common/last_battle_strong_light.png',
                                               'threshold': 0.78,
                                               'use_gray': True}],
+     'POKEMON_ZA_FARST_BATTLE_RETRY_START': [{'crop': [345, 640, 680, 700], 'ms': 2000, 'show_only_true_rect': False, 'show_position': True, 'show_value': False, 'template_path': 'Template/ZA_Story_PIC/_1_z_lank/farst_battle_retry_start.png', 'threshold': 0.85, 'use_gray': True}],
+     'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': [{'crop': [565, 610, 730, 690], 'ms': 2000, 'show_only_true_rect': False, 'show_position': True, 'show_value': False, 'template_path': 'Template/ZA_Story_PIC/_1_z_lank/farst_battle_field_hud.png', 'threshold': 0.85, 'use_gray': True}],
      'POKEMON_ZA_LOSE': [{'crop': [290, 550, 1000, 690],
                           'ms': 2000,
                           'show_only_true_rect': False,
@@ -38237,6 +42683,14 @@ class ZA_story_Base(ImageProcPythonCommand):
                           'show_value': False,
                           'template_path': 'Template/ZA_Story_PIC/ZA_infi/lose.png',
                           'threshold': 0.8,
+                          'use_gray': True},
+                         {'crop': [300, 590, 760, 690],
+                          'ms': 2000,
+                          'show_only_true_rect': False,
+                          'show_position': True,
+                          'show_value': False,
+                          'template_path': 'Template/ZA_Story_PIC/Common/furadari_eyes_dark_comment.png',
+                          'threshold': 0.85,
                           'use_gray': True}],
      'POKEMON_ZA_MAP': [{'crop': [20, 0, 200, 70],
                          'ms': 2000,
@@ -40010,7 +44464,47 @@ class ZA_story_Base(ImageProcPythonCommand):
                                           'show_value': True,
                                           'template_path': 'Template/ZA_Story_PIC/_8_last/ZA_STORY_KARASUBA_ENDRESET_MAP2.png',
                                           'threshold': 0.9,
-                                          'use_gray': True}]})
+                                          'use_gray': True}],
+     'POKEMON_ZA_HOTEL_ROOM_EXIT_PROMPT': [{'crop': [100, 150, 1100, 560],
+                                             'ms': 2000,
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story_PIC/Common/in_icon.png',
+                                             'threshold': 0.85,
+                                             'use_gray': True},
+                                            {'crop': [630, 350, 800, 500],
+                                             'match_color': 'blue',
+                                             'ms': 2000,
+                                             'no_match_color': 'red',
+                                             'show_only_true_rect': False,
+                                             'show_position': True,
+                                             'show_value': False,
+                                             'template_path': 'Template/ZA_Story_PIC/ZA_infi/doorA.png',
+                                             'threshold': 0.85,
+                                             'use_gray': True}],
+    
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': [{'template_path': 'Template/ZA_Story_PIC/Common/chapter3_mega2_pre_meeting_task.png',
+          'threshold': 0.9,
+          'use_gray': True,
+          'show_value': False,
+          'show_position': True,
+          'show_only_true_rect': False,
+          'ms': 2000,
+          'match_color': 'blue',
+          'no_match_color': 'red',
+          'crop': [45, 65, 430, 150]}],
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': [{'template_path': 'Template/ZA_Story_PIC/Common/chapter3_mega2_post_meeting_task.png',
+          'threshold': 0.9,
+          'use_gray': True,
+          'show_value': False,
+          'show_position': True,
+          'show_only_true_rect': False,
+          'ms': 2000,
+          'match_color': 'blue',
+          'no_match_color': 'red',
+          'crop': [45, 65, 430, 150]}],
+    })
     if 'IMAGE_DETECTION_OPERATORS' in locals():
         IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_1_SELECT': 'OR',
      'POKEMON_ZA_2_SELECT': 'OR',
@@ -40100,6 +44594,8 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_LAST_BATTLE_MOVE_UI': 'OR',
      'POKEMON_ZA_LAST_BATTLE_NAME': 'OR',
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': 'OR',
+     'POKEMON_ZA_FARST_BATTLE_RETRY_START': 'OR',
+     'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': 'OR',
      'POKEMON_ZA_LOSE': 'OR',
      'POKEMON_ZA_MAP': 'OR',
      'POKEMON_ZA_MAP2': 'OR',
@@ -40304,7 +44800,12 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ZONE9': 'OR',
      'ZA_STORY_COMMON_ZA_RESEARCH_A': 'OR',
      'ZA_STORY_KARASUBA_ENDRESET_MAP': 'OR',
-     'ZA_STORY_KARASUBA_ENDRESET_MAP2': 'OR'})
+     'ZA_STORY_KARASUBA_ENDRESET_MAP2': 'OR',
+     'POKEMON_ZA_HOTEL_ROOM_EXIT_PROMPT': 'AND',
+    
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': 'OR',
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': 'OR',
+    })
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
         IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_1_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 1_SELECT',
      'POKEMON_ZA_2_SELECT': 'Pokemon ZA image detection migrated from ZA_story: 2_SELECT',
@@ -40420,6 +44921,8 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_LAST_BATTLE_MOVE_UI': '最終戦mode 5専用の4技表示（C+なしの攻撃可能画面）',
      'POKEMON_ZA_LAST_BATTLE_NAME': '最終戦の画面上部「超大暴走アンジュフラエッテ」名称',
      'POKEMON_ZA_LAST_BATTLE_STRONG_LIGHT': '最終戦『アンジュフラエッテが 強い光を放つ！』発動通知',
+     'POKEMON_ZA_FARST_BATTLE_RETRY_START': 'Initial battle automatic rematch: fixed battle-start line, excludes opponent name',
+     'POKEMON_ZA_FARST_BATTLE_FIELD_HUD': 'Initial battle playable FIELD: fixed aim and move command HUD',
      'POKEMON_ZA_LOSE': 'Pokemon ZA image detection migrated from ZA_story: LOSE',
      'POKEMON_ZA_MAP': 'Pokemon ZA image detection migrated from ZA_story: MAP',
      'POKEMON_ZA_MAP2': 'Pokemon ZA image detection migrated from ZA_story: MAP2',
@@ -40774,7 +45277,10 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ZONE9': 'Pokemon ZA image detection migrated from ZA_story: ZONE9',
      'ZA_STORY_COMMON_ZA_RESEARCH_A': 'Templateから自動登録',
      'ZA_STORY_KARASUBA_ENDRESET_MAP': '最終戦リセット後：左上ミニマップ（！／☆を含めない）',
-     'ZA_STORY_KARASUBA_ENDRESET_MAP2': '最終戦リセット後：左上ミニマップ2（！／☆を含めない）'})
+     'ZA_STORY_KARASUBA_ENDRESET_MAP2': '最終戦リセット後：左上ミニマップ2（！／☆を含めない）',
+        'POKEMON_ZA_MEGA2_PRE_MEETING_TASK': 'Chapter3 MEGA2 positive pre strategy-meeting task',
+        'POKEMON_ZA_MEGA2_POST_MEETING_TASK': 'Chapter3 MEGA2 positive post strategy-meeting task',
+    })
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_END
 
     # POKECON_IMAGE_CHECK_LIBRARY_IMPORTS_BEGIN
@@ -40996,9 +45502,9 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     
     if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
-        NAME = f'ZA_story_v0.1.0_ZA_infi_custom_name'
+        NAME = f'ZA_story_v0.1.1_ZA_infi_custom_name'
     else:
-        NAME = f'ZA_story_v0.1.0'
+        NAME = f'ZA_story_v0.1.1'
         #ZA_infi_custom_name = ""
     
     #0.2.0のpokecon用NAMEの変数一時無効
@@ -41120,8 +45626,8 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             result = {"action": "cancel"}
             dialog = tk.Toplevel(parent)
             dialog.title("ZA_story - Step実行設定")
-            dialog.geometry("860x355")
-            dialog.minsize(720, 325)
+            dialog.geometry("860x410")
+            dialog.minsize(720, 380)
             dialog.transient(parent)
 
             search = tk.StringVar(value="")
@@ -41131,6 +45637,8 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             description = tk.StringVar(value="")
             reset_debug = tk.BooleanVar(
                 value=bool(getattr(self, "ResetDebug", False)))
+            battle_debug = tk.BooleanVar(
+                value=bool(getattr(self, "BATTLE_DEBUG", False)))
             visible_locations = []
 
             groups = ["すべて"]
@@ -41185,6 +45693,18 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 text=(
                     "再訪時は通常のComment判定へ戻ります。"
                     "Commands終了後には検証履歴を保持しません。"),
+                foreground="#5a5a5a").pack(
+                    anchor="w", padx=27, pady=(0, 5))
+            ttk.Checkbutton(
+                debug_frame,
+                text="BATTLE_DEBUG（敗戦復帰対象の各戦闘で初回敗戦を確認）",
+                variable=battle_debug).pack(
+                    anchor="w", padx=7, pady=(5, 0))
+            ttk.Label(
+                debug_frame,
+                text=(
+                    "FARST・TOWER・W・ABSOL・GURI戦で、敗戦確認まではL入力と"
+                    "FIELD_Wの上入力だけを行います。"),
                 foreground="#5a5a5a").pack(
                     anchor="w", padx=27, pady=(0, 5))
 
@@ -41255,15 +45775,18 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                         parent=dialog)
                     return
                 self.ResetDebug = bool(reset_debug.get())
+                self.BATTLE_DEBUG = bool(battle_debug.get())
                 print(
                     "[ZA_PORTABLE_START_FALLBACK] {} :: {} ({}) "
-                    "ResetDebug={}".format(
+                    "ResetDebug={} BATTLE_DEBUG={}".format(
                         chosen["variable"], chosen["state"],
-                        chosen["label"], int(self.ResetDebug)))
+                        chosen["label"], int(self.ResetDebug),
+                        int(self.BATTLE_DEBUG)))
                 close("apply")
 
             def start_default():
                 self.ResetDebug = False
+                self.BATTLE_DEBUG = False
                 close("default")
 
             buttons = ttk.Frame(dialog)
@@ -41344,12 +45867,14 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         # スクリプト継承
         print(
             "[ZA_COMMAND_START] main_init={} story3_init={} "
-            "infi_state={} legacy_infi_mode={} ResetDebug={}".format(
+            "infi_state={} legacy_infi_mode={} ResetDebug={} "
+            "BATTLE_DEBUG={}".format(
                 self.main_current_state_init,
                 self._3_story_current_state_init,
                 self.za_infi_main_current_state,
                 getattr(self, "ZA_infimode", 0),
-                int(bool(getattr(self, "ResetDebug", False)))))
+                int(bool(getattr(self, "ResetDebug", False))),
+                int(bool(getattr(self, "BATTLE_DEBUG", False)))))
         if self.testcode==1:
             self.Test()
         elif getattr(self, "ZA_infimode", 0)==1:
