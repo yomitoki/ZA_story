@@ -16796,6 +16796,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if hasattr(self, "ZA_MOVE_SEE"):
             self.ZA_MOVE_SEE("END")
         self.ZA_ZL_ACTION("END")
+        print("[BATTLE_FIELD_RECOVERY] {} missing=10 -> unlock + X".format(
+            counter_key))
+        self.checkIfAlive()
         self.pressRep(
             Button.X, repeat=1, duration=0.15,
             wait=0.5, interval=0.1)
@@ -16813,12 +16816,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.ZA_mega_mode5_x_menu_b_recovery(
                         max_attempts=20,
                         before_recovery=before_recovery)
-                else:
-                    self.checkIfAlive()
-                    self.pressRep(
-                        Button.B, repeat=1, duration=0.15,
-                        wait=0.5, interval=0.1)
-                return True
+                    return True
+                self.checkIfAlive()
+                self.pressRep(
+                    Button.B, repeat=1, duration=0.15,
+                    wait=0.5, interval=0.1)
+                b_press_count += 1
+                # メニューを1回閉じただけでは復帰完了としない。
+                # 次のfresh判定でHELP/FIELDを確認し、同じ上限内でBを続ける。
+                continue
             if self.image_check("POKEMON_ZA_HELP_MARKER"):
                 if help_press_count >= 10:
                     return True
@@ -16831,6 +16837,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 help_press_count += 1
                 continue
             if bool(self.ZA_story_Template_Field_HardGaurd()):
+                print("[BATTLE_FIELD_RECOVERY] {} field restored; B={}".format(
+                    counter_key, b_press_count))
                 break
             self.checkIfAlive()
             self.pressRep(
@@ -20596,6 +20604,12 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 同じ値になるため、明示キーなしでも3関数で状態を共有できる。
             battle_flow_key = noprg_ret
         state = self._ZA_story_battle_flow_state(battle_flow_key)
+        # Lv.消失中は攻撃関数へ入れないため、復帰の連続確認を入口でも行う。
+        # 認識済みUI・通常攻撃・FIELDで早期returnした周回は必ず途切れさせる。
+        recovery_key = "story_" + str(battle_flow_key)
+        recovery_count_name = "_za_battle_missing_field_count_" + recovery_key
+        previous_recovery_count = getattr(self, recovery_count_name, 0)
+        setattr(self, recovery_count_name, 0)
 
         active_level_visible = self.image_check(
             "POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
@@ -20682,6 +20696,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 wait=0.5, interval=0.1)
             return noprg_ret
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            for method_name in ("ZA_MOVE_SEE", "ZA_ZL_ACTION"):
+                release = getattr(self, method_name, None)
+                if callable(release):
+                    release("END")
+            self.checkIfAlive()
             self.pressRep(
                 Button.B, repeat=1, duration=0.15,
                 wait=0.5, interval=0.1)
@@ -20951,6 +20970,23 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return bkprg_ret
             self.wait(max(0.1, sleeptime))
             return noprg_ret
+
+        # 通常のLv./HELP/選択肢/結果/会話/FIELDを処理した後に限り、
+        # 手持ち表示はあるがFIELD位置とLv.が消えた交代失敗を調べる。
+        # 10回に達する前もbattle Stepを維持し、beforeへの往復で確認を失わない。
+        if (self.image_check("POKEMON_ZA_FILED_HARD_CHECK_1")
+                and not self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0")):
+            setattr(self, recovery_count_name, previous_recovery_count)
+            if self.ZA_battle_missing_field_recovery(
+                    recovery_key,
+                    attack_ready=(self.image_check("POKEMON_ZA_C+")
+                                  or self.image_check("POKEMON_ZA_C+_LOW"))):
+                state["field_result_count"] = 0
+                state["field_result_since"] = None
+                return noprg_ret
+            if getattr(self, recovery_count_name, 0) > 0:
+                self.wait(max(0.1, sleeptime))
+                return noprg_ret
 
         state["field_result_count"] = 0
         state["field_result_since"] = None
@@ -26722,6 +26758,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,270), duration=5.0, wait=0.5)
             self.wait(1.0)
+            # 美術館入口への移動後、Lで視点を合わせてから入館する。
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_MAPPING_81_0"
         return "2_STORY_MAPPING_80"
@@ -26731,6 +26769,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_WANINOKO_ICON") or self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
             self.press(Direction(Stick.LEFT,270), duration=1.0, wait=0.5)
             self.wait(1.0)
+            # 館内から戻るためのA。「A でる」の表示も想定する。
+            # 最後の移動方向へLで視点を合わせてから退出する。
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_MAPPING_81"
         return "2_STORY_MAPPING_81_0"
@@ -26833,7 +26874,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,340), duration=19.0, wait=0.5)
             self.wait(1.0)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            # 通過による移動スポット登録が目的のため、A入力は無効化。
+            # 登録できたかは次の 2_STORY_MAPPING_87 で確認する。
+            # self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_MAPPING_87"
         return "2_STORY_MAPPING_86"
     
@@ -27059,6 +27102,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,280), duration=3.0, wait=0.5)
             self.wait(1.0)
+            # ド・フツー入口への移動後、Lで視点を合わせる。
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_MAPPING_100"
         return "2_STORY_MAPPING_99"
@@ -27121,7 +27166,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,310), duration=8.0, wait=0.5)
             self.wait(1.0)
-            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            # ジャスティス会は移動後のAを使わず、次の登録確認へ進む。
+            # 未登録の場合は 2_STORY_MAPPING_103 の既存経路で再移動する。
+            # self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "2_STORY_MAPPING_103"
         return "2_STORY_MAPPING_102"
     
@@ -30904,7 +30951,36 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,0), duration=2.5, wait=0.5)
             self.press(Direction(Stick.LEFT,85), duration=0.3, wait=0.5)
-            self.pressRep(Button.A, repeat=3, duration=0.15, wait=0.5, interval=0.1)
+            # 最後の移動方向に視点を合わせ、入口の表示を最大3秒待つ。
+            self.pressRep(Button.L, repeat=1, duration=0.15,
+                          wait=0.5, interval=0.1)
+            entry_deadline = time.monotonic() + 3.0
+            entry_confirmed = False
+            while time.monotonic() <= entry_deadline:
+                self.checkIfAlive()
+                if self.image_check("POKEMON_ZA_IN_MARKER"):
+                    entry_confirmed = time.monotonic() <= entry_deadline
+                    break
+                remaining = entry_deadline - time.monotonic()
+                if remaining <= 0.0:
+                    break
+                self.wait(min(0.1, remaining))
+
+            if not entry_confirmed:
+                print("[ZONE14_ENTRY] A はいるを3秒以内に確認できず; "
+                      "5_STORY_MAPPING_1から時間変更・移動をやり直す")
+                self.Common_current_state = "COMMON_START"
+                self.map_cursor_reset = 0
+                return "5_STORY_MAPPING_1"
+
+            # 入場で表示が消えたら残りのAは送らず、既存の登録確認へ進む。
+            for attempt in range(3):
+                self.checkIfAlive()
+                if attempt and not self.image_check("POKEMON_ZA_IN_MARKER"):
+                    break
+                self.pressRep(Button.A, repeat=1, duration=0.15,
+                              wait=0.1, interval=0.1)
+            self.wait(0.5)
             return "5_STORY_MAPPING_4"
         return "5_STORY_MAPPING_3"
         
@@ -32461,6 +32537,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,0), duration=2.0, wait=0.5)
             self.wait(1.0)
+            # 17番の入口に向けた最後の移動後、Lで視点を合わせる。
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "6_STORY_MAPPING_4"
         return "6_STORY_MAPPING_3"
@@ -33358,8 +33436,33 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,90), duration=9.5, wait=0.5)
             self.press(Direction(Stick.LEFT,180), duration=3.0, wait=0.5)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            # 最初のAは入場用。「A はいる」を最大3秒待ってから押す。
+            entry_deadline = time.monotonic() + 3.0
+            entry_confirmed = False
+            while time.monotonic() <= entry_deadline:
+                self.checkIfAlive()
+                if self.image_check("POKEMON_ZA_IN_MARKER"):
+                    entry_confirmed = time.monotonic() <= entry_deadline
+                    break
+                remaining = entry_deadline - time.monotonic()
+                if remaining <= 0.0:
+                    break
+                self.wait(min(0.1, remaining))
+
+            if not entry_confirmed:
+                print("[ZONE19_ENTRY] A はいるを3秒以内に確認できず; "
+                      "7_STORY_MAPPING_5から時間変更・移動をやり直す")
+                self.Common_current_state = "COMMON_START"
+                self.map_cursor_reset = 0
+                return "7_STORY_MAPPING_5"
+
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=2.0, interval=0.1)
             self.press(Direction(Stick.LEFT,270), duration=1.0, wait=0.5)
+            # ここは入場後の退出用A。発見される前に出るため既存の速度を維持する。
+            # 退出表示の任意チェック（待機・画像取得による退出遅延を避けるため無効）。
+            # if not self.image_check("POKEMON_ZA_OUT_MARKER"):
+            #     print("[ZONE19_EXIT] A でるを確認できず; 既存の戦闘・登録確認へ")
+            #     return "7_STORY_MAPPING_8"
             self.pressRep(Button.A, repeat=3, duration=0.15, wait=1.0, interval=0.1)
             return "7_STORY_MAPPING_8"#_0"
         return "7_STORY_MAPPING_7"
@@ -46218,9 +46321,132 @@ class ZA_story_Base(ImageProcPythonCommand):
     # POKECON_IMAGE_CHECK_GENERATED_END
 
     # POKECON_IMAGE_CHECK_USER_BEGIN
+    def ZA_wild_zone_number_detail_check(self, targetimage, frame=None):
+        """Confirm 10/18 from equal-size digit crops after the whole-card check."""
+        import cv2
+        import os
+        import LocalFunction.ImageDetection as image_detection
+
+        targets = (
+            "POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10",
+            "POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18",
+        )
+        # The source PNGs have different top margins. Both cutouts are 39x39
+        # and contain only the two digits, with one pixel of white padding.
+        digit_crops = ((169, 4, 208, 43), (168, 0, 207, 39))
+        template_shapes = ((45, 208), (40, 208))
+        self.last_wild_zone_number_detection = {"matched": False}
+        if str(targetimage) not in targets:
+            return False
+        expected = targets.index(str(targetimage))
+        if frame is None:
+            try:
+                frame = image_detection.read_command_frame(self)
+            except RuntimeError:
+                return False
+        if (frame is None or getattr(frame, "size", 0) == 0
+                or len(frame.shape) != 3 or frame.shape[2] not in (3, 4)):
+            return False
+        gray = cv2.cvtColor(frame[:, :, :3], cv2.COLOR_BGR2GRAY)
+        serial_root = os.path.abspath(os.path.join(
+            os.path.dirname(image_detection.__file__), "..", "..", ".."))
+        cache = getattr(self, "_za_wild_zone_number_templates", {})
+        templates, settings = [], []
+        for index, target in enumerate(targets):
+            variants = self.IMAGE_DETECTION_TARGETS.get(target, [])
+            if not variants and index != expected:
+                # A composed sample may register only its requested zone.
+                # The competing PNG is shipped beside it in the same bundle.
+                own = self.IMAGE_DETECTION_TARGETS.get(targets[expected], [])
+                if len(own) == 1:
+                    peer = dict(own[0])
+                    peer["template_path"] = os.path.join(
+                        os.path.dirname(str(peer.get("template_path", ""))),
+                        "W_ZONE{}_pic.png".format(10 if index == 0 else 18))
+                    variants = [peer]
+            if len(variants) != 1:
+                return False
+            config = variants[0]
+            # These calibrated crops belong to the original grayscale PNGs.
+            if (not config.get("use_gray", True)
+                    or any(config.get("template_crop") or [])
+                    or config.get("exclude_regions")):
+                return False
+            path = str(config.get("template_path", ""))
+            if not os.path.isabs(path):
+                path = os.path.join(serial_root, path)
+            try:
+                stat = os.stat(path)
+            except OSError:
+                return False
+            signature = (path, stat.st_mtime_ns, stat.st_size)
+            cached = cache.get(target)
+            if cached is None or cached[0] != signature:
+                template = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+                if template is None or template.shape != template_shapes[index]:
+                    return False
+                x1, y1, x2, y2 = digit_crops[index]
+                digits = template[y1:y2, x1:x2]
+                if float(cv2.meanStdDev(digits)[1][0, 0]) < 1.0:
+                    return False
+                cached = (signature, template, digits)
+                cache[target] = cached
+            templates.append(cached)
+            settings.append(config)
+        self._za_wild_zone_number_templates = cache
+
+        config = settings[expected]
+        x1, y1, x2, y2 = config.get("crop", (0, 0, 0, 0))
+        height, width = gray.shape
+        x1, y1 = max(0, int(x1)), max(0, int(y1))
+        x2 = width if int(x2) <= 0 else min(width, int(x2))
+        y2 = height if int(y2) <= 0 else min(height, int(y2))
+        region = gray[y1:y2, x1:x2]
+        template = templates[expected][1]
+        if (region.shape[0] < template.shape[0]
+                or region.shape[1] < template.shape[1]):
+            return False
+        _, whole_score, _, position = cv2.minMaxLoc(cv2.matchTemplate(
+            region, template, cv2.TM_CCOEFF_NORMED))
+        # Recheck the original card on this fresh frame too: a menu change
+        # between image_check() and this confirmation cannot reuse old proof.
+        if whole_score < float(config.get("threshold", 0.9)):
+            return False
+        dx1, dy1, dx2, dy2 = digit_crops[expected]
+        left = x1 + position[0] + dx1 - 2
+        top = y1 + position[1] + dy1 - 2
+        right = x1 + position[0] + dx2 + 2
+        bottom = y1 + position[1] + dy2 + 2
+        if left < 0 or top < 0 or right > width or bottom > height:
+            return False
+        digits = gray[top:bottom, left:right]
+        # Both candidates search the SAME 43x43 pixels, allowing only +/-2px.
+        scores = [float(cv2.minMaxLoc(cv2.matchTemplate(
+            digits, cached[2], cv2.TM_CCOEFF_NORMED))[1])
+            for cached in templates]
+        margin = scores[expected] - scores[1 - expected]
+        matched = scores[expected] >= 0.90 and margin >= 0.03
+        self.last_wild_zone_number_detection = {
+            "matched": bool(matched), "target": str(targetimage),
+            "whole_score": float(whole_score),
+            "scores": {"10": scores[0], "18": scores[1]},
+            "score": scores[expected], "margin": margin,
+            "threshold": 0.90, "margin_threshold": 0.03,
+            "crop": (left, top, right, bottom),
+        }
+        if config.get("show_value", False) or getattr(self, "show_value_bool", False):
+            print("[WILD_ZONE_DIGITS] {} 10={:.6f} 18={:.6f} gap={:.6f} {}".format(
+                str(targetimage), scores[0], scores[1], margin,
+                "MATCH" if matched else "NO MATCH"))
+        return bool(matched)
+
     def image_check_confirmation(self, targetimage, first_match=False):
-        """Reject numbered SELECT matches on FIELD, battle-level, or RPush screens."""
+        """Disambiguate zone digits and reject SELECT matches on field/battle UI."""
         del first_match  # image_check hook compatibility
+        if str(targetimage) in (
+                "POKEMON_ZA_MOVEPOINT_PIC_W_ZONE10",
+                "POKEMON_ZA_MOVEPOINT_PIC_W_ZONE18"):
+            return self.ZA_wild_zone_number_detail_check(targetimage)
         select_targets = {
             "POKEMON_ZA_1_SELECT",
             "POKEMON_ZA_2_SELECT",
