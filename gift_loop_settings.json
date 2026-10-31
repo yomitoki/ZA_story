@@ -1,0 +1,33 @@
+{
+ "user_mode": "number",
+ "delete_user_number": 4,
+ "profiles": [
+  {
+   "name": "アオイ",
+   "gender": "male"
+  },
+  {
+   "name": "アオイ",
+   "gender": "female"
+  }
+ ],
+ "looks_number": 1,
+ "gift_mode": "one",
+ "gift_index": 4,
+ "max_loops": 0,
+ "capture_route": "beedle",
+ "home_transfer": true,
+ "language": "JPN",
+ "profiles_by_language": {
+  "JPN": [
+   {
+    "name": "アオイ",
+    "gender": "male"
+   },
+   {
+    "name": "アオイ",
+    "gender": "female"
+   }
+  ]
+ }
+}
