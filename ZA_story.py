@@ -156,6 +156,14 @@ class ZA_story_Base(ImageProcPythonCommand):
              'template_path': 'Template/ZA_Story_PIC/Supplemental/green_comment_arrow.png',
              'threshold': 0.9, 'use_gray': True},
         ],
+        # ボックスのメニュー（1段目「移動する」を選択中）。元の画像は文字の列なので、左端の
+        # ▶・白帯の左端・メニュー枠の左端と下の角だけを使う（文字と背景は透明。どの枠の上でも同じ）。
+        # 白黒では他の画面が 0.94 まで来るため色で比べる。
+        'POKEMON_ZA_BOX_MENU': [
+            {'crop': [20, 40, 850, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/box_menu_left.png',
+             'threshold': 0.9, 'use_gray': False},
+        ],
     }
     # 明示設定を追加すると自動検出された従来項目を置き換えるため、
     # ResetDebug／BATTLE_DEBUGだけでなく既存の3項目もここへ残す。
@@ -38761,6 +38769,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     text=getattr(self, "_command_supplemental_session", None) is None):
                 return "COMMON_BOX_CHANGE_BOX_TARGET1"
             self._common_box_change_select_tries = 0
+            self._common_box_change_menu_waits = 0
             if target2_empty:
                 frame = read_command_frame(self)
                 if target1_high == -1 and not box_screen.za_party_filled(frame)[target1]:
@@ -38786,17 +38795,30 @@ class ZA_story_Base(ImageProcPythonCommand):
         if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
             session = self._command_supplemental_session
             menu = session.choice_observation(self, read_command_frame, "box")
-            if menu and menu["rows"] in (7, 8):
-                if menu["selected"] != 0:
-                    self.etc_sendCommand("Lbutton_up")
-                    self.wait(0.2)
-                elif self.image_check("POKEMON_ZA_BOX_MENU"):
-                    self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                    return "COMMON_BOX_CHANGE_BOX_TARGET2"
-            elif menu and menu["rows"] == 0:
+            if menu and menu["rows"] in (7, 8) and menu["selected"] != 0:
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(0.2)
+                return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
+            # メニューは文字なし画像（▶・白帯とメニュー枠の左端。文字と背景は透明）で見る。
+            # 段を数える判定（menu）は、手持ちの段では枠の上の「てもち」欄も紺色のため
+            # メニュー無しと読み、A を押せずに止まっていた（2026-11-01 イタリア語）
+            if self.image_check("POKEMON_ZA_BOX_MENU"):
+                self._common_box_change_menu_waits = 0
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            else:
-                self.wait(0.1)
+                return "COMMON_BOX_CHANGE_BOX_TARGET2"
+            if menu and menu["rows"] == 0:
+                self._common_box_change_menu_waits = 0
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
+            waits = getattr(self, "_common_box_change_menu_waits", 0) + 1
+            self._common_box_change_menu_waits = waits
+            if waits >= 20 and self.image_check("POKEMON_ZA_BOX_WINDOW"):
+                # 読めない小窓（下の段にカーソルがあるメニューなど）は B で閉じ、A で開き直す
+                print("[BOX移動] メニューを読めないため B で閉じて開き直します")
+                self._common_box_change_menu_waits = 0
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
+            self.wait(0.1)
             return "COMMON_BOX_CHANGE_BOX_TARGET1_SELECT"
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.wait(1.0)
@@ -50823,6 +50845,10 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             if not str(getattr(error, "name", "")).startswith("Commands"):
                 raise
             from LocalFunction.ZA import SupplementalSession as supplemental
+        if not getattr(supplemental, "TRANSPARENT_TEMPLATES", False):
+            # Reload で古い SupplementalSession が残っている場合（透明部分を比べる前の版）
+            import importlib
+            supplemental = importlib.reload(supplemental)
         language = ""
         settings = getattr(self, "_za_gift_loop_settings", None)
         if bool(getattr(self, "GIFT_LOOP_MODE", False)) and isinstance(settings, dict):
