@@ -71,6 +71,7 @@ except ImportError:
     win32gui = None
 import json
 import os
+import re
 #from Keys import Touchscreen
 #from SerialController.Commands.Keys import Touchscreen # pywin32
 ######################################################
@@ -100,6 +101,62 @@ class ZA_story_Base(ImageProcPythonCommand):
         """Start欄で選ばれたタブを反映する。key=None は通常のStory。"""
         self.GIFT_LOOP_MODE = key == "gift_loop"
         self._za_gift_loop_settings = settings if self.GIFT_LOOP_MODE else None
+
+    # 補完モード（日本語以外）で使う文字なし画像。書き方は IMAGE_DETECTION_TARGETS と同じで、
+    # 登録した名前の image_check は、補完モードの間だけこちらで判定する（どれか1つが一致で一致）。
+    # ここに無い名前は LocalFunction/ZA/SupplementalSession.py の判定（Aの字・位置など）か、元の画像。
+    IMAGE_DETECTION_SUPPLEMENTAL_TARGETS = {
+        # 戦闘中の左下 Lv.。♂/♀ は丸の内側だけ（22px の元画像は背景込みで、明るい床では 0.37）。
+        # 「Lv.」は英語でも 0.86 で一致するが、仏 N.・西 Nv.・伊 L. では一致しないため ♂/♀ と併用。
+        'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [
+            {'crop': [120, 500, 300, 580],
+             'template_path': 'Template/ZA_Story_PIC/Common/battle_active_level.png',
+             'threshold': 0.75, 'use_gray': False},
+            {'crop': [205, 515, 265, 565],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/male_symbol_disc.png',
+             'threshold': 0.9, 'use_gray': False},
+            {'crop': [205, 515, 265, 565],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/female_symbol_disc.png',
+             'threshold': 0.9, 'use_gray': False},
+        ],
+        # 技の変更ページ（日本語は「覚えているわざ」の文字）。左上の ZL と右の ZR のアイコンで判定する。
+        # 写しの位置判定はカーソルが1か所の時だけ一致で、英語では入れ替えの ⇄ もカーソルと数えて外れた。
+        'POKEMON_ZA_SKILL_PAGE_WINDOW': [
+            {'crop': [40, 180, 110, 235],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/skill_page_zl.png',
+             'threshold': 0.9, 'use_gray': True},
+            {'crop': [470, 180, 540, 235],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/skill_page_zr.png',
+             'threshold': 0.9, 'use_gray': True},
+        ],
+        # 会話の枠。元の画像は▼の左の空白まで含み、英語では長い文が▼の近くまで来て外れた
+        # （OUT_HOTEL_Z_5_2「...But now you've」0.56）。▼（緑は枠の角も）だけを切り出した画像で見る。
+        # 日本語の録画の step フレームで、元の画像と一致・不一致が同じ（白27・黒16・緑2）。
+        'POKEMON_ZA_TEXT_WHITE_COMMENT': [
+            {'crop': [300, 555, 1000, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/white_comment_arrow.png',
+             'threshold': 0.85, 'use_gray': True},
+            {'crop': [300, 555, 1000, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/white_comment2_arrow.png',
+             'threshold': 0.85, 'use_gray': True},
+        ],
+        'POKEMON_ZA_TEXT_WHITE_COMMENT2': [
+            {'crop': [300, 555, 1000, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/white_comment2_arrow.png',
+             'threshold': 0.85, 'use_gray': True},
+        ],
+        # 黒（紺）と緑の▼は白黒にすると同じ形なので、黒は色で比べる（緑の会話で 0.81）
+        'POKEMON_ZA_TEXT_BLACK_COMMENT': [
+            {'crop': [300, 555, 1000, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/black_comment_arrow.png',
+             'threshold': 0.9, 'use_gray': False},
+        ],
+        'POKEMON_ZA_TEXT_GREEN_COMMENT': [
+            {'crop': [300, 555, 1000, 700],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/green_comment_arrow.png',
+             'threshold': 0.9, 'use_gray': True},
+        ],
+    }
     # 明示設定を追加すると自動検出された従来項目を置き換えるため、
     # ResetDebug／BATTLE_DEBUGだけでなく既存の3項目もここへ残す。
     COMMAND_DEBUG_OPTIONS = (
@@ -127,6 +184,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             "description": (
                 "同じ箇所のA＋文字確認が3回不一致なら、FIELD上のAマークで再確認します。"
                 "一致画面・全参照画像の一致率順位・該当行をDebug_A_Checkへ追記保存します。"),
+            "default": False,
+        },
+        {
+            "attribute": "ZA_SUPPLEMENTAL",
+            "label": "補完モード（日本語以外の言語で実行）",
+            "description": (
+                "日本語の文字に頼る判定を、文字の無い画像（Aの字・アイコン・位置など）で確認します。"
+                "おくりものループは、言語が日本語以外なら自動で有効になります。"),
             "default": False,
         },
         {
@@ -212,13 +277,16 @@ class ZA_story_Base(ImageProcPythonCommand):
     # （ユーザー確認 2026-10-31。前方へ3秒だと道路の屋台まで行き過ぎた）。秒数は実機で調整
     # 真左（180度）1.5秒では草の塊・生け垣の端につかえて建物の壁際で止まった。少し右奥（前寄り）へ
     # 150度・2.3秒で捕獲できた（ビードルが見えない回もあった）。165度・3.3秒は左へ行き過ぎて
-    # 建物の壁際で止まった（2026-10-31 実機3回）ため、その間にする
-    ZA_BEEDLE_APPROACH_MOVES = ((155, 2.8),)
+    # 建物の壁際で止まった（2026-10-31 実機3回）ため、その間にする。
+    # 2.8秒ではボールが届かない回があった（ユーザー確認 2026-11-01）ため0.5秒延ばした
+    ZA_BEEDLE_APPROACH_MOVES = ((155, 3.3),)
     # 捕獲後（リセット時はこの場所のオートセーブから）EVENT を向くとワイルドゾーンの出口が正面、岩がその右。
     # 出口の処理（Z_21: 右へ5秒）はメリープの場所＝岩の手前から作ってあるため、先に出口・岩の方へ進む。
     # 行き過ぎても出口の柵で止まるので長めでよい（ユーザー確認 2026-10-31。戻らないと草の塊・生け垣に当たって
     # 出口へ出られず、研究所への移動がワイルドゾーン内でループした）
     ZA_BEEDLE_RETURN_MOVES = ((90, 5.0),)
+    # 出口へ向かう移動を区切る秒数。区切りごとに「A でる」を見て、出ていればそこで出る
+    ZA_WILD_ZONE_EXIT_CHECK_STEP = 0.5
     # ビードルの場所に着いてから投げる（GET処理）までの上限。投げられなければリセットしてZ_19から。
     # 投げた後は ZA_BEEDLE_GET_WAIT_SECONDS 以内に手持ち（5か6番目）へ入らなければリセット
     # （ユーザー確認 2026-10-31。前回は着いてから9秒で捕獲）
@@ -226,6 +294,15 @@ class ZA_story_Base(ImageProcPythonCommand):
     # ビードル以外として名前で見分けて投げない種族（LockOnNames の <名前>.png / _mask.png）
     ZA_BEEDLE_SKIP_NAMES = ("mareep", "pikachu", "scatterbug", "bunnelby")
     ZA_BEEDLE_GET_WAIT_SECONDS = 15.0   # 捕獲演出（揺れ）を待つ。10秒では足りない回があった
+    # 投げて捕まらない時（外れた・ボールから出た）は、投げてからこの秒数の後にロックし直し、ビードルが
+    # 見えれば投げ直す（1回の到着で ZA_BEEDLE_MAX_THROWS 球まで）
+    ZA_BEEDLE_RELOCK_AFTER_SECONDS = 4.0
+    ZA_BEEDLE_MAX_THROWS = 3
+    # HP バーの相手に続けて ZA_BEEDLE_TURN_AFTER 回ロックできない時、左スティックを（向き, 秒）だけ倒して
+    # 少し右へ向きを変える（90 が前、0 が右。ZA_BEEDLE_MAX_TURNS 回まで）
+    ZA_BEEDLE_TURN = (70, 0.1)
+    ZA_BEEDLE_TURN_AFTER = 3
+    ZA_BEEDLE_MAX_TURNS = 3
     ZA_PARTY_DEAD_TARGETS = (
         "POKEMON_ZA_DEAD1",
         "POKEMON_ZA_DEAD2",
@@ -301,6 +378,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         'SWITCH_CLOSE_SOFTWARE_BLACK': ('switch_close_software_b.png', 0.8, (542, 268, 394, 109)),
         'SWITCH_USER_SELECT_BLACK': ('switch_user_select_b.png', 0.8, (40, 318, 402, 76)),
         'ZA_TITLE_PRESS_A_END': ('za_title_press_a_end.png', 0.8, (446, 547, 391, 81)),
+        # 補完モード用: 文言は言語で変わる（英語は PRESS Ⓐ のみ）ため、A の丸だけを見る。
+        'ZA_TITLE_A_GLYPH': ('za_title_a_glyph.png', 0.9, (446, 547, 391, 81)),
+        'ZA_TITLE_A_GLYPH_END': ('za_title_a_glyph_end.png', 0.9, (446, 547, 391, 81)),
         'SWITCH2_HOME_ZA_SELECTED_BLACK': ('switch2_black_home_za_title_text.png', 0.9, (18, 151, 800, 39)),
         'SWITCH2_HOME_ZA_SELECTED': ('switch2_white_home_za_title_text.png', 0.9, (18, 151, 800, 39)),
         'SWITCH2_HOME_ESHOP_BLACK': ('switch2_black_home_eshop.png', 0.9, (498, 529, 52, 61)),
@@ -3774,6 +3854,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ResetDebug=False
         self.BATTLE_DEBUG=False
         self.Debug_A_Check=False
+        # 補完モード（日本語以外）。セッションは do() の最初に決める
+        self.ZA_SUPPLEMENTAL=False
+        self._command_supplemental_session=None
         # おくりもの受け取りループ（開始時に設定ウィンドウで _za_gift_loop_settings を決める）
         self.GIFT_LOOP_MODE=False
         self._za_gift_loop_settings = None
@@ -5904,9 +5987,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             return True
         return bool(self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1"))
 
+    def _ZA_gamereset_title_visible(self):
+        """PRESS A BUTTON（日本語版の文言）。補完モードは A の丸だけで判定する。"""
+        if self._reset_template_matches_any("ZA_TITLE_PRESS_A"):
+            return True
+        supplemental = getattr(getattr(getattr(
+            self, "_command_supplemental_session", None), "options", None), "supplemental", False)
+        # フィールドのA表示を取り違えないよう、フィールドが見えている間は使わない。
+        return bool(supplemental
+                    and self._reset_template_matches_any("ZA_TITLE_A_GLYPH")
+                    and not self._ZA_gamereset_field_ready())
+
     def _ZA_gamereset_game_screen(self):
         """ResetTemplateから呼ばれるZA固有画面判定。"""
-        if self._reset_template_matches_any("ZA_TITLE_PRESS_A"):
+        if self._ZA_gamereset_title_visible():
             return "title"
         if self._ZA_gamereset_field_ready():
             return "field"
@@ -6070,7 +6164,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             while state == "title":
                 self._ZA_gamereset_set_state("WAIT_TITLE_STABLE")
                 self.wait(self.RESET_TEMPLATE_TITLE_CONFIRM_DELAY)
-                if not self._reset_template_matches_any("ZA_TITLE_PRESS_A"):
+                if not self._ZA_gamereset_title_visible():
                     self._ZA_gamereset_set_state("RECHECK_GAME_SCREEN")
                     state = self._reset_wait_for_screen(
                         self._ZA_gamereset_game_screen,
@@ -9811,7 +9905,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_mode5_defeat_prompt_advance(self, retry_seconds=0.80):
         """SELECT描画前の敗戦質問をAで送り、再戦選択肢を表示する。"""
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if supplemental is not None and supplemental.options.supplemental:
             # The position-based retry handler owns all black-dialogue A input.
             return False
@@ -10611,7 +10705,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 seconds),
             force=True)
         warning_options = {}
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if (reason == "supplemental_icon" and supplemental is not None
                 and supplemental.options.supplemental):
             warning_options["warning_deadline"] = lambda: supplemental.final_warning_deadline(
@@ -10651,7 +10745,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._za_mega_last_charge_search_deadline=0.0
             return "none"
 
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if supplemental is not None and supplemental.options.supplemental:
             warning = supplemental.final_warning_observation(self, read_command_frame)
             if not warning["valid"]:
@@ -11306,7 +11400,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_mega_retry_menu_step(self, dir1, dir2, dir3, dir4, see_r):
         """Move one verified row, then confirm retry from a fresh observation."""
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if supplemental is not None and supplemental.options.supplemental:
             return supplemental.retry_menu_step(
                 self, (dir1, dir2, dir3, dir4, see_r), read_command_frame, Button.A)
@@ -12809,7 +12903,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                         False)
                     block_seconds=max(0.0, float(settings.get(
                         "RED_ATTACK_PREMOVE_BLOCK_SECONDS", 7.0)))
-                    supplemental = getattr(self, "_native_image_collection", None)
+                    supplemental = getattr(self, "_command_supplemental_session", None)
                     if supplemental is not None and supplemental.options.supplemental:
                         # 非文字判定がすでに最終検出後7秒を含む。ここで
                         # さらに7秒を加算しない。既存の障害物向きYを継続。
@@ -14428,7 +14522,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_mega_lockon_unchecked_ay_logged=False
         self._za_mega_last_battle_mode=bool(last_battle_mode)
         self._za_mega_retry_menu_ack=None
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if supplemental is not None and supplemental.options.supplemental:
             supplemental.reset_retry()
         self._za_mega_normal_choice_black_background_required=bool(
@@ -20482,7 +20576,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "POKEMON_ZA_3_SELECT_TUTORIAL",
             ) if self.image_check(picture)), "")
             supplemental_mode = bool(getattr(getattr(getattr(
-                self, "_native_image_collection", None), "options", None), "supplemental", False))
+                self, "_command_supplemental_session", None), "options", None), "supplemental", False))
             if (not first_defeat_picture
                     and (not active_level_visible or supplemental_mode)
                     and flow_state.get("result_comment_pending")
@@ -22265,24 +22359,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                   and getattr(self, "_2_story_current_state", "") == "2_STORY_TOWER_36"):
                 expected_name = "pikachu"
         supplemental = bool(getattr(getattr(getattr(
-            self, "_native_image_collection", None), "options", None), "supplemental", False))
+            self, "_command_supplemental_session", None), "options", None), "supplemental", False))
         guarded = bool(expected_name and not supplemental)
         if guarded:
-            # The displayed name fades during a long ZL hold. Reacquire, then
-            # identify the resulting target instead of reusing the old name.
-            self.ZA_ZL_ACTION("END")
-            self.wait(0.05)
-        self.ZA_ZL_ACTION("")
-        self.wait(0.15 if guarded else 0.1)
-        if guarded:
-            for confirmation in range(2):
-                if not self.ZA_capture_name_check(expected_name):
-                    self.ZA_ZL_ACTION("END")
-                    return False
-                if confirmation == 0:
-                    self.wait(0.05)
+            if not self._za_capture_lock_and_confirm_name(expected_name):
+                return False
             # Nothing that can move/relock/attack intervenes between the fresh
             # second observation and the actual ZR input.
+        elif expected_name:
+            # 補完モード（名前は日本語の画像なので見ない）
+            if not self._za_capture_lock_target():
+                return False
+        else:
+            self.ZA_ZL_ACTION("")
+            self.wait(0.1)
         self.keys.input(Button.ZR)
         self.wait(0.15)
         self.keys.inputEnd(Button.ZR)
@@ -22290,7 +22380,71 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZA_ZL_ACTION("END")
         return True
 
-    def ZA_capture_name_check(self, expected_name):
+    def _za_capture_lock_target(self):
+        """名前を見ずに（補完モード）、ロック相手の HP バーがある状態にする。あれば True。
+
+        投げる直前に ZL を 0.1 秒離して押し直すとロックが掛からず、ボールが空振りした
+        （2026-11-01 英語のメリープ）。コフキムシの修正は名前を見る経路だけだった。
+        今のロックで HP バーが見えればそのまま投げ、無ければ間を空けて掛け直し、表示を待つ。
+        """
+        if getattr(self, "ZL_state", 0) == 1 and self.ZA_capture_target_view()["bars"]:
+            return True
+        if getattr(self, "ZL_state", 0) == 1:
+            self.ZA_ZL_ACTION("END")
+            # 間を空けないと押し直しがロックとして効かない
+            self.wait(float(getattr(self, "ZA_CAPTURE_RELOCK_GAP_SECONDS", 0.2)))
+        self.ZA_ZL_ACTION("")
+        if self._za_capture_wait_view()["bars"]:
+            return True
+        print("[CAPTURE_TARGET] skip GET: no locked target (補完モード)")
+        return False
+
+    def _za_capture_lock_and_confirm_name(self, expected_name):
+        """投げる前に、ロック中の相手の名前が expected_name だと続けて2回確かめる。確かめられたら True。
+
+        ロック中はまず今のロックのまま見る。長く押したままだと名前が薄れて消えるため、見えなければ
+        ロックを掛け直し、表示が出るのを待って見る。
+        以前は毎回ロックを離して0.05秒で押し直し、0.15秒後に1回だけ見ていた。間隔が短くロックが
+        掛からず外れたままになり、薄れていく名前を見て失敗し、そのたびにロックを外していた
+        （2026-11-01 実機: マーク4つのコフキムシに26秒間投げられず、その間の攻撃で倒した）。
+        確かめられなくてもロックは外さない（別の種族と確認できた時だけ外す）。
+        """
+        if getattr(self, "ZL_state", 0) == 1 and self._za_capture_confirm_name(
+                expected_name, float(getattr(self, "ZA_CAPTURE_NAME_HELD_SECONDS", 0.4))):
+            return True
+        if getattr(self, "ZL_state", 0) == 1:
+            self.ZA_ZL_ACTION("END")
+            # 間を空けないと押し直しがロックとして効かない
+            self.wait(float(getattr(self, "ZA_CAPTURE_RELOCK_GAP_SECONDS", 0.2)))
+        self.ZA_ZL_ACTION("")
+        if self._za_capture_confirm_name(
+                expected_name, float(getattr(self, "ZA_CAPTURE_NAME_LOCK_SECONDS", 1.2))):
+            return True
+        detail = getattr(self, "last_capture_target_detection", None) or {}
+        print("[CAPTURE_TARGET] skip GET: {} score={:.3f} reason={} winner={}".format(
+            expected_name, detail.get("score", -2.), detail.get("reason", "unconfirmed"),
+            detail.get("winner")))
+        if detail.get("winner_confirmed") and detail.get("winner") != expected_name:
+            # 別の種族にロックしている → 外して次で取り直す
+            self.ZA_ZL_ACTION("END")
+        return False
+
+    def _za_capture_confirm_name(self, expected_name, seconds):
+        """seconds 秒の間、新しいフレームで続けて2回 expected_name と読めたら True。"""
+        deadline = time.monotonic() + seconds
+        streak = 0
+        while True:
+            if self.ZA_capture_name_check(expected_name, quiet=True):
+                streak += 1
+                if streak >= 2:
+                    return True
+            else:
+                streak = 0
+            if time.monotonic() >= deadline:
+                return False
+            self.wait(0.05)
+
+    def ZA_capture_name_check(self, expected_name, quiet=False):
         try:
             from Commands.PythonCommands.LocalFunction.ImageDetection import read_command_frame
             from Commands.PythonCommands.LocalFunction.LockOnDetection import detect_capture_name
@@ -22309,7 +22463,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             detail = {"matched": False, "target": expected_name,
                       "reason": str(error)}
         self.last_capture_target_detection = detail
-        if not detail["matched"]:
+        if not detail["matched"] and not quiet:
             now = time.monotonic()
             if now >= getattr(self, "_za_capture_name_log_after", 0.0):
                 print("[CAPTURE_TARGET] skip GET: {} score={:.3f} reason={}".format(
@@ -22335,10 +22489,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         template = getattr(self, "_za_getchance_template", None)
         if template is None:
             import numpy as np
-            # 上向き＞4つの画像。HPバーの右下の狭い範囲だけで照合する（チェック数と OR）
-            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..",
-                                "Template", "ZA_Story_PIC", "Common", "getmerker4.png")
-            template = cv2.imdecode(np.fromfile(os.path.normpath(path), dtype=np.uint8), cv2.IMREAD_COLOR)
+            # 上向き＞4つの画像。HPバーの右下の狭い範囲だけで照合する（チェック数と OR）。
+            # 場所は PokeCon の Template フォルダから取る（このファイルからの階層で決めると、配布先の
+            # Commands/PythonCommands/ZA_story/ では1階層浅く、別の場所を探して止まった。2026-11-01）
+            path = self.get_filespec(os.path.join("ZA_Story_PIC", "Common", "getmerker4.png"), mode="t")
+            try:
+                template = cv2.imdecode(np.fromfile(os.path.normpath(path), dtype=np.uint8),
+                                        cv2.IMREAD_COLOR)
+            except OSError as error:
+                print("[CAPTURE_TARGET] getmerker4.png を読めません（マークは色で判定）: {}".format(error))
+                template = None
             self._za_getchance_template = template if template is not None else False
         try:
             frame = read_command_frame(self)
@@ -22350,6 +22510,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         except (OSError, ValueError, RuntimeError) as error:
             view["reason"] = str(error)
         self.last_capture_target_view = view
+        if view["getchance"]:
+            self._za_capture_getchance_seen_at = time.monotonic()
         return view
 
     def _za_capture_getchance(self):
@@ -22367,14 +22529,34 @@ class ZA_story_Base(ImageProcPythonCommand):
         return view["getchance"]
 
     def _za_capture_wait_view(self):
-        """ZL を押した直後は、ロックオン先の HP バーが出るまで少し待って見る。"""
+        """ZL を押した直後は、ロックオン先の HP バーと捕獲率マークが出るまで少し待って見る。
+
+        HP バーが見えただけでは返さない。前のロックの HP バーは薄れながら残り、マークはロックが
+        掛かってから遅れて出るため（2026-11-01 実機: 掛け直した直後にマーク無しと見て攻撃し、
+        マーク4つのコフキムシを倒した）。マーク4つが見えた時だけ早く返す。
+        """
         seconds = float(getattr(self, "ZA_CAPTURE_LOCKON_WAIT_SECONDS", 0.8))
         deadline = time.monotonic() + seconds
+        with_bar = None
         while True:
             view = self.ZA_capture_target_view()
-            if view["bars"] or view["getchance"] or time.monotonic() >= deadline:
+            if view["getchance"]:
                 return view
+            if view["bars"]:
+                with_bar = view
+            if time.monotonic() >= deadline:
+                return with_bar or view
             self.wait(0.1)
+
+    def _za_capture_getchance_recent(self):
+        """少し前（ZA_CAPTURE_GETCHANCE_HOLD_SECONDS 以内）にマーク4つが見えたか。
+
+        マークはレベル差が大きいと HP 満タンでも4つ出て、攻撃しなくても捕まえられる。ロックの
+        掛け直しや投げた後はマークが一時的に見えなくなるため、その間に攻撃して倒さないようにする。
+        """
+        seen_at = getattr(self, "_za_capture_getchance_seen_at", None)
+        hold = float(getattr(self, "ZA_CAPTURE_GETCHANCE_HOLD_SECONDS", 10.0))
+        return seen_at is not None and time.monotonic() - seen_at < hold
 
     def _1_story_capture_lockon_attack(self, current_state):
         """Z_18/Z_18_2/Z_20の捕獲対象専用：HPバーのある相手だけ攻撃する。
@@ -22404,7 +22586,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 view = self._za_capture_wait_view()
         if view["bars"] or view["getchance"]:
             self._za_capture_no_bar_since = None
-        if view["getchance"]:
+        if view["getchance"] or (view["bars"] and self._za_capture_getchance_recent()):
+            # マーク4つ（少し前に見えた場合も）は攻撃せず次で投げる。HP 満タンでも捕まえられる
             self._za_capture_no_target_count = 0
             self._za_capture_getchance_pending = True
             return "getchance"
@@ -23533,7 +23716,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         active_visible = self.image_check("POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
         field_visible = self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
         supplemental_mode = bool(getattr(getattr(getattr(
-            self, "_native_image_collection", None), "options", None), "supplemental", False))
+            self, "_command_supplemental_session", None), "options", None), "supplemental", False))
         # Save the post-dialogue HUD evidence before FIELD clears the pending
         # result. Lv/name text is unnecessary; the native check uses the portrait
         # and central help icon, restricted to this battle's result context.
@@ -23598,8 +23781,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return next_state
 
     def _1_story_farst_battle_lose(self):
-        session = getattr(self, "_native_image_collection", None)
-        supplemental_mode = getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False)
+        session = getattr(self, "_command_supplemental_session", None)
+        supplemental_mode = getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False)
         if supplemental_mode:
             # This function is reachable only after the first battle's defeat.
             menu = session.choice_observation(self, read_command_frame, "first_retry")
@@ -24220,7 +24403,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_16(self):
         # 補完モード: 白コメントからFIELD復帰までHELPをラッチする。
         # タイムアウトで次周期へ戻っても、観測済みHELPを消さない。
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if (getattr(getattr(supplemental, "options", None), "supplemental", False)
                 and (getattr(self, "_za_hotel16_comment_pending", None) is not None
                      or self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"))):
@@ -24285,12 +24468,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.image_check(target))
 
     def _za_beedle_route(self):
-        """メリープの代わりにビードルを捕まえるルートか（試験中）。"""
+        """メリープの代わりにビードルを捕まえるルートか（試験中）。
+
+        ビードルは名前（日本語の名前画像）でメリープ・ホルビー等と見分けて投げるため、日本語以外
+        （補完モード・おくりものループの他言語）では使わずメリープにする（ユーザー確認 2026-11-01）。
+        """
+        settings = getattr(self, "_za_gift_loop_settings", None) or {}
+        gift_loop = bool(getattr(self, "GIFT_LOOP_MODE", False))
+        supplemental = bool(getattr(getattr(getattr(
+            self, "_command_supplemental_session", None), "options", None), "supplemental", False))
+        if supplemental or (gift_loop and settings.get("language", "JPN") != "JPN"):
+            return False
         if bool(getattr(self, "BEEDLE_ROUTE", False)):
             return True
-        settings = getattr(self, "_za_gift_loop_settings", None) or {}
-        return (bool(getattr(self, "GIFT_LOOP_MODE", False))
-                and settings.get("capture_route") == "beedle")
+        return gift_loop and settings.get("capture_route") == "beedle"
 
     def _za_gift_loop_second_kohuki(self):
         """おくりものループでコフキムシを2匹捕まえるか（従来）。
@@ -25003,7 +25194,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_20" 
     
     def _1_story_out_hotel_z_20_beedle(self):
-        """ビードル（試験）: 攻撃せずにロックオンして捕獲する。捕獲できなければリセットしてZ_19から。"""
+        """ビードル（試験）: 攻撃せずにロックオンして捕獲する。
+
+        投げた後に捕まっていなければロックし直し、ビードルが見えれば投げ直す（ZA_BEEDLE_MAX_THROWS 球まで）。
+        HP バーの相手にロックできない時は、少し右へ向きを変えてロックし直す（ZA_BEEDLE_MAX_TURNS 回まで）。
+        それでも捕まらなければリセットして Z_19 から（ユーザー確認 2026-11-01。以前は1球で捕まらなければ
+        すぐリセットしていた。植え込みの陰のビードルに投げて捕まらず、リセットを4回くり返した回があった）。
+        """
         state = "1_STORY_OUT_HOTEL_Z_20_BEEDLE"
         black_recovery = self._1_story_out_hotel_z_17_22_black_comment_recovery(state)
         if black_recovery is not None:
@@ -25017,7 +25214,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "1_STORY_OUT_HOTEL_Z_20_BEEDLE_RETURN"
         started_at = getattr(self, "_1_story_out_hotel_z_20_beedle_started_at", None)
         if started_at is None:
+            # ビードルの場所に着いた所。投げた数・向きを変えた数を数え直す
             started_at = self._1_story_out_hotel_z_20_beedle_started_at = time.monotonic()
+            self._za_beedle_throws = 0
+            self._za_beedle_turns = 0
+            self._za_beedle_no_target = 0
         if time.monotonic() - started_at >= float(self.ZA_BEEDLE_STALL_SECONDS):
             return self._1_story_out_hotel_z_20_beedle_reset(
                 "no throw (GET) within {:.0f}s".format(float(self.ZA_BEEDLE_STALL_SECONDS)))
@@ -25027,9 +25228,21 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_ZL_ACTION("")
         view = self._za_capture_wait_view()
         if not view["bars"]:
-            # 岩・植え込みなどHPバーの無い物には投げない。攻撃もしない。動かずに待つ
-            # （ZL を押し直すと視点はキャラの向きへ戻るため、視点を回して探しても効かなかった）
+            # 岩・植え込みなどHPバーの無い物には投げない。攻撃もしない
+            self._za_beedle_no_target = getattr(self, "_za_beedle_no_target", 0) + 1
+            if (self._za_beedle_no_target >= int(self.ZA_BEEDLE_TURN_AFTER)
+                    and getattr(self, "_za_beedle_turns", 0) < int(self.ZA_BEEDLE_MAX_TURNS)):
+                # ロックできる相手がいない → 少し右へ向きを変えてロックし直す。ZL を押し直すと視点は
+                # キャラの向きへ戻るため、右スティックの視点ではなく左スティックを少し倒して向きごと変える
+                self._za_beedle_no_target = 0
+                self._za_beedle_turns = getattr(self, "_za_beedle_turns", 0) + 1
+                print("[OUT_HOTEL_Z_20_BEEDLE] no lock-on target -> turn a little right ({}/{})".format(
+                    self._za_beedle_turns, int(self.ZA_BEEDLE_MAX_TURNS)))
+                self.ZA_ZL_ACTION("END")
+                angle, seconds = self.ZA_BEEDLE_TURN
+                self.press(Direction(Stick.LEFT, angle), duration=seconds, wait=0.3)
             return state
+        self._za_beedle_no_target = 0
         other = self._za_beedle_other_species()
         if other:
             # 名前がメリープ・ホルビー等と確認できた相手には投げない（2026-10-31 実機でメリープを
@@ -25040,16 +25253,35 @@ class ZA_story_Base(ImageProcPythonCommand):
             return state
         if self.ZA_get_pokemon() is False:
             return state
-        deadline = time.monotonic() + float(self.ZA_BEEDLE_GET_WAIT_SECONDS)
+        self._za_beedle_throws = getattr(self, "_za_beedle_throws", 0) + 1
+        # 投げたら時間の上限は数え直す（投げ直しの間にリセットしない）
+        self._1_story_out_hotel_z_20_beedle_started_at = time.monotonic()
+        thrown_at = time.monotonic()
+        deadline = thrown_at + float(self.ZA_BEEDLE_GET_WAIT_SECONDS)
+        next_relock = thrown_at + float(self.ZA_BEEDLE_RELOCK_AFTER_SECONDS)
         while time.monotonic() < deadline:
             self.checkIfAlive()
             if self._za_beedle_caught():
-                print("[OUT_HOTEL_Z_20_BEEDLE] caught after throw")
+                print("[OUT_HOTEL_Z_20_BEEDLE] caught after throw {}".format(self._za_beedle_throws))
                 return "1_STORY_OUT_HOTEL_Z_20_BEEDLE_RETURN"
+            if (self._za_beedle_throws < int(self.ZA_BEEDLE_MAX_THROWS)
+                    and time.monotonic() >= next_relock):
+                # 手持ちにビードルのアイコンが出ていない（外れた・ボールから出た）→ ロックし直し、
+                # ビードルが見えれば投げ直す。揺れている間はロックできる相手がいないので待つ
+                self.ZA_ZL_ACTION("")
+                view = self._za_capture_wait_view()
+                if view["bars"] and not self._za_beedle_other_species():
+                    print("[OUT_HOTEL_Z_20_BEEDLE] not caught yet and a target is visible "
+                          "-> throw again ({}/{})".format(self._za_beedle_throws + 1,
+                                                          int(self.ZA_BEEDLE_MAX_THROWS)))
+                    return state
+                self.ZA_ZL_ACTION("END")
+                next_relock = time.monotonic() + 2.0
             self.wait(0.5)
         # 投げた後、手持ち（5か6番目）にビードルのアイコンが出なければリセット
         return self._1_story_out_hotel_z_20_beedle_reset(
-            "not caught within {:.0f}s after throw".format(float(self.ZA_BEEDLE_GET_WAIT_SECONDS)))
+            "not caught within {:.0f}s after throw {}".format(
+                float(self.ZA_BEEDLE_GET_WAIT_SECONDS), self._za_beedle_throws))
 
     def _za_beedle_other_species(self):
         """ロック中の相手の名前がビードル以外の既知の種族（メリープ等）なら、その名前を返す。
@@ -25077,12 +25309,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             if winner in names and (detail.get("winner_confirmed")
                                       or scores.get(winner, -2.0) >= 0.60):
                 return winner
-            captures = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                    "..", "..", "..", "..", "Captures")
+            # 保存先は PokeCon の Captures フォルダ（このファイルからの階層は配布先で変わるため使わない）
             name = "beedle_lock_{}.png".format(time.strftime("%Y%m%d_%H%M%S"))
             ok, data = cv2.imencode(".png", frame)
             if ok:
-                data.tofile(os.path.join(os.path.normpath(captures), name))
+                data.tofile(os.path.normpath(self.get_filespec(name, mode="c")))
         except (OSError, ValueError, RuntimeError) as error:
             print("[OUT_HOTEL_Z_20_BEEDLE] name check skipped: {}".format(error))
         return None
@@ -25107,9 +25338,34 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 戻りは EVENT マーカー基準（ロックオンでキャラの向きが変わっていても同じ方向へ動く）
         if not self.ZA_markerdir("EVENT"):
             return state
+        if self._1_story_out_hotel_z_wild_zone_exit_prompt(state):
+            return "1_STORY_OUT_HOTEL_Z_22"
         for angle, seconds in self.ZA_BEEDLE_RETURN_MOVES:
-            self.press(Direction(Stick.LEFT, angle), duration=seconds, wait=0.5)
+            # 少しずつ進み、途中で「A でる」が出たらそこでワイルドゾーンを出て、元の出口の処理
+            # （Z_20_1・Z_21 の壁沿いの移動）を飛ばす（ユーザー確認 2026-11-01。実機では進み始めて
+            # 約3秒でゲートに着き「A でる」が出ていたが、通り過ぎて壁沿いに約17秒かけていた）。
+            # 補完モード（日本語以外）は A だけの判定になり、別の A 表示で押すことがあるが、
+            # その時は Z_23 が研究所のイベントが始まらないまま120秒で再起動し、ここからやり直す
+            remaining = float(seconds)
+            while remaining > 0:
+                step = min(float(self.ZA_WILD_ZONE_EXIT_CHECK_STEP), remaining)
+                self.press(Direction(Stick.LEFT, angle), duration=step, wait=0.0)
+                remaining -= step
+                if self._1_story_out_hotel_z_wild_zone_exit_prompt(state):
+                    return "1_STORY_OUT_HOTEL_Z_22"
+            self.wait(0.5)
+        if self._1_story_out_hotel_z_wild_zone_exit_prompt(state):
+            return "1_STORY_OUT_HOTEL_Z_22"
         return "1_STORY_OUT_HOTEL_Z_20_1"
+
+    def _1_story_out_hotel_z_wild_zone_exit_prompt(self, tag):
+        """ワイルドゾーンの出口の「A でる」が出ていれば A で出る。出たら True。"""
+        if not self.image_check("POKEMON_ZA_OUT_MARKER"):
+            return False
+        print("[{}] 'A でる' detected -> leave the wild zone here".format(tag))
+        self.wait(0.1)
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return True
 
     def _1_story_out_hotel_z_20_1(self):
         black_recovery = (
@@ -25130,6 +25386,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             return black_recovery
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+            # 壁沿いの移動の前に「A でる」が出ていれば、そこで出る（ユーザー確認 2026-11-01）
+            if self._1_story_out_hotel_z_wild_zone_exit_prompt("OUT_HOTEL_Z_21"):
+                return "1_STORY_OUT_HOTEL_Z_22"
             #方向が不明のため、出口右の隅にオーバーラン
             self.press(Direction(Stick.LEFT,10), duration=5.0, wait=1.0)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -31711,7 +31970,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         blocked = (self.image_check("POKEMON_ZA_BATTLE_BALL_CHECK")
                    or self.image_check("POKEMON_ZA_ESCAPE"))
         supplemental = getattr(getattr(getattr(
-            self, "_native_image_collection", None), "options", None), "supplemental", False)
+            self, "_command_supplemental_session", None), "options", None), "supplemental", False)
         if supplemental and current_state == "3_STORY_MEGA_MOVE2":
             # MOVE1 already checked the talk marker and sent the meeting A.
             # This normal route has one destination: close the conversation
@@ -38438,6 +38697,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _za_box_screen(self):
         import Commands.PythonCommands.Pokemon_Template.ZA.BoxScreen as box_screen
+        if not hasattr(box_screen, "ZA_BOX_ICON"):
+            # Reload で古い BoxScreen が残っている場合（za_box_ready の text 引数が無い）
+            import importlib
+            box_screen = importlib.reload(box_screen)
         return box_screen
 
     def _za_box_cursor_now(self, timeout=3.0):
@@ -38492,7 +38755,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "COMMON_BOX_CHANGE_BOX_TARGET1"
         if self.image_check("POKEMON_ZA_BOX_WINDOW"):
             self.wait(1.0)
-            if not box_screen.za_box_ready(read_command_frame(self)):
+            # 補完モードは「BOX」の文字ではなくボックスのアイコンで見る
+            if not box_screen.za_box_ready(
+                    read_command_frame(self),
+                    text=getattr(self, "_command_supplemental_session", None) is None):
                 return "COMMON_BOX_CHANGE_BOX_TARGET1"
             self._common_box_change_select_tries = 0
             if target2_empty:
@@ -38517,8 +38783,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "COMMON_BOX_CHANGE_BOX_TARGET1"
 
     def ZA_common_box_change_box_target1_select(self):
-        if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
-            session = self._native_image_collection
+        if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
+            session = self._command_supplemental_session
             menu = session.choice_observation(self, read_command_frame, "box")
             if menu and menu["rows"] in (7, 8):
                 if menu["selected"] != 0:
@@ -38703,7 +38969,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.common_evolution_current_state
     
     def ZA_common_evolution_exec(self):
-        session = getattr(self, "_native_image_collection", None)
+        session = getattr(self, "_command_supplemental_session", None)
         supplemental_mode = getattr(getattr(session, "options", None), "supplemental", False)
         if supplemental_mode:
             menu = session.choice_observation(self, read_command_frame, "evolution")
@@ -38957,7 +39223,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "COMMON_MAP_OPEN"
     
     def ZA_Common_goto_select1(self,position,othermap="POKEMON_ZA_FALSE_RETURN",select_position0_direct=0):
-        if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+        if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
             result = self.ZA_story_supplemental_filter(position, "COMMON_GOTO_SELECT1", "COMMON_GOTO_SELECT2", othermap)
             if result is not None:
                 return result
@@ -39168,7 +39434,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     reason, recovery_kind))
             return "COMMON_FURADARI_MAP_BATTLE_RECOVERY"
 
-        supplemental_mode = getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False)
+        supplemental_mode = getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False)
         if supplemental_mode:
             if self.ZA_story_map_confirmation_ready():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
@@ -40148,7 +40414,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_story_note_mapping_a(self, state, pic1, pic2):
         """Record one verified A route for its matching registration check only."""
-        session = getattr(self, "_native_image_collection", None)
+        session = getattr(self, "_command_supplemental_session", None)
         options = getattr(session, "options", None)
         if not getattr(options, "supplemental", False):
             self._za_mapping_a_proof = None
@@ -40161,7 +40427,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     def ZA_story_mapping_a_succeeded(self, pic1, pic2):
         """A proof does not bypass map opening, travel confirmation, or battle guards."""
         proof = getattr(self, "_za_mapping_a_proof", None)
-        session = getattr(self, "_native_image_collection", None)
+        session = getattr(self, "_command_supplemental_session", None)
         if (not isinstance(proof, dict)
                 or not getattr(getattr(session, "options", None), "supplemental", False)):
             return False
@@ -40514,7 +40780,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_story_supplemental_filter(self, position, current_state, next_state, othermap="POKEMON_ZA_FALSE_RETURN"):
         """MAP_6_SELECT: observe, move one row, re-observe, then confirm."""
-        session = self._native_image_collection
+        session = self._command_supplemental_session
         if not (self.image_check("POKEMON_ZA_MAP2") or self.image_check(othermap)):
             return None
         menu = session.choice_observation(self, read_command_frame, "filter")
@@ -40539,7 +40805,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_story_supplemental_surrender(self):
         """Called only immediately after the surrender MINUS. No persistent flag."""
-        session = self._native_image_collection
+        session = self._command_supplemental_session
         deadline = time.monotonic() + 30.0
         confirmed = False
         choice_closed = False
@@ -40579,7 +40845,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "BATTLE_MAP_OPEN"
 
     def ZA_story_map_confirmation_ready(self):
-        session = getattr(self, "_native_image_collection", None)
+        session = getattr(self, "_command_supplemental_session", None)
         if not getattr(getattr(session, "options", None), "supplemental", False):
             return self.image_check("POKEMON_ZA_MOVE_COMMENT")
         self._za_supplemental_map_confirmation = "UNKNOWN"
@@ -40606,7 +40872,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return False
 
     def ZA_Common_mappic_check(self,pic1="NULL",pic2="NULL"):
-        supplemental = getattr(self, "_native_image_collection", None)
+        supplemental = getattr(self, "_command_supplemental_session", None)
         if getattr(getattr(supplemental, "options", None), "supplemental", False):
             # 指定goto直後・歩行なしで15番内にいることを呼出し側で保証。
             if (pic1, pic2) == ("POKEMON_ZA_MOVEPOINT_TARGET_W_ZONE15", "POKEMON_ZA_MOVEPOINT_PIC_W_ZONE15"):
@@ -40735,7 +41001,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "BENCH_MAP_OPEN"
     
     def ZA_bench_goto_pokecenter1(self):        
-        if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+        if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
             result = self.ZA_story_supplemental_filter(2, "BENCH_POKECENTER_SELECT1", "BENCH_POKECENTER_SELECT2", "POKEMON_ZA_FALSE_RETURN")
             if result is not None:
                 return result
@@ -40782,7 +41048,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.etc_sendCommand("Lbutton_down")
                     self.etc_sendCommand("Lbutton_down")
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
-                    session = getattr(self, "_native_image_collection", None)
+                    session = getattr(self, "_command_supplemental_session", None)
                     if getattr(getattr(session, "options", None), "supplemental", False):
                         if self.ZA_story_map_confirmation_ready():
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
@@ -40948,7 +41214,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "QUASAR_MAP_OPEN"
 
     def ZA_goto_quasar1(self):
-        if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+        if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
             result = self.ZA_story_supplemental_filter(1, "QUASAR_SELECT1", "QUASAR_SELECT2", "POKEMON_ZA_FALSE_RETURN")
             if result is not None:
                 return result
@@ -40983,7 +41249,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.wait(self.SLEEPLIST[1][2])
                     self.etc_sendCommand("Lbutton_down")
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.2, interval=0.1)
-                    session = getattr(self, "_native_image_collection", None)
+                    session = getattr(self, "_command_supplemental_session", None)
                     if getattr(getattr(session, "options", None), "supplemental", False):
                         if self.ZA_story_map_confirmation_ready():
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
@@ -41098,7 +41364,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "BATTLE_MAP_OPEN"
 
     def ZA_battle_goto_battle_zone1(self):
-        if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+        if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
             result = self.ZA_story_supplemental_filter(4, "BATTLE_GOTO_BATTLE_ZONE1", "BATTLE_GOTO_BATTLE_ZONE2", "POKEMON_ZA_FALSE_RETURN")
             if result is not None:
                 return result
@@ -41171,7 +41437,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.infi_previous_targetzone = self.targetzone
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
 
-                    session = getattr(self, "_native_image_collection", None)
+                    session = getattr(self, "_command_supplemental_session", None)
                     if getattr(getattr(session, "options", None), "supplemental", False):
                         if self.ZA_story_map_confirmation_ready():
                             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.1, interval=0.1)
@@ -41541,7 +41807,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             self.battleescapecount+=1
             self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
-            if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+            if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
                 return self.ZA_story_supplemental_surrender()
             for loop in range(100):
                 if self.image_check("POKEMON_ZA_ESCAPE_SELECT"):
@@ -41731,7 +41997,7 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             if self.battle_step==0 and self.battle_current_state=="BATTLE_MOVE":
                 self.etc_sendCommand("Lbutton_up")
-            if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False) and self.quasar_current_state == "QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False) and self.quasar_current_state == "QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
                 self.ZA_MOVE_SEE("END")
                 self.ZA_ZL_ACTION("END")
                 self.pressRep(Button.B, repeat=5, duration=0.15, wait=0.1, interval=0.1)
@@ -42162,7 +42428,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                             self.battleescapecount+=1
                             self.battle_nofiled_count=0
                             self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
-                            if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+                            if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
                                 return self.ZA_story_supplemental_surrender()
                             for i in range(100):#無限ループ抜け
                                 if self.image_check("POKEMON_ZA_ESCAPE_SELECT"):
@@ -42295,7 +42561,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                     self.battleescapecount+=1
                                     self.battle_nofiled_count=0
                                     self.pressRep(Button.MINUS, repeat=1, duration=0.15, wait=0.3, interval=0.1)
-                                    if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False):
+                                    if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False):
                                         return self.ZA_story_supplemental_surrender()
                                     for i in range(100):
                                         if self.image_check("POKEMON_ZA_ESCAPE_SELECT"):
@@ -42433,7 +42699,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.notargetcount=0
         start = time.perf_counter()  # 計測開始
         while True:
-            if getattr(getattr(getattr(self, "_native_image_collection", None), "options", None), "supplemental", False) and self.quasar_current_state == "QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            if getattr(getattr(getattr(self, "_command_supplemental_session", None), "options", None), "supplemental", False) and self.quasar_current_state == "QUASAR_BATTLE_LOOP" and self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
                 self.ZA_MOVE_SEE("END")
                 self.ZA_ZL_ACTION("END")
                 return
@@ -50149,14 +50415,20 @@ class ZA_story_Base(ImageProcPythonCommand):
 # こっからがコマンド
 ######################################################
 class _StableZACommandNameMeta(type):
-    """Keep stock CommandLoader from appending the same folder repeatedly."""
-    _command_suffix = " (ZA/ZA_story/ZA_story)"
+    """Keep stock CommandLoader from appending the same folder repeatedly.
+
+    The folder suffix depends on where the command is placed (ZA/ZA_story here,
+    ZA_story directly under PythonCommands in the distribution), so any
+    repeated trailing " (folder/...)" suffix is collapsed to one.
+    """
 
     def __setattr__(cls, name, value):
         if name == "NAME" and isinstance(value, str):
-            doubled = cls._command_suffix + cls._command_suffix
-            while value.endswith(doubled):
-                value = value[:-len(cls._command_suffix)]
+            while True:
+                match = re.match(r"^(.*?)( \([^()]*\))\2+$", value)
+                if match is None:
+                    break
+                value = match.group(1) + match.group(2)
         super().__setattr__(name, value)
 
 
@@ -50166,7 +50438,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v1.0.0'
+    NAME = 'ZA_story_v0.2.0'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
@@ -50538,7 +50810,39 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             return None
         return super().start(ser, postProcess)
 
+    def _za_supplemental_setup(self):
+        """補完モード（日本語以外）を決める。
+
+        Start画面の「補完モード」、おくりものループの言語（JPN以外）、改造版PokeCon の
+        「補足画像でのチェック有効モード」（読むだけ）のどれかで有効。判定は Commands 側
+        （LocalFunction/ZA/SupplementalSession.py）で行い、PokeCon 本体の変更は要らない。
+        """
+        try:
+            from Commands.PythonCommands.LocalFunction.ZA import SupplementalSession as supplemental
+        except ModuleNotFoundError as error:
+            if not str(getattr(error, "name", "")).startswith("Commands"):
+                raise
+            from LocalFunction.ZA import SupplementalSession as supplemental
+        language = ""
+        settings = getattr(self, "_za_gift_loop_settings", None)
+        if bool(getattr(self, "GIFT_LOOP_MODE", False)) and isinstance(settings, dict):
+            language = str(settings.get("language", "JPN") or "JPN")
+            wanted = language != "JPN"
+        else:
+            options = supplemental.native_options(self)
+            wanted = bool(getattr(self, "ZA_SUPPLEMENTAL", False)
+                          or getattr(options, "supplemental", False))
+            language = str(getattr(options, "language", "") or "")
+        if wanted:
+            supplemental.enable(self, language)
+            print("[補完モード] 有効（言語 {}）: 日本語の文字に頼る判定を文字なしの判定で行います".format(
+                language or "未指定"))
+        else:
+            supplemental.disable(self)
+        return wanted
+
     def do(self):
+        self._za_supplemental_setup()
         # スクリプト継承
         print(
             "[ZA_COMMAND_START] main_init={} story3_init={} "

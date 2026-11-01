@@ -28,6 +28,26 @@
     "name": "アオイ",
     "gender": "female"
    }
+  ],
+  "ENG": [
+   {
+    "name": "Alex",
+    "gender": "male"
+   },
+   {
+    "name": "Emma",
+    "gender": "female"
+   }
+  ],
+  "FRA": [
+   {
+    "name": "Louis",
+    "gender": "male"
+   },
+   {
+    "name": "Chloé",
+    "gender": "female"
+   }
   ]
  }
 }
