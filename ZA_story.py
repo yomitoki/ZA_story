@@ -40771,6 +40771,21 @@ class ZA_story_Base(ImageProcPythonCommand):
                 or (bool(pictures) and set(pictures) <= getattr(
                     self, "ZA_STORY_MOVEMENT_A_TURN_PICTURES", frozenset())))
 
+    def ZA_story_movement_a_turn_ready(self):
+        """視点を回してよい画面か（戦闘・会話でない FIELD）。
+
+        通常の FIELD の判定は、手持ちの欄の下の ▲▼ も見る。部屋の中など ▲▼ が出ない所
+        （2026-11-02 HOTEL_Z_MOVE11: 手持ちがワニノコだけ）では一致しないため、会話の枠が
+        無い時に限り、▲▼ を見ない判定（手持ちのアイコン・戦闘でない）で代わりに確かめる。
+        """
+        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return True
+        if any(self.image_check(name) for name in (
+                "POKEMON_ZA_TEXT_WHITE_COMMENT", "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_TEXT_GREEN_COMMENT")):
+            return False
+        return bool(self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK_1"))
+
     def ZA_story_turn_camera_for_movement_a(self, key, pictures):
         """右スティックで視点をゆっくり回し、A表示が見えたら止めて確かめる。
 
@@ -40825,7 +40840,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return pending["dialogue_state"]
             # ドア・ゾーンの入口: L ではなく右スティックで視点を回して探す（1回だけ、FIELD のみ）
             if (pending.get("turn_camera") and not pending.get("turned")
-                    and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+                    and self.ZA_story_movement_a_turn_ready()):
                 self.checkIfAlive()
                 pending["turned"] = True
                 if self.ZA_story_turn_camera_for_movement_a(key, pending["pictures"]):
