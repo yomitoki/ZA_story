@@ -101,6 +101,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         """Start欄で選ばれたタブを反映する。key=None は通常のStory。"""
         self.GIFT_LOOP_MODE = key == "gift_loop"
         self._za_gift_loop_settings = settings if self.GIFT_LOOP_MODE else None
+        self._za_gift_loop_language = None   # 周ごとの言語（開始時は先頭の名前の行）
 
     # 補完モード（日本語以外）で使う文字なし画像。書き方は IMAGE_DETECTION_TARGETS と同じで、
     # 登録した名前の image_check は、補完モードの間だけこちらで判定する（どれか1つが一致で一致）。
@@ -24485,7 +24486,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         gift_loop = bool(getattr(self, "GIFT_LOOP_MODE", False))
         supplemental = bool(getattr(getattr(getattr(
             self, "_command_supplemental_session", None), "options", None), "supplemental", False))
-        if supplemental or (gift_loop and settings.get("language", "JPN") != "JPN"):
+        # 言語は名前の行ごと（今の周の言語。以前の設定は全体の言語）
+        language = getattr(self, "_za_gift_loop_language", None) or settings.get("language", "JPN")
+        if supplemental or (gift_loop and language != "JPN"):
             return False
         if bool(getattr(self, "BEEDLE_ROUTE", False)):
             return True
@@ -40414,7 +40417,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # Finish the third logical trial before scheduling ordinary recovery.
             detail = getattr(self, "last_action_prompt_detection", {})
             debug_ready = detail.get("attempt", 0) >= 3
-        if (time.monotonic()-started>=12.0 and debug_ready
+        if (time.monotonic()-started>=float(getattr(self,"ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS",12.0)) and debug_ready
                 and not getattr(self,"_za_movement_a_failure",None)):
             self._za_movement_a_failure={
                 "dispatch":getattr(self,"_za_story_pre_step_gate_last_dispatch_state",None),
@@ -40745,6 +40748,68 @@ class ZA_story_Base(ImageProcPythonCommand):
             return False
         return True
 
+    # A表示の待ち時間（これを過ぎると ZA_story_movement_a_timeout_recovery でリセット）
+    ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS = 12.0
+    # A入力で画面が切り替わり視点が戻る入口（ドアの「でる」「はいる」、ゾーンなど）だけは、
+    # A表示が見えない時に L ではなく右スティックでゆっくり視点を回して探す。
+    # 2026-11-02 HOTEL_Z_MOVE11: 「Aでる」の A が主人公の白い服に重なり、一致しなかった。
+    ZA_STORY_MOVEMENT_A_TURN_PICTURES = frozenset(("POKEMON_ZA_IN_MARKER", "POKEMON_ZA_OUT_MARKER"))
+    # DOOR_A（どの A でも可）は会話・ベンチにも使うため、A の後に暗転して場所が変わることを
+    # 録画の step フレームで確かめた入口だけを並べる（2026-11-01 の日本語の録画）。
+    # MOVE11: 部屋の「でる」→ 暗転 / MOVE4: エレベーター → 暗転。
+    # OUT_HOTEL_Z_27 は A の後も明るいまま会話（3択）になるため入れない。
+    ZA_STORY_MOVEMENT_A_TURN_KEYS = frozenset({"_1_story_hote_z_move11", "_1_story_hote_z_move4"})
+    ZA_STORY_MOVEMENT_A_TURN_ANGLE = 180
+    ZA_STORY_MOVEMENT_A_TURN_STRENGTH = 0.4
+
+    def ZA_story_movement_a_turns_camera(self, key, pictures, allow_recenter):
+        """A入力後に視点が戻る入口か。後続の移動に視点を使う入口（allow_recenter=False）は回さない。"""
+        if not allow_recenter:
+            return False
+        # 部品（DevTemplates の Fragment）から作った Commands には定数が無いことがある
+        return (key in getattr(self, "ZA_STORY_MOVEMENT_A_TURN_KEYS", ())
+                or (bool(pictures) and set(pictures) <= getattr(
+                    self, "ZA_STORY_MOVEMENT_A_TURN_PICTURES", frozenset())))
+
+    def ZA_story_turn_camera_for_movement_a(self, key, pictures):
+        """右スティックで視点をゆっくり回し、A表示が見えたら止めて確かめる。
+
+        回すのは A表示の待ち時間（ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS）の残りだけ。
+        見つからなければ待ち時間切れとして扱い、既存のリセットへ進む。
+        """
+        context = self.ZA_story_movement_a_context()
+        timers = getattr(self, "_za_movement_a_wait_timers", {})
+        started = timers.get((context, tuple(pictures)), time.monotonic())
+        deadline = started + float(getattr(self, "ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS", 12.0))
+        direction = Direction(Stick.RIGHT, getattr(self, "ZA_STORY_MOVEMENT_A_TURN_ANGLE", 180),
+                              getattr(self, "ZA_STORY_MOVEMENT_A_TURN_STRENGTH", 0.4))
+        print("[MOVEMENT_A_TURN] {}: A表示未検知。右スティックで視点を回して探します（残り{:.1f}秒）".format(
+            key, max(0.0, deadline - time.monotonic())))
+        while time.monotonic() < deadline:
+            seen = False
+            self.hold(direction, wait=0.0)
+            try:
+                while time.monotonic() < deadline:
+                    self.checkIfAlive()
+                    if self.ZA_story_movement_a_check(pictures):
+                        seen = True
+                        break
+                    self.wait(0.05)
+            finally:
+                self.holdEnd(direction)
+            if not seen:
+                break
+            # 止めた位置で確かめる。惰性で外れたら回転を続ける
+            self.wait(0.2)
+            if self.ZA_story_wait_movement_a(pictures, timeout=0.5):
+                print("[MOVEMENT_A_TURN] {}: A表示を検知。Aを入力します".format(key))
+                return True
+        # 待ち時間切れを記録する（呼出し元の Step が既存の復旧＝リセットへ進む）
+        if self.ZA_story_wait_movement_a(pictures, timeout=0.1):
+            return True
+        print("[MOVEMENT_A_TURN] {}: 視点を回してもA表示なし".format(key))
+        return False
+
     def ZA_story_resume_movement_a(self, key):
         """Recheck at the endpoint; do not replay the movement or earlier A inputs."""
         if not self.ZA_story_movement_a_pending(key):
@@ -40758,10 +40823,20 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._za_movement_a_pending = None
                 print("[MOVEMENT_A_DIALOGUE] {}: 会話開始済み。入口Aを省略".format(key))
                 return pending["dialogue_state"]
+            # ドア・ゾーンの入口: L ではなく右スティックで視点を回して探す（1回だけ、FIELD のみ）
+            if (pending.get("turn_camera") and not pending.get("turned")
+                    and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+                self.checkIfAlive()
+                pending["turned"] = True
+                if self.ZA_story_turn_camera_for_movement_a(key, pending["pictures"]):
+                    self.checkIfAlive()
+                    self._za_movement_a_pending = None
+                    return pending["action"]()
             # The ZIP videos also show a wall/player obscuring a ladder or doorway.
             # Recenter only once, only on a confirmed non-battle field. Never move,
             # reset the game, or recenter during a dialogue/battle while awaiting A.
-            if (pending.get("allow_recenter", True) and not pending.get("recentered")
+            elif (pending.get("allow_recenter", True) and not pending.get("turn_camera")
+                    and not pending.get("recentered")
                     and self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
                 self.checkIfAlive()
                 pending["recentered"] = True
@@ -40776,8 +40851,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         return pending["action"]()
 
     def ZA_story_checked_movement_action(self, key, pictures, action, waiting_result,
-                                        dialogue_state=None, allow_recenter=True):
-        """Guard an explicit fixed-movement action, never a dialogue/search loop."""
+                                        dialogue_state=None, allow_recenter=True, turn_camera=None):
+        """Guard an explicit fixed-movement action, never a dialogue/search loop.
+
+        turn_camera: A表示が見えない時に右スティックで視点を回して探す（None は入口の種類で決める）。
+        """
         try:
             from Commands.PythonCommands.LocalFunction import ActionPromptCheck as action_prompt
         except ModuleNotFoundError as error:
@@ -40787,6 +40865,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 raise
             from LocalFunction import ActionPromptCheck as action_prompt
         source = action_prompt.capture_action_prompt_source(self, pictures, key, action)
+        if turn_camera is None:
+            # 部品（Fragment）から作った Commands には判定が無いことがあり、その時は従来どおり L
+            turns = getattr(self, "ZA_story_movement_a_turns_camera", None)
+            turn_camera = bool(callable(turns) and turns(key, pictures, allow_recenter))
         self._za_movement_a_wait_timers = {}
         self._za_movement_a_failure = None
         self._za_movement_a_pending = {
@@ -40797,6 +40879,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "context": self.ZA_story_movement_a_context(),
             "dialogue_state": dialogue_state,
             "allow_recenter": allow_recenter,
+            "turn_camera": bool(turn_camera),
         }
         return self.ZA_story_resume_movement_a(key)
 
@@ -50460,7 +50543,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v0.2.0'
+    NAME = 'ZA_story_v0.2.1'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
@@ -50852,7 +50935,12 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         language = ""
         settings = getattr(self, "_za_gift_loop_settings", None)
         if bool(getattr(self, "GIFT_LOOP_MODE", False)) and isinstance(settings, dict):
-            language = str(settings.get("language", "JPN") or "JPN")
+            # 言語は名前の行ごと（今の周の言語。開始時は先頭の行。以前の設定は全体の言語）
+            language = str(getattr(self, "_za_gift_loop_language", None) or "")
+            if not language:
+                profiles = settings.get("profiles") or []
+                first = profiles[0] if profiles and isinstance(profiles[0], dict) else {}
+                language = str(first.get("language") or settings.get("language", "JPN") or "JPN")
             wanted = language != "JPN"
         else:
             options = supplemental.native_options(self)
@@ -50866,6 +50954,11 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         else:
             supplemental.disable(self)
         return wanted
+
+    def ZA_gift_loop_set_language(self, language):
+        """おくりものループの周の はじめからの言語を決め、補完モードをその言語に合わせる。"""
+        self._za_gift_loop_language = str(language or "JPN")
+        return self._za_supplemental_setup()
 
     def do(self):
         self._za_supplemental_setup()
