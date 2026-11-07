@@ -22610,9 +22610,81 @@ class ZA_story_Base(ImageProcPythonCommand):
                       "count={}".format(current_state, count))
             return "no_target"
         self._za_capture_no_target_count = 0
-        self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,
-                                   lockon_endskip=1,keep_lockon=True)
+        self.ZA_wz1_attack(lockon_endskip=1, keep_lockon=True)
         return "attacked"
+
+    # ワイルドゾーン1の捕獲（Z_16・Z_18・Z_18_2・Z_20）で X の技で攻撃するポケモン（左下の操作中ポケモンの絵）。
+    # 本編は Z_38 の後の技の入れ替え（1_STORY_WANINOKO_SKILL_CHANGE3～8）で、手持ち2番目（ヤヤコマ）・
+    # 4番目（コフキムシ）・5番目（メリープ）の X の技を A/B へ移す。それまでは X にしか攻撃技が無い
+    # （ヤヤコマはユーザー確認 2026-11-03）。おくりものループはワニノコがひんしでもメリープを探し続ける
+    # （DEAD 4体まで）ため、これらが出ると A/B では攻撃できなかった（2026-10-30 の録画）。
+    # メリープは捕まえた後はワイルドゾーン1で戦わないため絵を用意していない。
+    ZA_WZ1_X_ATTACKERS = ("POKEMON_ZA_ACTIVE_YAYAKOMA", "POKEMON_ZA_ACTIVE_KOHUKI")
+    ZA_WZ1_X_MOVE_ICON = "POKEMON_ZA_MOVE_X_NORMAL"
+    # X を押してから X メニューが開いたかを見る時間
+    ZA_WZ1_X_MENU_WAIT_SECONDS = 0.6
+
+    def ZA_wz1_x_attacker(self):
+        """X の技で攻撃するポケモンが出ていれば、その絵の名前を返す。無ければ None。"""
+        for picture in self.ZA_WZ1_X_ATTACKERS:
+            if self.image_check(picture):
+                return picture
+        return None
+
+    def ZA_wz1_attack(self, lockon_endskip=1, keep_lockon=False):
+        """ワイルドゾーン1の攻撃。X の技のポケモンは X、それ以外（ワニノコ・ホルビー）は従来どおり A/B。
+
+        X は技の欄（ロックオン中に出る）の X にノーマルのアイコンが見えた時だけ押す。欄が無い時の
+        X は X メニューを開くため。開いた時は B で閉じる。
+        戻り値: "x"（X を押した）/"x_wait"（アイコンが見えず押さなかった）/"ab"
+        """
+        attacker = self.ZA_wz1_x_attacker()
+        if attacker != getattr(self, "_za_wz1_attacker", None):
+            self._za_wz1_attacker = attacker
+            print("[WZ1_ATTACK] active={} -> {}".format(
+                attacker or "other", "X (icon check)" if attacker else "A/B"))
+        if attacker is None:
+            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,
+                                       lockon_endskip=lockon_endskip,keep_lockon=keep_lockon)
+            return "ab"
+        if not (keep_lockon and getattr(self, "ZL_state", 0) == 1):
+            self.ZA_ZL_ACTION("")
+            # ロックオンがゲーム側へ反映されてから技の欄を見る
+            self.wait(0.1)
+        result = "x_wait"
+        if self.image_check(self.ZA_WZ1_X_MOVE_ICON):
+            self._za_wz1_x_wait_count = 0
+            self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
+            result = "x"
+            self.ZA_wz1_close_x_menu()
+        else:
+            # 待ち時間中（アイコンの下から水色）・表示の途中は外れる。次の周回で押す
+            count = getattr(self, "_za_wz1_x_wait_count", 0) + 1
+            self._za_wz1_x_wait_count = count
+            if count == 1 or count % 10 == 0:
+                print("[WZ1_ATTACK] {}: X move icon not visible -> no X (count={})".format(
+                    attacker, count))
+        if lockon_endskip == 0:
+            self.ZA_ZL_ACTION("END")
+        return result
+
+    def ZA_wz1_close_x_menu(self, max_presses=5):
+        """攻撃の X で X メニューが開いた時は B で閉じる（開くまで少し待って見る）。閉じたら True。"""
+        deadline = time.monotonic() + float(self.ZA_WZ1_X_MENU_WAIT_SECONDS)
+        while not self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+            if time.monotonic() >= deadline:
+                return False
+            self.wait(0.1)
+        print("[WZ1_ATTACK] X menu opened by the attack X -> close with B")
+        # メニューの間はロックと視点回転を外す（次の攻撃でロックし直す）
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        for _ in range(int(max_presses)):
+            self.checkIfAlive()
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            if not self.image_check("POKEMON_ZA_X_MENU_OPEN"):
+                return True
+        return False
 
 
     def ZA_ball_change(self,type=0):
@@ -24338,26 +24410,96 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_out_hotel_z_9(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
-                return "1_STORY_OUT_HOTEL_Z_10"   # 技の入れ替えは3rdバトル前へ移動
+                # ヤヤコマ・ホルビーを捕まえる前に、ワニノコの技が入れ替わっているかを確かめる（済みなら通過）
+                return "1_STORY_WANINOKO_SKILL_CHANGE1"
         return "1_STORY_OUT_HOTEL_Z_9"
-    
+
+    # 技の変更ページの「覚えているわざ」（ひし形の4つ、1280x720）。みずタイプの技の水色のしずくが
+    # どこにあるかで、ワニノコの技の入れ替え（みずでっぽう Y→B）が済んでいるかを見る（文字は見ない）。
+    # 録画の技の変更ページ: 入れ替え前 Y=223〜224 / 入れ替え後 B=140〜241、ほかの所は 0（英語も同じ）。
+    ZA_SKILL_PAGE_MOVE_SLOTS = {"X": (750, 305, 1055, 345), "Y": (590, 360, 900, 400),
+                                "A": (905, 360, 1215, 400), "B": (750, 412, 1055, 455)}
+    ZA_SKILL_PAGE_WATER_MIN_PIXELS = 80
+    ZA_SKILL_PAGE_WATER_OTHER_MAX_PIXELS = 30
+    ZA_SKILL_PAGE_WATER_READ_SECONDS = 1.0
+
+    def ZA_skill_page_water_slot(self):
+        """技の変更ページで、みずタイプの技がある所（"X"/"Y"/"A"/"B"）。ページが無い・読めなければ None。"""
+        if not self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW"):
+            return None
+        frame = read_command_frame(self)
+        if frame is None:
+            return None
+        if frame.shape[1] != 1280 or frame.shape[0] != 720:
+            frame = cv2.resize(frame, (1280, 720))
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        water = ((hsv[..., 0] >= 95) & (hsv[..., 0] <= 125)
+                 & (hsv[..., 1] >= 150) & (hsv[..., 2] >= 150))
+        counts = {slot: int(water[y0:y1, x0:x1].sum())
+                  for slot, (x0, y0, x1, y1) in self.ZA_SKILL_PAGE_MOVE_SLOTS.items()}
+        slot = max(counts, key=counts.get)
+        others = max(count for name, count in counts.items() if name != slot)
+        if (counts[slot] >= self.ZA_SKILL_PAGE_WATER_MIN_PIXELS
+                and others <= self.ZA_SKILL_PAGE_WATER_OTHER_MAX_PIXELS):
+            return slot
+        return None
+
+    def _1_story_waninoko_skill_swap_already_done(self):
+        """みずでっぽうの入れ替え（Y→B）の技の変更ページで、もう B にあれば入れ替えずに閉じ始める。
+
+        入れ替えは1回きりで、2回行うと元に戻る。入れ替えの後にリセットすると、入れ替えより前の
+        オートセーブから読み直すことがあり、入れ替えが消えたままホルビーまで進んでいた（2026-11-04
+        ユーザー報告）。そのため入れ替えの前に今の並びを確かめ、何度通っても同じ並びになるようにする。
+        閉じ始めたら True（X↔A の入れ替えも済んでいるものとする。2つは続けて行うため）。
+        """
+        if self.common_skill_change_current_state != "COMMON_SKILL_CHANGE_SKILL_WINDOW_CHTARGET1":
+            return False
+        if not self.image_check("POKEMON_ZA_SKILL_PAGE_WINDOW"):
+            return False   # ページが出るまで、入れ替えの処理（CHTARGET1）がそのまま待つ
+        deadline = time.monotonic() + float(self.ZA_SKILL_PAGE_WATER_READ_SECONDS)
+        slot = self.ZA_skill_page_water_slot()
+        while slot is None and time.monotonic() < deadline:
+            self.wait(0.1)
+            slot = self.ZA_skill_page_water_slot()
+        print("[WANINOKO_SKILL] みずでっぽうの位置: {}".format(slot or "不明（入れ替えを行う）"))
+        if slot != "B":
+            return False
+        print("[WANINOKO_SKILL] 入れ替え済み → 入れ替えずに閉じる")
+        self.common_skill_change_current_state = "COMMON_SKILL_CHANGE_SKILL_WINDOW_CLOSE"
+        self._za_waninoko_skill_swap_skipped = True
+        return True
+
+    def _1_story_waninoko_skill_swap(self, current_state, target1, target2, next_state,
+                                     done_state, check_done=False):
+        """ワニノコ（手持ち1番目）の技を入れ替える。check_done は Y→B の入れ替えの前に並びを確かめる時。"""
+        if check_done:
+            self._1_story_waninoko_skill_swap_already_done()
+        ret = self.ZA_common_skill_change_function(1, target1, target2)
+        if ret != "COMMON_SKILL_CHANGE_START":
+            return current_state
+        if getattr(self, "_za_waninoko_skill_swap_skipped", False):
+            self._za_waninoko_skill_swap_skipped = False
+            return done_state
+        return next_state
+
     def _1_story_waninoko_skill_change1(self):
-        # 技の入れ替えは3rdバトルの前（1_STORY_HOTEL_Z_SKILL_CHANGE1/2）へ移した。
-        # 復帰先として残っているStepのため、入れ替えずに次へ進む（2回入れ替えると元に戻るため）。
-        return "1_STORY_OUT_HOTEL_Z_10"
+        # ヤヤコマ・ホルビーの前に確かめ直す（3rdバトルの前の入れ替えが、リセットで消えていることがある）
+        return self._1_story_waninoko_skill_swap(
+            "1_STORY_WANINOKO_SKILL_CHANGE1", "Y", "B",
+            "1_STORY_WANINOKO_SKILL_CHANGE2", "1_STORY_OUT_HOTEL_Z_10", check_done=True)
 
     def _1_story_waninoko_skill_change2(self):
-        # 同上（3rdバトルの前で入れ替え済み）
-        return "1_STORY_OUT_HOTEL_Z_10"
+        return self._1_story_waninoko_skill_swap(
+            "1_STORY_WANINOKO_SKILL_CHANGE2", "X", "A",
+            "1_STORY_OUT_HOTEL_Z_10", "1_STORY_OUT_HOTEL_Z_10")
 
     def _1_story_hotel_z_skill_change1(self):
         #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
         # 3rdバトルでA/Bで攻撃するため、バトルへ向かう移動（MOVE13）の前に行う（以前は OUT_HOTEL_Z_9 の後）。
-        ret = self.ZA_common_skill_change_function(1,"Y","B")
-        if ret == "COMMON_SKILL_CHANGE_START":
-            return "1_STORY_HOTEL_Z_SKILL_CHANGE2"
-        else:
-            return "1_STORY_HOTEL_Z_SKILL_CHANGE1"
+        # 入れ替え済みなら入れ替えない（OUT_HOTEL_Z_9 の後にも確かめ直す）
+        return self._1_story_waninoko_skill_swap(
+            "1_STORY_HOTEL_Z_SKILL_CHANGE1", "Y", "B",
+            "1_STORY_HOTEL_Z_SKILL_CHANGE2", "1_STORY_HOTEL_Z_MOVE13", check_done=True)
 
     def _1_story_hotel_z_skill_change2(self):
         ret = self.ZA_common_skill_change_function(1,"X","A")
@@ -24455,7 +24597,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "1_STORY_OUT_HOTEL_Z_17"
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            self.ZA_battle_coCp_noloop(Xaction=0,Aaction=1,Yaction=0,Baction=1,lockon_endskip=1)
+            # ヤヤコマを捕まえた後、ホルビーとの戦闘中にワニノコがひんしになるとヤヤコマが出る。
+            # ヤヤコマは X にしか攻撃技が無いため、X のアイコンが見えた時だけ X で攻撃する（ZA_wz1_attack）
+            self.ZA_wz1_attack(lockon_endskip=1)
         elif self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
             self.wait(0.1)
             if self.image_check("POKEMON_ZA_TEXT_2_GETCHANCE"):
@@ -26149,7 +26293,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,270), duration=3.2, wait=0.5)
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                return "1_STORY_OUT_HOTEL_Z_69" 
+                # 69番は回復コメントを確認するまでBを押さない（今回の話しかけ分から数え直す）
+                self._za_hotel_z69_comment_seen = False
+                return "1_STORY_OUT_HOTEL_Z_69"
             # 後続70番の固定移動に必要な画角を保つ。A未検知時もLで視点を変えない。
             return self.ZA_story_checked_movement_action(
                 '_1_story_out_hotel_z_68', ('POKEMON_ZA_DOOR_A',),
@@ -26157,10 +26303,31 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         return "1_STORY_OUT_HOTEL_Z_68" 
     
+    # ガイの回復コメントは1ページだけ。白コメントの判定は文末の ∨ だけを見るため、
+    # 先にBを連打すると ∨ を確認する前に閉じ、会話未確認のまま120秒後にZ67へ戻っていた
+    # （2026-10-26 録画 4950〜4952秒）。コメントはBを押すまで閉じないので、
+    # ∨ 付きコメントか選択肢が見えるまでは何も押さずに待つ。
     def _1_story_out_hotel_z_69(self):
-        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0,require_entry_picture=True): #FIELDから変更
+        if not getattr(self, "_za_hotel_z69_comment_seen", False):
+            comment_pictures = (
+                "POKEMON_ZA_TEXT_WHITE_COMMENT",
+                "POKEMON_ZA_TEXT_WHITE_COMMENT2",
+                "POKEMON_ZA_TEXT_GREEN_COMMENT",
+                "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_HELP_MARKER",
+                "POKEMON_ZA_1_SELECT",
+                "POKEMON_ZA_2_SELECT",
+            )
+            if not any(self.image_check(picture) for picture in comment_pictures):
+                # 表示途中（∨ なし）や回復演出中。Bで閉じないよう待つだけ
+                return "1_STORY_OUT_HOTEL_Z_69"
+            print("[HOTEL_Z69] 回復コメントを確認。Bで閉じます")
+            self._za_hotel_z69_comment_seen = True
+        # コメントは確認済みなので、FIELDへ戻れば完了とする
+        if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_1_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            self._za_hotel_z69_comment_seen = False
             return "1_STORY_OUT_HOTEL_Z_70"
-        return "1_STORY_OUT_HOTEL_Z_69" 
+        return "1_STORY_OUT_HOTEL_Z_69"
     
     def _1_story_out_hotel_z_70(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
@@ -26936,8 +27103,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,80), duration=5.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_2: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_2", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_2: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -27050,8 +27217,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,90), duration=1.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_8: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_8", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_8: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -27610,8 +27777,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,180), duration=15.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_38: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_38", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_38: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -27681,8 +27848,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,170), duration=11.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_41: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_41", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_41: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -27746,8 +27913,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,180), duration=1.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_44: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_44", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_44: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28352,8 +28519,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,125), duration=4.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_77: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_77", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_77: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28417,8 +28584,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             # 美術館入口への移動後、Lで視点を合わせてから入館する。
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_80: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_80", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_80: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28436,8 +28603,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 館内から戻るためのA。「A でる」の表示も想定する。
             # 最後の移動方向へLで視点を合わせてから退出する。
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_OUT_MARKER", "POKEMON_ZA_DOOR_A")):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_81_0: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_81_0", ("POKEMON_ZA_OUT_MARKER", "POKEMON_ZA_DOOR_A"),
+                    restart=not getattr(self, "_za_museum_exit_waiting", False)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_81_0: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self._za_museum_exit_waiting = True
                 return "2_STORY_MAPPING_81_0"
@@ -28499,8 +28667,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,80), duration=5.0, wait=0.5)
             self.press(Direction(Stick.LEFT,0), duration=0.5, wait=0.5)#上でA入力できるいちから少しずれる
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_83: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_83", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_83: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28667,8 +28835,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,240), duration=11.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_92: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_92", ("POKEMON_ZA_IN_MARKER",), restore_view=True):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_92: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28737,8 +28905,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,100), duration=5.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_96: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_96", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_96: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28808,8 +28976,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             # ド・フツー入口への移動後、Lで視点を合わせる。
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_99: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_99", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_99: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -28943,8 +29111,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,180), duration=1.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_105: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_105", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_105: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -29989,8 +30157,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,80), duration=2.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_112: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_112", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_112: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -30063,8 +30231,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_114_1: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_114_1", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_114_1: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -30137,8 +30305,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             self.press(Direction(Stick.LEFT,180), duration=4.0, wait=0.5)
             self.wait(1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _2_story_mapping_116_1: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_2_story_mapping_116_1", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _2_story_mapping_116_1: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -34942,8 +35110,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
             # 17番の入口に向けた最後の移動後、Lで視点を合わせる。
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _6_story_mapping_3: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_6_story_mapping_3", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _6_story_mapping_3: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -35921,8 +36089,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,350), duration=9.0, wait=1.0)
             self.press(Direction(Stick.LEFT,0), duration=13.3, wait=1.0)
             self.press(Direction(Stick.LEFT,90), duration=2.0, wait=1.0)
-            if not self.ZA_story_wait_movement_a(("POKEMON_ZA_IN_MARKER",)):
-                print("[MOVEMENT_A_MISSING] _7_story_mapping_3: A表示を3秒以内に確認できず")
+            if not self.ZA_story_wait_entry_a("_7_story_mapping_3", ("POKEMON_ZA_IN_MARKER",)):
+                print("[MOVEMENT_A_MISSING] _7_story_mapping_3: A表示を確認できず（3秒待ち＋視点回転）")
                 self._za_mapping_a_proof = None
                 self.Common_current_state = "COMMON_START"
                 self.map_cursor_reset = 0
@@ -40750,26 +40918,35 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     # A表示の待ち時間（これを過ぎると ZA_story_movement_a_timeout_recovery でリセット）
     ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS = 12.0
-    # A入力で画面が切り替わり視点が戻る入口（ドアの「でる」「はいる」、ゾーンなど）だけは、
-    # A表示が見えない時に L ではなく右スティックでゆっくり視点を回して探す。
+    # A表示が3秒見えない時は、L で視点を戻す代わりに右スティックでゆっくり視点を回して探す
+    # （残りの約9秒。L を押していた入口はすべて。ユーザー指定 2026-11-04）。
+    # ZA_story_wait_movement_a を直接使う場所登録の入口（2_STORY_MAPPING 等）は ZA_story_wait_entry_a で同じく回す。
     # 2026-11-02 HOTEL_Z_MOVE11: 「Aでる」の A が主人公の白い服に重なり、一致しなかった。
-    ZA_STORY_MOVEMENT_A_TURN_PICTURES = frozenset(("POKEMON_ZA_IN_MARKER", "POKEMON_ZA_OUT_MARKER"))
+    # A入力で場所が変わり視点が戻る入口（ドアの「でる」「はいる」など）は、見つけたらそのまま A。
+    # それ以外（会話・はしご・調べる等）は A の後もこの場所から動き、移動の向きは視点で決まるため、
+    # 見つけたら L で今までと同じ向き（主人公の後ろ）へ戻してから A を押す。
+    ZA_STORY_MOVEMENT_A_MAP_CHANGE_PICTURES = frozenset(("POKEMON_ZA_IN_MARKER", "POKEMON_ZA_OUT_MARKER"))
     # DOOR_A（どの A でも可）は会話・ベンチにも使うため、A の後に暗転して場所が変わることを
     # 録画の step フレームで確かめた入口だけを並べる（2026-11-01 の日本語の録画）。
     # MOVE11: 部屋の「でる」→ 暗転 / MOVE4: エレベーター → 暗転。
     # OUT_HOTEL_Z_27 は A の後も明るいまま会話（3択）になるため入れない。
-    ZA_STORY_MOVEMENT_A_TURN_KEYS = frozenset({"_1_story_hote_z_move11", "_1_story_hote_z_move4"})
+    ZA_STORY_MOVEMENT_A_MAP_CHANGE_KEYS = frozenset({"_1_story_hote_z_move11", "_1_story_hote_z_move4"})
     ZA_STORY_MOVEMENT_A_TURN_ANGLE = 180
     ZA_STORY_MOVEMENT_A_TURN_STRENGTH = 0.4
 
     def ZA_story_movement_a_turns_camera(self, key, pictures, allow_recenter):
-        """A入力後に視点が戻る入口か。後続の移動に視点を使う入口（allow_recenter=False）は回さない。"""
-        if not allow_recenter:
-            return False
+        """A表示が見えない時に視点を回して探すか（L で視点を戻していた入口はすべて）。
+
+        後続の移動に視点を使う入口（allow_recenter=False）は、今までどおり回さず L も押さない。
+        """
+        return bool(allow_recenter)
+
+    def ZA_story_movement_a_changes_map(self, key, pictures):
+        """A入力で場所が変わり視点が戻る入口か（回した視点を A の前に戻さなくてよい）。"""
         # 部品（DevTemplates の Fragment）から作った Commands には定数が無いことがある
-        return (key in getattr(self, "ZA_STORY_MOVEMENT_A_TURN_KEYS", ())
+        return (key in getattr(self, "ZA_STORY_MOVEMENT_A_MAP_CHANGE_KEYS", ())
                 or (bool(pictures) and set(pictures) <= getattr(
-                    self, "ZA_STORY_MOVEMENT_A_TURN_PICTURES", frozenset())))
+                    self, "ZA_STORY_MOVEMENT_A_MAP_CHANGE_PICTURES", frozenset())))
 
     def ZA_story_movement_a_turn_ready(self):
         """視点を回してよい画面か（戦闘・会話でない FIELD）。
@@ -40825,6 +41002,43 @@ class ZA_story_Base(ImageProcPythonCommand):
         print("[MOVEMENT_A_TURN] {}: 視点を回してもA表示なし".format(key))
         return False
 
+    def ZA_story_wait_entry_a(self, key, pictures=("POKEMON_ZA_IN_MARKER",), timeout=3.0,
+                              restart=True, restore_view=False):
+        """場所が変わる入口（「はいる」「でる」）の A表示を待つ。見えなければ視点を回して探す。
+
+        ZA_story_wait_movement_a を直接使う Step（場所登録の入口 2_STORY_MAPPING_2〜116_1、
+        6/7_STORY_MAPPING_3）は ZA_story_checked_movement_action を通らないため、A表示が見えない時に
+        視点を回して探す処理（ユーザー指定 2026-11-04）が入っていなかった。2026-11-06 MAPPING_99
+        （ド・フツーの入口）: 背景で A の一致率が下がり、3秒で見えないまま 98 からのやり直しを繰り返した。
+        3秒で見えなければ、A表示の待ち時間（ZA_STORY_MOVEMENT_A_TIMEOUT_SECONDS）の残り約9秒、
+        右スティックでゆっくり視点を回して A が見える向きを探す。L を押す Step はそのまま押してよい。
+        A の後は場所が変わり、続きはマップ移動（ZA_Common_goto）か入口の先から始まるため、
+        回した視点は戻さない。入口の先ですぐ決まった向きへ歩く Step は restore_view=True にし、
+        見つけたら L で主人公の後ろへ戻してから A を押させる（主人公は動いていないので A は押せる）。
+        restart: 移動からやり直した確認（前の試行の待ち始めを持ち越さない）。移動せずに同じ場所で
+        確認を繰り返す Step（MAPPING_81_0 の退出待ち）は False にし、12秒で既存の復旧へ進める。
+        戦闘・会話中（FIELD でない）は回さない。
+        """
+        if restart:
+            self._za_movement_a_wait_timers = {}
+            self._za_movement_a_failure = None
+        if self.ZA_story_wait_movement_a(pictures, timeout=timeout):
+            return True
+        # 部品（Fragment）から作った Commands には判定が無いことがあり、その時は従来どおり回さない
+        turn = getattr(self, "ZA_story_turn_camera_for_movement_a", None)
+        ready = getattr(self, "ZA_story_movement_a_turn_ready", None)
+        if (not callable(turn) or not callable(ready)
+                or getattr(self, "_za_movement_a_failure", None) or not ready()):
+            return False
+        self.checkIfAlive()
+        found = bool(turn(key, pictures))
+        self.checkIfAlive()
+        if found and restore_view:
+            print("[MOVEMENT_A_TURN] {}: 視点を L で戻します".format(key))
+            self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self.checkIfAlive()
+        return found
+
     def ZA_story_resume_movement_a(self, key):
         """Recheck at the endpoint; do not replay the movement or earlier A inputs."""
         if not self.ZA_story_movement_a_pending(key):
@@ -40838,13 +41052,25 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self._za_movement_a_pending = None
                 print("[MOVEMENT_A_DIALOGUE] {}: 会話開始済み。入口Aを省略".format(key))
                 return pending["dialogue_state"]
-            # ドア・ゾーンの入口: L ではなく右スティックで視点を回して探す（1回だけ、FIELD のみ）
+            # L ではなく右スティックで視点を回して探す（1回だけ、FIELD のみ）
             if (pending.get("turn_camera") and not pending.get("turned")
                     and self.ZA_story_movement_a_turn_ready()):
                 self.checkIfAlive()
                 pending["turned"] = True
-                if self.ZA_story_turn_camera_for_movement_a(key, pending["pictures"]):
-                    self.checkIfAlive()
+                found = self.ZA_story_turn_camera_for_movement_a(key, pending["pictures"])
+                self.checkIfAlive()
+                if found and not pending.get("restore_view"):
+                    self._za_movement_a_pending = None
+                    return pending["action"]()
+                # 回した視点を今までの L と同じ向き（主人公の後ろ）へ戻す。会話・はしご等は A の後も
+                # ここから動き、移動の向きは視点で決まるため。見つからなかった時も、やり直しの移動が
+                # ずれないように戻す。
+                print("[MOVEMENT_A_TURN] {}: 視点を L で戻します".format(key))
+                self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                self.checkIfAlive()
+                if found:
+                    # 主人公は動いていないので A は押せる。戻すと A がまた服に重なることがあるため、
+                    # 見え直しは待たない
                     self._za_movement_a_pending = None
                     return pending["action"]()
             # The ZIP videos also show a wall/player obscuring a ladder or doorway.
@@ -40869,7 +41095,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                                         dialogue_state=None, allow_recenter=True, turn_camera=None):
         """Guard an explicit fixed-movement action, never a dialogue/search loop.
 
-        turn_camera: A表示が見えない時に右スティックで視点を回して探す（None は入口の種類で決める）。
+        turn_camera: A表示が見えない時に右スティックで視点を回して探す（None は allow_recenter で決める）。
         """
         try:
             from Commands.PythonCommands.LocalFunction import ActionPromptCheck as action_prompt
@@ -40884,6 +41110,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             # 部品（Fragment）から作った Commands には判定が無いことがあり、その時は従来どおり L
             turns = getattr(self, "ZA_story_movement_a_turns_camera", None)
             turn_camera = bool(callable(turns) and turns(key, pictures, allow_recenter))
+        changes_map = getattr(self, "ZA_story_movement_a_changes_map", None)
+        restore_view = bool(turn_camera and not (callable(changes_map) and changes_map(key, pictures)))
         self._za_movement_a_wait_timers = {}
         self._za_movement_a_failure = None
         self._za_movement_a_pending = {
@@ -40895,6 +41123,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             "dialogue_state": dialogue_state,
             "allow_recenter": allow_recenter,
             "turn_camera": bool(turn_camera),
+            "restore_view": restore_view,
         }
         return self.ZA_story_resume_movement_a(key)
 
@@ -50151,6 +50380,49 @@ class ZA_story_Base(ImageProcPythonCommand):
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
         IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_BEEDLE_ICON_GET6': 'Pokemon ZA caught-icon check for Weedle in party slot 6'})
 
+    # ワイルドゾーン1の攻撃（2026-11-03）: 戦闘中に左下へ出る操作中ポケモンの絵と、右下の技の欄の X のアイコン。
+    # 絵のカードは半透明で景色が透けるため、ポケモンの部分だけを白にしたマスクで色ごと比べる
+    # （右上の状態異常の印の場所は比べない）。録画の step フレーム約3,400枚で、本人 0.98 以上・
+    # 他のポケモンや画面はヤヤコマ 0.45・コフキムシ 0.38 まで。
+    # 技のアイコンはタイプの絵（たいあたり・にらみつけるは同じ絵）で、攻撃技か変化技かは見分けられない。
+    # ノーマルの絵（輪と角の丸い四角）をひし形の内側だけで比べる。技の欄が無い草むら・床は 0.52 まで、
+    # 使える X の技は 0.56 以上。待ち時間中（下から水色）と表示の途中は外れる。
+    IMAGE_DETECTION_TARGETS.update({'POKEMON_ZA_ACTIVE_YAYAKOMA': [{'crop': [54, 524, 146, 612],
+                           'mask_path': 'Template/ZA_Story_PIC/_1_z_lank/yayakoma_active_mask.png',
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story_PIC/_1_z_lank/yayakoma_active.png',
+                           'threshold': 0.75,
+                           'use_gray': False}],
+     'POKEMON_ZA_ACTIVE_KOHUKI': [{'crop': [54, 524, 146, 612],
+                           'mask_path': 'Template/ZA_Story_PIC/_1_z_lank/kohuki_active_mask.png',
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story_PIC/_1_z_lank/kohuki_active.png',
+                           'threshold': 0.75,
+                           'use_gray': False}],
+     'POKEMON_ZA_MOVE_X_NORMAL': [{'crop': [980, 521, 1047, 588],
+                           'mask_path': 'Template/ZA_Story_PIC/Common/battle_move/move_normal_x_mask.png',
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story_PIC/Common/battle_move/move_normal_x.png',
+                           'threshold': 0.6,
+                           'use_gray': False}]})
+    if 'IMAGE_DETECTION_OPERATORS' in locals():
+        IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_ACTIVE_YAYAKOMA': 'OR',
+     'POKEMON_ZA_ACTIVE_KOHUKI': 'OR',
+     'POKEMON_ZA_MOVE_X_NORMAL': 'OR'})
+    if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
+        IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_ACTIVE_YAYAKOMA': 'Pokemon ZA battle card: Fletchling is the active Pokemon',
+     'POKEMON_ZA_ACTIVE_KOHUKI': 'Pokemon ZA battle card: Scatterbug is the active Pokemon',
+     'POKEMON_ZA_MOVE_X_NORMAL': 'Pokemon ZA move panel: Normal-type move icon in the X slot'})
+
     def _image_check_target(self, targetimage):
         variants = self.IMAGE_DETECTION_TARGETS.get(str(targetimage), [])
         if not hasattr(self, '_image_similarity_history'):
@@ -50585,7 +50857,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v0.2.1'
+    NAME = 'ZA_story_v0.2.2'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
