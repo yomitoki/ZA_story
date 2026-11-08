@@ -4,50 +4,21 @@
  "profiles": [
   {
    "name": "アオイ",
-   "gender": "male"
+   "gender": "male",
+   "language": "JPN"
   },
   {
    "name": "アオイ",
-   "gender": "female"
+   "gender": "female",
+   "language": "JPN"
   }
  ],
  "looks_number": 1,
  "gift_mode": "one",
  "gift_index": 4,
+ "gift_count": 2,
  "max_loops": 0,
- "capture_route": "beedle",
+ "capture_route": "merip",
  "home_transfer": true,
- "language": "JPN",
- "profiles_by_language": {
-  "JPN": [
-   {
-    "name": "アオイ",
-    "gender": "male"
-   },
-   {
-    "name": "アオイ",
-    "gender": "female"
-   }
-  ],
-  "ENG": [
-   {
-    "name": "Alex",
-    "gender": "male"
-   },
-   {
-    "name": "Emma",
-    "gender": "female"
-   }
-  ],
-  "FRA": [
-   {
-    "name": "Louis",
-    "gender": "male"
-   },
-   {
-    "name": "Chloé",
-    "gender": "female"
-   }
-  ]
- }
+ "language": "JPN"
 }

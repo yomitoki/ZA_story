@@ -11335,9 +11335,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         # Require every label in its expected row; row count alone is not proof.
         if rows == 2:
             template = templates["2_select_tutorial.png"]
-            labels = (template[0:42, 0:150], template[61:103, 0:145])
-            kind = "retry_without_hp"
-        elif rows == 3 and getattr(self, "_za_mega_last_battle_mode", False):
+            retry_label = template[0:42, 0:150]
+            advice_label = template[61:103, 0:145]
+            # HPなし2択の下段は「アドバイス」だけでなく「あきらめる」もある
+            # （2_STORY_MEGA_MOVE21など）。上段「再挑戦する」は必須とし、
+            # 下段が「アドバイス」でない時は、同じフレームの質問
+            # 「このまま再挑戦しますか？」で再挑戦メニューと確定する。
+            if (matching_rows(retry_label, invert=True) == {0}
+                    and (retry
+                         or matching_rows(advice_label, invert=True) == {1})):
+                return {"kind": "retry_without_hp", "target": 0}
+            return {}
+        if rows == 3 and getattr(self, "_za_mega_last_battle_mode", False):
             template = templates["3_select_tutorial.png"]
             labels = (template[0:36, 0:150], template[48:92, 0:175],
                       template[112:145, 0:125])
@@ -31312,7 +31321,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.ZA_story_movement_a_pending('_3_story_canari_2_recovery3'):
             return self.ZA_story_resume_movement_a('_3_story_canari_2_recovery3')
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,270), duration=2.0, wait=1.0)
+            self.press(Direction(Stick.LEFT,270), duration=1.2, wait=1.0)
             self.wait(0.5)
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -50857,7 +50866,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v0.2.2'
+    NAME = 'ZA_story_v0.2.3'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
