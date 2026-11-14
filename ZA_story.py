@@ -87,6 +87,9 @@ import re
 ######################################################
 class ZA_story_Base(ImageProcPythonCommand):
     COMMAND_RUN_SETTINGS = True
+    # 開始画面の「ストーリー」タブの開始位置の既定（2026-11-14 ユーザー指定）: 「現在のStep」だと配布先で
+    # 初めて動かす時に途中から始まって困るため、「先頭から」（終了指定なし＝最後まで）を既定にする
+    COMMAND_RUN_DEFAULT_START = "first"
 
     # Start欄（開始位置・その他の操作）の追加タブ。選んだタブで Start すると
     # apply_command_run_mode() が呼ばれる。通常のStory開始は既存の「ストーリー」タブ。
@@ -96,10 +99,29 @@ class ZA_story_Base(ImageProcPythonCommand):
         return GiftLoopSettings.build_panel(
             parent, host, os.path.dirname(os.path.abspath(__file__)))
 
+    # 2026-11-14 ユーザー指定: エラー時の記録（ログ・画面）の ON/OFF は通常の操作では見えない別タブにする。
+    # 切り替えた時点で保存し、ストーリー・おくりものループの両方に効く。このタブでは開始しない
+    @staticmethod
+    def _build_error_records_tab(parent, host):
+        from Commands.PythonCommands.Pokemon_Template.ZA import ErrorRecords
+        return ErrorRecords.build_panel(parent, host, os.path.dirname(os.path.abspath(__file__)))
+
     COMMAND_RUN_MODES = (
         {"key": "gift_loop", "label": "おくりものループ（※セーブ削除あり）",
          "builder": _build_gift_loop_tab},
+        {"key": "error_records", "label": "エラー時の記録",
+         "builder": _build_error_records_tab},
     )
+
+    def _za_error_record(self, label):
+        """止まった時の記録（「エラー時の記録」が ON の時だけ。文字と止まった瞬間の画面）。"""
+        try:
+            import traceback
+            from Commands.PythonCommands.Pokemon_Template.ZA import ErrorRecords
+            ErrorRecords.save_error(os.path.dirname(os.path.abspath(__file__)), label,
+                                    traceback.format_exc(limit=8), read_command_frame(self))
+        except Exception:   # 記録を残せなくても止まり方は変えない
+            pass
 
     def apply_command_run_mode(self, key, settings):
         """Start欄で選ばれたタブを反映する。key=None は通常のStory。"""
@@ -239,6 +261,26 @@ class ZA_story_Base(ImageProcPythonCommand):
             "description": (
                 "A表示を待って外れた時の画面と一致率、倍率・ぼけ・色調を変えた時の一致率を"
                 "SerialController/A_Miss_Check/ へ保存し、summary.md に原因の見立てをまとめます。"),
+            "default": False,
+        },
+        {
+            "attribute": "THRESHOLD_MINUS_005",
+            "label": "THRESHOLD_MINUS_005（画像の判定の閾値 0.80〜1.0 を 0.05 下げる）",
+            "description": (
+                "image_check の見本（日本語の画像・補完モードの見本）で、閾値が 0.80〜1.0 のものを"
+                "0.05 下げて判定します（0.90→0.85、0.80→0.75）。戦闘のボールは 0.90 より下げません。"
+                "A表示の判定・起動時の確認画面などの専用の判定と Switch 本体の画面は対象外です。"
+                "THRESHOLD_TO_080 と両方 ON の時は低い方を使います。"),
+            "default": False,
+        },
+        {
+            "attribute": "THRESHOLD_TO_080",
+            "label": "THRESHOLD_TO_080（画像の判定の閾値 0.80 以上を 0.80 にする）",
+            "description": (
+                "image_check の見本（日本語の画像・補完モードの見本）で、閾値が 0.80 以上のものを"
+                "0.80 にして判定します（全体の動作確認用。問題が出た所だけ後で個別に直す）。"
+                "戦闘のボールは 0.90 より下げません（0.80 では戦闘以外の画面でも一致し、フィールドに"
+                "戻れず止まった。11/13）。対象外は THRESHOLD_MINUS_005 と同じです。"),
             "default": False,
         },
         {
@@ -3931,6 +3973,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.A_Nocheck=False
         self.A_ScaleSearch=False
         self.A_MissSave=False
+        # 画像の判定の閾値を下げるモード（Start画面の切替。説明は COMMAND_DEBUG_OPTIONS）
+        self.THRESHOLD_MINUS_005=False
+        self.THRESHOLD_TO_080=False
         # おくりもの受け取りループ（開始時に設定ウィンドウで _za_gift_loop_settings を決める）
         self.GIFT_LOOP_MODE=False
         self._za_gift_loop_settings = None
@@ -4064,6 +4109,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "1_STORY_OUT_HOTEL_Z_20_1": self._1_story_out_hotel_z_20_1,
             "1_STORY_OUT_HOTEL_Z_20_BEEDLE": self._1_story_out_hotel_z_20_beedle,
             "1_STORY_OUT_HOTEL_Z_20_BEEDLE_RETURN": self._1_story_out_hotel_z_20_beedle_return,
+            # 捕まえるはずの相手と違うポケモンを逃がしてレポート → 捕まえ直す（2026-11-13）
+            "1_STORY_OUT_HOTEL_Z_RELEASE": self._1_story_out_hotel_z_release,
             "1_STORY_OUT_HOTEL_Z_21": self._1_story_out_hotel_z_21,
             "1_STORY_OUT_HOTEL_Z_22": self._1_story_out_hotel_z_22,
             "1_STORY_OUT_HOTEL_Z_23": self._1_story_out_hotel_z_23,
@@ -6188,9 +6235,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 初戦前は手持ちポケモンのUIがまだなく、通常のHARD FIELDは
         # 成立しない。この明示セーブ地点だけ、Step本体と同じ会話開始
         # マーカーをロード後の復帰確認に使う。他の再起動には広げない。
+        # 2026-11-14（フランス語の周）: A 確認の時間切れ（movement_a）でも同じ自動セーブ地点へ
+        # 戻すのに、autosave の時だけ認めていたため、女の子の前に戻っても復帰と見なさず
+        # リセットを繰り返した（05:04〜）。戻し先が同じなので movement_a も認める。
         pending = getattr(self, "_za_story_event_entry_pending_recovery", None)
         if (isinstance(pending, dict)
-                and pending.get("recovery_kind") == "autosave"
+                and pending.get("recovery_kind") in ("autosave", "movement_a")
                 and pending.get("recovery_target")
                 == "1_STORY_FARST_POKEMON_SELECT"
                 and self.image_check("POKEMON_ZA_CHAT_MARKER")):
@@ -20032,7 +20082,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if recovery_target in getattr(
                     self, "ZA_STORY_GAME_RESET_INFI_REENTRY_TARGETS", ()):
                 self._ZA_story_reset_infi_recovery_runtime_state(recovery_target)
-            if (pending.get("recovery_kind") == "autosave"
+            if (pending.get("recovery_kind") in ("autosave", "movement_a")
                     and recovery_target == "1_STORY_FARST_POKEMON_SELECT"):
                 # ロード前の戦闘開始・終了判定を持ち越さない。強制敗戦と
                 # リセット確認の完了履歴はCommands終了まで維持する。
@@ -23820,10 +23870,26 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._za_gift_story_stop_state = None
 
     def ZA_gift_loop_main(self):
-        from Commands.PythonCommands.Pokemon_Template.ZA.ZAGiftLoop import run_gift_loop
+        # 部品（ZAGiftLoop・MysteryGift など）を直した時は PokeCon を再起動して読み込む
+        # （11/13 ユーザー指定。版の番号で読み直す仕組みは外した）
+        import Commands.PythonCommands.Pokemon_Template.ZA.ZAGiftLoop as gift_loop
+        run_gift_loop = gift_loop.run_gift_loop
         if not self._za_gift_loop_settings:
             raise RuntimeError("おくりもの受け取りループの設定がありません")
-        return run_gift_loop(self, self._za_gift_loop_settings)
+        try:
+            if getattr(self, "_za_gift_loop_resume", None) == "after_receive":
+                self._za_gift_loop_resume = None
+                return gift_loop.resume_after_receive(self, self._za_gift_loop_settings)
+            return run_gift_loop(self, self._za_gift_loop_settings)
+        except Exception:
+            # 2026-11-13: Interrupt の表示は例外の文だけで場所が分からなかった（tuple index out of range）。
+            # 出力欄に場所を出す（停止の Interrupt はそのまま上へ渡す）
+            import traceback
+            detail = traceback.format_exc(limit=6)
+            print("[ZAおくりものループ] エラーの場所:\n" + detail)
+            # ファイルへの記録（文字と止まった瞬間の画面）は do() でまとめて行う（2026-11-14 ユーザー指定:
+            # 「エラー時の記録」タブで ON の時だけ。既定 OFF。以前は gift_loop_last_error.txt を既定で作っていた）
+            raise
 
     ######################################################
     # MAIN_STATE_INIT (引継ぎ実行用)
@@ -24197,6 +24263,37 @@ class ZA_story_Base(ImageProcPythonCommand):
                     _after_checked_a_1, '1_STORY_FARST_POKEMON_SELECT')
         return "1_STORY_FARST_POKEMON_SELECT"
     
+    @staticmethod
+    def za_mission_complete_banner_frame(frame):
+        """COMPLETE の表示（日本語・英語の COMPLETE／スペイン語の COMPLETADA など）を文字を見ずに判定する。
+
+        黄色い帯（濃さと上下の境目）・帯の両端の山形・六角形の上部か緑の題字の色で見る。ミッション開始の帯は
+        六角形・題字が無いので外れる。11/13 夜: 保存画面 1,276枚で COMPLETADA 47枚（無入力で暗くなった後も）は
+        全部合格・それ以外は全部不合格（帯 ≥0.99／上下 ≤0.00／山形 ≥0.28／六角形 ≥0.65／題字 ≥0.42）。
+        """
+        import numpy as np
+        if frame is None or getattr(frame, "shape", None) != (720, 1280, 3):
+            return False
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hue_ch, sat, val = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+        hue = (hue_ch >= 15) & (hue_ch <= 35) & (val >= 40)
+        strong, soft = hue & (sat >= 160), hue & (sat >= 120)
+        green = (hue_ch >= 40) & (hue_ch <= 80) & (sat >= 130) & (val >= 45)
+        band = min(strong[272:378, 262:420].mean(), strong[272:378, 860:1018].mean())
+        edge = max(strong[234:250, 262:390].mean(), strong[234:250, 890:1018].mean(),
+                   strong[402:418, 262:420].mean(), strong[402:418, 860:1018].mean())
+        chevron = min(strong[262:388, 226:252].mean(), strong[262:388, 1028:1056].mean())
+        emblem_or_title = (soft[125:180, 580:700].mean() >= .40
+                           or green[182:242, 330:950].mean() >= .15)
+        return bool(band >= .55 and edge <= .25 and chevron >= .15 and emblem_or_title)
+
+    def _za_mission_complete_banner(self):
+        try:
+            frame = read_command_frame(self)
+        except (RuntimeError, OSError, ValueError):
+            return False
+        return self.za_mission_complete_banner_frame(frame)
+
     def _1_story_farst_battle(self):
         # 共通処理のB入力で敗戦表示が消える前に、専用画像を記録する。
         # 台詞では勝敗を決めない。報酬表示と敗戦／再挑戦専用表示を分ける。
@@ -24207,6 +24304,25 @@ class ZA_story_Base(ImageProcPythonCommand):
         field_visible = self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
         supplemental_mode = bool(getattr(getattr(getattr(
             self, "_command_supplemental_session", None), "options", None), "supplemental", False))
+        # 11/13 夜（スペイン語(中南米)）: コインが出ている間も攻撃の処理に入ってコインを取りこぼし、多言語では
+        # COMPLETE の文字（C・M・P・T）で判定できないため COMPLETADA の表示で無入力のまま止まった。さらに
+        # 「勝った後の会話中」の印が残ったまま再開画面の判定が合い、勝ったのに LOSE へ進んだ。
+        # コインは勝った印なので、見えたら攻撃・選択肢より先に END へ。多言語は COMPLETE の表示を文字を
+        # 見ずに判定して END へ（会話と COMPLETE の表示は END の B 送りが進める）
+        if victory_visible:
+            flow_state.pop("result_comment_pending", None)
+            flow_state.pop("complete_banner_since", None)
+            print("[FARST_BATTLE] COIN -> FARST_BATTLE_END")
+            return "1_STORY_FARST_BATTLE_END"
+        if supplemental_mode and self._za_mission_complete_banner():
+            since = flow_state.setdefault("complete_banner_since", time.monotonic())
+            if time.monotonic() - since >= 1.0:
+                flow_state.pop("result_comment_pending", None)
+                flow_state.pop("complete_banner_since", None)
+                print("[FARST_BATTLE] COMPLETE banner (no text) -> FARST_BATTLE_END")
+                return "1_STORY_FARST_BATTLE_END"
+            return "1_STORY_FARST_BATTLE"
+        flow_state.pop("complete_banner_since", None)
         # Save the post-dialogue HUD evidence before FIELD clears the pending
         # result. Lv/name text is unnecessary; the native check uses the portrait
         # and central help icon, restricted to this battle's result context.
@@ -25079,8 +25195,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 raise RuntimeError("フィールドの手持ち欄を確認できませんでした")
             self.wait(0.3)
 
-    def _za_beedle_caught(self):
-        """ビードルが手持ち（コフキムシの次。通常5番目・おくりものループ6番目）に入ったか。
+    def _za_beedle_icon_caught(self):
+        """ビードルのアイコンが手持ち（コフキムシの次。通常5番目・おくりものループ6番目）にあるか。
 
         ストーリー実行でおくりものループ途中のセーブ（コフキムシ2匹）から試す時は6番目に入るので、
         もう一方の番号も見る（5番目はコフキムシ、6番目は空なので取り違えない）。
@@ -25089,17 +25205,172 @@ class ZA_story_Base(ImageProcPythonCommand):
         return any(self.image_check("POKEMON_ZA_BEEDLE_ICON_GET{}".format(n))
                    for n in (slot, 11 - slot))
 
-    def _za_merip_caught(self):
-        """メリープ捕獲済みか。おくりものループではコフキムシ2匹の後の手持ち6番目も見る。
-
-        ビードルルートでは、メリープの代わりにビードルが入ったかを返す。
-        """
-        if self._za_beedle_route():
-            return self._za_beedle_caught()
+    def _za_merip_icon_caught(self):
+        """メリープのアイコンが手持ち5番目（おくりものループではコフキムシ2匹の後の6番目も）にあるか。"""
         if self.image_check("POKEMON_ZA_MERIP_ICON_GET5"):
             return True
         return (bool(getattr(self, "GIFT_LOOP_MODE", False))
                 and self.image_check("POKEMON_ZA_MERIP_ICON_GET6"))
+
+    def _za_beedle_caught(self):
+        """ビードル捕獲済みか。
+
+        おくりものループは5種そろえるのが目的なので、メリープ・ビードルのどちらが入っていても
+        捕獲済みとする（ルートに依らない。2026-11-13 ユーザー指定）。
+        """
+        if self._za_beedle_icon_caught():
+            return True
+        return bool(getattr(self, "GIFT_LOOP_MODE", False)) and self._za_merip_icon_caught()
+
+    def _za_merip_caught(self):
+        """メリープ捕獲済みか。おくりものループではコフキムシ2匹の後の手持ち6番目も見る。
+
+        ビードルルートでは、メリープの代わりにビードルが入ったかを返す。
+        おくりものループはメリープ・ビードルのどちらでもよい（2026-11-13 ユーザー指定）。
+        """
+        if self._za_beedle_route():
+            return self._za_beedle_caught()
+        if self._za_merip_icon_caught():
+            return True
+        return bool(getattr(self, "GIFT_LOOP_MODE", False)) and self._za_beedle_icon_caught()
+
+    ######################################################
+    # 捕まえるはずの相手と違うポケモンを捕まえた時（2026-11-13 ユーザー指定）
+    ######################################################
+    # 多言語（補完モード）は投げる前に相手の名前を見ないため、ヤヤコマなど別のポケモンを捕まえることがある。
+    # 捕まえた時点でオートセーブされるのでリセットしても戻らず、捕獲アイコンが出ないまま動けなくなっていた
+    # （日本語でもまれに起こりうる）。手持ちの4番目（コフキムシの枠）・5番目（メリープの枠。おくりものループは
+    # メリープかビードル）に違うポケモンが入っていたら、ボックスで逃がし、レポートを書いてから捕まえ直す。
+    # 種類は捕獲アイコンと合うかだけで見る（どの種類を捕まえても判定できる。文字は見ない）。
+    ZA_WRONG_CAPTURE_MIN_FILL = 0.05      # 手持ち欄の HP バー（空の枠は 0.0。1ドット≒0.027）
+    ZA_WRONG_CAPTURE_CHECKS = 4           # 続けて同じ結果の時だけ「違う」とする（一瞬の表示の揺れを除く）
+    ZA_WRONG_CAPTURE_INTERVAL = 0.5
+    ZA_WRONG_CAPTURE_BATTLE_RESET_SECONDS = 120.0
+
+    def _za_wrong_capture_read(self, stage):
+        """1回分の判定。stage="KOHUKI" は手持ち4番目、"MERIP" はメリープの枠（通常5番目）。
+
+        違うポケモンが入っていればその番号、入っていない・判定できない時は None。
+        戦闘中は手持ち欄の見た目が変わりうるため判定しない。
+        """
+        try:
+            from Commands.PythonCommands.LocalFunction.LockOnDetection import party_slot_hp_fill
+        except ImportError:
+            from LocalFunction.LockOnDetection import party_slot_hp_fill
+        if stage == "MERIP" and self._za_gift_loop_second_kohuki():
+            return None   # 従来のコフキムシ2匹（手持ち5番目もコフキムシ）は対象外
+        slot = 4 if stage == "KOHUKI" else self._za_capture_party_slot()
+        if not self.image_check("POKEMON_ZA_FIELD_W"):
+            return None
+        frame = read_command_frame(self)
+        if frame is None:
+            return None
+        min_fill = float(getattr(self, "ZA_WRONG_CAPTURE_MIN_FILL", 0.05))
+        if party_slot_hp_fill(frame, slot) < min_fill:
+            return None   # 枠が空（まだ捕まえていない）
+        if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            return None
+        if stage == "KOHUKI":
+            return None if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4") else slot
+        if not self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
+            return None   # コフキムシが見えない時はメリープの枠を判断しない
+        return None if self._za_merip_caught() else slot
+
+    def _za_wrong_capture_slot(self, stage):
+        """捕まえるはずの相手と違うポケモンが入った手持ちの番号。無ければ None。"""
+        first = self._za_wrong_capture_read(stage)
+        if first is None:
+            return None
+        for _ in range(int(getattr(self, "ZA_WRONG_CAPTURE_CHECKS", 3)) - 1):
+            self.wait(float(getattr(self, "ZA_WRONG_CAPTURE_INTERVAL", 0.4)))
+            if self._za_wrong_capture_read(stage) != first:
+                return None
+        return first
+
+    def _za_wrong_capture_goto_release(self, stage, tag):
+        """違うポケモンが入っていれば逃がす Step（1_STORY_OUT_HOTEL_Z_RELEASE）を返す。無ければ None。"""
+        slot = self._za_wrong_capture_slot(stage)
+        if slot is None:
+            return None
+        print("[{}] 手持ち{}番目に{}以外のポケモンがいます -> ボックスで逃がし、レポートを書いて捕まえ直します".format(
+            tag, slot, "コフキムシ" if stage == "KOHUKI" else (
+                "メリープ・ビードル" if bool(getattr(self, "GIFT_LOOP_MODE", False)) else "メリープ")))
+        self._za_wrong_capture_release_slot = slot
+        self._za_wrong_capture_stage = stage
+        self._za_wrong_capture_battle_since = None
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        return "1_STORY_OUT_HOTEL_Z_RELEASE"
+
+    def _za_wrong_capture_next_state(self, stage):
+        """逃がしてレポートを書いた後に捕まえ直す Step（その場から探す。移動の Step へは戻らない）。"""
+        self._za_capture_no_target_count = 0
+        if stage == "KOHUKI":
+            self._1_story_out_hotel_z_18_started_at = None
+            return "1_STORY_OUT_HOTEL_Z_18"
+        if self._za_beedle_route():
+            self._1_story_out_hotel_z_20_beedle_started_at = None
+            return "1_STORY_OUT_HOTEL_Z_20_BEEDLE"
+        self._1_story_out_hotel_z_20_started_at = None
+        self._1_story_out_hotel_z_20_not_eyecheck_count = 0
+        return "1_STORY_OUT_HOTEL_Z_20"
+
+    def _za_wrong_capture_clear(self):
+        """周の始め（おくりものループの次の周）に、前の周の逃がした記録を消す。"""
+        self._za_wrong_capture_release_slot = None
+        self._za_wrong_capture_stage = None
+        self._za_wrong_capture_battle_since = None
+        self._za_capture_released_at = None
+
+    def _1_story_out_hotel_z_release(self):
+        """違うポケモンを逃がしてレポートを書き、捕まえ直す Step へ戻る。"""
+        state = "1_STORY_OUT_HOTEL_Z_RELEASE"
+        stage = getattr(self, "_za_wrong_capture_stage", None) or "KOHUKI"
+        if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            # 戦闘中（野生に攻撃されている等）はメニューを開かない。長引けば再起動する
+            # （捕まえた時のオートセーブから。違うポケモンは残っているので、再起動後にまたここへ来る）
+            since = getattr(self, "_za_wrong_capture_battle_since", None)
+            if since is None:
+                since = self._za_wrong_capture_battle_since = time.monotonic()
+            limit = float(getattr(self, "ZA_WRONG_CAPTURE_BATTLE_RESET_SECONDS", 120.0))
+            if time.monotonic() - since >= limit:
+                print("[{}] フィールドに戻らないまま{:.0f}秒 -> game reset".format(state, limit))
+                self._za_wrong_capture_battle_since = None
+                self.ZA_MOVE_SEE("END")
+                self.ZA_ZL_ACTION("END")
+                self._za_reset_debug_next_game_reset_site = "1_STORY_OUT_HOTEL_Z_RELEASE:battle"
+                self.ZA_gamereset()
+                return self._1_story_out_hotel_z_after_reset_state(state)
+            self.wait(0.5)
+            return state
+        self._za_wrong_capture_battle_since = None
+        # 2026-11-14（ドイツ語の周・Z_20）: メリープ戦でワニノコが瀕死になり手持ち欄の表示が切り替わる途中の
+        # 一瞬を「違うポケモン」と読んでこの Step に来た（落ち着いた後の画面では4番目＝コフキムシ 0.956・
+        # 5番目は空）。入る前の読み（_za_wrong_capture_release_slot）は使わず、手持ち欄が落ち着いてから
+        # 読み直す。誤った読みのままだと、正しいコフキムシ・メリープを逃がしかねない
+        self.wait(float(getattr(self, "ZA_WRONG_CAPTURE_SETTLE_SECONDS", 2.0)))
+        slot = self._za_wrong_capture_slot(stage)
+        self._za_wrong_capture_release_slot = slot
+        if slot is None:
+            print("[{}] 違うポケモンは見当たりません（読み直し） -> 捕獲の続きへ".format(state))
+            return self._za_wrong_capture_next_state(stage)
+        try:
+            self.ZA_release_party_slot(slot)
+        except RuntimeError as error:
+            # 同じ周: メニューの「ボックス」が灰色（戦闘が続いている間など）で開けず、180秒ごとに同じ所で
+            # 開こうとし続けて止まって見えた。メニューを閉じてこの Step をやり直す（入るたびに読み直す）
+            if "ボックスを開けませんでした" not in str(error) and "ボックス画面を確認できませんでした" not in str(error):
+                raise
+            print("[{}] {} -> メニューを閉じてやり直します".format(state, error))
+            self._za_release_close_box()
+            return state
+        # 逃がしたことをレポートに残す（この後に再起動しても、捕まえた時のオートセーブ＝違うポケモンが
+        # いる状態に戻らない）。記録した場所はこの捕獲場所なので、再起動後はその場から捕まえ直す
+        self._za_report_save()
+        self._za_wrong_capture_release_slot = None
+        self._za_capture_released_at = stage
+        print("[{}] 手持ち{}番目を逃がしてレポートを書きました -> 捕まえ直します".format(state, slot))
+        return self._za_wrong_capture_next_state(stage)
 
     def _1_story_out_hotel_z_kohuki_caught_state(self):
         """コフキムシ1匹目の捕獲後の行き先。
@@ -25183,9 +25454,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "1_STORY_OUT_HOTEL_Z_17_18:dead")
         self.ZA_gamereset()
         # 1匹目の捕獲時にオートセーブされるので、捕獲済みなら2匹目探しから。
-        if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
-            return self._1_story_out_hotel_z_kohuki_caught_state()
-        return "1_STORY_OUT_HOTEL_Z_17"
+        # 違うポケモンを捕まえていれば逃がす Step へ（_1_story_out_hotel_z_after_reset_state）
+        return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_17_18_DEAD")
 
     def _1_story_out_hotel_z_20_dead_recovery(self):
         """Restart the Mareep search on the reset DEAD condition (_za_capture_dead)."""
@@ -25202,7 +25472,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_reset_debug_next_game_reset_site = (
             "1_STORY_OUT_HOTEL_Z_20:dead")
         self.ZA_gamereset()
-        return "1_STORY_OUT_HOTEL_Z_19"
+        # 通常は Z_19。違うポケモンが残っていれば逃がす Step、逃がした後のレポートからはその場で
+        return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_20_DEAD")
 
     def _1_story_out_hotel_z_17_22_black_comment_recovery(
             self, current_state):
@@ -25261,7 +25532,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         """Z_17～Z_23 でゲームを再起動した後に再開する Step（手持ちの捕獲アイコンで決める）。
 
         オートセーブはワイルドゾーン内の捕獲した場所なので、捕獲済みなら出口へ向かう Step から。
+        違うポケモンを捕まえていれば（オートセーブで残る）逃がす Step へ。逃がしてレポートを書いた後は、
+        記録した場所（捕獲場所）から捕まえ直す（2026-11-13）。
         """
+        for stage in ("KOHUKI", "MERIP"):
+            release = self._za_wrong_capture_goto_release(stage, tag)
+            if release is not None:
+                return release
+        released_at = getattr(self, "_za_capture_released_at", None)
         if self._za_merip_caught():
             if self._za_beedle_route():
                 print("[{}] BEEDLE already caught "
@@ -25270,9 +25548,17 @@ class ZA_story_Base(ImageProcPythonCommand):
             print("[{}] MERIP already caught -> OUT_HOTEL_Z_20_1".format(tag))
             return "1_STORY_OUT_HOTEL_Z_20_1"
         if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
+            if released_at == "MERIP" and not self._za_gift_loop_second_kohuki():
+                print("[{}] saved at the Mareep spot after a release "
+                      "-> search there again".format(tag))
+                return self._za_wrong_capture_next_state("MERIP")
             print("[{}] KOHUKI already caught "
                   "-> OUT_HOTEL_Z_19 (gift loop: Z_18_1)".format(tag))
             return self._1_story_out_hotel_z_kohuki_caught_state()
+        if released_at == "KOHUKI":
+            print("[{}] saved at the Scatterbug spot after a release "
+                  "-> OUT_HOTEL_Z_18".format(tag))
+            return self._za_wrong_capture_next_state("KOHUKI")
         print("[{}] KOHUKI not detected -> OUT_HOTEL_Z_17".format(tag))
         return "1_STORY_OUT_HOTEL_Z_17"
 
@@ -25312,6 +25598,9 @@ class ZA_story_Base(ImageProcPythonCommand):
 
             #コフキムシは1体（おくりものループでは2体目を Z_18_1 から捕まえる）
             return self._1_story_out_hotel_z_kohuki_caught_state()
+        release = self._za_wrong_capture_goto_release("KOHUKI", "1_STORY_OUT_HOTEL_Z_18")
+        if release is not None:
+            return release
         stall_reset = self._1_story_out_hotel_z_18_stall_reset()
         if stall_reset is not None:
             return stall_reset
@@ -25332,7 +25621,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
                         self.ZA_ZL_ACTION("END")
                         return self._1_story_out_hotel_z_kohuki_caught_state()
-                    elif self.image_check("POKEMON_ZA_EYE_CHECK"):
+                    release = self._za_wrong_capture_goto_release(
+                        "KOHUKI", "1_STORY_OUT_HOTEL_Z_18")
+                    if release is not None:
+                        return release
+                    if self.image_check("POKEMON_ZA_EYE_CHECK"):
                         if (self._1_story_capture_lockon_attack(
                                 "1_STORY_OUT_HOTEL_Z_18") == "getchance"):
                             # ボールから出た相手にマーク4つ → 攻撃せず投げ直す
@@ -25361,6 +25654,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                     if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
                         self.ZA_ZL_ACTION("END")
                         return self._1_story_out_hotel_z_kohuki_caught_state()
+                    release = self._za_wrong_capture_goto_release(
+                        "KOHUKI", "1_STORY_OUT_HOTEL_Z_18")
+                    if release is not None:
+                        return release
                     self.wait(0.5)
                 print("[OUT_HOTEL_Z_18_GET] KOHUKI not caught after throw "
                       "-> face EVENT marker, align and retry Z_18")
@@ -25425,9 +25722,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZA_ZL_ACTION("END")
         self._za_reset_debug_next_game_reset_site = ("1_STORY_OUT_HOTEL_Z_18:stall")
         self.ZA_gamereset()
-        if self.image_check("POKEMON_ZA_KOHUKI_ICON_GET4"):
-            return self._1_story_out_hotel_z_kohuki_caught_state()
-        return "1_STORY_OUT_HOTEL_Z_17"
+        return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_18_STALL")
 
     def _1_story_out_hotel_z_18_1(self):
         black_recovery = (
@@ -25530,6 +25825,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.press(Direction(Stick.LEFT,280), duration=3.0, wait=1.0)
             self.press(Direction(Stick.LEFT,40), duration=3.0, wait=1.0)
             self.press(Direction(Stick.LEFT,190), duration=0.9, wait=1.0)#TODO
+            if not self._za_beedle_route():
+                # 2026-11-14 ユーザー指定: リセット後の戻り（Z_19 で EVENT に合わせた後のこの移動）で露店の前など
+                # 想定外の場所に着いた。最後にメリープの近くの角へ寄せる（120°少し→80°しばらく→50°3秒）
+                for angle, seconds in self.ZA_OUT_HOTEL_Z_19_1_CORNER_MOVES:
+                    self.press(Direction(Stick.LEFT, angle), duration=seconds, wait=0.5)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             if self._za_beedle_route():
                 # メリープの方向を向いた後、奥のオブジェクト（建物側の植え込み）の方へさらに進む
@@ -25541,6 +25841,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "1_STORY_OUT_HOTEL_Z_20_BEEDLE"
             return "1_STORY_OUT_HOTEL_Z_20" 
         return "1_STORY_OUT_HOTEL_Z_19_1" 
+
+    # Z_19_1 の移動の最後に足す、メリープの近くの角へ寄せる移動 (角度, 秒)（2026-11-14 ユーザー指定。長さは要調整）
+    ZA_OUT_HOTEL_Z_19_1_CORNER_MOVES = ((120, 0.8), (80, 3.0), (50, 3.0))
 
     def _1_story_out_hotel_z_20_stall_reset(self):
         """メリープが一定時間捕まらない時、ゲームリセットしてZ_19からやり直す。
@@ -25564,7 +25867,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_reset_debug_next_game_reset_site = (
             "1_STORY_OUT_HOTEL_Z_20:stall")
         self.ZA_gamereset()
-        return "1_STORY_OUT_HOTEL_Z_19"
+        return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_20_STALL")
 
     def _1_story_out_hotel_z_20_lockon_recheck(self):
         # 前処理でEVENT正面から固定経路を移動し、再度EVENTを
@@ -25658,6 +25961,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self._1_story_out_hotel_z_20_started_at = None
             self.ZA_ZL_ACTION("END")
             return "1_STORY_OUT_HOTEL_Z_20_1"
+        release = self._za_wrong_capture_goto_release("MERIP", "1_STORY_OUT_HOTEL_Z_20")
+        if release is not None:
+            return release
         stall_reset = self._1_story_out_hotel_z_20_stall_reset()
         if stall_reset is not None:
             return stall_reset
@@ -25677,7 +25983,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self._za_merip_caught():
                     self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_20_1"
-                elif self.image_check("POKEMON_ZA_EYE_CHECK"):
+                release = self._za_wrong_capture_goto_release(
+                    "MERIP", "1_STORY_OUT_HOTEL_Z_20")
+                if release is not None:
+                    return release
+                if self.image_check("POKEMON_ZA_EYE_CHECK"):
                     if (self._1_story_capture_lockon_attack(
                             "1_STORY_OUT_HOTEL_Z_20") == "getchance"):
                         return "1_STORY_OUT_HOTEL_Z_20"
@@ -25699,6 +26009,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self._za_merip_caught():
                     self.ZA_ZL_ACTION("END")
                     return "1_STORY_OUT_HOTEL_Z_20_1"
+                release = self._za_wrong_capture_goto_release(
+                    "MERIP", "1_STORY_OUT_HOTEL_Z_20")
+                if release is not None:
+                    return release
                 else:
                     # 岩側のロックオンを引き継いだまま攻撃しない。
                     # 解除後に移動経路とL入力を完了してから、
@@ -25776,6 +26090,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.ZA_ZL_ACTION("END")
             print("[OUT_HOTEL_Z_20_BEEDLE] caught -> return toward the Mareep spot")
             return "1_STORY_OUT_HOTEL_Z_20_BEEDLE_RETURN"
+        release = self._za_wrong_capture_goto_release("MERIP", state)
+        if release is not None:
+            return release
         started_at = getattr(self, "_1_story_out_hotel_z_20_beedle_started_at", None)
         if started_at is None:
             # ビードルの場所に着いた所。投げた数・向きを変えた数を数え直す
@@ -25828,6 +26145,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self._za_beedle_caught():
                 print("[OUT_HOTEL_Z_20_BEEDLE] caught after throw {}".format(self._za_beedle_throws))
                 return "1_STORY_OUT_HOTEL_Z_20_BEEDLE_RETURN"
+            release = self._za_wrong_capture_goto_release("MERIP", state)
+            if release is not None:
+                return release
             if (self._za_beedle_throws < int(self.ZA_BEEDLE_MAX_THROWS)
                     and time.monotonic() >= next_relock):
                 # 手持ちにビードルのアイコンが出ていない（外れた・ボールから出た）→ ロックし直し、
@@ -25888,7 +26208,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.ZA_ZL_ACTION("END")
         self._za_reset_debug_next_game_reset_site = "1_STORY_OUT_HOTEL_Z_20_BEEDLE:reset"
         self.ZA_gamereset()
-        return "1_STORY_OUT_HOTEL_Z_19"
+        return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_20_BEEDLE")
 
     def _1_story_out_hotel_z_20_beedle_return(self):
         """ビードル捕獲後、メリープの場所の方へ戻ってから従来の Z_20_1（EVENT向き→出口）へ。"""
@@ -26122,6 +26442,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         return "1_STORY_OUT_HOTEL_Z_32" 
 
     def _1_story_out_hotel_z_33(self):
+        # メニュー操作の後に出るマーブルの会話は、共通関数でフィールドが出るまで送る（2026-11-13
+        # ユーザー指定）。以前は B 30回の間に▼を確かめて Z_34 へ進む自前の作りで、B で文字を送り
+        # 続けると▼が出る前に次の行へ進むため（長い文の言語）、30回とも▼を見られず会話が開いたまま
+        # 止まった（2026-11-13 スペイン語(中南米)）。
+        # 入り直した時に会話が開いていれば、同じ共通関数を呼ぶ Z_34 へ進む。Z_32 から入る時は
+        # メニューが開いているので、▼が見えるのはメニュー操作の後だけ
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            return "1_STORY_OUT_HOTEL_Z_34"
         if self.image_check("POKEMON_ZA_X_MENU_OPEN"):
             if self.image_check("POKEMON_ZA_SIDE_SELECT_X_MENU_W"):
                 self.wait(0.5)
@@ -26129,10 +26457,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                     self.etc_sendCommand("Lbutton_down")
                     self.wait(0.5)
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+                # A で開くマーブルの研究の画面（RECOMPENSAS／TAREAS）は、共通関数の短い B（0.04秒）では閉じない
+                # （11/14 実機: 研究の画面のまま25分止まった。0.15秒の B なら閉じる）。元の作りと同じ長さの B で
+                # 閉じ、会話かフィールドが見えたら共通関数に渡す
                 for i in range(30):
                     self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
-                    if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-                        return "1_STORY_OUT_HOTEL_Z_34" 
+                    if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                            or self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+                        break
+                # Z_34 と同じ共通関数（B で送り、黒い吹き出し・2択・？は A）
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+                    return "1_STORY_OUT_HOTEL_Z_35"
             elif self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W"):
                 for i in range(7):
                     self.etc_sendCommand("Lbutton_left")
@@ -39631,6 +39966,289 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def ZA_common_box_change_end(self):
         return "COMMON_BOX_CHANGE_START"
+
+    ######################################################
+    # 手持ちのポケモンを逃がす（2026-11-13: 違うポケモンを捕まえた時）
+    ######################################################
+    # ボックスのメニュー（JPN 8段: 移動する／つよさをみる／使えるわざを選ぶ／もちものを持たせる／
+    # ニックネーム／マーキング／逃がす／やめる。Template/ZA_Story_PIC/Common/boxmenu.png）。
+    # 「逃がす」は下から2段目（7段の時も「やめる」の1つ上）。文字は見ず、白帯の位置で段を数える
+    # （SupplementalScenes.menu。多言語も日本語も同じ判定）。
+    ZA_RELEASE_TIMEOUT = 180.0
+    ZA_RELEASE_ATTEMPTS = 3
+
+    def _za_supplemental_module(self):
+        try:
+            from Commands.PythonCommands.LocalFunction.ZA import SupplementalSession as supplemental
+        except ImportError:
+            from LocalFunction.ZA import SupplementalSession as supplemental
+        return supplemental
+
+    def _za_screen_reader(self):
+        """文字を使わない画面の読み取り（補完モードのセッション。日本語の時は読み取り専用に作る）。"""
+        session = getattr(self, "_command_supplemental_session", None)
+        if session is not None:
+            return session
+        reader = getattr(self, "_za_release_screen_reader", None)
+        if reader is None:
+            supplemental = self._za_supplemental_module()
+            reader = supplemental.SupplementalSession(supplemental.serial_root(), "JPN")
+            self._za_release_screen_reader = reader
+        return reader
+
+    def _za_box_menu(self):
+        """ボックスのメニュー {rows: 7|8, selected: 0始まり}。出ていなければ None。"""
+        menu = self._za_screen_reader().choice_observation(self, read_command_frame, "box")
+        if menu and menu.get("rows") in (7, 8):
+            return menu
+        return None
+
+    def _za_choice_rows(self):
+        """右側の選択肢（はい／いいえ など 2〜4段）{rows, selected}。出ていなければ None。"""
+        return self._za_screen_reader().choice_observation(self, read_command_frame, "choice")
+
+    # 「逃がす」を選んだ後の確認（はい／いいえ）の白帯。日本語 2026-11-13 実機:
+    # x=946 幅198 高さ47、中心 y は「はい」457.5・「いいえ」509.5（既定は「いいえ」）。
+    ZA_RELEASE_CHOICE_ROI = (880, 380, 1240, 580)
+    ZA_RELEASE_CHOICE_CENTERS = (457.5, 509.5)
+
+    @classmethod
+    def za_release_confirm_choice(cls, frame):
+        """ボックスで「逃がす」を選んだ後の確認（はい／いいえ）。{rows: 2, selected: 0|1}。無ければ None。
+
+        汎用の choice_rows は選択肢の上下が紺色でないことを条件にしているが、この確認は上が能力の欄、
+        下が「本当に逃がしますか？」の文の枠でどちらも紺色のため読めない（2026-11-13 日本語）。
+        緑の▶が付いた白帯の位置で段を決め、もう一方の段が紺色（選ばれていない選択肢）かを見る。文字は見ない。
+        """
+        import numpy as np
+        if frame is None or getattr(frame, "shape", None) != (720, 1280, 3):
+            return None
+        x0, y0, x1, y1 = cls.ZA_RELEASE_CHOICE_ROI
+        area = frame[y0:y1, x0:x1]
+        white = ((np.min(area, 2) >= 180)
+                 & (np.max(area, 2).astype(np.int16) - np.min(area, 2) <= 45))
+        mask = cv2.morphologyEx((white * 255).astype(np.uint8), cv2.MORPH_CLOSE,
+                                np.ones((3, 3), np.uint8))
+
+        def navy(x, w, center):
+            rows = frame[int(center) - 12:int(center) + 12, x + 15:x + w - 15].astype(np.int16)
+            return rows.size > 0 and np.mean(
+                (rows[:, :, 0] - rows[:, :, 2] >= 12) & (rows[:, :, 0] >= 35)
+                & (rows[:, :, 0] <= 165) & (rows[:, :, 1] < 140)) > .68
+
+        found = []
+        for contour in cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]:
+            x, y, w, h = cv2.boundingRect(contour)
+            x += x0
+            y += y0
+            if not (150 <= w <= 260 and 38 <= h <= 55):
+                continue
+            hsv = cv2.cvtColor(frame[max(y - 8, 0):y + h + 8, max(x - 25, 0):x + 22], cv2.COLOR_BGR2HSV)
+            if cv2.countNonZero(cv2.inRange(hsv, (30, 100, 130), (85, 255, 255))) < 70:
+                continue   # 緑の▶が無い白帯（選択肢ではない）
+            center = y + h / 2
+            for selected, expected in enumerate(cls.ZA_RELEASE_CHOICE_CENTERS):
+                if abs(center - expected) > 9:
+                    continue
+                other = cls.ZA_RELEASE_CHOICE_CENTERS[1 - selected]
+                if navy(x, w, other):
+                    found.append({"rows": 2, "selected": selected})
+        return found[0] if len(found) == 1 else None
+
+    def _za_release_choice(self, frame=None):
+        """逃がす確認（専用の判定）。読めなければ汎用の右側の選択肢も見る。"""
+        frame = read_command_frame(self) if frame is None else frame
+        choice = self.za_release_confirm_choice(frame)
+        return choice if choice is not None else self._za_choice_rows()
+
+    @staticmethod
+    def za_release_menu_row(rows):
+        """ボックスのメニューで「逃がす」の段（0始まり）。下から2段目。"""
+        return int(rows) - 2
+
+    def _za_box_select_menu_row(self, target):
+        """ボックスのメニューで target 段へカーソルを動かす。着いたら True。"""
+        for _ in range(12):
+            self.checkIfAlive()
+            menu = self._za_box_menu()
+            if menu is None:
+                self.wait(0.3)
+                continue
+            if menu["selected"] == target:
+                self.wait(0.3)
+                again = self._za_box_menu()
+                if again is not None and again["selected"] == target:
+                    return True
+                continue
+            self.etc_sendCommand("Lbutton_down" if menu["selected"] < target else "Lbutton_up")
+            self.wait(0.5)
+        return False
+
+    def _za_box_party_count(self, frame=None):
+        frame = read_command_frame(self) if frame is None else frame
+        return sum(1 for filled in self._za_box_screen().za_party_filled(frame) if filled)
+
+    def _za_box_idle(self, frame):
+        """ボックス画面でメニュー・選択肢・説明が出ていない（ポケモンを選べる）状態か。"""
+        box_screen = self._za_box_screen()
+        text = getattr(self, "_command_supplemental_session", None) is None
+        return (self.image_check("POKEMON_ZA_BOX_WINDOW")
+                and box_screen.za_box_ready(frame, text=text)
+                and self._za_box_menu() is None and self._za_release_choice(frame) is None)
+
+    def _za_release_open_box(self, slot, deadline):
+        """フィールドから X メニュー → ボックスを開き、ポケモンを選べる状態まで待つ。"""
+        self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
+        while True:
+            self.checkIfAlive()
+            if time.monotonic() >= deadline:
+                raise RuntimeError("逃がすためにボックスを開けませんでした")
+            state = self.ZA_common_box_change_function(target1=slot - 1, target2=0, target1_high=-1)
+            if state == "COMMON_BOX_CHANGE_BOX_TARGET1":
+                break
+        self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
+        box_screen = self._za_box_screen()
+        while True:
+            self.checkIfAlive()
+            if time.monotonic() >= deadline:
+                raise RuntimeError("ボックス画面を確認できませんでした")
+            frame = read_command_frame(self)
+            if box_screen.za_box_tutorial_visible(frame):
+                print("[逃がす] ボックスの説明画面を閉じます")
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.5, interval=0.1)
+                continue
+            if self._za_box_idle(frame):
+                return
+            self.wait(0.3)
+
+    def _za_release_close_box(self, timeout=40.0):
+        """ボックス → X メニュー → フィールドへ B で戻る。"""
+        deadline = time.monotonic() + float(timeout)
+        seen = 0
+        while time.monotonic() < deadline:
+            self.checkIfAlive()
+            if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+                seen += 1
+                if seen >= 2:
+                    return True
+                self.wait(0.5)
+                continue
+            seen = 0
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+        raise RuntimeError("逃がした後にフィールドへ戻れませんでした")
+
+    def _za_release_once(self, slot, before, deadline):
+        """手持ち slot 番目で A → 「逃がす」→「はい」→ メッセージを送る。手持ちが減れば True。"""
+        if not self._za_box_move_cursor((slot - 1, -1), start=(0, 0)):
+            print("[逃がす] 手持ち{}番目へカーソルを合わせられませんでした".format(slot))
+            return False
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        menu = None
+        for _ in range(20):
+            menu = self._za_box_menu()
+            if menu is not None:
+                break
+            self.wait(0.25)
+        if menu is None:
+            print("[逃がす] メニューが出ません")
+            return False
+        target = self.za_release_menu_row(menu["rows"])
+        if not self._za_box_select_menu_row(target):
+            print("[逃がす] メニューの「逃がす」（{}段中{}段目）を選べませんでした".format(menu["rows"], target + 1))
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+            return False
+        print("[逃がす] メニュー {}段中{}段目（逃がす）で A".format(menu["rows"], target + 1))
+        import Commands.PythonCommands.Pokemon_Template.ZA.MysteryGift as mystery_gift
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        pressed_at = time.monotonic()
+        confirmed = False
+        quiet_since = None
+        while time.monotonic() < deadline:
+            self.checkIfAlive()
+            frame = read_command_frame(self)
+            if self._za_box_party_count(frame) < before and self._za_box_idle(frame):
+                return True
+            choice = self._za_release_choice(frame)
+            if choice is not None and choice.get("rows") == 2:
+                if choice["selected"] != 0:
+                    # 確認の「はい」は上の段。既定は「いいえ」のことがあるので上へ合わせる
+                    self.etc_sendCommand("Lbutton_up")
+                    self.wait(0.5)
+                    continue
+                print("[逃がす] 確認で「はい」")
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                confirmed = True
+                continue
+            if not confirmed:
+                # 確認（はい／いいえ）が出るまでは A を押さない（既定の「いいえ」で取り消さないため）
+                waited = time.monotonic() - pressed_at
+                if waited >= 2.0 and self._za_box_menu() is not None:
+                    print("[逃がす] メニューのまま（A が届かなかった）。閉じてやり直します")
+                    self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                    return False
+                if waited >= 8.0:
+                    print("[逃がす] 確認（はい／いいえ）を確認できませんでした。B で戻ってやり直します")
+                    self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                    return False
+                self.wait(0.3)
+                continue
+            if self._za_box_menu() is not None:
+                # 逃がし終わった一覧で A が別のポケモンに当たってメニューが出た → 閉じる
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                continue
+            # 逃がした後のメッセージは ▼ が出ている時だけ A で送る（一覧で A を押すと別のポケモンを
+            # 選んでしまう）。▼ が無いまま 6 秒進まない時だけ A を1回押す
+            if quiet_since is None:
+                quiet_since = time.monotonic()
+            if mystery_gift.next_marker_visible(frame) or time.monotonic() - quiet_since >= 6.0:
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                quiet_since = None
+                continue
+            self.wait(0.3)
+        raise RuntimeError("手持ち{}番目を逃がし終わるのを確認できませんでした".format(slot))
+
+    def ZA_release_party_slot(self, slot):
+        """手持ちの slot 番目（2〜6）のポケモンをボックス画面で逃がし、フィールドへ戻る。
+
+        逃がしたら True。その枠が空なら何もせず False。逃がせなければ RuntimeError（Interrupt）。
+        ボックス画面で手持ちの数が1減ったことを確かめる。
+        """
+        slot = int(slot)
+        self.ZA_MOVE_SEE("END")
+        self.ZA_ZL_ACTION("END")
+        deadline = time.monotonic() + float(getattr(self, "ZA_RELEASE_TIMEOUT", 180.0))
+        self._za_release_open_box(slot, deadline)
+        frame = read_command_frame(self)
+        filled = self._za_box_screen().za_party_filled(frame)
+        if not filled[slot - 1]:
+            print("[逃がす] 手持ち{}番目にポケモンがいません（ボックス画面で確認）".format(slot))
+            self._za_release_close_box()
+            return False
+        before = sum(1 for value in filled if value)
+        for attempt in range(1, int(getattr(self, "ZA_RELEASE_ATTEMPTS", 3)) + 1):
+            if self._za_release_once(slot, before, deadline):
+                print("[逃がす] 手持ち{}番目を逃がしました（手持ち {}→{}匹）".format(
+                    slot, before, self._za_box_party_count()))
+                self._za_release_close_box()
+                return True
+            print("[逃がす] やり直します（{}回目）".format(attempt))
+        raise RuntimeError("手持ち{}番目を逃がせませんでした".format(slot))
+
+    def _za_report_save(self):
+        """フィールドから X メニュー → レポートを書いてフィールドへ戻る（Pokemon_Template/ZA/ReportSave.py）。"""
+        import importlib
+        import Commands.PythonCommands.Pokemon_Template.ZA.ReportSave as report_save
+        if not hasattr(report_save, "ZAReportSaveMixin"):
+            report_save = importlib.reload(report_save)
+
+        class _ReportHelper(report_save.ZAReportSaveMixin):
+            def __init__(self, command):
+                self._command = command
+
+            def __getattr__(self, name):
+                return getattr(self._command, name)
+        return _ReportHelper(self).za_report_save()
+
     ######################################################
     # Commonitemgive
     ######################################################
@@ -44262,6 +44880,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                                          'threshold': 0.75,
                                          'use_gray': False}],
      'POKEMON_ZA_BATTLE_BALL_CHECK': [{'crop': [500, 30, 850, 70],
+                                       # 11/13: 四隅の背景を外す楕円のマスク。戦闘 0.955〜0.961 のまま、
+                                       # 戦闘以外は最大 0.847→0.807（フィールド 0.811→0.781）
+                                       'mask_path': 'Template/ZA_Story_PIC/Common/battle_ball_check_mask.png',
                                        'ms': 2000,
                                        'show_only_true_rect': False,
                                        'show_position': True,
@@ -44871,6 +45492,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  'show_position': True,
                                  'show_value': False,
                                  'template_path': 'Template/ZA_Story_PIC/Common/helpmarker.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True},
+                                # 11/13: 初戦の説明画面（Fundamentos de los combates）は「？」の太さが
+                                # 違い、上の見本では 0.827 で閉じられず止まった（ボックスの説明画面は 0.96）。
+                                # その画面から切り出した見本も OR で見る（説明画面以外は最大 0.72）
+                                {'crop': [300, 50, 500, 110],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story_PIC/Common/helpmarker2.png',
                                  'threshold': 0.85,
                                  'use_gray': True}],
      'POKEMON_ZA_H_BALL_ICON': [{'crop': [610, 595, 670, 650],
@@ -47662,6 +48294,9 @@ class ZA_story_Base(ImageProcPythonCommand):
                                          'threshold': 0.75,
                                          'use_gray': False}],
      'POKEMON_ZA_BATTLE_BALL_CHECK': [{'crop': [500, 30, 850, 70],
+                                       # 11/13: 四隅の背景を外す楕円のマスク。戦闘 0.955〜0.961 のまま、
+                                       # 戦闘以外は最大 0.847→0.807（フィールド 0.811→0.781）
+                                       'mask_path': 'Template/ZA_Story_PIC/Common/battle_ball_check_mask.png',
                                        'ms': 2000,
                                        'show_only_true_rect': False,
                                        'show_position': True,
@@ -48271,6 +48906,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                                  'show_position': True,
                                  'show_value': False,
                                  'template_path': 'Template/ZA_Story_PIC/Common/helpmarker.png',
+                                 'threshold': 0.85,
+                                 'use_gray': True},
+                                # 11/13: 初戦の説明画面（Fundamentos de los combates）は「？」の太さが
+                                # 違い、上の見本では 0.827 で閉じられず止まった（ボックスの説明画面は 0.96）。
+                                # その画面から切り出した見本も OR で見る（説明画面以外は最大 0.72）
+                                {'crop': [300, 50, 500, 110],
+                                 'ms': 2000,
+                                 'show_only_true_rect': False,
+                                 'show_position': True,
+                                 'show_value': False,
+                                 'template_path': 'Template/ZA_Story_PIC/Common/helpmarker2.png',
                                  'threshold': 0.85,
                                  'use_gray': True}],
      'POKEMON_ZA_HORUBII_ICON_GET3': [{'crop': [150, 640, 200, 680],
@@ -51192,6 +51838,32 @@ class ZA_story_Base(ImageProcPythonCommand):
      'POKEMON_ZA_ACTIVE_KOHUKI': 'Pokemon ZA battle card: Scatterbug is the active Pokemon',
      'POKEMON_ZA_MOVE_X_NORMAL': 'Pokemon ZA move panel: Normal-type move icon in the X slot'})
 
+    # 閾値のモードでも、これより下げない見本（11/13 ユーザー指定）。戦闘のボールは 0.80 まで下げると
+    # 戦闘以外の画面（フィールド 0.81・本体のダイアログ 0.85）でも一致し、フィールドに戻れず止まった
+    ZA_THRESHOLD_MODE_FLOORS = {"POKEMON_ZA_BATTLE_BALL_CHECK": 0.90}
+
+    def za_adjust_threshold(self, threshold, target=None):
+        """画像の判定の閾値を、Start画面の切替（THRESHOLD_MINUS_005・THRESHOLD_TO_080）で下げる。
+
+        - THRESHOLD_MINUS_005: 0.80〜1.0 を 0.05 下げる（0.90→0.85、0.80→0.75）
+        - THRESHOLD_TO_080: 0.80 以上を 0.80 にする
+        両方 ON の時は低い方。どちらも OFF なら元のまま（11/13 ユーザー指定。全体の動作確認で使う）。
+        target が ZA_THRESHOLD_MODE_FLOORS にあれば、その値より下げない（元の閾値がそれ以下ならそのまま）。
+        """
+        try:
+            value = float(threshold)
+        except (TypeError, ValueError):
+            return threshold
+        adjusted = value
+        if bool(getattr(self, "THRESHOLD_MINUS_005", False)) and 0.80 - 1e-9 <= value <= 1.0 + 1e-9:
+            adjusted = min(adjusted, round(value - 0.05, 6))
+        if bool(getattr(self, "THRESHOLD_TO_080", False)) and value >= 0.80 - 1e-9:
+            adjusted = min(adjusted, 0.80)
+        floor = getattr(self, "ZA_THRESHOLD_MODE_FLOORS", {}).get(str(target)) if target is not None else None
+        if floor is not None and adjusted < value:
+            adjusted = max(adjusted, min(value, float(floor)))
+        return adjusted
+
     def _image_check_target(self, targetimage):
         variants = self.IMAGE_DETECTION_TARGETS.get(str(targetimage), [])
         if not hasattr(self, '_image_similarity_history'):
@@ -51200,6 +51872,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         for settings in variants:
             detect_settings = dict(settings)
             detect_settings.pop('health_ignored_warnings', None)
+            if 'threshold' in detect_settings:
+                detect_settings['threshold'] = self.za_adjust_threshold(
+                    detect_settings['threshold'], str(targetimage))
             output_panel = getattr(self, 'IMAGE_DETECTION_OUTPUT_PANEL', None)
             show_value = bool(detect_settings.get('show_value', False) or getattr(self, 'show_value_bool', False))
             if output_panel and show_value:
@@ -51621,12 +52296,12 @@ class _StableZACommandNameMeta(type):
 
 
 class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
-    version_major = 1
-    version_minor = 0
+    version_major = 0
+    version_minor = 3
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v0.2.3'
+    NAME = 'ZA_story_v0.3.0'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
@@ -51775,7 +52450,9 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                     ("ZA_SUPPLEMENTAL_AUDIT", "補完調査モード（補完でも判定できるかを記録・レポート）"),
                     ("A_Nocheck", "A_Nocheck（A表示が見えなければAを押して後の画面で確認）"),
                     ("A_ScaleSearch", "A_ScaleSearch（A表示を倍率を変えて探す）"),
-                    ("A_MissSave", "A_MissSave（A表示の外れ画面と原因の見立てを保存）"))]
+                    ("A_MissSave", "A_MissSave（A表示の外れ画面と原因の見立てを保存）"),
+                    ("THRESHOLD_MINUS_005", "THRESHOLD_MINUS_005（画像の判定の閾値 0.80〜1.0 を 0.05 下げる）"),
+                    ("THRESHOLD_TO_080", "THRESHOLD_TO_080（画像の判定の閾値 0.80 以上を 0.80 にする）"))]
             visible_locations = []
 
             groups = ["すべて"]
@@ -52110,7 +52787,8 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         self._last_action_prompt_frame = None
         self._za_a_nocheck_entry_tried = set()
         self._za_a_nocheck_blind_entry = None
-        enabled = [name for name in ("A_Nocheck", "A_ScaleSearch", "A_MissSave", "ZA_SUPPLEMENTAL_AUDIT")
+        enabled = [name for name in ("A_Nocheck", "A_ScaleSearch", "A_MissSave", "ZA_SUPPLEMENTAL_AUDIT",
+                                     "THRESHOLD_MINUS_005", "THRESHOLD_TO_080")
                    if bool(getattr(self, name, False))]
         if enabled:
             print("[ZA_A_MODES] 有効: {}".format(", ".join(enabled)))
@@ -52118,9 +52796,46 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     def ZA_gift_loop_set_language(self, language):
         """おくりものループの周の はじめからの言語を決め、補完モードをその言語に合わせる。"""
         self._za_gift_loop_language = str(language or "JPN")
+        # 新しいセーブで始めるので、前の周で違うポケモンを逃がした記録（捕まえ直す場所）は使わない
+        self._za_wrong_capture_clear()
         return self._za_supplemental_setup()
 
+    ZA_GIFT_LOOP_REQUEST_FILE = "gift_loop_start_request.json"
+
+    def _za_gift_loop_request_from_file(self):
+        """ブリッジ（Claude Code）から、おくりものループを開始するための1回きりの依頼ファイル。
+
+        11/12: 開始画面の「おくりものループ」タブはブリッジから選べず、開始画面も画面外にあった。
+        このフォルダーに gift_loop_start_request.json（{"settings": {...おくりものループの設定...}}）が
+        あれば、読んだ時点で消してから、タブで開始した時と同じ apply_command_run_mode を呼ぶ。
+        消してから使うので、セーブ削除の依頼が次の Start に残ることはない。
+        """
+        if bool(getattr(self, "GIFT_LOOP_MODE", False)):
+            return False
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.ZA_GIFT_LOOP_REQUEST_FILE)
+        if not os.path.isfile(path):
+            return False
+        import json
+        try:
+            with open(path, encoding="utf-8") as fh:
+                request = json.load(fh)
+        finally:
+            os.remove(path)
+        settings = request.get("settings") if isinstance(request, dict) else None
+        if not isinstance(settings, dict):
+            raise ValueError("おくりものループの依頼ファイルに settings がありません")
+        from Commands.PythonCommands.Pokemon_Template.ZA import GiftLoopSettings
+        GiftLoopSettings.validate_settings(settings)
+        self.apply_command_run_mode("gift_loop", settings)
+        # "after_receive": 受け取りまで済んだ周の残り（ボックス・レポート・HOME へ送る）だけ行う（削除はしない）
+        self._za_gift_loop_resume = request.get("resume") if request.get("resume") == "after_receive" else None
+        print("[GIFT_LOOP_REQUEST] 依頼ファイルで開始: 削除={}（依頼ファイルは消しました）".format(
+            GiftLoopSettings.describe_target(settings)))
+        return True
+
     def do(self):
+        self._za_gift_loop_request_from_file()
         self._za_supplemental_setup()
         self._za_a_modes_setup()
         # スクリプト継承
@@ -52143,6 +52858,11 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 self.ZA_battle_infi_main()
             else:
                 self.ZA_story_main()
+        except Exception as error:
+            # 2026-11-14: 止まった時の記録（「エラー時の記録」タブで ON の時だけ・Stop は記録しない）
+            if type(error).__name__ != "StopThread":
+                self._za_error_record("{}: {}".format(type(error).__name__, error))
+            raise
         finally:
             # 停止・終了時に補完調査のレポートを書き切る（途中も60秒ごとに書いている）
             self._za_supplemental_audit_close()
