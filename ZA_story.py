@@ -106,9 +106,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         from Commands.PythonCommands.Pokemon_Template.ZA import ErrorRecords
         return ErrorRecords.build_panel(parent, host, os.path.dirname(os.path.abspath(__file__)))
 
+    # 2026-11-15 ユーザー指定: ストーリー・おくりものループの両方で使える切替（A_Nocheck など）は「共通の設定」タブへ。
+    # 切り替えた時点で保存し、どちらのタブで開始しても効く。このタブでは開始しない
+    @staticmethod
+    def _build_common_options_tab(parent, host):
+        from Commands.PythonCommands.Pokemon_Template.ZA import CommonOptions
+        return CommonOptions.build_panel(parent, host, os.path.dirname(os.path.abspath(__file__)))
+
     COMMAND_RUN_MODES = (
         {"key": "gift_loop", "label": "おくりものループ（※セーブ削除あり）",
          "builder": _build_gift_loop_tab},
+        {"key": "common_options", "label": "共通の設定",
+         "builder": _build_common_options_tab},
         {"key": "error_records", "label": "エラー時の記録",
          "builder": _build_error_records_tab},
     )
@@ -121,6 +130,35 @@ class ZA_story_Base(ImageProcPythonCommand):
             ErrorRecords.save_error(os.path.dirname(os.path.abspath(__file__)), label,
                                     traceback.format_exc(limit=8), read_command_frame(self))
         except Exception:   # 記録を残せなくても止まり方は変えない
+            pass
+
+    def _za_trace(self, message):
+        """捕獲（コフキムシ・メリープ）の判断の記録。「エラー時の記録」が ON の時だけ error_records/capture_trace.txt に
+        書き足す（2026-11-14: メリープが目の前にいても捕まらない回の原因を調べるため。print の行は出力の欄で
+        画像の判定値の表示に上書きされ、ログファイルにも残らない）。"""
+        try:
+            from Commands.PythonCommands.Pokemon_Template.ZA import ErrorRecords
+            base = os.path.dirname(os.path.abspath(__file__))
+            now = time.monotonic()
+            # 設定ファイルを毎回読まないよう、ON/OFF は5秒ごとに見直す
+            if now >= getattr(self, "_za_trace_checked_at", 0.0):
+                self._za_trace_on = ErrorRecords.enabled(base)
+                self._za_trace_checked_at = now + 5.0
+            if not getattr(self, "_za_trace_on", False):
+                return
+            # 部品（ErrorRecords）の新しい関数に頼らず書く（PokeCon を再起動せず ZA_story の reload だけで使えるように）
+            folder = ErrorRecords.records_dir(base)
+            os.makedirs(folder, exist_ok=True)
+            path = os.path.join(folder, "capture_trace.txt")
+            try:
+                if os.path.getsize(path) > 2 * 1024 * 1024:   # 上限を超えたら前の分は .old へ
+                    os.replace(path, os.path.join(folder, "capture_trace.old.txt"))
+            except OSError:
+                pass
+            with open(path, "a", encoding="utf-8") as stream:
+                stream.write("{} {} {}\n".format(
+                    time.strftime("%H:%M:%S"), getattr(self, "_1_story_current_state", ""), message))
+        except Exception:   # 記録を残せなくても動きは変えない
             pass
 
     def apply_command_run_mode(self, key, settings):
@@ -195,6 +233,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 明示設定を追加すると自動検出された従来項目を置き換えるため、
     # ResetDebug／BATTLE_DEBUGだけでなく既存の3項目もここへ残す。
     COMMAND_DEBUG_OPTIONS = (
+        # A_Nocheck・A_ScaleSearch・A_MissSave・THRESHOLD_MINUS_005・THRESHOLD_TO_080・DASH_MOVE は
+        # 「共通の設定」タブへ移した（2026-11-15 ユーザー指定。おくりものループのタブでも見て変えられるように）
         {
             "attribute": "ResetDebug",
             "label": "ResetDebug（リセット復帰確認）",
@@ -236,51 +276,6 @@ class ZA_story_Base(ImageProcPythonCommand):
                 "判定は今までどおり日本語の画像で行い、同じ画面で補完モードでも判定できたかを"
                 "別スレッドで記録します。SerialController/Supplemental_Audit/REPORT.md に、"
                 "何度かの通しを合算した「補完ではカバーできない所」をまとめます。"),
-            "default": False,
-        },
-        {
-            "attribute": "A_Nocheck",
-            "label": "A_Nocheck（A表示が見えなければAを押して後の画面で確認）",
-            "description": (
-                "移動後のA表示（はいる・話しかける等）が3秒見えない時、1回だけAを押し、"
-                "会話・選択肢・暗転が出れば続けます。出なければ今までどおり視点回転・リセットへ。"
-                "はしご（押した後に確かめる表示が無い所）と接近しながらAを探す処理は対象外です。"),
-            "default": False,
-        },
-        {
-            "attribute": "A_ScaleSearch",
-            "label": "A_ScaleSearch（A表示を倍率を変えて探す）",
-            "description": (
-                "A＋文字の照合で外れた時、参照画像を0.94〜1.06倍にして探し直します。"
-                "Switchの「画面サイズ」やキャプチャーの拡大縮小で文字の大きさがずれる環境向けです。"),
-            "default": False,
-        },
-        {
-            "attribute": "A_MissSave",
-            "label": "A_MissSave（A表示の外れ画面と原因の見立てを保存）",
-            "description": (
-                "A表示を待って外れた時の画面と一致率、倍率・ぼけ・色調を変えた時の一致率を"
-                "SerialController/A_Miss_Check/ へ保存し、summary.md に原因の見立てをまとめます。"),
-            "default": False,
-        },
-        {
-            "attribute": "THRESHOLD_MINUS_005",
-            "label": "THRESHOLD_MINUS_005（画像の判定の閾値 0.80〜1.0 を 0.05 下げる）",
-            "description": (
-                "image_check の見本（日本語の画像・補完モードの見本）で、閾値が 0.80〜1.0 のものを"
-                "0.05 下げて判定します（0.90→0.85、0.80→0.75）。戦闘のボールは 0.90 より下げません。"
-                "A表示の判定・起動時の確認画面などの専用の判定と Switch 本体の画面は対象外です。"
-                "THRESHOLD_TO_080 と両方 ON の時は低い方を使います。"),
-            "default": False,
-        },
-        {
-            "attribute": "THRESHOLD_TO_080",
-            "label": "THRESHOLD_TO_080（画像の判定の閾値 0.80 以上を 0.80 にする）",
-            "description": (
-                "image_check の見本（日本語の画像・補完モードの見本）で、閾値が 0.80 以上のものを"
-                "0.80 にして判定します（全体の動作確認用。問題が出た所だけ後で個別に直す）。"
-                "戦闘のボールは 0.90 より下げません（0.80 では戦闘以外の画面でも一致し、フィールドに"
-                "戻れず止まった。11/13）。対象外は THRESHOLD_MINUS_005 と同じです。"),
             "default": False,
         },
         {
@@ -1060,7 +1055,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                 'checkpoint_id': '1_STORY_HOTEL_Z_MOVE12',
                                 'reset_common': False},
      '1_STORY_OUT_HOTEL_Z_13': {'recovery_kind': 'checkpoint',
-                                'target': '1_STORY_WANINOKO_SKILL_CHANGE1',
+                                # 2026-11-15: 入れ替えはホテルZの中で済む（その後のセーブに残る）ので確かめずに Z_10 へ
+                                'target': '1_STORY_OUT_HOTEL_Z_10',
                                 'action': 4,
                                 'checkpoint_id': '1_STORY_OUT_HOTEL_Z_13',
                                 'reset_common': False},
@@ -1493,7 +1489,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                    'checkpoint_id': '1_STORY_HOTEL_Z_MOVE10',
                                                    'reset_common': False},
      ('battle_before', '1_STORY_HOTEL_Z_MOVE15'): {'recovery_kind': 'battle_before',
-                                                   'target': '1_STORY_HOTEL_Z_MOVE13',
+                                                   # 2026-11-15: 入れ替えの Step へ（入れ替え済みなら MOVE13 へ進む）
+                                                   'target': '1_STORY_HOTEL_Z_SKILL_CHANGE1',
                                                    'action': 4,
                                                    'checkpoint_id': '1_STORY_HOTEL_Z_MOVE15',
                                                    'reset_common': False},
@@ -1523,7 +1520,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                   'checkpoint_id': '1_STORY_OUT_HOTEL_Z_9',
                                                   'reset_common': False},
      ('white_comment', '1_STORY_OUT_HOTEL_Z_11'): {'recovery_kind': 'white_comment',
-                                                   'target': '1_STORY_WANINOKO_SKILL_CHANGE1',
+                                                   # 2026-11-15: 入れ替えはホテルZの中で済むので確かめずに Z_10 へ
+                                                   'target': '1_STORY_OUT_HOTEL_Z_10',
                                                    'action': 4,
                                                    'checkpoint_id': '1_STORY_OUT_HOTEL_Z_11',
                                                    'reset_common': False},
@@ -3735,11 +3733,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         '1_STORY_HOTEL_Z_MOVE1',
         '1_STORY_HOTEL_Z_MOVE11',
         '1_STORY_HOTEL_Z_MOVE13',
+        '1_STORY_HOTEL_Z_SKILL_CHANGE1',
         '1_STORY_HOTEL_Z_MOVE3',
         '1_STORY_HOTEL_Z_MOVE4',
         '1_STORY_HOTEL_Z_MOVE7',
         '1_STORY_HOTEL_Z_MOVE9',
         '1_STORY_OUT_HOTEL_Z_1',
+        '1_STORY_OUT_HOTEL_Z_10',
         '1_STORY_OUT_HOTEL_Z_17',
         '1_STORY_OUT_HOTEL_Z_20_1',
         '1_STORY_OUT_HOTEL_Z_27',
@@ -3976,6 +3976,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 画像の判定の閾値を下げるモード（Start画面の切替。説明は COMMAND_DEBUG_OPTIONS）
         self.THRESHOLD_MINUS_005=False
         self.THRESHOLD_TO_080=False
+        # ダッシュ移動モード（Start画面の切替。説明は COMMAND_DEBUG_OPTIONS）
+        self.DASH_MOVE=False
         # おくりもの受け取りループ（開始時に設定ウィンドウで _za_gift_loop_settings を決める）
         self.GIFT_LOOP_MODE=False
         self._za_gift_loop_settings = None
@@ -22735,13 +22737,20 @@ class ZA_story_Base(ImageProcPythonCommand):
         guarded = bool(expected_name and not supplemental)
         if guarded:
             if not self._za_capture_lock_and_confirm_name(expected_name):
+                detail = getattr(self, "last_capture_target_detection", None) or {}
+                self._za_trace("throw skipped: name {} not confirmed score={:.3f} reason={} winner={}".format(
+                    expected_name, detail.get("score", -2.), detail.get("reason", "unconfirmed"),
+                    detail.get("winner")))
                 return False
             # Nothing that can move/relock/attack intervenes between the fresh
             # second observation and the actual ZR input.
         elif expected_name:
             # 補完モード（名前は日本語の画像なので見ない）
             if not self._za_capture_lock_target():
+                self._za_trace("throw skipped: no locked target (supplemental)")
                 return False
+        if expected_name:
+            self._za_trace("throw ball ({})".format(expected_name))
         else:
             self.ZA_ZL_ACTION("")
             self.wait(0.1)
@@ -22876,15 +22885,74 @@ class ZA_story_Base(ImageProcPythonCommand):
             frame = read_command_frame(self)
             if frame is not None:
                 bars = target_hp_bars(frame)
+                gender = self.ZA_capture_target_gender(frame)
+                if not bars and gender is not None:
+                    # HP が減って赤く短くなったバーは読めないことがある（相手の札が映った見本取りの画面 65 枚中 40 枚）。
+                    # 頭上の ♂/♀ が見えればポケモンにロックしているので、♂/♀ の位置からバーの位置を決めて続ける
+                    dx, dy, bw, bh = self.ZA_CAPTURE_TARGET_GENDER_BAR
+                    bars = [{"bar": (gender[0] + dx, gender[1] + dy, bw, bh), "from_gender": True}]
                 marks = getchance_marks(frame, bars, template=template if template is not False else None)
                 view = {"bars": bars, "getchance": bool(marks["matched"]),
-                        "marks": int(marks["count"])}
+                        "marks": int(marks["count"]), "gender": gender is not None}
         except (OSError, ValueError, RuntimeError) as error:
             view["reason"] = str(error)
         self.last_capture_target_view = view
         if view["getchance"]:
             self._za_capture_getchance_seen_at = time.monotonic()
         return view
+
+    # ロック相手の頭上の ♂/♀（Lv. の右）。名前は言語で変わり（多言語では名前で確かめられない）、岩には付かないので、
+    # 「ポケモンにロックしている」目印にする（2026-11-15 ユーザー指定）。絵は自分の札（左下）の ♂/♀ と同じ
+    # （Supplemental の丸の内側 12px）。見本取りの画面 508 枚: 相手の札の 65 枚は 0.76〜0.92、それ以外は 0.71 以下（壁・アーチ）。
+    ZA_CAPTURE_TARGET_GENDER_THRESHOLD = 0.75
+    ZA_CAPTURE_TARGET_GENDER_AREA = (280, 40, 1240, 560)
+    ZA_CAPTURE_TARGET_GENDER_OWN_CARD = (0, 480, 340, 720)   # 自分の札の ♂/♀ は見ない
+    # ♂/♀ の左上から見た HP バー (dx, dy, 幅, 高さ)（両方映った 25 枚の中央値。dy は 39〜54）
+    ZA_CAPTURE_TARGET_GENDER_BAR = (-49, 52, 71, 11)
+
+    def ZA_capture_target_gender(self, frame):
+        """ロック相手の頭上の ♂/♀ の左上 (x, y)。見えなければ None（1280x720 の座標）。"""
+        templates = getattr(self, "_za_target_gender_templates", None)
+        if templates is None:
+            import numpy as np
+            templates = []
+            for name in ("male_symbol_disc.png", "female_symbol_disc.png"):
+                path = self.get_filespec(os.path.join("ZA_Story_PIC", "Supplemental", name), mode="t")
+                try:
+                    image = cv2.imdecode(np.fromfile(os.path.normpath(path), dtype=np.uint8), cv2.IMREAD_COLOR)
+                except OSError as error:
+                    print("[CAPTURE_TARGET] {} を読めません: {}".format(name, error))
+                    image = None
+                if image is not None:
+                    templates.append(image)
+            self._za_target_gender_templates = templates
+        if frame is None or not templates:
+            return None
+        if frame.shape[1] != 1280 or frame.shape[0] != 720:
+            frame = cv2.resize(frame, (1280, 720))
+        x0, y0, x1, y1 = self.ZA_CAPTURE_TARGET_GENDER_AREA
+        area = frame[y0:y1, x0:x1].copy()
+        ox0, oy0, ox1, oy1 = self.ZA_CAPTURE_TARGET_GENDER_OWN_CARD
+        area[max(0, oy0 - y0):max(0, oy1 - y0), max(0, ox0 - x0):max(0, ox1 - x0)] = 0
+        best_score, best_position = -1.0, None
+        for template in templates:
+            _, score, _, location = cv2.minMaxLoc(cv2.matchTemplate(area, template, cv2.TM_CCOEFF_NORMED))
+            if score > best_score:
+                best_score, best_position = score, (x0 + location[0], y0 + location[1])
+        if best_score >= float(self.ZA_CAPTURE_TARGET_GENDER_THRESHOLD):
+            return best_position
+        return None
+
+    def _za_capture_target_locked(self):
+        """今のフレームでロック相手の頭上に ♂/♀ が見えるか（ポケモンにロックしている）。"""
+        try:
+            from Commands.PythonCommands.LocalFunction.ImageDetection import read_command_frame
+        except ImportError:
+            from LocalFunction.ImageDetection import read_command_frame
+        try:
+            return self.ZA_capture_target_gender(read_command_frame(self)) is not None
+        except (OSError, ValueError, RuntimeError):
+            return False
 
     def _za_capture_getchance(self):
         """捕獲率マーク4つが見えているか（入力はしない）。"""
@@ -22958,10 +23026,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                 view = self._za_capture_wait_view()
         if view["bars"] or view["getchance"]:
             self._za_capture_no_bar_since = None
+        trace = "lockon bars={} marks={} getchance={} gender={}".format(
+            len(view["bars"]), view.get("marks", 0), bool(view["getchance"]), bool(view.get("gender")))
         if view["getchance"] or (view["bars"] and self._za_capture_getchance_recent()):
             # マーク4つ（少し前に見えた場合も）は攻撃せず次で投げる。HP 満タンでも捕まえられる
             self._za_capture_no_target_count = 0
             self._za_capture_getchance_pending = True
+            self._za_trace(trace + " -> getchance")
             return "getchance"
         if not view["bars"]:
             # ZL は押したままにする（毎回離すとロックが一瞬で外れ、攻撃・GETへ進めなかった。
@@ -22971,9 +23042,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             if count == 1 or count % 5 == 0:
                 print("[CAPTURE_TARGET] no HP bar on lock-on ({}) -> no attack "
                       "count={}".format(current_state, count))
+                self._za_trace(trace + " -> no_target count={}".format(count))
             return "no_target"
         self._za_capture_no_target_count = 0
-        self.ZA_wz1_attack(lockon_endskip=1, keep_lockon=True)
+        attack = self.ZA_wz1_attack(lockon_endskip=1, keep_lockon=True)
+        self._za_trace(trace + " -> attacked ({})".format(attack))
         return "attacked"
 
     # ワイルドゾーン1の捕獲（Z_16・Z_18・Z_18_2・Z_20）で X の技で攻撃するポケモン（左下の操作中ポケモンの絵）。
@@ -22984,6 +23057,10 @@ class ZA_story_Base(ImageProcPythonCommand):
     # メリープは捕まえた後はワイルドゾーン1で戦わないため絵を用意していない。
     ZA_WZ1_X_ATTACKERS = ("POKEMON_ZA_ACTIVE_YAYAKOMA", "POKEMON_ZA_ACTIVE_KOHUKI")
     ZA_WZ1_X_MOVE_ICON = "POKEMON_ZA_MOVE_X_NORMAL"
+    # X の技のアイコン（どれか1つが見えれば X を押す）。ヤヤコマの X は飛行の技（つつく）で、ノーマルのアイコンでは
+    # 押さず「x_wait」のまま全滅した（2026-11-15 スペイン語(スペイン)の周。ユーザー指摘）。飛行はひし形の水色の縁だけを見る
+    # （真ん中は羽・○・△が入れ替わるので外す。ユーザー指定）
+    ZA_WZ1_X_MOVE_ICONS = ("POKEMON_ZA_MOVE_X_NORMAL", "POKEMON_ZA_MOVE_X_FLYING")
     # X を押してから X メニューが開いたかを見る時間
     ZA_WZ1_X_MENU_WAIT_SECONDS = 0.6
 
@@ -23015,7 +23092,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             # ロックオンがゲーム側へ反映されてから技の欄を見る
             self.wait(0.1)
         result = "x_wait"
-        if self.image_check(self.ZA_WZ1_X_MOVE_ICON):
+        if any(self.image_check(icon) for icon in self.ZA_WZ1_X_MOVE_ICONS):
             self._za_wz1_x_wait_count = 0
             self.pressRep(Button.X, repeat=1, duration=0.04, wait=0.0, interval=0.1)
             result = "x"
@@ -23084,7 +23161,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.etc_sendCommand("plusbutton_push")
             self.wait(3.0)
             self.etc_sendCommand("plusbutton_release")
-    
+
+    # マーカーを探す前の L と、L の後に見えない時の視点回し（2026-11-15 ユーザー指定）。
+    # 回す長さ・回数は仮の値。通し確認で1周に足りるか確かめて合わせる。
+    ZA_MARKERDIR_L_WAIT = 0.5               # L の後、視点が戻り終わるまで待つ秒数
+    ZA_MARKERDIR_L_CONTINUE_SECONDS = 3.0   # 前の呼び出しが合わせ切れずに終わってからこの秒数以内なら続きとして L を押さない
+    ZA_MARKERDIR_SWEEP_STEP_SECONDS = 0.25  # 視点を回す1回の長さ（右スティック）
+    ZA_MARKERDIR_SWEEP_STEPS = 12           # 回す回数（1回ごとに画面を確かめる）
+
     def ZA_markerdir(self,type,search_mode=0,nofiled=False,stop_after_first_scan_move=False):
         if type == "EVENT":
             marker = "POKEMON_ZA_EVENT_MARKER"
@@ -23120,10 +23204,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         # 呼出元が「この1セットで一度でも見えたか」を判定できるようにし、
         # 単なる中央化失敗と完全未検知を区別する。
         setattr(self, marker_seen_name, False)
+        # 探す前の L（2026-11-15 ユーザー指定）。前の呼び出しの状態と、最後に画面を確かめた時刻。
+        l_state_name = "_za_markerdir_l_state_" + marker
+        last_check_name = "_za_markerdir_last_check_" + marker
 
-        def record_centered_event_approach():
-            if type != "EVENT" or search_mode not in (1, 2):
-                return
+        def current_story_step_key():
             story_state_attributes = {
                 "MAIN_1_Z_LANK": "_1_story_current_state",
                 "MAIN_2_Y_V_LANK": "_2_story_current_state",
@@ -23140,9 +23225,16 @@ class ZA_story_Base(ImageProcPythonCommand):
                 getattr(self, state_attribute, None)
                 if state_attribute else None)
             if current_step is None:
-                return
+                return None
+            return (main_state, current_step)
 
-            step_key = (main_state, current_step)
+        def record_centered_event_approach():
+            if type != "EVENT" or search_mode not in (1, 2):
+                return
+            step_key = current_story_step_key()
+            if step_key is None:
+                return
+            current_step = step_key[1]
             step_name = "_za_markerdir_event_approach_step"
             count_name = "_za_markerdir_event_approach_count"
             side_name = "_za_markerdir_event_approach_side_index"
@@ -23189,6 +23281,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         def detect_marker_position(variant):
             # F5 Reloadだけで反映できるよう、LocalFunction側の追加引数に
             # 依存せず、このサンプル関数内で全画面照合とマップ除外を行う。
+            # 次の呼び出しが「合わせている途中の続き」かを見分けるため、確かめた時刻を残す。
+            setattr(self, last_check_name, time.monotonic())
             camera = getattr(self, "camera", None)
             if camera is None:
                 return None
@@ -23275,10 +23369,68 @@ class ZA_story_Base(ImageProcPythonCommand):
                 except Exception:
                     pass
             return detail
-    
+
+        def trace(message):
+            za_trace = getattr(self, "_za_trace", None)
+            if callable(za_trace):
+                za_trace(message)
+
+        def sweep_view_for_marker(variants):
+            # L で視点を戻した後に見えない時は、右へ少しずつ視点を回して1周ぶん探す（2026-11-15 ユーザー案1）。
+            # 1回に回す長さ・回数は通し確認で合わせる（Z_20 では測らない）。
+            step_seconds = float(getattr(
+                self, "ZA_MARKERDIR_SWEEP_STEP_SECONDS", 0.25))
+            steps = int(getattr(self, "ZA_MARKERDIR_SWEEP_STEPS", 12))
+            for sweep_index in range(1, steps + 1):
+                self.press(
+                    Direction(Stick.RIGHT, 0, 1.0),
+                    duration=step_seconds, wait=0.0)
+                self.wait(0.15)
+                detail = (
+                    detect_marker_position(variants[0]) if variants else None)
+                self.last_image_detection = detail
+                if detail and detail.get("matched"):
+                    print(
+                        "[MARKER_SEARCH] {} found after L: view sweep "
+                        "{}/{}".format(type, sweep_index, steps))
+                    trace("markerdir {}: found after L, view sweep {}/{}".format(
+                        type, sweep_index, steps))
+                    return True
+            print(
+                "[MARKER_SEARCH] {} not found after L: view sweep "
+                "{} steps".format(type, steps))
+            trace("markerdir {}: not found after L, view sweep {} steps".format(
+                type, steps))
+            return False
+
         field_visible = self.image_check(
             "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        press_l_first = False
         if field_visible or nofiled: #FIELDから変更
+            # 探す前に L で視点を水平・キャラの向きへ戻す（2026-11-15 ユーザー指定・マーカー共通）。
+            # ロックオンや投げで視点が上を向くと EVENT が上に見切れ、見本（13×21）が一致しないまま
+            # 左右へ振り続けた（メリープの柵の前）。フィールドが見えている時だけ押す。
+            # 同じ Step で前の呼び出しが合わせ切れずに終わった直後（呼び出し元の繰り返し）は押さない。
+            # 合わせている途中の向き・視点回しの続きが L で戻ってしまうため。
+            step_key = current_story_step_key()
+            previous_l_state = getattr(self, l_state_name, None)
+            seconds_since_check = time.monotonic() - float(
+                getattr(self, last_check_name, None) or 0.0)
+            continue_search = bool(
+                previous_l_state
+                and previous_l_state[0] == "pending"
+                and previous_l_state[1] == step_key
+                and seconds_since_check <= float(getattr(
+                    self, "ZA_MARKERDIR_L_CONTINUE_SECONDS", 3.0)))
+            press_l_first = bool(field_visible) and not continue_search
+            setattr(self, l_state_name, ("pending", step_key))
+            if press_l_first:
+                self.pressRep(
+                    Button.L, repeat=1, duration=0.15,
+                    wait=float(getattr(self, "ZA_MARKERDIR_L_WAIT", 0.5)),
+                    interval=0.1)
+                print("[MARKER_SEARCH] {} L first".format(type))
+            swept_this_call = False
             # search_mode=2はOUT_HOTEL_Z_23専用。FIELD上のNPC白吹き出しを
             # Switch_No3から取得した画像で検知し、現在の列から横へ外れ
             # その後EVENTの方向合わせを続行する。同じ検知中に横移動を
@@ -23354,6 +23506,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                     setattr(self, downer_repeat_name, 0)
                     setattr(self, downer_stage_name, 0)
                     setattr(self, downer_angle_name, None)
+                    # 合わせ終わった。次の呼び出しは新しい探索として L から始める
+                    setattr(self, l_state_name, ("centered", step_key))
                     record_centered_event_approach()
                     return True
                 elif downer_detected:
@@ -23428,6 +23582,15 @@ class ZA_story_Base(ImageProcPythonCommand):
                     else:
                         movement = (0, 1.0, 0.03)
                 else:
+                    if (type == "EVENT" and press_l_first
+                            and not delayed_event_search
+                            and not marker_seen_this_call
+                            and not swept_this_call):
+                        # L の後に見えない時だけ、1回の呼び出しで1度、視点を回して探す。
+                        # 見つかれば次の回で今までどおり中央へ合わせる。見つからなければ今までの探し方へ
+                        swept_this_call = True
+                        if sweep_view_for_marker(variants):
+                            continue
                     if (type == "EVENT"
                             and (delayed_event_search
                                  or not marker_seen_this_call)):
@@ -23864,6 +24027,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._1_story_current_state = "1_STORY_START_CHECK"
         self._1_story_current_state_init = ""
         self._za_gift_story_stop_state = stop_state
+        # ダッシュの「やり直したら歩き」は周ごとに数え直す（前の周の同じ移動をやり直しと取り違えない）
+        self._za_dash_last_end = {}
+        self._za_dash_walk_routes = set()
+        # 捕獲の時間上限（コフキムシ・メリープ）の計り始めも周ごとに消す（前の周の値で次の周がすぐリセットしないように）
+        self._1_story_out_hotel_z_18_started_at = None
+        self._1_story_out_hotel_z_20_started_at = None
         try:
             return self.ZA_story_main()
         finally:
@@ -24094,6 +24263,143 @@ class ZA_story_Base(ImageProcPythonCommand):
                 return "1_STORY_STATION_OUT"
         return "1_STORY_TRAIN_OUT"  
 
+    ##################################################
+    # ダッシュ移動モード（Start画面の切替 DASH_MOVE。2026-11-14 ユーザー指定）
+    ##################################################
+    # 移動中に B を押したままにするとダッシュになる。ダッシュは歩きより速いので、同じ所まで動くには秒数を縮める。
+    # ZA_DASH_SPEED_RATIO: 歩きの1秒と同じ距離をダッシュで進む秒数（None の間は切替が ON でもダッシュしない）。
+    # 2026-11-14 実機（Z_20 の草地で歩き・ダッシュを2秒/3秒ずつ往復し、ミニマップのずれを比べた）: 比 0.64〜0.70、
+    # 通りと草地で別々に測った値も約0.74。届かないより少し行き過ぎる側の 0.70 を使う
+    ZA_DASH_SPEED_RATIO = 0.70
+    ZA_DASH_MIN_SECONDS = 1.0   # これより短い移動（向きの微調整など）は歩きのまま（ダッシュの出だしで距離がずれる）
+    ZA_DASH_RETRY_GAP = 8.0     # 同じ移動の前の回の終わりからこれ以上空いてまた呼ばれたら、やり直しとみなして歩きにする
+    # ダッシュに置き換える移動（状態名）。ストーリーとおくりものループで共通の区間（先頭〜1_STORY_OUT_HOTEL_Z_35）
+    # のうち、イベントや次の画面が出るまで進む長い移動だけを入れる。次の所は入れない（ユーザー指定 2026-11-14）:
+    # - 失敗（入り直し）が多い所: Z_19・Z_19_1・Z_20（メリープ）、Z_21・Z_33・Z_35
+    # - 壁や角まで動かして立ち位置をそろえる所（歩きとダッシュで止まり方・後の動きが変わりうる）: Z_4（壁まで進んでハシゴを探す）、
+    #   Z_17〜Z_18（コフキムシ）、Z_19_1 の角への移動
+    # - A 表示を確かめる移動・会話の後のフォローの移動（まず長い移動で確かめてから広げる）
+    # まずは一人で向きを変えずに歩き、決まった場所や立っている人の前でイベントが始まる所だけ。
+    # 案内役（ガイ）について行く所は入れない: 2026-11-14 の実機で FARST_BATTLE_ZONE_MOVE4 をダッシュにすると、案内役を
+    # 追い越して路地の突き当たりで止まり、ホテルZ到着のイベントが始まらなかった（歩きでは暗転して始まる）。
+    # 同じ理由で FARST_BATTLE_ZONE_MOVE3・HOTEL_Z_MOVE1・THIRD_BATTLE_END も外した
+    # 2026-11-15 ユーザー指定で広げた: 壁まで動かす移動も比を保ってダッシュ（ハシゴ探しの細かいずらしは1秒未満なので歩き）、
+    # A 表示を確かめる移動は移動だけダッシュ。だめなら（やり直したら）その周の残りは歩き。
+    # ダッシュの説明は HOTEL_Z_MOVE12 のガイとの会話の後に出る（2026-11-15 の画面「B でダッシュ。走り始めれば押しっぱなしに
+    # しなくても立ち止まるまで走り続けられる」）。その後の MOVE13・MOVE14（ホテルZを出る）・THIRD_BATTLE_END も入れる（ユーザー指摘）。
+    # 入れない: それより前（ホテルZの中の MOVE12 まで・駅前など）・Z_20（メリープの取り直しの道）・入り直しの多い Z_21・Z_33・Z_35
+    # 2026-11-15 ユーザー指摘で足した: Z_17（コフキムシへ 60°6秒）・Z_19_1（メリープへの基本の移動。向きを変える最後の
+    # 190°0.9秒は歩き）。ダッシュで試して、やり直し（リセット後の入り直し）は歩き
+    ZA_DASH_ROUTES = frozenset({
+        "1_STORY_HOTEL_Z_MOVE13",
+        "1_STORY_HOTEL_Z_MOVE14",
+        "1_STORY_THIRD_BATTLE_END",
+        "1_STORY_OUT_HOTEL_Z_1",
+        "1_STORY_OUT_HOTEL_Z_4",
+        "1_STORY_OUT_HOTEL_Z_5_1",
+        "1_STORY_OUT_HOTEL_Z_6",
+        "1_STORY_OUT_HOTEL_Z_8",
+        "1_STORY_OUT_HOTEL_Z_10",
+        "1_STORY_OUT_HOTEL_Z_17",
+        "1_STORY_OUT_HOTEL_Z_19_1",
+        "1_STORY_OUT_HOTEL_Z_25",
+        "1_STORY_OUT_HOTEL_Z_27",
+        "1_STORY_OUT_HOTEL_Z_30",
+    })
+    # 速さの比を実機で測ってから上へ移す移動（今は空）。
+    # ダッシュはホテルZを出る直前の説明で使えるようになる（ユーザー確認 2026-11-14。3戦目の前あたり）。それより前の
+    # 駅前・バッグを追う道・最初のバトルの場所は B を押してもダッシュにならないので、対象にしない（秒数を縮めると届かない）
+    ZA_DASH_ROUTES_PENDING = frozenset()
+
+    def ZA_dash_active(self, route):
+        """route の移動をダッシュにするか（切替 ON・速さの比が決まっている・対象の移動）。"""
+        return (bool(getattr(self, "DASH_MOVE", False)) and self.ZA_DASH_SPEED_RATIO is not None
+                and route in self.ZA_DASH_ROUTES)
+
+    def ZA_move(self, angle, seconds, wait=1.0, route=None, dash_seconds=None):
+        """左スティックで angle の向きへ seconds 秒（歩きの秒数）動く。
+
+        ダッシュ移動モードで route が対象の時は、B を押したまま（ダッシュ）歩きと同じ距離になる秒数だけ動く。
+        短い移動（ZA_DASH_MIN_SECONDS 未満）は歩きのまま。切替が OFF の時は今までの press と同じ。
+        dash_seconds を渡すと、ダッシュの時は比で縮めずにその秒数だけダッシュする（ダッシュ用に足す移動）。
+        """
+        direction = Direction(Stick.LEFT, angle)
+        # ダッシュで試してだめなら歩き（ユーザー指定 2026-11-14）: 同じ移動が、前の回の終わりから間を空けて
+        # また呼ばれたら（その Step のやり直し・リセット後の戻り）、その移動はこの周の残りを歩きにする
+        last_end = getattr(self, "_za_dash_last_end", None)
+        if last_end is None:
+            last_end = self._za_dash_last_end = {}
+        walk_routes = getattr(self, "_za_dash_walk_routes", None)
+        if walk_routes is None:
+            walk_routes = self._za_dash_walk_routes = set()
+        if (route in last_end and route not in walk_routes and self.ZA_dash_active(route)
+                and time.monotonic() - last_end[route] > self.ZA_DASH_RETRY_GAP):
+            walk_routes.add(route)
+            print("[ZA_DASH] {}: やり直しのため、この周の残りは歩きにします".format(route))
+        try:
+            return self._za_move_once(direction, seconds, wait, route, walk_routes, dash_seconds)
+        finally:
+            # 短い移動（ハシゴ探しのずらしなど。もともと歩き）は記録しない。記録すると Z_4 のやり直しを見分けられない
+            if route is not None and seconds >= self.ZA_DASH_MIN_SECONDS:
+                last_end[route] = time.monotonic()
+
+    def _za_move_once(self, direction, seconds, wait, route, walk_routes, dash_seconds=None):
+        if (seconds >= self.ZA_DASH_MIN_SECONDS and self.ZA_dash_active(route)
+                and route not in walk_routes):
+            # 既存のダッシュ（ZA_MOVE_ACTION）と同じ押し方: スティックを倒して少し待ってから B を1回押す。
+            # 2026-11-14 の最初の版はスティックと B を同時に押し始めて押したままにしていて、ダッシュにならなかった
+            # （Z_5_1 のミニマップの速さが歩きと同じだった）
+            total = float(dash_seconds) if dash_seconds is not None else seconds * float(self.ZA_DASH_SPEED_RATIO)
+            delay = self.ZA_dash_b_delay()
+            self.hold(direction, wait=delay)
+            self.press(Button.B, duration=0.1, wait=0.0)
+            remaining = max(0.0, total - delay - 0.1)
+            if route in self.ZA_DASH_EVENT_ROUTES:
+                event = self._za_dash_hold_until_event(remaining)
+            else:
+                # 着いた時に会話が始まらない移動では、会話の確かめを挟まない（2026-11-15 ユーザー指摘: 要らない検知を挟まない。
+                # ポケモンセンターの入口でダッシュ中に会話の検知の枠が出ていた）
+                self.wait(remaining)
+                event = False
+            self.holdEnd(direction)
+            if not event:
+                self.wait(wait)
+            return "dash"
+        self.press(direction, duration=seconds, wait=wait)
+        return "walk"
+
+    # ダッシュ中にこれが出たら、移動の残りをやめてすぐ次の Step へ（イベントの会話）
+    ZA_DASH_EVENT_PICTURES = ("POKEMON_ZA_TEXT_WHITE_COMMENT",)
+    # 会話を確かめながらダッシュする移動（着いた所でイベントの会話が始まり、次の Step がその会話を待つ所だけ）。
+    # Z_5_1: センター前に着くとガイの会話が始まる（ダッシュで早く着き、移動の残りの間に会話が流れ終わって止まった）
+    ZA_DASH_EVENT_ROUTES = frozenset({"1_STORY_OUT_HOTEL_Z_5_1"})
+    ZA_DASH_EVENT_POLL = 0.2
+
+    def _za_dash_hold_until_event(self, seconds):
+        """ダッシュしたまま seconds 秒待つ。途中でイベントの会話が出たら、すぐやめて True。
+
+        2026-11-15 Z_5_1→Z_5_2: ダッシュで早く着き、移動の秒数が残っているうちにガイの会話が流れ終わった。次の Z_5_2 は
+        会話（白いコメント）が出たら送って Z_6 へ進む作りなので、来ない会話を待ち続けてポケモンセンターへ向かわなかった
+        （歩きでは移動の終わり近くでイベントが始まり、Z_5_2 に入った時も会話が出ていた）。
+        """
+        deadline = time.monotonic() + seconds
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return False
+            self.wait(min(self.ZA_DASH_EVENT_POLL, remaining))
+            for picture in self.ZA_DASH_EVENT_PICTURES:
+                if self.image_check(picture):
+                    print("[ZA_DASH] イベントの会話が出たので、移動の残りをやめて次へ進みます")
+                    return True
+
+    def ZA_dash_b_delay(self):
+        """スティックを倒してから B を押すまでの秒数（sleeps の「移動Bダッシュ間隔」。無ければ 0.10）。"""
+        try:
+            return float(self.SLEEPLIST[5][2])
+        except (AttributeError, KeyError, IndexError, TypeError, ValueError):
+            return 0.10
+
     def _1_story_staition_out(self):
         ### AUTO_SAVE_POINT
         if self.check_picture==1:
@@ -24103,8 +24409,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(1.0)
         else:
             if self.image_check("POKEMON_ZA_TEXT_TRAIN_OUT_COMMENT"):
-                self.press(Direction(Stick.LEFT,80), duration=4.0, wait=1.0) # 位置調整
-                self.press(Direction(Stick.LEFT,0), duration=9.6, wait=1.0) # 位置調整
+                self.press(Direction(Stick.LEFT,80), duration=4.0, wait=0.0) # 位置調整
+                self.press(Direction(Stick.LEFT,0), duration=9.6, wait=0.0) # 位置調整
                 return "1_STORY_STATION_FRONT"
 
         return "1_STORY_STATION_OUT"
@@ -24120,8 +24426,8 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",event_picture="POKEMON_ZA_QUASAR_MOVIE_ICON",timeout_seconds=600.0):
                     return "1_STORY_STATION_LEAVE_MOVE"
             else:#コメンントナシノフォロー
-                self.press(Direction(Stick.LEFT,20), duration=0.1, wait=1.0)
-                self.press(Direction(Stick.LEFT,0), duration=4.4, wait=1.0)
+                self.press(Direction(Stick.LEFT,20), duration=0.1, wait=0.0)
+                self.press(Direction(Stick.LEFT,0), duration=4.4, wait=0.0)
         
         return "1_STORY_STATION_FRONT"
         
@@ -24131,14 +24437,18 @@ class ZA_story_Base(ImageProcPythonCommand):
                 print("POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT")   
         else:
             if self.image_check("POKEMON_ZA_TEXT_STATION_LEAVE_COMMENT"):
-                self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
-                self.press(Direction(Stick.LEFT,180), duration=4.4, wait=1.0)
-                self.press(Direction(Stick.LEFT,90), duration=10.5, wait=1.0)
-                self.press(Direction(Stick.LEFT,180), duration=6.0, wait=1.0)
-                self.press(Direction(Stick.LEFT,60), duration=0.13, wait=1.0)
-                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=1.0)
-                self.press(Direction(Stick.LEFT,240), duration=4.0, wait=1.0)
-                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=1.0)
+                self.press(Direction(Stick.LEFT,90), duration=4.0, wait=0.0)
+                self.press(Direction(Stick.LEFT,180), duration=4.4, wait=0.0)
+                self.press(Direction(Stick.LEFT,90), duration=10.5, wait=0.0)
+                self.press(Direction(Stick.LEFT,180), duration=6.0, wait=0.0)
+                
+                self.press(Direction(Stick.LEFT,270), duration=0.5, wait=0.0)#門の左にはまったよう
+                self.press(Direction(Stick.LEFT,0), duration=0.5, wait=0.0)
+                
+                self.press(Direction(Stick.LEFT,60), duration=0.13, wait=0.0)
+                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
+                self.press(Direction(Stick.LEFT,240), duration=4.0, wait=0.0)
+                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
                 return "1_STORY_BAG_CHASE_END"
         return "1_STORY_STATION_LEAVE_MOVE"
 
@@ -24555,14 +24865,14 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_arrival(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_HOTEL_Z_MOVE1"
 
         return "1_STORY_HOTEL_Z_ARRIVAL"
 
     def _1_story_hote_z_move1(self):
         ### AUTO_SAVE_POINT
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
             self.press(Direction(Stick.LEFT,90), duration=5.0, wait=1.0)
             return "1_STORY_HOTEL_Z_MOVE2"
         return "1_STORY_HOTEL_Z_MOVE1"
@@ -24576,7 +24886,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_hote_z_fast_in(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_HOTEL_Z_MOVE3"
         return "1_STORY_HOTEL_Z_FAST_IN"
     
@@ -24585,7 +24895,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_hote_z_move3'):
             return self.ZA_story_resume_movement_a('_1_story_hote_z_move3')
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
             self.press(Direction(Stick.LEFT,95), duration=4.0, wait=1.0)
             self.press(Direction(Stick.LEFT,180), duration=0.1, wait=1.0)
             def _after_checked_a_1():
@@ -24736,10 +25046,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.ZA_story_movement_a_pending('_1_story_hote_z_move13'):
             return self.ZA_story_resume_movement_a('_1_story_hote_z_move13')
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5,timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_HOTEL_Z_MOVE13" 
-        elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,90), duration=4.0, wait=1.0)
+        elif self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
+            self.ZA_move(90, 4.0, wait=1.0, route="1_STORY_HOTEL_Z_MOVE13")
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "1_STORY_HOTEL_Z_MOVE14"
@@ -24757,7 +25067,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_3_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_2_SELECT",sub4_button="A",sub4_picture="POKEMON_ZA_HELP_MARKER",sleeptime=0.5): #FIELDから変更
                 return "1_STORY_HOTEL_Z_MOVE13" 
         elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,90), duration=2.9, wait=1.0)
+            self.ZA_move(90, 2.9, wait=1.0, route="1_STORY_HOTEL_Z_MOVE14")
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "1_STORY_HOTEL_Z_MOVE15"
@@ -24830,13 +25140,13 @@ class ZA_story_Base(ImageProcPythonCommand):
         elif self.image_check("POKEMON_ZA_MAP2"):
             self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1) 
         elif self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):#TODO
-            self.press(Direction(Stick.LEFT,90), duration=10.0, wait=1.0)    
+            self.ZA_move(90, 10.0, wait=1.0, route="1_STORY_THIRD_BATTLE_END")    
         return "1_STORY_THIRD_BATTLE_END"
     
     def _1_story_out_hotel_z_1(self):
         ### AUTO_SAVE_POINT
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
-            self.press(Direction(Stick.LEFT,90), duration=11.0, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):  # 戦闘なしのフィールド判定（11/15）
+            self.ZA_move(90, 11.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_1")
             return "1_STORY_OUT_HOTEL_Z_3"
         return "1_STORY_OUT_HOTEL_Z_1"
     
@@ -24845,20 +25155,21 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_3(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_4"
         return "1_STORY_OUT_HOTEL_Z_3"
     
     def _1_story_out_hotel_z_4(self):
         ### AUTO_SAVE_POINT
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
-            self.press(Direction(Stick.LEFT,90), duration=11.0, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):  # 戦闘なしのフィールド判定（11/15）
+            # 2026-11-15: 壁に着いた後に 20° へ3秒ダッシュを足す試しは、ユーザー確認でだめだったため外した
+            self.ZA_move(90, 11.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_4")
             for i in range(20):
-                self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+                self.ZA_move(0, 0.1, wait=1.0, route="1_STORY_OUT_HOTEL_Z_4")
                 if self.image_check("POKEMON_ZA_HASHIGO_ICON"):
                     self._1_story_out_hotel_z_4_miss_count = 0
                     self.pressRep(Button.A, repeat=1, duration=0.15, wait=2.0, interval=0.1)
-                    self.press(Direction(Stick.LEFT,90), duration=11.0, wait=1.0)
+                    self.ZA_move(90, 11.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_4")
                     return "1_STORY_OUT_HOTEL_Z_5"
             # ハシゴを見つけられないまま繰り返すと、上入力11秒が重なって位置がずれていく。
             # 数回で諦め、オートセーブ（この Step の開始位置）からやり直す。
@@ -24882,36 +25193,45 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_5(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_5_1"
         return "1_STORY_OUT_HOTEL_Z_5"
     
     def _1_story_out_hotel_z_5_1(self):
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
-            self.press(Direction(Stick.LEFT,90), duration=11.0, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):  # 戦闘なしのフィールド判定（11/15）
+            self.ZA_move(90, 11.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_5_1")
             return "1_STORY_OUT_HOTEL_Z_5_2"
         return "1_STORY_OUT_HOTEL_Z_5_1"
     
     def _1_story_out_hotel_z_5_2(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_6"
         return "1_STORY_OUT_HOTEL_Z_5_2"
     
+    # Z_6 でダッシュした時だけ、最後に足すダッシュ (角度, ダッシュの秒数)（2026-11-15 ユーザー指定・試し）。
+    # ポケモンセンターのテーブル（受付）の手前左の角へ寄せる。最初の指定 250°2秒→120°2秒から 180°2秒→120°2秒に変更（同日）
+    ZA_OUT_HOTEL_Z_6_DASH_EXTRA_MOVES = ((180, 2.0), (120, 2.0))
+
     def _1_story_out_hotel_z_6(self):
         ### AUTO_SAVE_POINT
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_out_hotel_z_6'):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_6')
-        self.press(Direction(Stick.LEFT,60), duration=5.2, wait=1.0)
-        self.press(Direction(Stick.LEFT,153), duration=4.0, wait=1.0)
+        self.ZA_move(60, 5.2, wait=1.0, route="1_STORY_OUT_HOTEL_Z_6")
+        moved = self.ZA_move(153, 4.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_6")
+        if moved == "dash":
+            # 2026-11-15 ユーザー指定（試し）: ダッシュの時だけ、最後に 180° へ2秒・120° へ2秒ダッシュし（受付の手前左の角へ）、A を確かめる。
+            # ダッシュで早く着くと、後から来たガイが受付との間に入り、A がガイに当たって受付の会話が起きなかった（フランス語の周 09:21）
+            for angle, seconds in self.ZA_OUT_HOTEL_Z_6_DASH_EXTRA_MOVES:
+                self.ZA_move(angle, seconds, wait=1.0, route="1_STORY_OUT_HOTEL_Z_6", dash_seconds=seconds)
         self.wait(0.5)
         if self.image_check("POKEMON_ZA_CHAT_MARKER"):
             self.wait(0.5)
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "1_STORY_OUT_HOTEL_Z_7"
 
-        self.press(Direction(Stick.LEFT,0), duration=0.1, wait=1.0)
+        self.ZA_move(0, 0.1, wait=1.0, route="1_STORY_OUT_HOTEL_Z_6")
         self.wait(0.5)
         def _after_checked_a_1():
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -24922,21 +25242,22 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _1_story_out_hotel_z_7(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_8"
 
         return "1_STORY_OUT_HOTEL_Z_7"
 
     def _1_story_out_hotel_z_8(self):
         ### AUTO_SAVE_POINT
-        self.press(Direction(Stick.LEFT,90), duration=14.0, wait=1.0)
+        self.ZA_move(90, 14.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_8")
         return "1_STORY_OUT_HOTEL_Z_9"
     
     def _1_story_out_hotel_z_9(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
-                # ヤヤコマ・ホルビーを捕まえる前に、ワニノコの技が入れ替わっているかを確かめる（済みなら通過）
-                return "1_STORY_WANINOKO_SKILL_CHANGE1"
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_2_SELECT",sub2_button="A",sub2_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
+                # 2026-11-15 ユーザー指定: ワニノコの技の入れ替えはホテルZの中で済ませる（リセットの時も入れ替えの Step へ戻す）
+                # ので、ここでは確かめずにワイルドゾーンへ進む
+                return "1_STORY_OUT_HOTEL_Z_10"
         return "1_STORY_OUT_HOTEL_Z_9"
 
     # 技の変更ページの「覚えているわざ」（ひし形の4つ、1280x720）。みずタイプの技の水色のしずくが
@@ -25021,7 +25342,8 @@ class ZA_story_Base(ImageProcPythonCommand):
     def _1_story_hotel_z_skill_change1(self):
         #ワニノコの水鉄砲をA技に、C+チェックできないとローリングが誤発動するパターンがあるため、AB技で戦えるようにする。
         # 3rdバトルでA/Bで攻撃するため、バトルへ向かう移動（MOVE13）の前に行う（以前は OUT_HOTEL_Z_9 の後）。
-        # 入れ替え済みなら入れ替えない（OUT_HOTEL_Z_9 の後にも確かめ直す）
+        # 入れ替え済みなら入れ替えない。ホテルZの中のリセット（MOVE13〜15・3戦目の前）もこの Step へ戻す（2026-11-15）ので、
+        # 入れ替えより前のセーブを読み直しても、ここで入れ替え直してからホテルを出る（門の前の後の確かめは無くした）
         return self._1_story_waninoko_skill_swap(
             "1_STORY_HOTEL_Z_SKILL_CHANGE1", "Y", "B",
             "1_STORY_HOTEL_Z_SKILL_CHANGE2", "1_STORY_HOTEL_Z_MOVE13", check_done=True)
@@ -25038,7 +25360,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_out_hotel_z_10'):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_10')
-        self.press(Direction(Stick.LEFT,90), duration=5.0, wait=1.0)
+        self.ZA_move(90, 5.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_10")
         def _after_checked_a_1():
             self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.wait(0.5)
@@ -25466,6 +25788,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         print(
             "[OUT_HOTEL_Z_20_DEAD] DEAD MERIP missing -> "
             "game reset and Z_19")
+        self._za_trace("dead reset: party fainted (MERIP not caught) -> game reset")
         self._1_story_out_hotel_z_20_not_eyecheck_count = 0
         self.ZA_MOVE_SEE("END")
         self.ZA_ZL_ACTION("END")
@@ -25576,7 +25899,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         #コフキムシを探索
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self._1_story_out_hotel_z_18_started_at = None   # Z_18 の時間上限はここから数え直す
-            self.press(Direction(Stick.LEFT,60), duration=6.0, wait=1.0)
+            # 2026-11-15 ユーザー指定: ダッシュ有効ならダッシュで試す（向きを変える 120°0.1秒は短いので歩きのまま）
+            self.ZA_move(60, 6.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_17")
             self.press(Direction(Stick.LEFT,120), duration=0.1, wait=1.0)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             return "1_STORY_OUT_HOTEL_Z_18" 
@@ -25819,17 +26143,17 @@ class ZA_story_Base(ImageProcPythonCommand):
             return black_recovery
         #メリープを探索
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,120), duration=4.0, wait=1.0)
-            self.press(Direction(Stick.LEFT,70), duration=5.0, wait=1.0)
-            self.press(Direction(Stick.LEFT,40), duration=7.0, wait=1.0)
-            self.press(Direction(Stick.LEFT,280), duration=3.0, wait=1.0)
-            self.press(Direction(Stick.LEFT,40), duration=3.0, wait=1.0)
+            # 2026-11-15 ユーザー指定: ダッシュ有効ならダッシュで試す（比を保つ。リセット後の入り直しは歩き）。
+            # 最後の 190°0.9秒は向きを変える移動なので歩きのまま
+            self.ZA_move(120, 4.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_19_1")
+            self.ZA_move(70, 5.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_19_1")
+            self.ZA_move(40, 7.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_19_1")
+            self.ZA_move(280, 3.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_19_1")
+            self.ZA_move(40, 3.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_19_1")
             self.press(Direction(Stick.LEFT,190), duration=0.9, wait=1.0)#TODO
-            if not self._za_beedle_route():
-                # 2026-11-14 ユーザー指定: リセット後の戻り（Z_19 で EVENT に合わせた後のこの移動）で露店の前など
-                # 想定外の場所に着いた。最後にメリープの近くの角へ寄せる（120°少し→80°しばらく→50°3秒）
-                for angle, seconds in self.ZA_OUT_HOTEL_Z_19_1_CORNER_MOVES:
-                    self.press(Direction(Stick.LEFT, angle), duration=seconds, wait=0.5)
+            # 2026-11-15 ユーザー確認: ここは v0.1.0 と同じ（元の動きで岩と低い石柱の角＝Z_20 の開始点に着き、草地側を向く）。
+            # 11/14 にここへ足した「門の石柱への寄せ」は意図と違い、角から離していた（初回もリセット後も）ので外した。
+            # 角に戻す移動は「メリープを捕まえられず、EVENT の印に向いてから角へ戻る」時のもの（ZA_OUT_HOTEL_Z_19_1_CORNER_MOVES）
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             if self._za_beedle_route():
                 # メリープの方向を向いた後、奥のオブジェクト（建物側の植え込み）の方へさらに進む
@@ -25842,7 +26166,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "1_STORY_OUT_HOTEL_Z_20" 
         return "1_STORY_OUT_HOTEL_Z_19_1" 
 
-    # Z_19_1 の移動の最後に足す、メリープの近くの角へ寄せる移動 (角度, 秒)（2026-11-14 ユーザー指定。長さは要調整）
+    # メリープを捕まえられず、EVENT の印に向いてから角（Z_20 の開始点＝岩と低い石柱の角）へ戻る移動 (角度, 秒)。
+    # 2026-11-15 ユーザー確認: 露店の前などに行ってしまった時の対処として 11/14 に指定した移動（120°0.8秒→80°3秒→50°3秒）。
+    # 最初の指定のままでは角へ戻せなかった（80°・50° で柵に沿って流れて岩で止まった）ので調整が要る。どこで使うかは確認中。
+    # 11/14〜15 に Z_19_1 の最後へ「120°で寄せる」として入れていたのは誤り（門の石柱へ行き、角から離していた）。
     ZA_OUT_HOTEL_Z_19_1_CORNER_MOVES = ((120, 0.8), (80, 3.0), (50, 3.0))
 
     def _1_story_out_hotel_z_20_stall_reset(self):
@@ -25861,6 +26188,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._1_story_out_hotel_z_20_started_at = None
         print("[OUT_HOTEL_Z_20_STALL] MERIP not caught in {:.0f}s "
               "-> game reset and Z_19".format(reset_seconds))
+        self._za_trace("stall reset: MERIP not caught in {:.0f}s -> game reset".format(reset_seconds))
         self._1_story_out_hotel_z_20_not_eyecheck_count = 0
         self.ZA_MOVE_SEE("END")
         self.ZA_ZL_ACTION("END")
@@ -25868,6 +26196,20 @@ class ZA_story_Base(ImageProcPythonCommand):
             "1_STORY_OUT_HOTEL_Z_20:stall")
         self.ZA_gamereset()
         return self._1_story_out_hotel_z_after_reset_state("OUT_HOTEL_Z_20_STALL")
+
+    ZA_OUT_HOTEL_Z_20_RELOCK_SECONDS = 0.8
+
+    def _1_story_out_hotel_z_20_relock_pokemon(self):
+        """ZL でロックし、相手の頭上に ♂/♀ が見えれば True（ポケモンにロックできた）。見えなければ False。"""
+        if getattr(self, "ZL_state", 0) != 1:
+            self.ZA_ZL_ACTION("")
+        deadline = time.monotonic() + float(self.ZA_OUT_HOTEL_Z_20_RELOCK_SECONDS)
+        while True:
+            if self._za_capture_target_locked():
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            self.wait(0.1)
 
     def _1_story_out_hotel_z_20_lockon_recheck(self):
         # 前処理でEVENT正面から固定経路を移動し、再度EVENTを
@@ -25928,6 +26270,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             if dead_recovery is not None:
                 return dead_recovery
             if self.image_check("POKEMON_ZA_EYE_CHECK"):
+                self._za_trace("recheck route done: EYE_CHECK visible")
                 print(
                     "[OUT_HOTEL_Z_20] lockon recheck: success "
                     f"attempt={attempt}/{attempt_count} "
@@ -25946,6 +26289,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         print(
             "[OUT_HOTEL_Z_20] lockon recheck: failed; "
             "restored EVENT direction")
+        self._za_trace("recheck route done: EYE_CHECK not visible")
         return False
     
     def _1_story_out_hotel_z_20(self):
@@ -25960,10 +26304,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self._za_merip_caught():
             self._1_story_out_hotel_z_20_started_at = None
             self.ZA_ZL_ACTION("END")
+            self._za_trace("MERIP caught")
             return "1_STORY_OUT_HOTEL_Z_20_1"
         release = self._za_wrong_capture_goto_release("MERIP", "1_STORY_OUT_HOTEL_Z_20")
         if release is not None:
+            self._za_trace("wrong capture -> release")
             return release
+        if getattr(self, "_1_story_out_hotel_z_20_started_at", None) is None:
+            self._za_trace("Z_20 start (search MERIP)")
         stall_reset = self._1_story_out_hotel_z_20_stall_reset()
         if stall_reset is not None:
             return stall_reset
@@ -25977,6 +26325,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.wait(0.25)
             #ゲット時に自動でセーブされてしまうため大体の位置を確定させたいため待機
             for i in range(6):
+                if i == 5:
+                    self._za_trace("after throw: MERIP not caught in 6 checks -> walk back (EVENT route)")
                 dead_recovery = self._1_story_out_hotel_z_20_dead_recovery()
                 if dead_recovery is not None:
                     return dead_recovery
@@ -26014,6 +26364,11 @@ class ZA_story_Base(ImageProcPythonCommand):
                 if release is not None:
                     return release
                 else:
+                    if self._1_story_out_hotel_z_20_relock_pokemon():
+                        # 投げた後もポケモン（頭上に ♂/♀）にロックできるなら、戻らずに攻撃・投げるを続ける
+                        # （2026-11-15 ユーザー指定）
+                        self._za_trace("after throw: Pokemon still locked (gender mark) -> keep attacking")
+                        return "1_STORY_OUT_HOTEL_Z_20"
                     # 岩側のロックオンを引き継いだまま攻撃しない。
                     # 解除後に移動経路とL入力を完了してから、
                     # whileを抜けて下の共通攻撃処理へ戻る。
@@ -26043,12 +26398,15 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             if self.image_check("POKEMON_ZA_FIELD_W"):
                 self.etc_sendCommand("Lbutton_up")
-            if self.image_check("POKEMON_ZA_EYE_CHECK"):
+            if self.image_check("POKEMON_ZA_EYE_CHECK") or self._za_capture_target_locked():
+                # ロック相手の頭上に ♂/♀ が見える間はポケモン（岩ではない）と戦っているので、EVENT の印へ向いて
+                # 取り直す道へは入らない（2026-11-15 ユーザー指定: ロック中に取り直してダメージを受けていた）
                 self._1_story_out_hotel_z_20_not_eyecheck_count=0
             else:
                 self._1_story_out_hotel_z_20_not_eyecheck_count+=1
                 if self._1_story_out_hotel_z_20_not_eyecheck_count >= 10:
                     self._1_story_out_hotel_z_20_not_eyecheck_count=0
+                    self._za_trace("recheck route: EYE_CHECK not visible 10 times")
                     lockon_result = (
                         self._1_story_out_hotel_z_20_lockon_recheck())
                     if lockon_result == "1_STORY_OUT_HOTEL_Z_19":
@@ -26066,6 +26424,7 @@ class ZA_story_Base(ImageProcPythonCommand):
                 # 以前は3回で入っていたが、メリープは自分から近付いてくるのに探索経路の移動を
                 # 繰り返して攻撃できず、4.5時間捕まらなかった（2026-10-31 実機）ため回数を増やした。
                 self._za_capture_no_target_count = 0
+                self._za_trace("recheck route: no HP bar on lock-on {} times".format(no_target_limit))
                 lockon_result = self._1_story_out_hotel_z_20_lockon_recheck()
                 if lockon_result == "1_STORY_OUT_HOTEL_Z_19":
                     return lockon_result
@@ -26252,6 +26611,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         return True
 
     def _1_story_out_hotel_z_20_1(self):
+        # メリープを捕まえた後。Z_20 の時間上限の計り始めを消す（2026-11-15: 投げた後の確かめから Z_20_1 へ進むと残り、
+        # おくりものループの次の周の Z_20 に入った途端に「300秒捕まらない」でゲームリセットしていた）
+        self._1_story_out_hotel_z_20_started_at = None
         black_recovery = (
             self._1_story_out_hotel_z_17_22_black_comment_recovery(
                 "1_STORY_OUT_HOTEL_Z_20_1"))
@@ -26362,7 +26724,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_24(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_25" 
         return "1_STORY_OUT_HOTEL_Z_24" 
     
@@ -26370,8 +26732,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_out_hotel_z_25'):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_25')
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,90), duration=3.0, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
+            self.ZA_move(90, 3.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_25")
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 self.wait(1.0)
@@ -26383,7 +26745,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_26(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_27" 
 
         return "1_STORY_OUT_HOTEL_Z_26" 
@@ -26392,8 +26754,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_out_hotel_z_27'):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_27')
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,95), duration=1.6, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
+            self.ZA_move(95, 1.6, wait=1.0, route="1_STORY_OUT_HOTEL_Z_27")
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 self.wait(1.0)
@@ -26415,22 +26777,22 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_29(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT2"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_30" 
 
         return "1_STORY_OUT_HOTEL_Z_29" 
     
     def _1_story_out_hotel_z_30(self):
         ### AUTO_SAVE_POINT
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.press(Direction(Stick.LEFT,140), duration=1.5, wait=1.0)
-            self.press(Direction(Stick.LEFT,30), duration=2.0, wait=1.0)
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
+            self.ZA_move(140, 1.5, wait=1.0, route="1_STORY_OUT_HOTEL_Z_30")
+            self.ZA_move(30, 2.0, wait=1.0, route="1_STORY_OUT_HOTEL_Z_30")
             return "1_STORY_OUT_HOTEL_Z_31" 
         return "1_STORY_OUT_HOTEL_Z_30" 
     
     def _1_story_out_hotel_z_31(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 return "1_STORY_OUT_HOTEL_Z_32" 
 
         return "1_STORY_OUT_HOTEL_Z_31" 
@@ -26463,10 +26825,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                 for i in range(30):
                     self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                     if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
-                            or self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")):
+                            or self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0")):  # 戦闘なしのフィールド判定（11/15）
                         break
                 # Z_34 と同じ共通関数（B で送り、黒い吹き出し・2択・？は A）
-                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+                if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                     return "1_STORY_OUT_HOTEL_Z_35"
             elif self.image_check("POKEMON_ZA_POKEMON_MENU_X_MENU_W"):
                 for i in range(7):
@@ -26476,7 +26838,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def _1_story_out_hotel_z_34(self):
         if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
-            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更
+            if self.ZA_renda_button(rendabutton="B",endpicture="POKEMON_ZA_FILED_HARD_CHECK_0",sub_button="A",sub_picture="POKEMON_ZA_TEXT_BLACK_COMMENT",sub2_button="A",sub2_picture="POKEMON_ZA_2_SELECT",sub3_button="A",sub3_picture="POKEMON_ZA_HELP_MARKER",timeout_seconds=600.0): #FIELDから変更→戦闘なしのフィールド判定（11/15）
                 #ネットワーク開放
                 return "1_STORY_OUT_HOTEL_Z_35"  
         return "1_STORY_OUT_HOTEL_Z_34" 
@@ -26486,7 +26848,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_1_story_out_hotel_z_35'):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_35')
-        if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
+        if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"): #FIELDから変更→戦闘なしのフィールド判定（11/15）
             self.press(Direction(Stick.LEFT,330), duration=2.5, wait=1.0)
             self.press(Direction(Stick.LEFT,100), duration=1.6, wait=1.0)
             def _after_checked_a_1():
@@ -41853,15 +42215,17 @@ class ZA_story_Base(ImageProcPythonCommand):
         routes = {'1_STORY_FARST_POKEMON_SELECT': ('1_STORY_FARST_POKEMON_SELECT', 4, True, '1_STORY_FARST_POKEMON_SELECT'),
          '1_STORY_HOTEL_Z_MOVE11': ('1_STORY_HOTEL_Z_MOVE11', 4, False, '1_STORY_HOTEL_Z_MOVE12'),
          '1_STORY_HOTEL_Z_MOVE12': ('1_STORY_HOTEL_Z_MOVE11', 4, False, '1_STORY_HOTEL_Z_MOVE12'),
-         '1_STORY_HOTEL_Z_MOVE13': ('1_STORY_HOTEL_Z_MOVE13', 4, False, '1_STORY_HOTEL_Z_MOVE15'),
-         '1_STORY_HOTEL_Z_MOVE14': ('1_STORY_HOTEL_Z_MOVE13', 4, False, '1_STORY_HOTEL_Z_MOVE15'),
+         # 2026-11-15: ホテルZの中のリセットは技の入れ替えの Step へ戻す（入れ替えより前のセーブだと入れ替えが消えるため。
+         # 入れ替え済みなら入れ替えずに MOVE13 へ進む）
+         '1_STORY_HOTEL_Z_MOVE13': ('1_STORY_HOTEL_Z_SKILL_CHANGE1', 4, False, '1_STORY_HOTEL_Z_MOVE15'),
+         '1_STORY_HOTEL_Z_MOVE14': ('1_STORY_HOTEL_Z_SKILL_CHANGE1', 4, False, '1_STORY_HOTEL_Z_MOVE15'),
          '1_STORY_HOTEL_Z_MOVE3': ('1_STORY_HOTEL_Z_MOVE3', 4, False, '1_STORY_AZ_CHAT'),
          '1_STORY_HOTEL_Z_MOVE4': ('1_STORY_HOTEL_Z_MOVE4', 4, False, '1_STORY_FAST_ELEVATOR'),
          # The saved lobby requires MOVE4's elevator approach and A input.
          '1_STORY_HOTEL_Z_MOVE5': ('1_STORY_HOTEL_Z_MOVE4', 4, True, '1_STORY_FAST_ELEVATOR'),
          '1_STORY_HOTEL_Z_MOVE7': ('1_STORY_HOTEL_Z_MOVE7', 4, False, '1_STORY_HOTEL_Z_MOVE8'),
          '1_STORY_HOTEL_Z_MOVE9': ('1_STORY_HOTEL_Z_MOVE9', 4, False, '1_STORY_HOTEL_Z_MOVE10'),
-         '1_STORY_OUT_HOTEL_Z_10': ('1_STORY_WANINOKO_SKILL_CHANGE1', 4, False, '1_STORY_OUT_HOTEL_Z_11'),
+         '1_STORY_OUT_HOTEL_Z_10': ('1_STORY_OUT_HOTEL_Z_10', 4, False, '1_STORY_OUT_HOTEL_Z_11'),
          '1_STORY_OUT_HOTEL_Z_25': ('1_STORY_OUT_HOTEL_Z_20_1', 4, True, '1_STORY_OUT_HOTEL_Z_20_1'),
          '1_STORY_OUT_HOTEL_Z_27': ('1_STORY_OUT_HOTEL_Z_27', 4, False, '1_STORY_OUT_HOTEL_Z_28'),
          '1_STORY_OUT_HOTEL_Z_35': ('1_STORY_OUT_HOTEL_Z_35', 4, False, '1_STORY_OUT_HOTEL_Z_37'),
@@ -51820,6 +52184,17 @@ class ZA_story_Base(ImageProcPythonCommand):
                            'template_path': 'Template/ZA_Story_PIC/_1_z_lank/kohuki_active.png',
                            'threshold': 0.75,
                            'use_gray': False}],
+     'POKEMON_ZA_MOVE_X_FLYING': [{'crop': [980, 521, 1047, 588],
+                           # ひし形の水色の縁だけ（真ん中の羽・○・△は外す）。見本取りの画面: ヤヤコマの技の欄 3枚 0.92〜0.96、
+                           # 技の欄の無い画面・ほかのポケモン 0.73 以下、コフキムシ（ノーマル）0.25 以下（2026-11-15）
+                           'mask_path': 'Template/ZA_Story_PIC/Common/battle_move/move_flying_x_mask.png',
+                           'ms': 2000,
+                           'show_only_true_rect': False,
+                           'show_position': True,
+                           'show_value': False,
+                           'template_path': 'Template/ZA_Story_PIC/Common/battle_move/move_flying_x.png',
+                           'threshold': 0.85,
+                           'use_gray': False}],
      'POKEMON_ZA_MOVE_X_NORMAL': [{'crop': [980, 521, 1047, 588],
                            'mask_path': 'Template/ZA_Story_PIC/Common/battle_move/move_normal_x_mask.png',
                            'ms': 2000,
@@ -51832,15 +52207,20 @@ class ZA_story_Base(ImageProcPythonCommand):
     if 'IMAGE_DETECTION_OPERATORS' in locals():
         IMAGE_DETECTION_OPERATORS.update({'POKEMON_ZA_ACTIVE_YAYAKOMA': 'OR',
      'POKEMON_ZA_ACTIVE_KOHUKI': 'OR',
+     'POKEMON_ZA_MOVE_X_FLYING': 'OR',
      'POKEMON_ZA_MOVE_X_NORMAL': 'OR'})
     if 'IMAGE_DETECTION_DESCRIPTIONS' in locals():
         IMAGE_DETECTION_DESCRIPTIONS.setdefault('targets', {}).update({'POKEMON_ZA_ACTIVE_YAYAKOMA': 'Pokemon ZA battle card: Fletchling is the active Pokemon',
      'POKEMON_ZA_ACTIVE_KOHUKI': 'Pokemon ZA battle card: Scatterbug is the active Pokemon',
+     'POKEMON_ZA_MOVE_X_FLYING': 'Pokemon ZA move panel: Flying-type move in the X slot (diamond rim only)',
      'POKEMON_ZA_MOVE_X_NORMAL': 'Pokemon ZA move panel: Normal-type move icon in the X slot'})
 
     # 閾値のモードでも、これより下げない見本（11/13 ユーザー指定）。戦闘のボールは 0.80 まで下げると
     # 戦闘以外の画面（フィールド 0.81・本体のダイアログ 0.85）でも一致し、フィールドに戻れず止まった
-    ZA_THRESHOLD_MODE_FLOORS = {"POKEMON_ZA_BATTLE_BALL_CHECK": 0.90}
+    # 逃げるの印（POKEMON_ZA_ESCAPE）も元の 0.85 のまま（11/15）。Z_5_2（ポケモンセンター前）の立ち位置で
+    # 背景が 0.838 で一致し、0.80 にすると「戦闘中」扱いでフィールドの判定が通らず 1〜6 分待った。
+    # 本物の戦闘画面の値は 0.7 未満だった（見本取りの画面で測定）
+    ZA_THRESHOLD_MODE_FLOORS = {"POKEMON_ZA_BATTLE_BALL_CHECK": 0.90, "POKEMON_ZA_ESCAPE": 0.85}
 
     def za_adjust_threshold(self, threshold, target=None):
         """画像の判定の閾値を、Start画面の切替（THRESHOLD_MINUS_005・THRESHOLD_TO_080）で下げる。
@@ -52297,11 +52677,11 @@ class _StableZACommandNameMeta(type):
 
 class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     version_major = 0
-    version_minor = 3
+    version_minor = 4
     version_patch = 0
     
     ZA_infimode=0
-    NAME = 'ZA_story_v0.3.0'
+    NAME = 'ZA_story_v0.4.0'
     #if ZA_infimode==1:
         #ZA_infi_custom_name = "_ZA_infi_custom_name"
     #    NAME = f'ZA_story_v1.0.0_ZA_infi_custom_name'
@@ -52444,15 +52824,22 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             action_debug = tk.BooleanVar(
                 value=bool(getattr(self, "Debug_A_Check", False)))
             # 補完調査モード・A表示の追加モード（本体の Start 画面では COMMAND_DEBUG_OPTIONS から出る）
+            # 共通の設定の切替は、設定ファイルの値から始める（開始の時に共通の設定から読み直すため）
+            try:
+                from Commands.PythonCommands.Pokemon_Template.ZA import CommonOptions
+                common_saved = CommonOptions.load(os.path.dirname(os.path.abspath(__file__)))
+            except Exception:
+                common_saved = {}
             extra_modes = [
-                (name, label, tk.BooleanVar(value=bool(getattr(self, name, False))))
+                (name, label, tk.BooleanVar(value=bool(common_saved.get(name, getattr(self, name, False)))))
                 for name, label in (
                     ("ZA_SUPPLEMENTAL_AUDIT", "補完調査モード（補完でも判定できるかを記録・レポート）"),
                     ("A_Nocheck", "A_Nocheck（A表示が見えなければAを押して後の画面で確認）"),
                     ("A_ScaleSearch", "A_ScaleSearch（A表示を倍率を変えて探す）"),
                     ("A_MissSave", "A_MissSave（A表示の外れ画面と原因の見立てを保存）"),
                     ("THRESHOLD_MINUS_005", "THRESHOLD_MINUS_005（画像の判定の閾値 0.80〜1.0 を 0.05 下げる）"),
-                    ("THRESHOLD_TO_080", "THRESHOLD_TO_080（画像の判定の閾値 0.80 以上を 0.80 にする）"))]
+                    ("THRESHOLD_TO_080", "THRESHOLD_TO_080（画像の判定の閾値 0.80 以上を 0.80 にする）"),
+                    ("DASH_MOVE", "DASH_MOVE（ダッシュ移動モード）"))]
             visible_locations = []
 
             groups = ["すべて"]
@@ -52600,6 +52987,14 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 self.Debug_A_Check = bool(action_debug.get())
                 for name, _label, variable in extra_modes:
                     setattr(self, name, bool(variable.get()))
+                # 共通の設定の切替は設定ファイルへ保存する（開始の時に共通の設定から読み直すため）
+                try:
+                    from Commands.PythonCommands.Pokemon_Template.ZA import CommonOptions
+                    CommonOptions.save(os.path.dirname(os.path.abspath(__file__)), {
+                        name: bool(variable.get()) for name, _label, variable in extra_modes
+                        if name in CommonOptions.NAMES})
+                except Exception as error:
+                    print("[共通の設定] 保存できませんでした: {}".format(error))
                 print(
                     "[ZA_PORTABLE_START_FALLBACK] {} :: {} ({}) "
                     "ResetDebug={} BATTLE_DEBUG={}".format(
@@ -52612,8 +53007,10 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
                 self.ResetDebug = False
                 self.BATTLE_DEBUG = False
                 self.Debug_A_Check = False
+                # 共通の設定（A_Nocheck など）は設定なので、既定で開始しても変えない
                 for name, _label, _variable in extra_modes:
-                    setattr(self, name, False)
+                    if name == "ZA_SUPPLEMENTAL_AUDIT":
+                        setattr(self, name, False)
                 close("default")
 
             buttons = ttk.Frame(dialog)
@@ -52778,6 +53175,15 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
             self._command_supplemental_audit = None
             print("[補完調査] 終了処理に失敗: {}".format(error))
 
+    def _za_common_options_setup(self):
+        """「共通の設定」タブの切替（A_Nocheck・閾値・DASH_MOVE など）を属性へ入れる。読めなければ今の値のまま。"""
+        try:
+            from Commands.PythonCommands.Pokemon_Template.ZA import CommonOptions
+            return CommonOptions.apply(self, os.path.dirname(os.path.abspath(__file__)))
+        except Exception as error:   # 設定が読めなくても開始は止めない
+            print("[共通の設定] 読み込めませんでした: {}".format(error))
+            return None
+
     def _za_a_modes_setup(self):
         """A表示の追加モード（A_Nocheck・A_ScaleSearch・A_MissSave）を実行ごとに初期化する。"""
         # Reload で古い ActionPromptCheck が残っていると A_ScaleSearch・A_MissSave が効かないため読み直す
@@ -52788,8 +53194,10 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
         self._za_a_nocheck_entry_tried = set()
         self._za_a_nocheck_blind_entry = None
         enabled = [name for name in ("A_Nocheck", "A_ScaleSearch", "A_MissSave", "ZA_SUPPLEMENTAL_AUDIT",
-                                     "THRESHOLD_MINUS_005", "THRESHOLD_TO_080")
+                                     "THRESHOLD_MINUS_005", "THRESHOLD_TO_080", "DASH_MOVE")
                    if bool(getattr(self, name, False))]
+        if bool(getattr(self, "DASH_MOVE", False)) and self.ZA_DASH_SPEED_RATIO is None:
+            print("[ZA_A_MODES] DASH_MOVE: ダッシュの速さの比がまだ決まっていないため、移動は歩きのままです")
         if enabled:
             print("[ZA_A_MODES] 有効: {}".format(", ".join(enabled)))
 
@@ -52837,6 +53245,7 @@ class ZA_story(ZA_story_Base, metaclass=_StableZACommandNameMeta):
     def do(self):
         self._za_gift_loop_request_from_file()
         self._za_supplemental_setup()
+        self._za_common_options_setup()
         self._za_a_modes_setup()
         # スクリプト継承
         print(
