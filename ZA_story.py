@@ -24432,13 +24432,36 @@ class ZA_story_Base(ImageProcPythonCommand):
                 self.press(Direction(Stick.LEFT,90), duration=10.5, wait=0.0)
                 self.press(Direction(Stick.LEFT,180), duration=6.0, wait=0.0)
                 
-                self.press(Direction(Stick.LEFT,270), duration=0.2, wait=0.0)#門の左にはまったよう
-                self.press(Direction(Stick.LEFT,0), duration=0.2, wait=0.0)
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,270), duration=0.2, wait=0.0)#門の左にはまったよう
                 
-                self.press(Direction(Stick.LEFT,60), duration=0.13, wait=0.0)
-                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
-                self.press(Direction(Stick.LEFT,240), duration=4.0, wait=0.0)
-                self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,0), duration=0.2, wait=0.0)
+                
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,60), duration=0.13, wait=0.0)
+                
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
+                
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,240), duration=4.0, wait=0.0)
+                    
+                if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                    return "1_STORY_BAG_CHASE_END"
+                else:
+                    self.press(Direction(Stick.LEFT,120), duration=6.0, wait=0.0)
+
                 return "1_STORY_BAG_CHASE_END"
         return "1_STORY_STATION_LEAVE_MOVE"
 
