@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./__pycache__/**)",
+      "Read(./.vscode/**)",
+      "Read(./ZA_Story_test_090.py)",
+      "Read(./ZA_Story_test_095.py)"
+    ]
+  }
+}
