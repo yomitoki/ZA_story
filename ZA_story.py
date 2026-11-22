@@ -5761,6 +5761,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.STATE_QUASAR_FUNCTION = {
             "QUASAR_START": self.ZA_quasar_start,
             "QUASAR_REWARD_CHECK": self.ZA_quasar_reward_check,
+            "QUASAR_HOTEL_CLOSE": self.ZA_quasar_hotel_close,
+            "QUASAR_HOTEL_GOTO": self.ZA_quasar_hotel_goto,
+            "QUASAR_HOTEL_ENTER": self.ZA_quasar_hotel_enter,
+            "QUASAR_HOTEL_TALK": self.ZA_quasar_hotel_talk,
             "QUASAR_MOVE_DOOR": self.ZA_quasar_move_door,
             "QUASAR_MOVE_ENTRANCE": self.ZA_quasar_move_entrance,
             "QUASAR_BATTLE_LOOP": self.ZA_quasar_battle_loop,
@@ -47988,6 +47992,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_reward_field_watch = None
         self._za_reward_last = None             # (前に読んだ勝利数, 戦闘の回数) 実行ごとに数え直す
         self._za_reward_learned = ""
+        self._za_quasar_hotel_visits = 0
         self._za_reward_last_frame = None
         try:
             import importlib
@@ -48268,8 +48273,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.press(Direction(Stick.LEFT, 90), duration=11.0, wait=0.1)
         self.press(Direction(Stick.LEFT, 10), duration=1.0, wait=0.1)
         def _after_checked_a_1():
+            # 1勝の時は、受付に話しかけた後にデウロの緑の会話が出ることがある。送り切る前に A の間で確かめる
+            watch_green = self._za_quasar_hotel_event_possible()
             for i in range(30):
+                if watch_green and self._za_quasar_hotel_green():
+                    return "QUASAR_HOTEL_CLOSE"
                 self.press(Button.A, wait=0.0)
+                if watch_green:
+                    self.wait(0.12)
+            if watch_green and self._za_quasar_hotel_green():
+                return "QUASAR_HOTEL_CLOSE"
             return "QUASAR_BATTLE_LOOP"
         # ZIPに該当実行がなくAの画角未確認。最後の移動方向へLで合わせる。
         self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -48277,6 +48290,103 @@ class ZA_story_Base(ImageProcPythonCommand):
             'ZA_quasar_move_entrance', ('POKEMON_ZA_DOOR_A',),
             _after_checked_a_1, 'QUASAR_MOVE_ENTRANCE')
     
+    ######################################################
+    # リワード戦1勝の後のイベント（2026-11-22 ユーザー指定）
+    # 1勝の後に受付へ入ると、デウロの緑の会話「全速力でホテルZに戻ってきて」が出て、次のリワード戦を受けられない。
+    # 1勝かつ緑の会話 → ホテルZへ移動して中へ入る → 会話を送る → ZA_infi へ戻る（ユーザー確認: この時点で後ろに EVENT は無い）
+    ######################################################
+    ZA_QUASAR_HOTEL_RETRIES = 3
+    ZA_QUASAR_HOTEL_TALK_WAIT = 45.0        # 中へ入った後、会話が始まるのを待つ秒数
+    ZA_QUASAR_HOTEL_MAX_VISITS = 2          # 同じ実行でこれを超えて緑の会話が出たら、繰り返さず止める
+
+    def _za_quasar_hotel_event_possible(self):
+        """このリワード戦の前に読んだ勝利数が1か。"""
+        last = getattr(self, "_za_reward_last", None)
+        return bool(last) and last[0] == 1
+
+    def _za_quasar_hotel_green(self):
+        """緑の会話が出ていれば True。"""
+        self.checkIfAlive()
+        if not self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT"):
+            return False
+        visits = int(getattr(self, "_za_quasar_hotel_visits", 0)) + 1
+        self._za_quasar_hotel_visits = visits
+        if visits > self.ZA_QUASAR_HOTEL_MAX_VISITS:
+            self._za_infi_stop("ホテルZへ入った後も緑の会話が出るので止めます")
+        self._za_trace("[ZA_infi] 1勝の緑の会話 -> ホテルZへ")
+        self._za_quasar_hotel_fails = 0
+        return True
+
+    def _za_quasar_hotel_fail(self, reason):
+        """地図からやり直す。上限を超えたら Command を止める。"""
+        count = int(getattr(self, "_za_quasar_hotel_fails", 0)) + 1
+        self._za_quasar_hotel_fails = count
+        self._za_trace("[ZA_infi] ホテルZ {} {}回目".format(reason, count))
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        if count >= self.ZA_QUASAR_HOTEL_RETRIES:
+            self._za_infi_stop("ホテルZ: {}ので止めます".format(reason))
+        return "QUASAR_HOTEL_GOTO"
+
+    def ZA_quasar_hotel_close(self):
+        """緑の会話を送ってフィールドへ戻す。"""
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=60.0):
+            self.Common_current_state = "COMMON_START"
+            self.map_cursor_reset = 0
+            return "QUASAR_HOTEL_GOTO"
+        return "QUASAR_HOTEL_CLOSE"
+
+    def ZA_quasar_hotel_goto(self):
+        state = "QUASAR_HOTEL_GOTO"
+        if self._9_story_clear_talk_before_map(state):
+            return state
+        ret = self.ZA_master_goto("HOTEL_Z")
+        if ret == "START":
+            return "QUASAR_HOTEL_ENTER"
+        if ret == "FAILED":
+            return self._za_quasar_hotel_fail("ホテルZへ移動できない")
+        return state
+
+    def ZA_quasar_hotel_enter(self):
+        """到着した正面のホテルZの入口へ進み、「A はいる」で入る（ストーリーの移動と同じ）。"""
+        state = "QUASAR_HOTEL_ENTER"
+        if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            self.wait(0.3)
+            return state
+        self.wait(1.0)
+        self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=1.0)
+        if not self.ZA_story_wait_entry_a("_za_quasar_hotel_enter", ("POKEMON_ZA_IN_MARKER",)):
+            return self._za_quasar_hotel_fail("A はいる が出ない")
+        blind = getattr(self, "_za_a_nocheck_blind_entry", None)
+        self._za_a_nocheck_blind_entry = None
+        if not blind:
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        self._za_quasar_hotel_talk_at = time.monotonic()
+        self._za_trace("[ZA_infi] ホテルZへ入った")
+        return "QUASAR_HOTEL_TALK"
+
+    def ZA_quasar_hotel_talk(self):
+        """中の会話を最後まで送ってフィールドへ戻す。"""
+        state = "QUASAR_HOTEL_TALK"
+        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+                or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")):
+            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
+                self._za_trace("[ZA_infi] ホテルZの会話が終わった -> ZA_infi へ戻る")
+                self._za_quasar_hotel_fails = 0
+                self.Common_current_state = "COMMON_START"
+                self.map_cursor_reset = 0
+                return "QUASAR_START"
+            return state
+        started = getattr(self, "_za_quasar_hotel_talk_at", None)
+        if started is None:
+            started = self._za_quasar_hotel_talk_at = time.monotonic()
+        if time.monotonic() - started > self.ZA_QUASAR_HOTEL_TALK_WAIT:
+            self._za_quasar_hotel_talk_at = None
+            return self._za_quasar_hotel_fail("中で会話が始まらない")
+        self.wait(0.2)
+        return state
+
     def ZA_quasar_battle_loop(self):
         self.notargetcount=0
         if getattr(self, "ZA_QUASAR_USE_KIWAMI_BATTLE", False):
