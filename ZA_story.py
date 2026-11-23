@@ -336,6 +336,12 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 登録した名前の image_check は、補完モードの間だけこちらで判定する（どれか1つが一致で一致）。
     # ここに無い名前は LocalFunction/ZA/SupplementalSession.py の判定（Aの字・位置など）か、元の画像。
     IMAGE_DETECTION_SUPPLEMENTAL_TARGETS = {
+        # タイトル右下の「追加コンテンツ取得済み」のアイコン（文字は言語で変わるので見ない）
+        'POKEMON_ZA_DLC_OWNED': [
+            {'crop': [1030, 672, 1275, 716],
+             'template_path': 'Template/ZA_Story_PIC/Supplemental/dlc_owned_icon.png',
+             'threshold': 0.85, 'use_gray': True},
+        ],
         # 戦闘中の左下 Lv.。♂/♀ は丸の内側だけ（22px の元画像は背景込みで、明るい床では 0.37）。
         # 「Lv.」は英語でも 0.86 で一致するが、仏 N.・西 Nv.・伊 L. では一致しないため ♂/♀ と併用。
         'POKEMON_ZA_BATTLE_ACTIVE_LEVEL': [
@@ -5571,6 +5577,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "9_STORY_MAPPING_SEWER_TALK_END": self._9_story_mapping_sewer_talk_end,
             "9_STORY_MAPPING_SEWER_VERIFY": self._9_story_mapping_sewer_verify,
             "9_STORY_REWARD_WINS_CHECK": self._9_story_reward_wins_check,
+            "9_STORY_PUKURIN": self._9_story_pukurin,
+            "9_STORY_HOTEL_ROOF": self._9_story_hotel_roof,
             "9_STORY_END": self._9_story_end,
         }
         self._9_story_current_state="9_STORY_START_CHECK"
@@ -5761,6 +5769,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self.STATE_QUASAR_FUNCTION = {
             "QUASAR_START": self.ZA_quasar_start,
             "QUASAR_REWARD_CHECK": self.ZA_quasar_reward_check,
+            "QUASAR_AFTER_14_WINS": self.ZA_quasar_after_14_wins,
             "QUASAR_HOTEL_CLOSE": self.ZA_quasar_hotel_close,
             "QUASAR_HOTEL_GOTO": self.ZA_quasar_hotel_goto,
             "QUASAR_HOTEL_ENTER": self.ZA_quasar_hotel_enter,
@@ -6501,6 +6510,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "title"
         if self._ZA_gamereset_field_ready():
             return "field"
+        if getattr(self, "_za_dlc_restart_active", False) and self._za_notice_comment_visible():
+            return "field"
         # 初戦前は手持ちポケモンのUIがまだなく、通常のHARD FIELDは
         # 成立しない。この明示セーブ地点だけ、Step本体と同じ会話開始
         # マーカーをロード後の復帰確認に使う。他の再起動には広げない。
@@ -6639,7 +6650,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         print("[RESET_DEBUG] EXECUTE direct_site={} action=4".format(site))
         return True
 
-    def ZA_gamereset(self, reset_debug_site=None):
+    def ZA_gamereset(self, reset_debug_site=None, title_callback=None):
         """Pokemon ZAを終了・再起動し、通常フィールド復帰まで待つ。"""
         queued_debug_site = getattr(
             self, "_za_reset_debug_next_game_reset_site", None)
@@ -6672,6 +6683,10 @@ class ZA_story_Base(ImageProcPythonCommand):
                         state_callback=self._ZA_gamereset_set_state)
                     continue
 
+                if callable(title_callback):
+                    # タイトルで A を押す前に1回だけ呼ぶ（追加コンテンツの確認など）
+                    callback, title_callback = title_callback, None
+                    callback()
                 self._ZA_gamereset_set_state("PRESS_TITLE_A")
                 self.press(Button.A, duration=0.15, wait=0.1)
                 self._ZA_gamereset_set_state("WAIT_TITLE_RESPONSE")
@@ -42399,6 +42414,283 @@ class ZA_story_Base(ImageProcPythonCommand):
                 result.get("value", "見本なし"), result["digits"], result["is_stop"]))
         return state
 
+    def _9_story_hotel_roof(self):
+        """確認用: ホテルZの屋上のイベントだけを通す。"""
+        if self.ZA_hotel_roof_event() == "START":
+            self._za_infi_stop("ホテルZの屋上のイベントが終わりました")
+        return "9_STORY_HOTEL_ROOF"
+
+    ######################################################
+    # ホテルZの屋上のイベント（2026-11-23 ユーザー指定）
+    # 追加コンテンツの確認の後: ホテルZ → エレベーターで屋上 → イベントの会話を送る。
+    # 1回呼ぶごとに1段階進み、途中は "EXEC"、終わると "START"。
+    ######################################################
+    ZA_HOTEL_ROOF_LOBBY_ROUTE = ((90, 6.0),)    # 入口から正面のエレベーターへまっすぐ（11/23 ユーザー指定）
+    ZA_HOTEL_ROOF_LOAD_SECONDS = 8.0            # 暗転が始まるまで待つ上限
+    ZA_HOTEL_ROOF_RETRIES = 3
+    ZA_HOTEL_ROOF_WAIT_SECONDS = 30.0
+    ZA_HOTEL_ROOF_AFTER_SECONDS = 60.0      # 会話の後、フィールドへ戻るのを待つ上限
+
+    def ZA_hotel_roof_reset(self):
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        self._za_roof_step = "GO"
+        self._za_roof_fails = 0
+        self._za_roof_at = time.monotonic()
+
+    def _za_roof_set_step(self, step):
+        self._za_roof_step = step
+        self._za_roof_at = time.monotonic()
+        self._za_roof_left_field = False
+        self._za_roof_field_since = None
+
+    def _za_roof_arrived(self, field, waited):
+        """移動の暗転を挟んでフィールドへ戻ったか。暗転の前のフィールドを到着と取り違えない。"""
+        if not field:
+            self._za_roof_left_field = True
+            return False
+        return bool(getattr(self, "_za_roof_left_field", False)) or waited >= self.ZA_HOTEL_ROOF_LOAD_SECONDS
+
+    def _za_roof_retry(self, reason):
+        """地図からやり直す。上限を超えたら Command を止める。"""
+        self._za_roof_fails += 1
+        self._za_trace("[HOTEL_ROOF] {} {}回目".format(reason, self._za_roof_fails))
+        self.Common_current_state = "COMMON_START"
+        self.map_cursor_reset = 0
+        if self._za_roof_fails >= self.ZA_HOTEL_ROOF_RETRIES:
+            self._za_infi_stop("ホテルZの屋上: {}ので止めます".format(reason))
+        self._za_roof_set_step("GO")
+        return "EXEC"
+
+    def _za_roof_press_a(self):
+        blind = getattr(self, "_za_a_nocheck_blind_entry", None)
+        self._za_a_nocheck_blind_entry = None
+        if not blind:
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+
+    def ZA_hotel_roof_event(self):
+        if getattr(self, "_za_roof_step", None) is None:
+            self.ZA_hotel_roof_reset()
+        step = self._za_roof_step
+        waited = time.monotonic() - self._za_roof_at
+        if step == "GO":
+            if self._9_story_clear_talk_before_map("HOTEL_ROOF_GO"):
+                return "EXEC"
+            ret = self.ZA_master_goto("HOTEL_Z")
+            if ret == "START":
+                self._za_roof_set_step("ENTER")
+            elif ret == "FAILED":
+                return self._za_roof_retry("ホテルZへ移動できない")
+            return "EXEC"
+        if step == "ENTER":
+            if self._za_notice_comment_visible():
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                return "EXEC"
+            if not self._za_roof_arrived(bool(self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")), waited):
+                if waited > self.ZA_HOTEL_ROOF_WAIT_SECONDS:
+                    return self._za_roof_retry("ホテルZの前でフィールドに戻らない")
+                self.wait(0.2)
+                return "EXEC"
+            self.wait(1.0)
+            self.press(Direction(Stick.LEFT, 90), duration=2.0, wait=1.0)
+            if not self.ZA_story_wait_entry_a("_za_hotel_roof_enter", ("POKEMON_ZA_IN_MARKER",)):
+                return self._za_roof_retry("A はいる が出ない")
+            self._za_roof_press_a()
+            self._za_trace("[HOTEL_ROOF] ホテルZへ入った")
+            self._za_roof_set_step("LOBBY")
+            return "EXEC"
+        if step == "LOBBY":
+            if self._za_notice_comment_visible():
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                return "EXEC"
+            if not self._za_roof_arrived(self._za_pukurin_field(), waited):
+                if waited > self.ZA_HOTEL_ROOF_WAIT_SECONDS:
+                    return self._za_roof_retry("ロビーの表示が出ない")
+                self.wait(0.2)
+                return "EXEC"
+            self.wait(0.5)
+            for angle, seconds in self.ZA_HOTEL_ROOF_LOBBY_ROUTE:
+                self.press(Direction(Stick.LEFT, angle), duration=seconds, wait=0.0)
+            self.wait(0.5)
+            if not self.ZA_story_wait_entry_a("_za_hotel_roof_elevator", ("POKEMON_ZA_DOOR_A",)):
+                return self._za_roof_retry("エレベーターの A が出ない")
+            self._za_roof_press_a()
+            self._za_trace("[HOTEL_ROOF] エレベーターに話しかけた")
+            self._za_roof_set_step("MENU")
+            return "EXEC"
+        if step == "ROOF":
+            if self._za_notice_comment_visible():
+                if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
+                    self._za_trace("[HOTEL_ROOF] 屋上の会話を送った")
+                    self._za_roof_set_step("AFTER")
+                return "EXEC"
+            if waited > self.ZA_HOTEL_ROOF_WAIT_SECONDS:
+                # すでにイベントが済んでいるセーブでは会話が出ない
+                self._za_trace("[HOTEL_ROOF] 屋上で会話が始まらない（済みとみなす）")
+                self._za_roof_step = None
+                return "START"
+            self.wait(0.2)
+            return "EXEC"
+        if step == "AFTER":
+            if self._za_notice_comment_visible():
+                self._za_roof_set_step("ROOF")
+                return "EXEC"
+            now = time.monotonic()
+            if self._za_pukurin_field():
+                if self._za_roof_field_since is None:
+                    self._za_roof_field_since = now
+                if now - self._za_roof_field_since >= 3.0:
+                    self._za_trace("[HOTEL_ROOF] 屋上のイベントが終わった")
+                    self._za_roof_step = None
+                    return "START"
+            else:
+                self._za_roof_field_since = None
+                if waited > self.ZA_HOTEL_ROOF_AFTER_SECONDS:
+                    self._za_infi_stop("ホテルZの屋上: 会話の後でフィールドに戻らないので止めます")
+            self.wait(0.2)
+            return "EXEC"
+        # MENU: 行き先の選択肢が出るまで会話を送る
+        selection = next((name for name in ("POKEMON_ZA_4_SELECT", "POKEMON_ZA_3_SELECT", "POKEMON_ZA_2_SELECT")
+                          if self.image_check(name)), None)
+        if selection is not None:
+            self._za_trace("[HOTEL_ROOF] エレベーターの選択肢 {}".format(selection))
+            if selection != "POKEMON_ZA_3_SELECT":
+                self.pressRep(Button.B, repeat=3, duration=0.15, wait=0.3, interval=0.3)
+                return self._za_roof_retry("エレベーターの行き先が2階・屋上・やめるの3択ではない")
+            # 2階 / 屋上 / やめる
+            self.wait(0.5)
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.5)
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            self._za_trace("[HOTEL_ROOF] 屋上を選んだ")
+            self._za_roof_set_step("ROOF")
+            return "EXEC"
+        if self._za_notice_comment_visible():
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            return "EXEC"
+        if waited > self.ZA_HOTEL_ROOF_WAIT_SECONDS:
+            return self._za_roof_retry("エレベーターの選択肢が出ない")
+        self.wait(0.2)
+        return "EXEC"
+
+    def _9_story_pukurin(self):
+        """確認用: ベンチからプクリンのレベリング・金策を通す。"""
+        if self.ZA_pukurin_leveling() == "START":
+            self._za_infi_stop("プクリンのレベリング・金策が終わりました")
+        return "9_STORY_PUKURIN"
+
+    ######################################################
+    # プクリンのレベリング・金策（2026-11-23 ユーザー指定。参考: ZA_kinomi_ijigen の pukurin_*）
+    # 別の場所からも呼ぶので一式をここにまとめる。1回呼ぶごとに1段階進み、途中は "EXEC"、終わると "START"。
+    # 流れ: ベンチ → 10番ワイルドゾーン → 歩き → ZL のロックオンと A・B の連打。
+    # 技は A と B だけ。Y（バブルこうせん）を使うと金策にならないので、絶対に押さない。
+    ######################################################
+    ZA_PUKURIN_SPOT = "W_ZONE10"
+    ZA_PUKURIN_ROUTE = ((15, 10.0), (140, 10.0), (260, 3.0))
+    ZA_PUKURIN_NO_MONEY_SECONDS = 300.0     # お金のアイコンがこの間出なければ、ベンチからやり直す
+    ZA_PUKURIN_ARRIVE_SECONDS = 60.0        # マップ移動の後、歩き始められるまでの上限
+
+    def ZA_pukurin_reset(self):
+        self.ZA_ZL_ACTION("END")
+        self.Common_current_state = "COMMON_START"
+        self._za_pukurin_step = "BENCH"
+        self._za_pukurin_money_at = None
+        self._za_pukurin_money_count = 0
+
+    def _za_pukurin_field(self):
+        return bool(self.image_check("POKEMON_ZA_FIELD_W") or self.image_check("POKEMON_ZA_FIELD_BACK_W")
+                    or self.image_check("POKEMON_ZA_DEAD"))
+
+    def ZA_pukurin_leveling(self):
+        if getattr(self, "_za_pukurin_step", None) is None:
+            self.ZA_pukurin_reset()
+        step = self._za_pukurin_step
+        if (step in ("BENCH", "GO", "MOVE")
+                and self.Common_current_state in ("COMMON_START", "COMMON_MAP_OPEN")
+                and self._za_notice_comment_visible()):
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+            return "EXEC"
+        if step == "BENCH":
+            if self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING") == "START":
+                self._za_pukurin_step = "GO"
+            return "EXEC"
+        if step == "GO":
+            ret = self.ZA_master_goto(self.ZA_PUKURIN_SPOT)
+            if ret == "START":
+                self._za_pukurin_step = "MOVE"
+                self._za_pukurin_step_at = time.monotonic()
+                self._za_pukurin_left_field = False
+            elif ret == "FAILED":
+                self._za_pukurin_step = "BENCH"
+            return "EXEC"
+        if step == "MOVE":
+            waited = time.monotonic() - self._za_pukurin_step_at
+            if not self._za_pukurin_field():
+                self._za_pukurin_left_field = True
+                if waited > self.ZA_PUKURIN_ARRIVE_SECONDS:
+                    self._za_trace("[PUKURIN] 到着後にフィールドへ戻らないのでベンチからやり直します")
+                    self.ZA_pukurin_reset()
+                    return "EXEC"
+                self.wait(0.2)
+                return "EXEC"
+            if not self._za_pukurin_left_field and waited < 8.0:
+                self.wait(0.2)      # 暗転の前のフィールドを到着と取り違えない
+                return "EXEC"
+            if not self._9_story_mud_lead():
+                if waited > self.ZA_PUKURIN_ARRIVE_SECONDS:
+                    self._za_trace("[PUKURIN] 手持ち1番目を選べないのでベンチからやり直します")
+                    self.ZA_pukurin_reset()
+                    return "EXEC"
+                self.wait(0.3)
+                return "EXEC"
+            # マップ移動の直後は向きが決まっているので、そのまま歩く
+            if not self._za_pukurin_walk():
+                self._za_trace("[PUKURIN] 歩きの途中で会話が出たので、マップ移動からやり直します")
+                self._za_pukurin_step = "GO"
+                return "EXEC"
+            self._za_pukurin_money_at = time.monotonic()
+            self._za_pukurin_step = "LOOP"
+            return "EXEC"
+        self._za_pukurin_round()
+        return "EXEC"
+
+    def _za_pukurin_walk(self):
+        """決まった経路を歩く。途中で会話が出たら位置がずれるので False を返す。"""
+        for angle, seconds in self.ZA_PUKURIN_ROUTE:
+            direction = Direction(Stick.LEFT, angle)
+            self.hold(direction)
+            try:
+                deadline = time.monotonic() + seconds
+                while time.monotonic() < deadline:
+                    self.checkIfAlive()
+                    if self._za_notice_comment_visible():
+                        return False
+                    self.wait(0.1)
+            finally:
+                self.holdEnd(direction)
+            self.wait(0.1)
+        return True
+
+    def _za_pukurin_round(self):
+        """ロックオンなしの A（メガカケラをロックオンしないため）→ ZL ＋ A・B。Y は押さない。"""
+        for _ in range(10):
+            self.pressRep(Button.A, repeat=1, duration=0.1, wait=0.0, interval=0.0)
+        self.ZA_ZL_ACTION()
+        for _ in range(5):
+            self.pressRep(Button.A, repeat=1, duration=0.1, wait=0.0, interval=0.0)
+            if self.image_check("POKEMON_ZA_PUKURIN_MONEY"):
+                self._za_pukurin_money_count += 1
+                self._za_pukurin_money_at = time.monotonic()
+                self._za_trace("[PUKURIN] お金のアイコン {}回目".format(self._za_pukurin_money_count))
+                self.pressRep(Button.A, repeat=3, duration=0.1, wait=0.0, interval=0.0)
+                break
+            if self.ZA_infi_attack_ready():
+                self.pressRep(Button.B, repeat=1, duration=0.1, wait=0.0, interval=0.0)
+        self.ZA_ZL_ACTION("END")
+        if time.monotonic() - self._za_pukurin_money_at > self.ZA_PUKURIN_NO_MONEY_SECONDS:
+            self._za_trace("[PUKURIN] お金のアイコンが出ないのでベンチからやり直します")
+            self.ZA_pukurin_reset()
+
     def _9_story_end(self):
         return "9_STORY_END"
 
@@ -47994,6 +48286,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_reward_learned = ""
         self._za_quasar_hotel_visits = 0
         self._za_reward_last_frame = None
+        self._za_after14_dlc_checked = False
+        self._za_after14_roof_done = False
+        self._za_roof_step = None
+        self._za_pukurin_step = None
         try:
             import importlib
             from Commands.PythonCommands.Pokemon_Template.ZA import InfiMode
@@ -48219,6 +48515,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         """
         state = "QUASAR_REWARD_CHECK"
         if not self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"):
+            if self._za_notice_comment_visible():
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.3, interval=0.1)
+                return state
             now = time.monotonic()
             started = getattr(self, "_za_reward_field_watch", None)
             if started is None:
@@ -48236,9 +48535,73 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_trace("[ZA_infi] リワード戦の勝利数: {} （{}桁） 14勝={}".format(
             result.get("value", "見本なし"), result["digits"], result["is_stop"]))
         if result["is_stop"]:
+            if self._za_infi_continues_after_14_wins():
+                self._za_trace("[ZA_infi] リワード戦 14勝: 開始せず、再起動して追加コンテンツを確かめます")
+                self._za_after14_dlc_checked = False
+                return "QUASAR_AFTER_14_WINS"
             self._za_infi_stop("リワード戦 14勝のため、開始せず止めます")
             return state
         return "QUASAR_MOVE_DOOR"
+    def _za_infi_continues_after_14_wins(self):
+        """14勝の後へ進むモードか。モードごとの行き先は今後増えるので、ここで分ける。"""
+        module = getattr(self, "_za_infi_module", None)
+        return module is not None and self._za_infi_mode == module.MODE_BEFORE_FLOETTE
+
+    def ZA_quasar_after_14_wins(self):
+        """14勝の後: ゲーム再起動 → 追加コンテンツ取得済みの確認 → ホテルZの屋上 → ベンチ。
+
+        プクリンのレベリング・金策（ZA_pukurin_leveling）は、まだ戦えないので呼ばない（11/23 ユーザー指定）。
+        """
+        state = "QUASAR_AFTER_14_WINS"
+        if not getattr(self, "_za_after14_dlc_checked", False):
+            self.ZA_dlc_restart_check()
+            self._za_after14_dlc_checked = True
+            self._za_after14_roof_done = False
+            self.ZA_hotel_roof_reset()
+            return state
+        if not getattr(self, "_za_after14_roof_done", False):
+            if self.ZA_hotel_roof_event() == "START":
+                self._za_after14_roof_done = True
+                self.Common_current_state = "COMMON_START"
+                self.map_cursor_reset = 0
+            return state
+        # マップ移動できる場所へ戻ったので、ベンチへ
+        if self._9_story_clear_talk_before_map(state):
+            return state
+        if self.ZA_Common_change_time_set(check_timing="POKEMON_ZA_MORNING") == "START":
+            self._za_infi_stop("14勝の後の屋上のイベントとベンチまで終わったので止めます")
+        return state
+
+    ZA_DLC_CHECK_SECONDS = 8.0
+
+    def ZA_dlc_restart_check(self):
+        """ゲームを再起動し、タイトル右下の追加コンテンツ取得済みを確かめる。無ければ A を押さず止める。"""
+        self._za_dlc_owned = False
+        self._za_dlc_restart_active = True
+        try:
+            self.ZA_gamereset(title_callback=self._za_dlc_title_check)
+        finally:
+            self._za_dlc_restart_active = False
+        if not self._za_dlc_owned:
+            self._za_infi_stop("タイトルを確認できなかったので、追加コンテンツの確認をせず止めます")
+        return True
+
+    def _za_notice_comment_visible(self):
+        """緑・白・黒の会話の▼が見えているか（DLC を入れた後のお知らせは出る時が決まっていない）。"""
+        return any(self.image_check(picture) for picture in (
+            "POKEMON_ZA_TEXT_GREEN_COMMENT", "POKEMON_ZA_TEXT_WHITE_COMMENT", "POKEMON_ZA_TEXT_BLACK_COMMENT"))
+
+    def _za_dlc_title_check(self):
+        deadline = time.monotonic() + self.ZA_DLC_CHECK_SECONDS
+        while time.monotonic() < deadline:
+            self.checkIfAlive()
+            if self.image_check("POKEMON_ZA_DLC_OWNED"):
+                self._za_dlc_owned = True
+                self._za_trace("[ZA_infi] タイトルで追加コンテンツ取得済みを確認")
+                return
+            self.wait(0.2)
+        self._za_infi_stop("タイトルに追加コンテンツ取得済みが出ないので止めます")
+
     def ZA_quasar_move_door(self):
         recover=getattr(self,"ZA_story_movement_a_local_recovery",None)
         if callable(recover):
@@ -48522,7 +48885,23 @@ class ZA_story_Base(ImageProcPythonCommand):
     ######################################################
     # POKECON_IMAGE_CHECK_BEGIN
     # Generated image detection selection: list:SourceUsed
-    IMAGE_DETECTION_TARGETS = {'POKEMON_ZA_1_SELECT': [{'crop': [920, 400, 1180, 550],
+    IMAGE_DETECTION_TARGETS = {'POKEMON_ZA_PUKURIN_MONEY': [{'crop': [1000, 0, 1200, 100],
+                                   'ms': 2000,
+                                   'show_only_true_rect': False,
+                                   'show_position': True,
+                                   'show_value': False,
+                                   'template_path': 'Template/ZA_Story_PIC/Pukurin/money_icon.png',
+                                   'threshold': 0.8,
+                                   'use_gray': True}],
+     'POKEMON_ZA_DLC_OWNED': [{'crop': [1030, 672, 1275, 716],
+                               'ms': 2000,
+                               'show_only_true_rect': False,
+                               'show_position': True,
+                               'show_value': False,
+                               'template_path': 'Template/ZA_Story_PIC/Common/dlc_owned.png',
+                               'threshold': 0.85,
+                               'use_gray': True}],
+     'POKEMON_ZA_1_SELECT': [{'crop': [920, 400, 1180, 550],
                               'match_color': 'blue',
                               'ms': 2000,
                               'no_match_color': 'red',
