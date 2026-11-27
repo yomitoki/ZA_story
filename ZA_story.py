@@ -133,7 +133,8 @@ class ZA_story_Base(ImageProcPythonCommand):
         {"key": "gift_loop", "label": "おくりものループ（※セーブ削除あり）",
          "builder": _build_gift_loop_tab},
         {"key": "level_helper", "label": "レベリング補助機",
-         "builder": _build_level_helper_tab},
+         "builder": _build_level_helper_tab,
+         "companion": True},   # 2026-11-23: 副画面の開始の画面でも「実行内容」として選べる
         {"key": "infi_mode", "label": "ZA_infi のモード",
          "builder": _build_infi_mode_tab},
         {"key": "common_options", "label": "共通の設定",
@@ -280,6 +281,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_kiwami_resume_battle = bool(request.get("kiwami_battle"))
         self._za_quasar_debug_start = bool(request.get("quasar_battle"))     # 確認用: リワード戦へ向かう
         self._za_kiwami_no_attack_next = bool(request.get("kiwami_no_attack"))   # 確認用: 次のコースは攻撃せず負ける
+        self._za_shop_sell_debug_start = bool(request.get("shop_sell"))     # 確認用: 最初にポケモンセンターで売る（11/24 F004）
         os.remove(path)
         self.LEVEL_SUPPORT_HELPER = True
         print("[レベリングサポート] 依頼ファイルで補助機として開始します")
@@ -293,6 +295,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_ls.leave_if_in_trade()
         self._za_ls.wait_helper_outstanding()
         self._za_kiwami_helper_setup()
+        if getattr(self, "_za_shop_sell_debug_start", False):
+            # 確認用: アメの数に関係なく、最初に1回だけポケモンセンターで売ってから通常の周回へ
+            self._za_shop_sell_debug_start = False
+            self._za_kiwami_note("shop (debug): {}".format(self.ZA_za_infi_shop_sell()))
         if getattr(self, "_za_kiwami_resume_battle", False):
             self._za_kiwami_resume_battle = False
             self._za_kiwami_check_candy = False
@@ -329,6 +335,10 @@ class ZA_story_Base(ImageProcPythonCommand):
         """Start欄で選ばれたタブを反映する。key=None は通常のStory。"""
         self.GIFT_LOOP_MODE = key == "gift_loop"
         self.LEVEL_SUPPORT_HELPER = key == "level_helper"
+        if self.LEVEL_SUPPORT_HELPER:
+            # 補助機は ZA_infi を回すだけなので、ストーリーの確認用の切替を持ち込まない（2026-11-23）
+            self.ResetDebug = self.BATTLE_DEBUG = self.Debug_A_Check = False
+            self.DASH_DEBUG = self.DASH_DEBUG_HARD = False
         self._za_gift_loop_settings = settings if self.GIFT_LOOP_MODE else None
         self._za_gift_loop_language = None   # 周ごとの言語（開始時は先頭の名前の行）
 
@@ -695,14 +705,33 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     # FURADARI区間では、汎用黒Commentを検知するたびに専用の
     # 「目の前がまっくらになった！」画像も確認して復帰経路を分ける。
+    # 11/27 F037（ユーザー指定）: エレベーターの後（GURI_121 の移動・122 の部屋）はポケモンがいないので外し、
+    # 会話が出ない時の戻し（ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS → GURI_118）に任せる。
+    # 「移動してコメントチェックしてなければ戻るかの話なので」（ユーザー）
     ZA_STORY_FURADARI_BLACK_RECOVERY_STATES = frozenset(
-        "7_STORY_GURI_{}".format(index) for index in range(87, 129))
+        "7_STORY_GURI_{}".format(index) for index in range(87, 129) if index not in (121, 122))
     ZA_STORY_FURADARI_BLACK_RECOVERY_FALLBACK = "7_STORY_GURI_87"
+    # 11/26 F027: GURI_38〜43（カフェソレイユから屋根を通ってはしごまで）は移動中に襲われることがあり、やられると
+    # 「目の前がまっくらになった！」とポケモンセンターの会話で止まった（戻しのマップ移動が会話を進めないため）。
+    # ユーザー指定「やられたらベンチから最初から動く」: 会話を A で進め、フィールドに戻ったら A 未検知の時と同じ
+    # 戻し（ベンチで朝にする → GURI_38）からやり直す。
+    # GURI_44 も入れる: はしごの後の滑空・屋根の上は GURI_43 の関数の中で動き、そこでやられると GURI_44 で見つかる
+    ZA_STORY_GURI43_DEFEAT_STATES = frozenset(
+        "7_STORY_GURI_{}".format(index) for index in range(38, 45))
+    ZA_STORY_GURI43_DEFEAT_RESTART = "7_STORY_GURI_38"
+    ZA_STORY_GURI43_DEFEAT_MAX_PRESSES = 20
+    ZA_STORY_GURI43_DEFEAT_TIMEOUT_SECONDS = 180.0
+    # 「目の前がまっくら」が先に消えて（GURI_41 の戦闘の A 等）ポケモンセンターの会話だけ残った時の入口。
+    # 戻しの予約（ベンチの会話）が無いのに暗い会話がこの秒数続いたら、同じやり直しを始める
+    ZA_STORY_GURI43_DEFEAT_BLACK_SECONDS = 10.0
+    # 会話の間やセンターに着いた直後にフィールドが一瞬見えてもベンチへ進まない。この秒数続けて見えたら戻ったとみる
+    ZA_STORY_GURI43_DEFEAT_FIELD_STABLE_SECONDS = 3.0
     ZA_STORY_FURADARI_BLACK_RECOVERY_SECONDS = 30.0
     # GURI_122は終了会話まで進んだ区間なので、通常の30秒ではなく
     # 90秒連続して黒Commentが残った場合だけGURI_118へ戻す。
     ZA_STORY_FURADARI_BLACK_RECOVERY_SECONDS_BY_STATE = {
-        "7_STORY_GURI_122": 90.0,
+        # 11/27 F037: 122 は黒い会話の戻しの対象から外した（上の ZA_STORY_FURADARI_BLACK_RECOVERY_STATES）
+        #"7_STORY_GURI_122": 90.0,
     }
     ZA_STORY_FURADARI_BLACK_RECOVERY_MAX_INPUTS = 30
     ZA_STORY_FURADARI_EYES_DARK_RECOVERY_MAX_INPUTS = 70
@@ -778,8 +807,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_117": "7_STORY_GURI_105",
         "7_STORY_GURI_119": "7_STORY_GURI_118",
         "7_STORY_GURI_120": "7_STORY_GURI_118",
-        "7_STORY_GURI_121": "7_STORY_GURI_118",
-        "7_STORY_GURI_122": "7_STORY_GURI_118",
+        # 11/27 F037: エレベーターの後（121 の移動・122 の部屋）は暗転の戻しを使わない。122 の部屋はもともと暗く、
+        # 出来事の途中で B を30回押していた（クリア回はこれが偶然会話を送って通った）。
+        # 会話が出ない時の戻し（ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS → GURI_118）に任せる
+        #"7_STORY_GURI_121": "7_STORY_GURI_118",
+        #"7_STORY_GURI_122": "7_STORY_GURI_118",
         #"7_STORY_GURI_124": "7_STORY_GURI_118",
         #"7_STORY_GURI_125": "7_STORY_GURI_118",
         #"7_STORY_GURI_126": "7_STORY_GURI_118",
@@ -943,7 +975,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         "7_STORY_GURI_107": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_112": ("7_STORY_GURI_113", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_120": ("7_STORY_GURI_121", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
-        "7_STORY_GURI_122": ("7_STORY_GURI_108", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中] フラダリラボ地下の判定ミス？
+        # 11/27 F037 ユーザー確定「エレベーターの選択肢で確定できているので118でよい」
+        # （この表は GURI_108 だったが、実際の戻し先は 10/19 から ZA_STORY_EVENT_ENTRY_RECOVERY_OVERRIDES で 118）。
+        # 121（エレベーターの後の移動）も暗転の戻しをやめ、フィールドが見えず進めない時はここで 118 へ戻す
+        "7_STORY_GURI_121": ("7_STORY_GURI_118", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
+        "7_STORY_GURI_122": ("7_STORY_GURI_118", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         "7_STORY_GURI_128": ("7_STORY_GURI_129", 0),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
         
         "7_STORY_GURI_133": ("7_STORY_GURI_130", 1),  # TODO_EVENT_ENTRY_RECOVERY[確認中]
@@ -2281,6 +2317,13 @@ class ZA_story_Base(ImageProcPythonCommand):
                                                  'checkpoint_id': '2_STORY_ABSOL_MOVE11',
                                                  'reset_common': True},
      ('white_comment', '7_STORY_GURI_122'): {'recovery_kind': 'white_comment',
+                                             'checkpoint_id': '7_STORY_GURI_122',
+                                             'target': '7_STORY_GURI_118',
+                                             'action': 0,
+                                             'reset_common': True},
+     # 11/27 F037: 121 も 122 と同じく、地図の移動を最初からやり直して 118 へ。
+     # checkpoint_id は ResetDebug の表（ZA_STORY_RESET_DEBUG_RECOVERY_TARGETS の 121）と同じ 122 にそろえ、確認の印を変えない
+     ('white_comment', '7_STORY_GURI_121'): {'recovery_kind': 'white_comment',
                                              'checkpoint_id': '7_STORY_GURI_122',
                                              'target': '7_STORY_GURI_118',
                                              'action': 0,
@@ -4693,13 +4736,17 @@ class ZA_story_Base(ImageProcPythonCommand):
             
             "2_STORY_BOX_CHANGE1": self._2_story_box_change1,
             "2_STORY_BOX_CHANGE2": self._2_story_box_change2,
-            "2_STORY_LEVEL_SUPPORT2": self._2_story_level_support2,
+            #"2_STORY_LEVEL_SUPPORT2": self._2_story_level_support2,   # F013: メガストーン戦の後（MOVE8 の後）へ移した
             "2_STORY_ITEM_GIVE1": self._2_story_item_give1,
-            
+
             "2_STORY_ABSOL_MOVE5": self._2_story_absol_move5,
             "2_STORY_ABSOL_MOVE6": self._2_story_absol_move6,
             "2_STORY_ABSOL_MOVE7": self._2_story_absol_move7,
             "2_STORY_ABSOL_MOVE8": self._2_story_absol_move8,
+            # F013（11/25）: メガストーン戦の後に 持ち物を外す → サポート2回目 → 持たせ直す
+            "2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE": self._2_story_level_support2_item_remove,
+            "2_STORY_LEVEL_SUPPORT2": self._2_story_level_support2,
+            "2_STORY_ITEM_REGIVE1": self._2_story_item_regive1,
             
                
             "2_STORY_MAPPING_110": self._2_story_mapping_110,
@@ -5637,6 +5684,8 @@ class ZA_story_Base(ImageProcPythonCommand):
             "COMMON_ITEM_GIVE_END": self.ZA_common_item_give_end,
             }
         self.common_item_give_current_state="COMMON_ITEM_GIVE_START"
+        # F013（11/25）: 持ち物を外す（ZA_common_item_remove_function）
+        self.common_item_remove_current_state="COMMON_ITEM_REMOVE_START"
 
         self.STATE_COMMON_ITEM_USE_FUNCTION = {
             "COMMON_ITEM_USE_START": self.ZA_common_skill_change_start,
@@ -18153,6 +18202,28 @@ class ZA_story_Base(ImageProcPythonCommand):
                     current_state, recovery_target,
                     ",".join(sorted(retry_states))))
 
+    def _ZA_story_furadari_white_backward_retry(
+            self, recovery_kind, recovery_target, current_state):
+        """会話が出ない時の戻しで GURI の前の Step へ戻す時も、会話なしで先送りした印を消す（11/27 F037）。
+
+        122 を暗転の戻しから外したので、122 → 118 の戻しは会話が出ない時の戻しだけになった。印を消さないと、
+        前に 120（エレベーター）を会話なしで先送りしていた時、118 から入り直しても 120 が本体を動かさず 121 へ進み、
+        エレベーターのメニューが開いたまま 121 で止まる。印が付くのはラボの区間の会話の Step だけなので、ほかの GURI の
+        戻し（23→21 など）では消す物がなく何も変わらない。
+        """
+        if recovery_kind != "white_comment":
+            return
+        try:
+            target_number = int(str(recovery_target).rsplit("_", 1)[1])
+            current_number = int(str(current_state).rsplit("_", 1)[1])
+        except (IndexError, TypeError, ValueError):
+            return
+        if (not str(recovery_target).startswith("7_STORY_GURI_")
+                or not str(current_state).startswith("7_STORY_GURI_")
+                or target_number >= current_number):
+            return
+        self._ZA_story_furadari_allow_comment_retry(recovery_target, current_state)
+
     def _ZA_story_furadari_release_held_recovery_controls(
             self, reason):
         """FURADARI復帰に割り込む前に保持入力を解除する。"""
@@ -19398,6 +19469,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_common_skill_target_search_started_at = None
         self.common_box_change_current_state = "COMMON_BOX_CHANGE_START"
         self.common_item_give_current_state = "COMMON_ITEM_GIVE_START"
+        self.common_item_remove_current_state = "COMMON_ITEM_REMOVE_START"
+        # F013: リセットの後は持っているかが分からないので、持たせ直しは確かめる所から
+        self._za_item_regive_phase = "check"
+        self._za_item_regive_gives = 0
+        self._za_item_regive_side_since = None
+        self._za_item_remove_passes = 0
         self.common_evolution_current_state = "COMMON_EVOLUTION_START"
         self._za_story_mapping_goto_watch = None
         self._za_story_mapping_goto_recovery = None
@@ -19812,9 +19889,104 @@ class ZA_story_Base(ImageProcPythonCommand):
             "[RESET_DEBUG] NORMAL_RESULT kind={} state={} outcome={}".format(
                 recovery_kind, current_state, outcome))
 
+    def _ZA_story_guri43_defeat_restart(self, current_state):
+        """11/26 F027: GURI_38〜43 でやられたら、会話を進めてベンチ（朝）から GURI_38 をやり直す。
+
+        None: 対象外・やられていない（通常どおり）。文字列: 次の State（会話を進めている間は同じ State を保つ）。
+        """
+        state = str(current_state)
+        latch = getattr(self, "_za_guri43_defeat", None)
+        if state not in getattr(self, "ZA_STORY_GURI43_DEFEAT_STATES", ()):
+            self._za_guri43_defeat = None
+            return None
+        trace = getattr(self, "_za_trace", None)
+        now = time.monotonic()
+        if not isinstance(latch, dict):
+            # 普通の会話（ベンチ・したっぱ等）では始めない。「目の前がまっくらになった！」を見た時か、
+            # 文が先に消えてセンターの暗い会話だけが（ベンチの戻しの予約も無いのに）10秒続いた時だけ
+            reason = None
+            if self.image_check("POKEMON_ZA_FURADARI_EYES_DARK_COMMENT"):
+                reason = "eyes_dark"
+            else:
+                pending = getattr(self, "_za_story_event_entry_pending_recovery", None)
+                recovering = isinstance(pending, dict) and str(pending.get("current_state")) == state
+                if (state != self.ZA_STORY_GURI43_DEFEAT_RESTART and not recovering
+                        and self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT")):
+                    black_since = getattr(self, "_za_guri43_black_since", None)
+                    if not (isinstance(black_since, tuple) and black_since[0] == state):
+                        self._za_guri43_black_since = (state, now)
+                        return None
+                    if now - black_since[1] < float(getattr(self, "ZA_STORY_GURI43_DEFEAT_BLACK_SECONDS", 10.0)):
+                        return None
+                    reason = "black_comment"
+                else:
+                    self._za_guri43_black_since = None
+            if reason is None:
+                return None
+            self._za_guri43_black_since = None
+            latch = {"state": state, "since": now, "presses": 0, "field_since": None}
+            self._za_guri43_defeat = latch
+            release_controls = getattr(self, "_ZA_story_release_recovery_controls", None)
+            if callable(release_controls):
+                release_controls("guri43_defeat:" + state)
+            message = "[GURI43_DEFEAT] {}: defeated ({}) -> clear dialogue, bench, restart {}".format(
+                state, reason, self.ZA_STORY_GURI43_DEFEAT_RESTART)
+            print(message)
+            if callable(trace):
+                trace(message)
+        elapsed = now - float(latch.get("since") or now)
+        if elapsed > float(getattr(self, "ZA_STORY_GURI43_DEFEAT_TIMEOUT_SECONDS", 180.0)):
+            # 戻れない時は止めずに今までの流れへ返す（同じ所で入力し続けない）
+            self._za_guri43_defeat = None
+            if callable(trace):
+                trace("[GURI43_DEFEAT] {}: field not back in {:.0f}s -> normal flow".format(state, elapsed))
+            return None
+        if any(self.image_check(picture) for picture in (
+                "POKEMON_ZA_FURADARI_EYES_DARK_COMMENT", "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                "POKEMON_ZA_TEXT_WHITE_COMMENT")):
+            # 倒された後の会話 → 暗転・移動 → ポケモンセンターの会話（「ポケモンの技を受け続けると危険です」）
+            latch["field_since"] = None
+            if latch["presses"] < int(getattr(self, "ZA_STORY_GURI43_DEFEAT_MAX_PRESSES", 20)):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                latch["presses"] += 1
+            else:
+                self.wait(1.0)
+            return state
+        if not self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
+            latch["field_since"] = None
+            self.wait(0.5)   # 暗転・読み込み中
+            return state
+        # センターに着いた直後や文字送りの途中にフィールドが一瞬見えても進まない（3秒続けて見えるまで待つ）
+        if latch.get("field_since") is None:
+            latch["field_since"] = now
+        if now - float(latch["field_since"]) < float(getattr(self, "ZA_STORY_GURI43_DEFEAT_FIELD_STABLE_SECONDS", 3.0)):
+            self.wait(0.5)
+            return state
+        # フィールドへ戻った。A 未検知の戻しと同じく、ベンチで朝にしてから GURI_38（カフェソレイユ）へ
+        self._za_guri43_defeat = None
+        self._za_movement_a_pending = None
+        self._za_movement_a_failure = None
+        self._za_movement_a_wait_timers = {}
+        reset_common = getattr(self, "_ZA_story_reset_common_navigation_state", None)
+        if callable(reset_common):
+            reset_common("guri43_defeat:" + state)
+        if callable(trace):
+            trace("[GURI43_DEFEAT] {}: field back after {} A -> bench (action 1) -> {}".format(
+                state, latch["presses"], self.ZA_STORY_GURI43_DEFEAT_RESTART))
+        self._ZA_story_schedule_event_entry_recovery(
+            current_state=state, recovery_target=self.ZA_STORY_GURI43_DEFEAT_RESTART,
+            recovery_kind="defeat", recovery_action=1)
+        return self._ZA_story_event_entry_pending_recovery_step(state)
+
     def ZA_story_event_entry_recovery_step(
             self, current_state, state_functions):
         """町イベントへ入れなかったStepを、指定時間後に復帰先へ移す。"""
+        # 11/26 F027: GURI_38〜43 でやられた時は、戻しの途中（マップ移動待ち）でも先に会話を進めてやり直す
+        guri43_defeat = getattr(self, "_ZA_story_guri43_defeat_restart", None)
+        if callable(guri43_defeat):
+            defeat_return = guri43_defeat(current_state)
+            if defeat_return is not None:
+                return defeat_return
         pending_a = getattr(self, "_za_movement_a_pending", None)
         if isinstance(pending_a, dict) and pending_a.get("dispatch") != current_state:
             self._za_movement_a_pending = None
@@ -20624,6 +20796,12 @@ class ZA_story_Base(ImageProcPythonCommand):
                 skipped_states = set()
                 self._za_story_furadari_comment_skipped = skipped_states
             skipped_states.add(current_state)
+        else:
+            # 11/27 F037: 区間内で前へ戻す時は、戻し先から今までの「会話なしで先送り済み」の印を消す
+            backward_retry = getattr(
+                self, "_ZA_story_furadari_white_backward_retry", None)
+            if callable(backward_retry):
+                backward_retry(recovery_kind, recovery_target, current_state)
         if (recovery_kind == "battle_before"
                 and current_state == "2_STORY_ABSOL_MOVE17"
                 and recovery_target == "2_STORY_ABSOL_MOVE14"):
@@ -21422,6 +21600,20 @@ class ZA_story_Base(ImageProcPythonCommand):
     ZA_PARTY_SLOT_Y = (622, 690)
     ZA_PARTY_SLOT_MIN = 0.12
     ZA_PARTY_SLOT_OTHER_MAX = 0.08
+    # 先頭を決め打ちにする戦闘（battle_flow_key → 枠 0〜5）。覚えた枠より優先する。
+    # 11/25 F017: YUKARI_15 のアサミ戦は「メガシンカした状態で勝つ」のが条件（アサミの会話・メニューの目標）。初めての戦闘の時に
+    # 選ばれていた5番（ヘラクロス・メガストーンなし）を覚えて毎回出し、メガシンカできないまま勝ってはホテルで緑の会話
+    # 「メゾン・ド・ポルテで待っていますよ」が出て 11 へ戻り、11〜20 を6回繰り返した。メガストーンを持つ1番（オーダイル）にする
+    # （クリア回で通った2回目も先頭はオーダイル・ホルードの1回目は戻された）。メガシンカは戦闘中の R の表示
+    # （POKEMON_ZA_R_push）で R を押す今の処理に任せる。
+    # 11/25 F018（暫定）: 戦闘が始まった後に場へポケモンがいなければ、一番左に合わせて上入力する戦闘（ユカリの連戦の戦闘 Step）。
+    # 64 から 移動→戦闘前→戦闘→戦闘後 の並びが続き、どの Step でどの相手と戦うかがずれることがある（勝利判定も漏れる。66 は
+    # 勝ち負けが残らなかった）ので、区間の戦闘すべてに入れる（ユーザー指定「周辺のバトルすべてで一旦対応が必要なはず」）
+    ZA_YUKARI_SEND_LEFT_KEYS = frozenset("6_STORY_YUKARI_{}".format(n) for n in (66, 70, 74, 78, 82, 86, 90, 94))
+    # 11/25 F018（暫定）: ユカリの連戦の戦闘も先頭を一番左（1番）にする（ユーザー指定「戦闘が始まったらすぐ一番左
+    # ただし先にポケモンは自動で出されるかも」）。戦闘の前に選んだ枠が戦闘の開始で自動で出るので、前もって1番を選んでおく。
+    # 82（ジガルデ・地面）は最初の戦闘で選ばれていた6番デンリュウを出し続け、電気の技が効かずに長引いて主人公がやられた（20:45）。
+    ZA_PARTY_LEAD_FIXED = {"6_STORY_YUKARI_15": 0, **{key: 0 for key in ZA_YUKARI_SEND_LEFT_KEYS}}
 
     def _ZA_story_party_selected_slot(self, frame=None):
         """手持ちの欄で選ばれている枠（0〜5）。読めない時（交代の画面など枠が並ばない時）は None。"""
@@ -21462,6 +21654,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         if not isinstance(leads, dict):
             leads = self._za_party_lead_slots = {}
         key = str(battle_flow_key)
+        fixed = (getattr(self, "ZA_PARTY_LEAD_FIXED", None) or {}).get(key)
+        if fixed is not None:
+            leads[key] = fixed
         if key in leads:
             return leads[key]
         if key in (getattr(self, "_za_party_lead_defeated", None) or ()):
@@ -21492,6 +21687,9 @@ class ZA_story_Base(ImageProcPythonCommand):
             leads = self._za_party_lead_slots = {}
         key = str(battle_flow_key)
         trace = getattr(self, "_za_trace", None)
+        fixed = (getattr(self, "ZA_PARTY_LEAD_FIXED", None) or {}).get(key)
+        if fixed is not None:
+            leads[key] = fixed
         slot = self._ZA_story_party_selected_slot()
         if slot is None:
             return None
@@ -21964,6 +22162,43 @@ class ZA_story_Base(ImageProcPythonCommand):
             "POKEMON_ZA_BATTLE_ACTIVE_LEVEL")
         hard_field_visible = self.image_check(
             "POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK")
+        # 11/25 F018（暫定。ユーザー指定「ゆかりのこの付近の戦闘だけ、戦闘開始後一番左に合わせて上入力としてください」）:
+        # ユカリの連戦は相手がポケモン（82 のジガルデ）の時もあり、場のポケモンがやられても SELECT が出ず、次を出さないまま
+        # 視点を回して負けた（20:21〜20:34 に4回）。戦闘が始まった後に場へポケモンがいない（Lv なし・FIELD の手持ちの欄に ▲）
+        # 時は、一番左（FIELD1）に合わせて上入力する。勝ちの判定が漏れて勝った後のフィールドで出し続けないよう、3分で3回まで。
+        # 対人とポケモンを分けるのは勝利チェックの漏れがなくなってから（ユーザー指定）。
+        if (str(battle_flow_key) in getattr(self, "ZA_YUKARI_SEND_LEFT_KEYS", ())
+                and state.get("active_seen") and not state.get("result_seen")
+                and not active_level_visible and hard_field_visible
+                and self.image_check("POKEMON_ZA_FIELD_W")
+                and not any(self.image_check(picture) for picture in (
+                    "POKEMON_ZA_TEXT_WHITE_COMMENT", "POKEMON_ZA_TEXT_BLACK_COMMENT",
+                    "POKEMON_ZA_TEXT_GREEN_COMMENT", "POKEMON_ZA_COMMENT_MARKER"))):
+            now = time.monotonic()
+            if now - float(state.get("yukari_send_left_at") or 0.0) > 180.0:
+                state["yukari_send_left_count"] = 0
+            if state.get("yukari_send_left_count", 0) < 3:
+                state["yukari_send_left_count"] = state.get("yukari_send_left_count", 0) + 1
+                state["yukari_send_left_at"] = now
+                for method_name in ("ZA_MOVE_SEE", "ZA_ZL_ACTION"):
+                    release = getattr(self, method_name, None)
+                    if callable(release):
+                        release("END")
+                for _ in range(len(self.ZA_PARTY_SLOT_XS)):
+                    if self.image_check("POKEMON_ZA_FIELD1") or self.image_check("POKEMON_ZA_FIELD_BACK1"):
+                        break
+                    self.etc_sendCommand("Lbutton_left")
+                    self.wait(0.5)
+                self.wait(0.5)
+                self.etc_sendCommand("Lbutton_up")
+                message = "[YUKARI_SEND_LEFT] {}: no partner after the battle started -> leftmost + up ({}/3)".format(
+                    battle_flow_key, state["yukari_send_left_count"])
+                print(message)
+                trace = getattr(self, "_za_trace", None)
+                if callable(trace):
+                    trace(message)
+                self.wait(1.0)
+                return noprg_ret
         observer = getattr(self, "_ZA_story_battle_screen_observe", None)
         screen_state = (observer(
             battle_flow_key, active_level_visible=active_level_visible,
@@ -23294,7 +23529,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         return noprg_ret
 
     ######################################################
-    # 補助機: アメLが800未満の時にキワミで補充する（1コース勝つごとに残数を読む。交換の依頼が優先）
+    # 補助機: アメLが800未満の時にキワミで補充する（残数を読むのは初回と交換の後だけ。交換の依頼が優先）
     ######################################################
     ZA_KIWAMI_SPOT = "RESTAURANT_KIWAMI"
     ZA_KIWAMI_STALL_SECONDS = 90.0      # 戦闘も Step の進みも無いまま、この時間が過ぎたら X メニューで立て直す（抜けない）
@@ -23333,27 +23568,47 @@ class ZA_story_Base(ImageProcPythonCommand):
 
     def _za_kiwami_helper_setup(self):
         self._za_kiwami_check_candy = True
+        self._za_kiwami_candy_estimate = None   # 最後に読んだ残数＋その後の勝ち数×10（読むのは初回と交換の後だけ）
+        self._za_kiwami_resume_refill = False   # 途中で抜けた時、次のベンチで見込みの数のままキワミへ戻る
         self._za_kiwami_disabled = False
         self._za_kiwami_stalls = 0
         self._za_kiwami_step = None
         self._za_kiwami_seeking = False
 
     def _za_kiwami_helper_needed(self):
-        """ベンチの後に呼ぶ。アメLが足りなければ True（残数は開始時と交換の後だけ読む）。"""
+        """ベンチの後に呼ぶ。アメLが足りなければ True。
+
+        残数を読むのは、初回とレベリングサポート（交換）の後だけ（11/24 ユーザー指定）。
+        途中で抜けた後は読まず、最後に読んだ数に勝ち数×10を足した見込みで決める。
+        """
         session = getattr(self, "_za_ls", None)
         if (not bool(getattr(self, "LEVEL_SUPPORT_HELPER", False)) or session is None
-                or getattr(self, "_za_kiwami_disabled", False)
-                or not getattr(self, "_za_kiwami_check_candy", False)):
+                or getattr(self, "_za_kiwami_disabled", False)):
             return False
-        self._za_kiwami_check_candy = False
-        count = session.helper_candy_count()
+        if getattr(self, "_za_kiwami_check_candy", False):
+            self._za_kiwami_check_candy = False
+            count = session.helper_candy_count()
+            self._za_kiwami_candy_estimate = count
+            source = "candy L"
+        elif getattr(self, "_za_kiwami_resume_refill", False):
+            count = getattr(self, "_za_kiwami_candy_estimate", None)
+            source = "candy L (estimate)"
+        else:
+            return False
+        self._za_kiwami_resume_refill = False
         if count is None or count >= self._za_ls_module().CANDY_REFILL_BELOW:
-            self._za_kiwami_note("candy L {} -> no refill".format(count))
+            self._za_kiwami_note("{} {} -> no refill".format(source, count))
             return False
-        self._za_kiwami_note("candy L {} -> refill ({} wins)".format(count, self._za_kiwami_set_win_target(count)))
+        self._za_kiwami_note("{} {} -> refill ({} wins)".format(
+            source, count, self._za_kiwami_set_win_target(count)))
         self._za_kiwami_retries = 0
         self.ZA_kiwami_battle_reset()
-        self._za_kiwami_set_step("GO")
+        # キワミは1コース10万円。始める前にポケモンセンターで売って所持金を上限まで増やす（11/24 F004）。
+        # 途中で抜けて見込みの数で戻る時は、売った直後なので売り直さない。
+        sold_at = getattr(self, "_za_shop_sold_at", None)
+        sell = (bool(self.ZA_KIWAMI_SELL_BEFORE) and source == "candy L"
+                and (sold_at is None or time.monotonic() - sold_at > self.ZA_SHOP_RESELL_SECONDS))
+        self._za_kiwami_set_step("SELL" if sell else "GO")
         return True
 
     def _za_kiwami_x_recovery(self):
@@ -23374,8 +23629,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             if self._za_kiwami_stalls >= self.ZA_KIWAMI_MAX_STALLS:
                 self._za_kiwami_disabled = True
                 self._za_kiwami_note("stalled {} times -> ZA_infi only".format(self._za_kiwami_stalls))
+            elif getattr(self, "_za_kiwami_candy_estimate", None) is None:
+                self._za_kiwami_check_candy = True      # 交換の後の読み取りに失敗した時だけ、次のベンチで読み直す
             else:
-                self._za_kiwami_check_candy = True
+                self._za_kiwami_resume_refill = True    # 読まずに見込みの数でキワミへ戻る
         else:
             self._za_kiwami_stalls = 0
         self.bench_current_state = "BENCH_START"
@@ -23389,6 +23646,218 @@ class ZA_story_Base(ImageProcPythonCommand):
         self._za_kiwami_set_step("GO")
         return "ZA_INFI_KIWAMI"
 
+    ######################################################
+    # 補助機: キワミの前にポケモンセンターで物を売って所持金を上限まで増やす（2026-11-24 F004）
+    # 手順は 11/24 の副画面の操作記録のとおり: プランタンへマップ移動→受付で「ショッピング」→「売りにきた」
+    # →R で「おたから」の欄→一番上の物を売る。売り切ると次の物が上に来るので、並びに依存しない。
+    # 上限を越えない数まで売り、まだ届いていなければ最後に1個だけ売る（越えて消える額は1個分未満）。
+    # 入れない・読めない時は止まらず店を出てキワミへ進む。画面の読み取りは Pokemon_Template/ZA/ShopSell.py。
+    ######################################################
+    ZA_KIWAMI_SELL_BEFORE = True        # False でキワミの前に売らない
+    ZA_SHOP_SPOT = "CENTER_PLANTAN"
+    ZA_SHOP_SELL_LIMIT_SECONDS = 420.0  # 売る作業全体の上限（マップ移動を含む）
+    ZA_SHOP_TALK_RETRIES = 2
+    ZA_SHOP_MAX_ITEMS = 20              # 1回に売る物の種類の上限
+    ZA_SHOP_MAX_QTY_PRESSES = 400
+    ZA_SHOP_RESELL_SECONDS = 1200.0     # 売ってからこの秒数の間は、次のキワミの前に売り直さない
+
+    def _za_shop_module(self):
+        import importlib
+        from Commands.PythonCommands.Pokemon_Template.ZA import ShopSell as module
+        if getattr(module, "REVISION", 0) < 20261124:
+            module = importlib.reload(module)
+        return module
+
+    def _za_shop_wait(self, shop, names, seconds, need=("header",)):
+        """need の目印がそろい、names のどれかが見えるまで待つ。見えた名前と画面を返す（無ければ None）。"""
+        end = time.monotonic() + seconds
+        frame = None
+        while True:
+            self.checkIfAlive()
+            frame = shop.frame_of(self)
+            if all(shop.seen(frame, name) for name in need):
+                for name in names:
+                    if shop.seen(frame, name):
+                        return name, frame
+            if time.monotonic() >= end:
+                return None, frame
+            self.wait(0.15)
+
+    def _za_shop_list(self, shop, seconds=6.0):
+        """おたからの欄の一覧（会話・個数選びが閉じた状態）を待って画面を返す。"""
+        end = time.monotonic() + seconds
+        while True:
+            self.checkIfAlive()
+            frame = shop.frame_of(self)
+            if (shop.seen(frame, "header") and shop.seen(frame, "treasure_tab")
+                    and not any(shop.seen(frame, name) for name in (
+                        "yesno", "chevron", "chevron_white", "qty_popup"))):
+                return frame
+            if time.monotonic() >= end:
+                return None
+            self.wait(0.2)
+
+    def _za_shop_close(self):
+        """B で会話・一覧・受付を閉じてフィールドへ戻る（はい/いいえ では B は「いいえ」）。"""
+        for _ in range(16):
+            self.checkIfAlive()
+            if self.ZA_story_Template_Field_HardGaurd():
+                return True
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.6, interval=0.1)
+        return bool(self.ZA_story_Template_Field_HardGaurd())
+
+    def _za_shop_open(self, shop, deadline):
+        """受付まで歩いて話しかけ、「ショッピング」→「売りにきた」→「おたから」の欄を開く。"""
+        while not self.ZA_story_Template_Field_HardGaurd():
+            self.checkIfAlive()
+            if time.monotonic() > deadline:
+                return False
+            if self.image_check("POKEMON_ZA_MORNING") or self.image_check("POKEMON_ZA_NIGHT"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            else:
+                self.etc_sendCommand("Lbutton_left")     # 手持ちの選択がずれていると、フィールドの印が見えない
+            self.wait(0.3)
+        # 受付は入口の正面。話しかける印が出るまで少しずつ前へ（操作記録では約1.5秒）
+        for _ in range(14):
+            if self.image_check("POKEMON_ZA_CHAT_MARKER"):
+                break
+            self.press(Direction(Stick.LEFT, 90), duration=0.35, wait=0.15)
+        else:
+            return False
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.5, interval=0.1)    # 話しかける
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.2, interval=0.1)    # 「本日はどうなさいますか」→ 4択
+        self.press(Hat.BTM, duration=0.1, wait=0.8)                                  # 回復させる → ショッピング
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.8, interval=0.1)    # → 買いにきた / 売りにきた
+        self.press(Hat.BTM, duration=0.1, wait=0.8)                                  # 買いにきた → 売りにきた
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        if self._za_shop_wait(shop, ("header",), 6.0, need=())[0] is None:
+            return False
+        # 「おたから」の欄まで R で送る（操作記録では4回）
+        for _ in range(8):
+            self.checkIfAlive()
+            if shop.seen(shop.frame_of(self), "treasure_tab"):
+                return True
+            self.press(Button.R, duration=0.1, wait=0.5)
+        return shop.seen(shop.frame_of(self), "treasure_tab")
+
+    def _za_shop_set_quantity(self, shop, target):
+        """個数選びを target 個にする。RIGHT/LEFT が10個ずつ動かなければ上下だけにする。"""
+        keys = {"UP": Hat.TOP, "DOWN": Hat.BTM, "RIGHT": Hat.RIGHT, "LEFT": Hat.LEFT}
+        step10_ok = True
+        misses = 0
+        for _ in range(self.ZA_SHOP_MAX_QTY_PRESSES):
+            self.checkIfAlive()
+            current = shop.quantity(shop.frame_of(self))[0]
+            if current is None:
+                misses += 1
+                if misses >= 5:
+                    return False
+                self.wait(0.2)
+                continue
+            misses = 0
+            key = shop.quantity_key(current, target, step10_ok)
+            if key is None:
+                return True
+            self.press(keys[key], duration=0.08, wait=0.25)
+            if key in ("RIGHT", "LEFT"):
+                after = shop.quantity(shop.frame_of(self))[0]
+                if after is not None and abs(after - current) != 10:
+                    step10_ok = False
+        return False
+
+    def _za_shop_sell_once(self, shop, count, price, final):
+        """一番上の物を count 個売る。sold / 失敗の理由 を返す。
+
+        越えない売り: 「〜しましょうか？」の はい/いいえ がすぐ出る → はい。
+        越える売り: 白い会話の ▼（お引きとりします）の後に「持ちきれないお金はなくなりますが」の はい/いいえ。
+        越えるのは最後の1個の時だけ はい。それ以外で越えそうなら いいえ（上限の見込み違い）。
+        """
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.6, interval=0.1)    # 個数選びを開く
+        if self._za_shop_wait(shop, ("qty_popup",), 4.0)[0] is None:
+            return "qty popup not opened"
+        if not self._za_shop_set_quantity(shop, count):
+            return "qty not set"
+        qty, total = shop.quantity(shop.frame_of(self))
+        if qty != count or total != count * price:
+            return "qty check failed {}x{} total {}".format(qty, price, total)
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        seen, _ = self._za_shop_wait(shop, ("yesno", "chevron_white"), 6.0)
+        if seen is None:
+            return "no confirmation"
+        if seen == "chevron_white":
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+            if self._za_shop_wait(shop, ("yesno",), 5.0)[0] is None:
+                return "no overflow question"
+            if not final:
+                self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.6, interval=0.1)    # いいえ
+                return "overflow before last one (cap differs?)"
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)        # はい
+        if self._za_shop_wait(shop, ("chevron",), 6.0)[0] is not None:                   # 「〜を受けとった ▼」
+            self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        return "sold"
+
+    def ZA_za_infi_shop_sell(self):
+        """ポケモンセンターで売って所持金を上限まで増やす。結果の文字を返す（止まらない）。"""
+        shop = self._za_shop_module()
+        deadline = time.monotonic() + self.ZA_SHOP_SELL_LIMIT_SECONDS
+        while True:
+            self.checkIfAlive()
+            if time.monotonic() > deadline:
+                return "travel timeout"
+            ret = self.ZA_master_goto(self.ZA_SHOP_SPOT)
+            if ret == "START":
+                break
+            if ret == "FAILED":
+                return "travel failed"
+        self.wait(2.0)
+        opened = False
+        for _ in range(self.ZA_SHOP_TALK_RETRIES + 1):
+            if self._za_shop_open(shop, deadline):
+                opened = True
+                break
+            self._za_shop_close()
+            if time.monotonic() > deadline:
+                break
+        if not opened:
+            self._za_shop_close()
+            return "shop not opened"
+        try:
+            return self._za_shop_sell_loop(shop, deadline)
+        finally:
+            self._za_shop_sold_at = time.monotonic()
+            self._za_shop_close()
+
+    def _za_shop_sell_loop(self, shop, deadline):
+        for _ in range(self.ZA_SHOP_MAX_ITEMS):
+            if time.monotonic() > deadline:
+                return "timeout"
+            current = price = count = None
+            for _ in range(5):          # 売り切った行が消えて次の物が上に来るまで読み直す
+                frame = self._za_shop_list(shop)
+                current = shop.money(frame) if frame is not None else None
+                price, count = shop.top_row(frame) if frame is not None else (None, None)
+                if current is not None and current >= shop.CAP:
+                    return "cap {}".format(current)
+                if current is not None and price and count:
+                    break
+                self.wait(0.6)
+            if current is None:
+                return "money unreadable"
+            if not price or not count:
+                return "no item to sell (money {})".format(current)
+            sell, final = shop.plan(current, price, count)
+            if sell <= 0:
+                return "cap {}".format(current)
+            result = self._za_shop_sell_once(shop, sell, price, final)
+            frame = self._za_shop_list(shop)
+            after = shop.money(frame) if frame is not None else None
+            self._za_kiwami_note("shop {}x{} {} money {} -> {}".format(sell, price, result, current, after))
+            if result != "sold":
+                return result
+            if final:
+                return "cap reached {}".format(after)
+        return "too many items"
+
     def ZA_za_infi_kiwami(self):
         """補助機のキワミ周回を1段階進める。"""
         step = self._za_kiwami_step
@@ -23396,10 +23865,16 @@ class ZA_story_Base(ImageProcPythonCommand):
         last_progress = max(self._za_kiwami_step_at, battle.get("active_at", 0.0))
         # 進まない時は抜けず、他の戦闘と同じ X メニューの復帰で立て直して同じ段階を続ける。
         # マップ移動とアメの確認は別の画面を開いているので対象にしない。
-        if step not in ("GO", "CHECK") and time.monotonic() - last_progress > self.ZA_KIWAMI_STALL_SECONDS:
+        if step not in ("GO", "CHECK", "SELL") and time.monotonic() - last_progress > self.ZA_KIWAMI_STALL_SECONDS:
             self._za_kiwami_note("no progress at {} -> X recovery".format(step))
             self._za_kiwami_x_recovery()
             self._za_kiwami_step_at = time.monotonic()
+            return "ZA_INFI_KIWAMI"
+
+        if step == "SELL":
+            # 売れても売れなくても止まらずキワミへ進む（売る作業は中で時間の上限を持つ）
+            self._za_kiwami_note("shop: {}".format(self.ZA_za_infi_shop_sell()))
+            self._za_kiwami_set_step("GO")
             return "ZA_INFI_KIWAMI"
 
         if step == "GO":
@@ -23414,9 +23889,14 @@ class ZA_story_Base(ImageProcPythonCommand):
         if step == "BATTLE":
             session = getattr(self, "_za_ls", None)
             stop_at_menu = session.helper_request_waiting if session is not None else None
+            wins_before = int(battle.get("wins", 0))
             ret = self.ZA_kiwami_battle_function(
                 "KIWAMI_MENU", "KIWAMI_BATTLE", win_target=int(getattr(self, "_za_kiwami_win_target", 1)),
                 stop_at_menu=stop_at_menu)
+            gained = int((getattr(self, "_za_kiwami", None) or {}).get("wins", 0)) - wins_before
+            if gained > 0 and getattr(self, "_za_kiwami_candy_estimate", None) is not None:
+                # 1コース勝つと必ず10個。残数は読まずに見込みへ足す（11/24 ユーザー指定）
+                self._za_kiwami_candy_estimate += gained * self.ZA_KIWAMI_CANDY_PER_WIN
             if ret == "KIWAMI_MENU":
                 self._za_kiwami_set_step("DECLINE")
             return "ZA_INFI_KIWAMI"
@@ -23480,17 +23960,23 @@ class ZA_story_Base(ImageProcPythonCommand):
 
         if step == "CHECK":
             self._za_kiwami_release()
-            self._za_ls_helper_after_bench()     # 主機の依頼があれば先に交換する
+            traded = self._za_ls_helper_after_bench()     # 主機の依頼があれば先に交換する
             session = getattr(self, "_za_ls", None)
-            count = session.helper_candy_count() if session is not None else None
+            count = getattr(self, "_za_kiwami_candy_estimate", None)
+            source = "candy L (estimate)"
+            if traded or count is None:
+                # 残数を読むのは交換（レベリングサポート）の後と、まだ一度も読んでいない時だけ（11/24 ユーザー指定）
+                count = session.helper_candy_count() if session is not None else None
+                self._za_kiwami_candy_estimate = count
+                source = "candy L"
             if count is None:
                 self._za_kiwami_note("candy read failed -> leave")
                 return self._za_kiwami_leave(stalled=True)
             if count > self._za_ls_module().CANDY_REFILL_BELOW:
-                self._za_kiwami_note("candy L {} -> done".format(count))
+                self._za_kiwami_note("{} {} -> done".format(source, count))
                 return self._za_kiwami_leave()
-            self._za_kiwami_note("candy L {} -> next course ({} wins)".format(
-                count, self._za_kiwami_set_win_target(count)))
+            self._za_kiwami_note("{} {} -> next course ({} wins)".format(
+                source, count, self._za_kiwami_set_win_target(count)))
             self.ZA_kiwami_battle_reset()
             self._za_kiwami_set_step("RETALK")
             return "ZA_INFI_KIWAMI"
@@ -25823,10 +26309,15 @@ class ZA_story_Base(ImageProcPythonCommand):
     #       ダッシュは5回とも2手目の終わりで人が通りのずっと奥に残り（進みが足りない）、3手目が建物の壁に当たって LAST_20 の
     #       出来事が始まらなかった（続けて走る3回・手ごとに止まる1回・2手目だけ歩き1回）。ユーザー指摘「追いかけイベントのため
     #       ダッシュしない区間では」。追いかける場面では走れず、短くしたダッシュの秒数のぶん進みが足りない（ABSOL_MOVE1 と同じ）→ 歩き
+    # 7_STORY_GURI_86〜128（フラダリラボの中。11/26 F032）: カードキーの取り漏れ・警備に見つかって戻る区間で、わざとの戻しや
+    #       取り漏れの戻りの後の1周は歩きになる。ユーザー指定「1回ダッシュしてもアイテム取得漏れの戻りで歩きにするなら意味が
+    #       もうない」「ラボ内で取得漏れなどがあった場合に歩きにするのであればわざわざダッシュと分ける意味がない」→ ラボの中は全部歩き。
+    #       （11/20 の「ラボは全部ダッシュ」より優先。GURI_87・113 のダッシュの秒の直し（F030）は歩きでは使われない）
     ZA_DASH_STORY_INFEASIBLE_ROUTES = frozenset({"1_STORY_OUT_HOTEL_Z_6", "1_STORY_OUT_HOTEL_Z_45",
                                                  "2_STORY_TOWER_40", "2_STORY_TOWER_70",
                                                  "2_STORY_ABSOL_MOVE1", "8_STORY_STORY_LAST_10",
-                                                 "8_STORY_STORY_LAST_19"})
+                                                 "8_STORY_STORY_LAST_19"}) | frozenset(
+                                                     "7_STORY_GURI_{}".format(index) for index in range(86, 129))
 
     # 2_STORY_MAPPING_2（ハンサムハウスから4区間・35秒でワイルドゾーン4のゲートへ「はいる」）: 11/17 5時の実機でダッシュは
     #       ゲートの右へ約3m・柵の手前（1回目）、ゲートの見えない柵の前（2回目）と着く所が大きく違い（歩いている人にぶつかる・
@@ -29146,10 +29637,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             return self.ZA_story_resume_movement_a('_1_story_out_hotel_z_68')
         #回復ように移動
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_move(30, 4.0, wait=0.5, route="1_STORY_OUT_HOTEL_Z_68", chain=True)
-            self.ZA_move(300, 5.0, wait=0.5, route="1_STORY_OUT_HOTEL_Z_68", chain=True)
-            self.ZA_move(90, 1.0, wait=0.5, route="1_STORY_OUT_HOTEL_Z_68", chain=True)
-            self.ZA_move(300, 6.0, wait=0.5, route="1_STORY_OUT_HOTEL_Z_68", chain=True)
+            self.ZA_move(30, 4.0, wait=0.5)  # 2026-11-24: ここから4手はクリア回と同じ歩き。全部ダッシュだと位置がずれ、次の20秒の区間が柵に当たって進めず105回やり直した
+            self.ZA_move(300, 5.0, wait=0.5)
+            self.ZA_move(90, 1.0, wait=0.5)
+            self.ZA_move(300, 6.0, wait=0.5)
             moved = self.ZA_move(120, 20.0, wait=0.5, route="1_STORY_OUT_HOTEL_Z_68", chain=True)
             if moved == "dash":
                 # 11/17 9時（②・走りを保つ直しの後）: 最後の 270° も走ると、ガイの前で止まらず「話しかける」が出なかった。
@@ -30329,7 +30820,7 @@ class ZA_story_Base(ImageProcPythonCommand):
     # 2_STORY_MAPPING_20 の2区間目（川沿いの大通りをまっすぐ）のダッシュの秒。11/17 13時の実機: 0.70 の比（22.4秒）は約4.5秒行き過ぎ、
     # 市場の屋台に当たってポケモンセンターの前に着かなかった（3回続けて失敗）。歩きの回とミニマップを合わせると、歩きの 32 秒は
     # 走りを保ったダッシュの 19.2 秒（比 0.60）。1区間目（広場）は 0.63 で合う。歩きは 32 秒のまま
-    ZA_MAPPING_20_DASH_LEG2_SECONDS = 19.2
+    ZA_MAPPING_20_DASH_LEG2_SECONDS = 20.3  # 2026-11-24: 19.2 は3回ともクリア回の到着より地図で12px南の壁に当たり、ポケセンを登録できなかった（ダッシュ約11px/秒で +1.1秒）
 
     def _2_story_mapping_20(self):
         ### AUTO_SAVE_POINT
@@ -31942,7 +32433,7 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.wait(1.0)
-            self.ZA_move(0, 3.0, wait=0.5, route="2_STORY_MAPPING_102", chain=True)
+            self.ZA_move(0, 3.0, wait=0.5)  # 2026-11-24: 1手目はクリア回と同じ歩き。ダッシュだと次の60°が道の青い車に当たって約6秒止まり、ジャスティス道場を登録できなかった
             self.ZA_move_gap(1.0, route="2_STORY_MAPPING_102")
             self.ZA_move(60, 20.0, wait=0.5, route="2_STORY_MAPPING_102", chain=True)
             self.ZA_move_gap(1.0, route="2_STORY_MAPPING_102")
@@ -32745,11 +33236,11 @@ class ZA_story_Base(ImageProcPythonCommand):
             return self.ZA_story_resume_movement_a('_2_story_x_lank_move10')
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
 
-            self.ZA_move(4, 3.0, wait=1.0, route="2_STORY_X_LANK_MOVE10", chain=True)
+            self.ZA_move(4, 3.0, wait=1.0)  # 2026-11-24: L までの3手はクリア回と同じ歩き。ダッシュだと西へずれて噴水のふちに当たらず、植え込みまで行って話しかけられなかった（9回）
             self.ZA_move_gap(0.5, route="2_STORY_X_LANK_MOVE10")
-            self.ZA_move(75, 6.5, wait=1.0, route="2_STORY_X_LANK_MOVE10", chain=True)
+            self.ZA_move(75, 6.5, wait=1.0)
             self.ZA_move_gap(0.5, route="2_STORY_X_LANK_MOVE10")
-            self.ZA_move(0, 0.1, wait=1.0, route="2_STORY_X_LANK_MOVE10")
+            self.ZA_move(0, 0.1, wait=1.0)
             self.wait(0.5)
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.wait(0.5)
@@ -32975,8 +33466,12 @@ class ZA_story_Base(ImageProcPythonCommand):
         ### AUTO_SAVE_POINT
         # レベリングサポート2回目の交換でセーブされた後のリセットは、ホテルの外（アブソル入れ替え済み・持ち物なし）へ
         # 戻る。ここから入れ替えをやり直すとアブソルを箱へ戻してしまうので、持ち物を持たせる所へ進む。
+        # F013（11/25）: 2回目はメガストーン戦の後に行うので、セーブ位置は戦闘の後（持ち物は外したまま）。
+        # 戦闘をやり直しに行かず、持たせ直し（ITEM_REGIVE1 → MAPPING_110）へ進む。
         if self._za_ls_after_stage2_reload():
-            return "2_STORY_ITEM_GIVE1"
+            #return "2_STORY_ITEM_GIVE1"
+            self._za_item_regive_phase = "check"   # 持っているかを確かめてから持たせる
+            return "2_STORY_ITEM_REGIVE1"
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('_2_story_absol_move4'):
             return self.ZA_story_resume_movement_a('_2_story_absol_move4')
@@ -33006,8 +33501,9 @@ class ZA_story_Base(ImageProcPythonCommand):
         #アブソルと入れ替え
         self.common_box_change_current_state = self.ZA_common_box_change_function(target1=0,target2=3,target1_high=0,target2_high=-1)
         if self.common_box_change_current_state == "COMMON_BOX_CHANGE_START":
-            if getattr(self, "_za_ls", None) is not None:
-                return "2_STORY_LEVEL_SUPPORT2"
+            # F013（11/25）: 入れ替え直後のアブソルは交換に出せなかった（11/24）。2回目はメガストーン戦の後へ移した
+            #if getattr(self, "_za_ls", None) is not None:
+            #    return "2_STORY_LEVEL_SUPPORT2"
             return "2_STORY_ITEM_GIVE1"
             #return "2_STORY_BOX_CHANGE2"
         else:
@@ -33021,9 +33517,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "2_STORY_BOX_CHANGE2"
     
     def _2_story_level_support2(self):
-        # レベリングサポート2回目（手持ち4・6番目）。持ち物（メガストーン）を持たせると交換に出せないのでその前に行う
+        # レベリングサポート2回目（手持ち4・6番目）。
+        # F013（11/25）: 入れ替え直後（メガストーンを持たせる前）は、4番のアブソルだけ交換に出せず飛ばされた（11/24）。
+        # メガストーン戦の後、持ち物を外してから（LEVEL_SUPPORT2_ITEM_REMOVE）行い、終わったら持たせ直す。
+        # 補助機が動いていない・交換に失敗した時も、持たせ直してから先へ進む。
         self.ZA_level_support_stage(2)
-        return "2_STORY_ITEM_GIVE1"
+        self._za_item_regive_phase = "give"   # 外したばかりなので、確かめずに持たせる所から
+        #return "2_STORY_ITEM_GIVE1"
+        return "2_STORY_ITEM_REGIVE1"
 
     def _2_story_item_give1(self):
         self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=0)
@@ -33057,7 +33558,93 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.ZA_story_Template_battle_function_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE8",prg_ret="2_STORY_ABSOL_MOVE8",noprg_ret="2_STORY_ABSOL_MOVE7",Xaction=1,Aaction=1,Yaction=0,Baction=1,lockon_endskip=0,get_chanceicon4=0,noCp=1,battle_mode=0)
     
     def _2_story_absol_move8(self):
-        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_MAPPING_110")
+        # F013（11/25）: 戦闘が終わってフィールドに戻ったら、レベリングサポート2回目（持ち物を外す所から）へ
+        #return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_MAPPING_110")
+        return self.ZA_story_Template_battle_after_renda_route(bkprg_ret="2_STORY_ABSOL_MOVE7",prg_ret="2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE")
+
+    def _2_story_level_support2_item_remove(self):
+        # F013（11/25）: 11/24 は入れ替え直後（持ち物を持たせる前）に4番のアブソルだけ交換に出せなかった（原因は未確定。
+        # イベント中は交換できない見立て）。メガストーン戦の後に、4番の持ち物（アブソルナイト）を外してからサポートを行う。
+        session = getattr(self, "_za_ls", None)
+        if session is None:
+            # 連携なし（トレード型でない）: 外さずに先へ（アブソルナイトは持たせたまま）
+            self.common_item_remove_current_state = "COMMON_ITEM_REMOVE_START"
+            return "2_STORY_MAPPING_110"
+        if session.stage_ok(2):
+            # 2回目が成功済み（サポートの後に止めて始め直した時など）: 持っているかを確かめる所から持たせ直しへ
+            self.common_item_remove_current_state = "COMMON_ITEM_REMOVE_START"
+            self._za_item_remove_passes = 0
+            self._za_item_regive_phase = "check"
+            return "2_STORY_ITEM_REGIVE1"
+        if self.common_item_remove_current_state in ("COMMON_ITEM_REMOVE_START", "COMMON_ITEM_REMOVE_START_CHECK"):
+            # 戦闘の後に会話が続いた時は先に送る（START_CHECK は会話を送らない）
+            if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+                self.ZA_story_Template_Comment_Out()
+                return "2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE"
+            if self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"):
+                self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+                return "2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE"
+        self.common_item_remove_current_state = self.ZA_common_item_remove_function(selectnum=4)
+        if self.common_item_remove_current_state != "COMMON_ITEM_REMOVE_START":
+            return "2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE"
+        # 1回分が終わった。外れたことは、もう一度開いてポーチの一覧が出る（持ち物が無い）ことで確かめる
+        if getattr(self, "_za_item_slot_holding", None) is False:
+            self._za_item_remove_passes = 0
+            return "2_STORY_LEVEL_SUPPORT2"
+        self._za_item_remove_passes = getattr(self, "_za_item_remove_passes", 0) + 1
+        if self._za_item_remove_passes >= 3:
+            self._za_item_remove_passes = 0
+            self._za_trace("[F013] 4番の持ち物が外れたことを3回とも確かめられません。そのままサポートへ進みます")
+            return "2_STORY_LEVEL_SUPPORT2"
+        return "2_STORY_LEVEL_SUPPORT2_ITEM_REMOVE"
+
+    def _2_story_item_regive1(self):
+        # F013（11/25）: サポートの後にアブソルナイトを4番へ持たせ直し、もう一度開いて持っていることを確かめる。
+        #   check: 「もちもの」の行で A → ポーチの一覧が出なければ持っている（MAPPING_110 へ）／出れば give へ
+        #   give : 持たせる。メガストーンのポケットは種類順で、オーダイルナイトがあるとその下になる（11/25 実機）。
+        #          一番上（target2=0）ではなく一番下を選ぶ（ZA_common_item_give_target_last）。
+        # 持たせる共通処理（.pyfrag と同期）は変えない。2回持たせても持っていなければ、記録を残して先へ進む。
+        phase = getattr(self, "_za_item_regive_phase", "check")
+        gives = getattr(self, "_za_item_regive_gives", 0)
+        if phase != "give":
+            self.common_item_remove_current_state = self.ZA_common_item_remove_function(selectnum=4, remove=False)
+            if self.common_item_remove_current_state != "COMMON_ITEM_REMOVE_START":
+                return "2_STORY_ITEM_REGIVE1"
+            if getattr(self, "_za_item_slot_holding", None):
+                self._za_item_regive_phase = "check"
+                self._za_item_regive_gives = 0
+                return "2_STORY_MAPPING_110"
+            if gives >= 2:
+                self._za_item_regive_phase = "check"
+                self._za_item_regive_gives = 0
+                self._za_trace("[F013] アブソルナイトを2回持たせても、4番が持っていることを確かめられません。先へ進みます")
+                return "2_STORY_MAPPING_110"
+            self._za_item_regive_phase = "give"
+            return "2_STORY_ITEM_REGIVE1"
+        state = self.common_item_give_current_state
+        if state == "COMMON_ITEM_GIVE_TARGET_SIDE":
+            # ポーチの一覧が開かない（持ち物を持ったまま「もちもの整理」の小さいメニューが出た等）時に回り続けない
+            since = getattr(self, "_za_item_regive_side_since", None)
+            if since is None:
+                self._za_item_regive_side_since = time.monotonic()
+            elif time.monotonic() - since > 20.0:
+                self._za_item_regive_side_since = None
+                self.ZA_common_item_give_window_close()
+                self.common_item_give_current_state = "COMMON_ITEM_GIVE_START"
+                self._za_item_regive_gives = gives + 1
+                self._za_item_regive_phase = "check"
+                self._za_trace("[F013] 持たせ直しでポーチの一覧が開きません。閉じて、持っているかを確かめます")
+                return "2_STORY_ITEM_REGIVE1"
+        else:
+            self._za_item_regive_side_since = None
+        if state == "COMMON_ITEM_GIVE_TARGET_HIGH":
+            self.common_item_give_current_state = self.ZA_common_item_give_target_last()
+        else:
+            self.common_item_give_current_state = self.ZA_common_item_give_function(selectnum=4,target1=4,target2=0)
+        if self.common_item_give_current_state == "COMMON_ITEM_GIVE_START":
+            self._za_item_regive_gives = gives + 1
+            self._za_item_regive_phase = "check"
+        return "2_STORY_ITEM_REGIVE1"
     
     #Wゾーン8-10のマッピング
     def _2_story_mapping_110(self):
@@ -34599,13 +35186,22 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "3_STORY_CANARI_34"
     
+    # 3_STORY_CANARI_35 の3区間目（右＝カメラの向きで南へ、歩き 15 秒）のダッシュの秒。比 0.63 の 9.45 秒は、11/25 の実機で
+    # ステージ前の人だかり（クリア回で CANARI_36 の時に立っていた所）を走り抜けてさらに南へ行き、4区間目（東）で変圧器に
+    # 当たって止まった。ステージの出来事が始まらず CANARI_36 が時間切れで CANARI_34 へ戻る（2回続けて。ミニマップでは EVENT の
+    # 約 20px 南で止まる）。ユーザー指摘「EVENT位置が正しいため移動幅が大きすぎた」。歩きは 15 秒のまま。
+    # 11/25 06:28 に2区間目（東）を 3.9 秒へ縮めた回は、3区間目で壁と植え込みに当たって進めなかった（2区間目は比どおりの幅が要る）
+    ZA_CANARI_35_DASH_LEG3_SECONDS = 8.0
+
     def _3_story_canari_35(self):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.ZA_move(0, 9.0, wait=1.0, route="3_STORY_CANARI_35", chain=True)
             self.ZA_move_gap(0.5, route="3_STORY_CANARI_35")
             self.ZA_move(90, 8.0, wait=1.0, route="3_STORY_CANARI_35", chain=True)
             self.ZA_move_gap(0.5, route="3_STORY_CANARI_35")
-            self.ZA_move(0, 15.0, wait=1.0, route="3_STORY_CANARI_35", chain=True)
+            #self.ZA_move(0, 15.0, wait=1.0, route="3_STORY_CANARI_35", chain=True)
+            self.ZA_move(0, 15.0, wait=1.0, route="3_STORY_CANARI_35", chain=True,
+                         dash_seconds=self.ZA_CANARI_35_DASH_LEG3_SECONDS)
             self.ZA_move_gap(0.5, route="3_STORY_CANARI_35")
             self.ZA_move(90, 2.3, wait=1.0, route="3_STORY_CANARI_35")
             self.wait(0.5)
@@ -34933,8 +35529,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "3_STORY_MEGA_MOVE22"
+            # 11/25: この登り台（黄色い矢印）の A の表示は「調べる」で、はしごの印が出ず、位置は合っているのに A 未検知で
+            # MOVE20 へ戻るのを7回繰り返した。実機で「A 調べる」の A を押すと屋上へ上がった（MOVE22 の開始位置）ので、
+            # 「A 調べる」でも A を押して進む
+            #return self.ZA_story_checked_movement_action(
+            #    '_3_story_mega_move21', ('POKEMON_ZA_HASHIGO_ICON',),
+            #    _after_checked_a_1, '3_STORY_MEGA_MOVE21')
             return self.ZA_story_checked_movement_action(
-                '_3_story_mega_move21', ('POKEMON_ZA_HASHIGO_ICON',),
+                '_3_story_mega_move21', ('POKEMON_ZA_HASHIGO_ICON', 'ZA_STORY_COMMON_ZA_RESEARCH_A'),
                 _after_checked_a_1, '3_STORY_MEGA_MOVE21')
         return "3_STORY_MEGA_MOVE21"
     
@@ -36292,7 +36894,11 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
             self.ZA_move(120, 3.7, wait=1.0, route="4_STORY_SHIRO_66", chain=True)  #130
             self.ZA_move_gap(0.5, route="4_STORY_SHIRO_66")
-            self.ZA_move(220, 0.3, wait=1.0, route="4_STORY_SHIRO_66")
+            # 11/25 F016: 0.3 秒では木箱の山の一歩手前（格子の上）で止まり、A を押しても反応しないことが多かった
+            # （歩きで9回中7回）。止めて手で木箱の方へ約0.25秒歩くと「A 調べる」が出た。最後の向き直しは木箱の方向
+            # なので、伸ばして木箱に寄せる（当たっても止まるだけ）。
+            #self.ZA_move(220, 0.3, wait=1.0, route="4_STORY_SHIRO_66")
+            self.ZA_move(220, 0.6, wait=1.0, route="4_STORY_SHIRO_66")
             self.wait(0.5)
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -36314,12 +36920,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         else:
             return "4_STORY_SHIRO_68"
     
+    ZA_SHIRO_69_DASH_SECONDS = 1.9
+
     def _4_story_shiro_69(self):
         # A未検知中は到着位置を保持し、方向移動を再実行しない。
         if self.ZA_story_movement_a_pending('_4_story_shiro_69'):
             return self.ZA_story_resume_movement_a('_4_story_shiro_69')
         if self.image_check("POKEMON_ZA_NO_BATTLE_FIELD_HARD_CHECK"): #FIELDから変更
-            self.ZA_move(140, 3.5, wait=1.0, route="4_STORY_SHIRO_69")
+            # 11/25 F016: ダッシュ（3.5 × 0.63 = 2.21 秒）では配管に沿って行き過ぎ、右の縦管の先で止まって A が出なかった
+            # （3回とも）。クリア回（歩き）は一番下のハンドルの前、縦管の手前で調べている。ダッシュだけ短くする。
+            #self.ZA_move(140, 3.5, wait=1.0, route="4_STORY_SHIRO_69")
+            self.ZA_move(140, 3.5, wait=1.0, route="4_STORY_SHIRO_69",
+                         dash_seconds=self.ZA_SHIRO_69_DASH_SECONDS)
             self.wait(0.5)
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
@@ -39809,8 +40421,14 @@ class ZA_story_Base(ImageProcPythonCommand):
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 return "7_STORY_GURI_29"
+            # 11/26 F024: ここも黄色い矢印の登り台で、A の表示が「調べる」（はしごの印が出ない）。登り台の前に着いているのに
+            # A 未検知でゲームを戻すのを16回繰り返した（DASH_DEBUG=1 で歩きへ逃げないため）。3_STORY_MEGA_MOVE21 と同じく
+            # 「A 調べる」でも A を押して進む
+            #return self.ZA_story_checked_movement_action(
+            #    '_7_story_guri_28', ('POKEMON_ZA_HASHIGO_ICON',),
+            #    _after_checked_a_1, '7_STORY_GURI_28')
             return self.ZA_story_checked_movement_action(
-                '_7_story_guri_28', ('POKEMON_ZA_HASHIGO_ICON',),
+                '_7_story_guri_28', ('POKEMON_ZA_HASHIGO_ICON', 'ZA_STORY_COMMON_ZA_RESEARCH_A'),
                 _after_checked_a_1, '7_STORY_GURI_28')
         return "7_STORY_GURI_28"
     
@@ -39991,6 +40609,10 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
             self.wait(2.0)
             self.ZA_move(100, 3.0, wait=1.0)
+            # 11/26 F025 で、A が無い時に右前へ0.25秒ずつ寄せる処理を入れたが、寄せた回（04:17）に落ちて襲われ、
+            # やられた（ユーザー指摘「移動で落ちているのでそこは動画を参考にすること」F027）。クリア回の動画（EJZq-kuiQxY
+            # 320〜330秒）は寄せずに、この 100°3秒ではしごの横に着いて登っている。寄せは外し、v0.1.0 と同じ移動に戻す。
+            # 着く位置がずれた回は今までどおり GURI_38 から作り直す（04:27 は寄せなしで通過）。
             def _after_checked_a_1():
                 self.pressRep(Button.A, repeat=1, duration=0.15, wait=0.5, interval=0.1)
                 # 次のAは梯子に掴まった後の操作。入口の再チェックは挟まない。
@@ -40371,11 +40993,18 @@ class ZA_story_Base(ImageProcPythonCommand):
         return self.ZA_story_furadari_lab_entrance_goto(
             "7_STORY_GURI_86", "7_STORY_GURI_87")
     
+    # 11/26 F030（ユーザー指摘「移動距離が足りていない部分がある」）: ダッシュの回は2手目（下へ。比どおり 2.52 秒）の後、
+    # 3手目（右へ）が通路に沿わず右の壁へ向かい、警備に見つからず GURI_88 の会話が始まらないのを6回繰り返した（06:03〜06:06）。
+    # クリア回（l_MzEJK1KeM 2279.5〜2291秒・歩き）は2手目で曲がり角まで行き、3手目で通路を奥へ進んで警備に見つかっている。
+    # 2手目が曲がり角まで届いていないとみて、ダッシュの2手目だけ延ばす（調整1/5。歩きは 4.0 秒のまま）
+    ZA_GURI_87_DASH_LEG2_SECONDS = 3.0
+
     def _7_story_guri_87(self):
         #ラボカードキーA
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.ZA_move(60, 7.5, wait=0.0, route="7_STORY_GURI_87", chain=True)
-            self.ZA_move(270, 4.0, wait=0.0, route="7_STORY_GURI_87", chain=True)
+            self.ZA_move(270, 4.0, wait=0.0, route="7_STORY_GURI_87", chain=True,
+                         dash_seconds=self.ZA_GURI_87_DASH_LEG2_SECONDS)
             self.ZA_move(0, 6.0, wait=0.0, route="7_STORY_GURI_87")
             self.ZA_ROTOM_GLIDE(dir=240,a_count=10)#移動Aクリック
             return "7_STORY_GURI_88"
@@ -40719,12 +41348,23 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "7_STORY_GURI_113"
         return "7_STORY_GURI_112" 
        
+    # 11/26 F030（ユーザー指摘「移動距離が足りていない部分がある」）: ダッシュの回は GURI_113 の後、ギルガルドの部屋に入らず
+    # 手前の通路の角（赤い配管の横）で止まり、GURI_114 が壁に向いたまま進まなかった（06:40。11/20 も部屋の前の廊下で警備に
+    # 見つかっている）。クリア回（l_MzEJK1KeM 2722〜2739秒・歩き）は4手目（前へ4秒）の途中 2733秒に扉を通って部屋に入る。
+    # 4手目が扉まで届いていないとみて、ダッシュの4手目だけ延ばす（調整1/5。歩きは 4.0 秒のまま）
+    # → 06:51 も同じ角（瓦礫と赤い配管）で止まった。2手目（左寄り）の後の4手目が瓦礫の角へ向かっていて、クリア回は2手目で
+    #   配管の壁沿いに狭い通路の入口まで行き、4手目でその通路に入る（2729.5〜2732秒）。2手目も届いていないとみて延ばす（調整2/5）
+    ZA_GURI_113_DASH_LEG4_SECONDS = 3.0
+    ZA_GURI_113_DASH_LEG2_SECONDS = 3.0
+
     def _7_story_guri_113(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.ZA_move(100, 4.0, wait=0.0, route="7_STORY_GURI_113", chain=True)
-            self.ZA_move(160, 4.0, wait=0.0, route="7_STORY_GURI_113", chain=True)
+            self.ZA_move(160, 4.0, wait=0.0, route="7_STORY_GURI_113", chain=True,
+                         dash_seconds=self.ZA_GURI_113_DASH_LEG2_SECONDS)
             self.ZA_move(340, 0.5, wait=0.0, route="7_STORY_GURI_113", chain=True)
-            self.ZA_move(90, 4.0, wait=0.0, route="7_STORY_GURI_113", chain=True)
+            self.ZA_move(90, 4.0, wait=0.0, route="7_STORY_GURI_113", chain=True,
+                         dash_seconds=self.ZA_GURI_113_DASH_LEG4_SECONDS)
             self.ZA_move(270, 0.5, wait=0.0, route="7_STORY_GURI_113", chain=True)
             self.ZA_move(160, 4.0, wait=0.0, route="7_STORY_GURI_113")
             return "7_STORY_GURI_114" 
@@ -40791,16 +41431,50 @@ class ZA_story_Base(ImageProcPythonCommand):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.ZA_move(90, 2.0, wait=0.0, route="7_STORY_GURI_121", chain=True)
             self.ZA_move(0, 6.0, wait=0.0, route="7_STORY_GURI_121")
-            return "7_STORY_GURI_122" 
+            return "7_STORY_GURI_122"
+        # 11/27 F037: エレベーターの後は暗転の戻しを使わない。フィールドが見えず進めない時は、会話が出ない時の戻し
+        # （ZA_STORY_WHITE_COMMENT_RECOVERY_TARGETS → 120秒で GURI_118）に任せる。その戻しは Step が最初に見る
+        # 白い会話の判定で時計を動かすので、ここで白い会話を見る。白い会話が残っていれば B で閉じる（止まらないように）
+        if self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT"):
+            self.pressRep(Button.B, repeat=1, duration=0.15, wait=0.5, interval=0.1)
         return "7_STORY_GURI_121" 
        
+    # 11/27 F037: GURI_122（地下3階の部屋の出来事）の最初の会話は紺の黒い会話（「…に反応して一部の電源が入った……！」）。
+    # 白・緑だけを待っていたので、黒い会話の見本が一致した 11/26（0.98）は会話の待ちに入らず、黒い会話の戻しが
+    # B を押し切った後にファイルのメニューで止まった。クリア回（10/16）は黒い会話が 0.62 で一致せず、暗転の戻しの B が
+    # 偶然会話を送って通っていた。黒い会話でも会話の待ちに入る。
+    # 会話の欄を拾えない時も、フィールドが見えないままこの秒数続けば出来事が始まっているとみて会話の待ちに入る
+    # （会話の待ちは欄を拾えなくても B の連打へ進み、黒い会話と選択肢は A で送る）。
+    ZA_STORY_GURI122_NO_FIELD_SECONDS = 10.0
+
     def _7_story_guri_122(self):
         #リカバリー付近だが次で終わりなのであってもよさそうだが
-        if (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
-                or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")):
-            if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
-                return "7_STORY_GURI_123"
-        return "7_STORY_GURI_122" 
+        now = time.monotonic()
+        last_tick = getattr(self, "_za_guri122_last_tick", None)
+        self._za_guri122_last_tick = now
+        if last_tick is None or now - last_tick > 30.0:
+            # 前に来た時の数えを持ち越さない（別の Step から戻ってきた。118 からの入り直しは地図の移動で30秒より長い）。
+            # 5秒にすると、映像が止まって1周が遅い時に毎回数え直しになり、10秒の入口が働かない（確認役の指摘）
+            self._za_guri122_no_field_since = None
+        comment_seen = (self.image_check("POKEMON_ZA_TEXT_WHITE_COMMENT")
+                        or self.image_check("POKEMON_ZA_TEXT_GREEN_COMMENT")
+                        or self.image_check("POKEMON_ZA_TEXT_BLACK_COMMENT"))
+        if not comment_seen:
+            if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
+                self._za_guri122_no_field_since = None
+                return "7_STORY_GURI_122"
+            since = getattr(self, "_za_guri122_no_field_since", None)
+            if since is None:
+                self._za_guri122_no_field_since = now
+                return "7_STORY_GURI_122"
+            if now - since < self.ZA_STORY_GURI122_NO_FIELD_SECONDS:
+                return "7_STORY_GURI_122"
+            self._za_trace("[F037] GURI_122: 会話の欄を拾えないままフィールドが {:.0f}秒見えない -> 会話の待ちに入る".format(
+                now - since))
+        self._za_guri122_no_field_since = None
+        if self.ZA_story_Template_Comment_Out(timeout_seconds=600.0):
+            return "7_STORY_GURI_123"
+        return "7_STORY_GURI_122"
        
     def _7_story_guri_123(self):#おわってもどり
         return self.ZA_story_furadari_lab_entrance_goto(
@@ -41215,14 +41889,26 @@ class ZA_story_Base(ImageProcPythonCommand):
             return "8_STORY_STORY_LAST_21" 
         return "8_STORY_STORY_LAST_21_0"
     
+    # 11/26 F034（ユーザー指定「ダッシュで行けると思います」「移動ルートをクリア時のものを参照してください」）:
+    # クリア回（l_MzEJK1KeM 6000〜6073秒・歩き）は4手目（左下8秒）で石の壁沿いから建物の並ぶ通りへ降り、街灯の横に
+    # 立つ（6019〜6021秒）→ 5手目でピンクの建物の前 → 6手目で建物沿いに石の階段へ着く。ダッシュ（比どおり 5.04秒）は
+    # 4手目の終わりにまだ石の壁沿いの道にいて（23:40 の回の撮影 9.6秒）、5・6手目が石の壁沿いを走って金属の枠の所へ
+    # 行き、出来事の場所に着かなかった（LAST_21〜23 を繰り返す）。4手目が通りまで届いていないとみて延ばす（調整1/5）
+    # → 23:57 の回は4手目の後にクリア回と同じ街灯の横（ピンクの建物の手前）に着いた。ただ、5手目の後に止まらず走ったまま
+    #   6手目へ曲がり（記録の keep_run）、通りの真ん中へ膨らんで、6手目の終わりに石の階段（クリア回 6035秒）ではなく白い窓の
+    #   建物の前に着き、ベンチの奥の壁で止まった。クリア回（歩き）は手ごとに1秒止まってから曲がる。調整2/5: 曲がり角の
+    #   5手目・6手目の後だけ止まる（chain を外す。走ったまま曲がらない）。秒はそのまま
+    ZA_LAST_21_DASH_LEG4_SECONDS = 6.0
+
     def _8_story_story_last_21(self):
         if self.image_check("POKEMON_ZA_FILED_HARD_CHECK_0"):
             self.ZA_move(0, 1.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
             self.ZA_move(120, 4.5, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
             self.ZA_move(90, 4.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
-            self.ZA_move(200, 8.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
-            self.ZA_move(90, 2.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
-            self.ZA_move(20, 10.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
+            self.ZA_move(200, 8.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True,
+                         dash_seconds=self.ZA_LAST_21_DASH_LEG4_SECONDS)
+            self.ZA_move(90, 2.0, wait=1.0, route="8_STORY_STORY_LAST_21")    # 調整2/5: 止まってから6手目へ
+            self.ZA_move(20, 10.0, wait=1.0, route="8_STORY_STORY_LAST_21")   # 調整2/5: 止まってから7手目へ
             self.ZA_move(100, 6.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
             self.ZA_move(180, 2.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
             self.ZA_move(120, 8.0, wait=1.0, route="8_STORY_STORY_LAST_21", chain=True)
@@ -43616,6 +44302,153 @@ class ZA_story_Base(ImageProcPythonCommand):
     
     def ZA_common_item_give_end(self):
         return "COMMON_ITEM_GIVE_START"
+
+    @staticmethod
+    def _za_item_list_selected_row(frame):
+        """ポーチの一覧（左側）で選ばれている行（白い帯）の番号。0 が一番上。読めなければ None。
+
+        1280x720 で一番上の行の中心が y=188、行の間隔が 72（11/25 のメガストーンのポケットの実機画面で測定）。
+        選ばれた行だけ白（明るさ 235 超）で埋まる。文字の行は白が減るので、30 行までの切れ目は同じ帯とみる。
+        行が画面に収まらずに一覧が送られる長いポケットには使わない（メガストーンのポケットは数個）。
+        """
+        if frame is None:
+            return None
+        if frame.shape[0] != 720 or frame.shape[1] != 1280:
+            frame = cv2.resize(frame, (1280, 720))
+        top = 150
+        gray = cv2.cvtColor(frame[top:700, 120:500], cv2.COLOR_BGR2GRAY)
+        white_lines = (gray > 235).mean(axis=1) >= 0.9
+        bands = []
+        start = last = None
+        for y, on in enumerate(white_lines):
+            if not on:
+                continue
+            if start is None:
+                start = y
+            elif y - last > 30:
+                bands.append((start, last))
+                start = y
+            last = y
+        if start is not None:
+            bands.append((start, last))
+        bands = [band for band in bands if band[1] - band[0] >= 40]
+        if len(bands) != 1:
+            return None
+        center = top + (bands[0][0] + bands[0][1]) / 2.0
+        return int(round((center - 188.0) / 72.0))
+
+    def _za_item_list_selected_row_now(self):
+        for _ in range(3):
+            row = self._za_item_list_selected_row(read_command_frame(self))
+            if row is not None:
+                return row
+            self.wait(0.2)
+        return None
+
+    def ZA_common_item_give_target_last(self):
+        """今のポケットの一番下の行を持たせる（F013 11/25: アブソルナイトの持たせ直し用）。
+
+        外したアブソルナイトは、種類順のメガストーンのポケットでオーダイルナイトより下になる（11/25 実機）。
+        十字キー下で白い帯が1行ずつ下がらなくなるまで送る。一番下で止まる・一番上へ回る、のどちらでもよい
+        （上へ回ったら1行戻す）。帯を読めない時は、違う物（オーダイルナイト）を持たせないよう、何も持たせずに閉じる
+        （呼び出し側が持っているかを確かめてやり直す）。
+        """
+        if not self.image_check("POKEMON_ZA_ITEM_WINDOW"):
+            return "COMMON_ITEM_GIVE_TARGET_HIGH"
+        self.wait(0.5)
+        row = self._za_item_list_selected_row_now()
+        if row is None:
+            self._za_trace("[F013] ポーチの選んでいる行を読めません。何も持たせずに閉じます")
+            return "COMMON_ITEM_GIVE_WINDOW_CLOSE"
+        for _ in range(12):
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.5)
+            now = self._za_item_list_selected_row_now()
+            if now is None:
+                self._za_trace("[F013] ポーチを送っている途中で選んでいる行を読めません。何も持たせずに閉じます")
+                return "COMMON_ITEM_GIVE_WINDOW_CLOSE"
+            if now == row + 1:
+                row = now
+                continue
+            if now < row:
+                # 一番下から一番上へ回った → 1行戻して一番下へ
+                self.etc_sendCommand("Lbutton_up")
+                self.wait(0.5)
+            break
+        print("[持ち物] ポーチの {} 行目（一番下）を持たせます".format(row + 1))
+        self.pressRep(Button.A, repeat=3, duration=0.15, wait=1.0, interval=1.0)
+        return "COMMON_ITEM_GIVE_WINDOW_CLOSE"
+
+    ######################################################
+    # Commonitemremove（F013 11/25: 持ち物をポーチへ戻す）
+    ######################################################
+    def ZA_common_item_remove_function(self,selectnum,remove=True):
+        """手持ち selectnum 番目の持ち物を「もちもの整理 → ポーチへもどす」で外す。
+
+        ポケモンを選ぶ所（…_POKEMON_SELECT）と「もちもの」の行で A を押す所までは、持たせる処理
+        （ZA_common_item_give_function）と同じ部品を使う。持たせる時のポーチ選び（TARGET_SIDE / TARGET_HIGH）は
+        使わず、COMMON_ITEM_REMOVE_SELECT で「ポーチへもどす」を選ぶ。終わると COMMON_ITEM_REMOVE_START を返す。
+        その回の始めに持っていたかを self._za_item_slot_holding に残す（ポーチの一覧が開いた＝持っていない）。
+        remove=False は確かめるだけ（「ポーチへもどす」を押さずに閉じる）。
+        """
+        state = self.common_item_remove_current_state
+        if state == "COMMON_ITEM_REMOVE_START":
+            self._za_item_slot_holding = None
+            ret = self.ZA_common_skill_change_start()
+            if ret == "COMMON_SKILL_CHANGE_START_CHECK":
+                state = "COMMON_ITEM_REMOVE_START_CHECK"
+        elif state == "COMMON_ITEM_REMOVE_START_CHECK":
+            ret = self.ZA_common_skill_change_start_check(
+                detected_action_wait=0.5)
+            if ret == "COMMON_SKILL_CHANGE_POKEMON_SELECT":
+                state = "COMMON_ITEM_REMOVE_POKEMON_SELECT"
+        elif state == "COMMON_ITEM_REMOVE_POKEMON_SELECT":
+            ret = self.ZA_common_skill_change_pokemon_select(
+                selectnum, detected_action_wait=0.5)
+            if ret == "COMMON_SKILL_CHANGE_SKILL_WINDOW_OPEN":
+                state = "COMMON_ITEM_REMOVE_WINDOW_OPEN"
+        elif state == "COMMON_ITEM_REMOVE_WINDOW_OPEN":
+            # 持たせる時と同じく「もちもの」の行（下から2番目）で A。持ち物があれば小さいメニューが開く
+            if self.ZA_common_item_give_window_open() == "COMMON_ITEM_GIVE_TARGET_SIDE":
+                state = "COMMON_ITEM_REMOVE_SELECT"
+        #elif state == "COMMON_ITEM_REMOVE_TARGET_SIDE":    # 持たせる時のポーチ選び。外す時は使わない
+        #    state = self.ZA_common_item_give_target_side(target1)
+        #elif state == "COMMON_ITEM_REMOVE_TARGET_HIGH":
+        #    state = self.ZA_common_item_give_target_high(target2)
+        elif state == "COMMON_ITEM_REMOVE_SELECT":
+            state = self.ZA_common_item_remove_select(remove)
+        elif state == "COMMON_ITEM_REMOVE_WINDOW_CLOSE":
+            self.ZA_common_item_give_window_close()
+            state = "COMMON_ITEM_REMOVE_END"
+        else:
+            state = "COMMON_ITEM_REMOVE_START"
+        self.common_item_remove_current_state = state
+        return state
+
+    def ZA_common_item_remove_select(self, remove=True):
+        """「もちもの整理」の小さいメニュー（もちものいれかえ／ポーチをひらく／ポーチへもどす／やめる）で
+        「ポーチへもどす」（上から3番目）を選ぶ。11/25 の手動（下2回 → A）と同じ。
+
+        ポーチの一覧が開いた時は持ち物が無い（行が「もちものを持たせる」だった）ので、何も選ばずに閉じる。
+        ポーチの一覧は画面が切り替わってから出るので、約5秒待ってから「持っている」とみる（小さいメニューはすぐ出る）。
+        """
+        self.wait(1.0)
+        for _ in range(14):
+            if self.image_check("POKEMON_ZA_ITEM_WINDOW"):
+                self._za_item_slot_holding = False
+                print("[持ち物外し] 持ち物がありません（ポーチの一覧が開いた）。何も選ばずに閉じます")
+                return "COMMON_ITEM_REMOVE_WINDOW_CLOSE"
+            self.wait(0.3)
+        self._za_item_slot_holding = True
+        if not remove:
+            print("[持ち物外し] 持ち物を持っています（確かめるだけ。閉じます）")
+            return "COMMON_ITEM_REMOVE_WINDOW_CLOSE"
+        for i in range(2):
+            self.etc_sendCommand("Lbutton_down")
+            self.wait(0.5)
+        self.pressRep(Button.A, repeat=1, duration=0.15, wait=1.0, interval=0.1)
+        print("[持ち物外し] 「ポーチへもどす」で A")
+        return "COMMON_ITEM_REMOVE_WINDOW_CLOSE"
 
     ######################################################
     # Commonevolution
@@ -48615,15 +49448,102 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.etc_sendCommand("Lbutton_left")
             self.wait(self.SLEEPLIST[0][2])
             return "QUASAR_MOVE_DOOR"
+        # 入口に着けないまま地図から入り直すのを際限なく繰り返さない（F035）
+        tries = int(getattr(self, "_za_quasar_door_tries", 0)) + 1
+        self._za_quasar_door_tries = tries
+        if tries > self.ZA_QUASAR_DOOR_MAX_TRIES:
+            self._za_quasar_door_tries = 0
+            self._za_infi_stop("クエーサー社の入口に{}回続けて入れないので止めます".format(tries - 1))
+            return "QUASAR_MOVE_DOOR"
         self.press(Direction(Stick.LEFT, 90), duration=7.0, wait=0.1)
         def _after_checked_a_1():
+            self._za_quasar_door_tries = 0
             self.press(Button.A, wait=0.0)
             return "QUASAR_MOVE_ENTRANCE"
         # ZIPに該当実行がなくAの画角未確認。最後の移動方向へLで合わせる。
         self.pressRep(Button.L, repeat=1, duration=0.15, wait=0.5, interval=0.1)
+        if self._za_quasar_door_bright_entry():
+            self._za_quasar_door_tries = 0
+            return "QUASAR_MOVE_ENTRANCE"
         return self.ZA_story_checked_movement_action(
             "ZA_quasar_move_door", ("POKEMON_ZA_DOOR_A",),
             _after_checked_a_1, "QUASAR_MOVE_DOOR")
+
+    # クエーサー社の扉の前（2026-11-27 F035「クェーサー社に入っていない」）:
+    # L で視点を戻すと扉の明るい壁が画面いっぱいになり、「A はいる」の一致が 0.837（閾値 0.85）にとどまる。
+    # 手持ちの欄も明るい壁に重なってオーダイルのアイコンが 0.59（閾値 0.8）に下がり、FIELD の確認が要る
+    # A_Nocheck も使えないため、05:24 から地図からの入り直しを繰り返した（03:24・04:24・04:30 は画角が違い A_Nocheck で入れた）。
+    # この扉だけ、「A はいる」が一番近い候補で 0.80 以上なら A を押し、暗転（扉に入った）を確かめてから進む。
+    ZA_QUASAR_DOOR_ENTER_ID = "enter_ja"
+    ZA_QUASAR_DOOR_ENTER_MIN = 0.80
+    ZA_QUASAR_DOOR_LOOK_SECONDS = 3.0
+    ZA_QUASAR_DOOR_MAX_TRIES = 5
+
+    def _za_quasar_door_bright_entry(self):
+        """通常の A 確認で見えない時だけ、明るい扉の前の「A はいる」を少し低い一致で受けて入る。入れたら True。
+
+        通常の確認で見えた時・確かめられない時・押しても暗転しない時は False（いつもの A 待ちへ進む）。
+        """
+        deadline = time.monotonic() + float(self.ZA_QUASAR_DOOR_LOOK_SECONDS)
+        best = 0.0
+        while True:
+            self.checkIfAlive()
+            if self.ZA_story_movement_a_check(("POKEMON_ZA_DOOR_A",)):
+                return False
+            detection = getattr(self, "last_action_prompt_detection", None) or {}
+            ranking = [row for row in detection.get("ranking", ()) if row.get("score") is not None]
+            top = ranking[0] if ranking else {}
+            score = float(top.get("score") or 0.0)
+            is_enter = top.get("id") == self.ZA_QUASAR_DOOR_ENTER_ID
+            if is_enter:
+                best = max(best, score)
+            if (is_enter and score >= self.ZA_QUASAR_DOOR_ENTER_MIN
+                    and self.image_check("POKEMON_ZA_FIELD_W")
+                    and not self._za_notice_comment_visible()):
+                before = self.ZA_story_a_nocheck_frame()
+                self.press(Button.A, wait=0.0)
+                signal = self.ZA_story_a_nocheck_response(before)
+                self._za_trace("[ZA_infi] クエーサー社の扉: A はいる {:.3f} で A を押した -> 反応 {}".format(score, signal))
+                if signal in ("dark", "fade"):
+                    return True
+                # 暗転の途中（半分暗い画面）を先に撮ると、会話の枠の範囲の差で "window" になる。
+                # 11/27 11:16〜11:24・14:02 は実際には入れていたのに戻っていた。少し待って暗くなれば入れた扱いにする。
+                if self._za_quasar_door_went_dark():
+                    self._za_trace("[ZA_infi] クエーサー社の扉: 反応 {} の後に暗転を確認 -> 入れた".format(signal))
+                    return True
+                # 暗転でない反応（人に話しかけた等）は閉じて、いつもの A 待ちへ戻す
+                for _ in range(5):
+                    if not self._za_notice_comment_visible():
+                        break
+                    self.press(Button.B, duration=0.1, wait=0.6)
+                return False
+            if time.monotonic() >= deadline:
+                self._za_trace("[ZA_infi] クエーサー社の扉: A はいる を確かめられない（はいるの最高 {:.3f}）".format(best))
+                return False
+            self.wait(0.2)
+
+    # 扉に入った後の暗転とロード画面（中央の説明の帯だけ明るい）は、画面の上と下がどちらも真っ暗（実測 7）。
+    # 扉の前・ロビー・会話の窓が出た画面は、上が明るい（実測 93〜242）。
+    ZA_QUASAR_DOOR_DARK_SECONDS = 2.5
+    ZA_QUASAR_DOOR_DARK_MAX = 20.0
+
+    def _za_quasar_door_went_dark(self):
+        """A の後、暗転かロード画面になったか（画面の上と下がどちらも真っ暗）を少し待って確かめる。"""
+        deadline = time.monotonic() + float(self.ZA_QUASAR_DOOR_DARK_SECONDS)
+        while True:
+            self.checkIfAlive()
+            frame = self.ZA_story_a_nocheck_frame()
+            if frame is not None and getattr(frame, "ndim", 0) >= 2:
+                gray = frame if frame.ndim == 2 else cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                height, width = gray.shape[:2]
+                top = float(gray[0:int(height * 0.28)].mean())
+                bottom = float(gray[int(height * 0.72):height, 0:int(width * 0.86)].mean())
+                if top <= self.ZA_QUASAR_DOOR_DARK_MAX and bottom <= self.ZA_QUASAR_DOOR_DARK_MAX:
+                    return True
+            if time.monotonic() >= deadline:
+                return False
+            self.wait(0.1)
+
     def ZA_quasar_move_entrance(self):
         # A待ちの再入場では、済んだ方向移動を繰り返さない。
         if self.ZA_story_movement_a_pending('ZA_quasar_move_entrance'):
@@ -48775,8 +49695,7 @@ class ZA_story_Base(ImageProcPythonCommand):
             self.quasarunknowncount = int(getattr(self, "quasarunknowncount", 0)) + 1
         self._za_kiwami_release()
         self._za_quasar = None
-        if bool(getattr(self, "LEVEL_SUPPORT_HELPER", False)):
-            self._za_kiwami_check_candy = True      # 次のベンチでアメの残数を読み直す
+        # アメの残数は初回とレベリングサポートの後だけ読む（11/24 ユーザー指定）。リワード戦の後は読み直さない
         return "QUASAR_START"
 
     def _za_quasar_result(self):
